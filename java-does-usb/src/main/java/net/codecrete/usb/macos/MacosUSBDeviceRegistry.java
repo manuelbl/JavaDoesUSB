@@ -19,7 +19,7 @@ import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
-public class MacOsUSBDeviceRegistry implements USBDeviceRegistry {
+public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
 
     private static final long NUMBER_TYPE_ID = CoreFoundation.CFNumberGetTypeID();
     private static final long STRING_TYPE_ID = CoreFoundation.CFStringGetTypeID();
