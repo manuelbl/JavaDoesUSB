@@ -1,0 +1,4 @@
+BasedOnStyle: Google
+AllowShortIfStatementsOnASingleLine: false
+IndentWidth: 4
+ColumnLimit: 120
