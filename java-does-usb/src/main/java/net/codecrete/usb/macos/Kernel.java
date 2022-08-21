@@ -95,6 +95,6 @@ public class Kernel {
     }
 
     public static SymbolLookup frameworkLookup(String framework, MemorySession session) {
-        return libraryLookup(framework + ".framework/" + framework, session);
+        return libraryLookup("/System/Library/Frameworks/" + framework + ".framework/" + framework, session);
     }
 }
