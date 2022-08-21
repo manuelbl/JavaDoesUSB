@@ -63,7 +63,7 @@ public class CoreFoundation {
     static {
         var linker = Linker.nativeLinker();
         var cfSession = MemorySession.openShared();
-        var coreFoundationLookup = Kernel.frameworkLookup("CoreFoundation", cfSession);
+        var coreFoundationLookup = SymbolLookup.libraryLookup("CoreFoundation.framework/CoreFoundation", cfSession);
 
         CFUUIDBytes = structLayout(
                 JAVA_BYTE.withName("byte0"),

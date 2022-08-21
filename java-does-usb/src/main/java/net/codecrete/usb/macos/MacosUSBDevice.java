@@ -226,10 +226,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(session, USBDirection.IN, setup, data);
 
             int ret = IoKitUSB.DeviceRequest(device, deviceRequest);
-            if (ret != 0) {
-                Kernel.mach_error("XXX", ret);
+            if (ret != 0)
                 throw new USBException("Control IN transfer failed", ret);
-            }
 
             int lenDone = (int) IoKitUSB.IOUSBDevRequest_wLenDone.get(deviceRequest);
             return data.asSlice(0, lenDone).toArray(JAVA_BYTE);
@@ -246,10 +244,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(session, USBDirection.OUT, setup, dataSegment);
 
             int ret = IoKitUSB.DeviceRequest(device, deviceRequest);
-            if (ret != 0) {
-                Kernel.mach_error("XXX", ret);
+            if (ret != 0)
                 throw new USBException("Control IN transfer failed", ret);
-            }
         }
     }
 

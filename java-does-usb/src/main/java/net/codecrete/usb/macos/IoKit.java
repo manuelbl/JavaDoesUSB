@@ -51,7 +51,7 @@ public class IoKit {
     static {
         var linker = Linker.nativeLinker();
         var ioKitSession = MemorySession.openShared();
-        var ioKitLookup = Kernel.frameworkLookup("IOKit", ioKitSession);
+        var ioKitLookup = SymbolLookup.libraryLookup("IOKit.framework/IOKit", ioKitSession);
 
         try (var session = MemorySession.openConfined()) {
             var kIOMasterPortDefaultAddress = ioKitLookup.lookup("kIOMasterPortDefault").get().address();
