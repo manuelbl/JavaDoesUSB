@@ -12,6 +12,11 @@ import net.codecrete.usb.USBDeviceInfo;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.linux.gen.fcntl.fcntl;
+import net.codecrete.usb.linux.gen.ioctl.ioctl;
+import net.codecrete.usb.linux.gen.unistd.unistd;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_bulktransfer;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
@@ -26,15 +31,18 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     LinuxUSBDevice(String path, USBDeviceInfo info) {
         super(path, info);
 
-        fd = IO.open(path, IO.O_RDWR | IO.O_CLOEXEC);
-        if (fd == -1)
-            throw new USBException("Cannot open USB device", IO.getErrno());
+        try (var session = MemorySession.openConfined()) {
+            var pathUtf8 = session.allocateUtf8String(path);
+            fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
+            if (fd == -1)
+                throw new USBException("Cannot open USB device", IO.getErrno());
+        }
     }
 
     public void claimInterface(int interfaceNumber) {
         try (var session = MemorySession.openConfined()) {
             var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
-            int ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment);
+            int ret = ioctl.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment.address());
             if (ret != 0)
                 throw new USBException("Cannot claim USB interface", IO.getErrno());
         }
@@ -43,21 +51,21 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public void releaseInterface(int interfaceNumber) {
         try (var session = MemorySession.openConfined()) {
             var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
-            int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment);
+            int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
             if (ret != 0)
                 throw new USBException("Cannot release USB interface", IO.getErrno());
         }
     }
 
     private MemorySegment createCtrlTransfer(MemorySession session, USBDirection direction, USBControlTransfer setup, MemorySegment data) {
-        var ctrlTransfer = session.allocate(USBDevFS.ctrltransfer$Struct);
+        var ctrlTransfer = session.allocate(usbdevfs_ctrltransfer.$LAYOUT());
         var bmRequest = (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        USBDevFS.ctrltransfer_bRequestType.set(ctrlTransfer, (byte) bmRequest);
-        USBDevFS.ctrltransfer_bRequest.set(ctrlTransfer, setup.request());
-        USBDevFS.ctrltransfer_wValue.set(ctrlTransfer, setup.value());
-        USBDevFS.ctrltransfer_wIndex.set(ctrlTransfer, setup.index());
-        USBDevFS.ctrltransfer_wLength.set(ctrlTransfer, (short) data.byteSize());
-        USBDevFS.ctrltransfer_data.set(ctrlTransfer, data.address());
+        usbdevfs_ctrltransfer.bRequestType$set(ctrlTransfer, (byte) bmRequest);
+        usbdevfs_ctrltransfer.bRequest$set(ctrlTransfer, setup.request());
+        usbdevfs_ctrltransfer.wValue$set(ctrlTransfer, setup.value());
+        usbdevfs_ctrltransfer.wIndex$set(ctrlTransfer, setup.index());
+        usbdevfs_ctrltransfer.wLength$set(ctrlTransfer, (short) data.byteSize());
+        usbdevfs_ctrltransfer.data$set(ctrlTransfer, data.address());
         return ctrlTransfer;
     }
 
@@ -67,7 +75,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var data = session.allocate(length);
             var ctrlTransfer = createCtrlTransfer(session, USBDirection.IN, setup, data);
 
-            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer);
+            int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
                 throw new USBException("Control IN transfer failed", res);
 
@@ -84,17 +92,17 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 buffer.copyFrom(MemorySegment.ofArray(data));
             var ctrlTransfer = createCtrlTransfer(session, USBDirection.OUT, setup, buffer);
 
-            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer);
+            int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
                 throw new USBException("Control OUT transfer failed", res);
         }
     }
 
     private MemorySegment createBulkTransfer(MemorySession session, int endpointAddress, MemorySegment data) {
-        var transfer = session.allocate(USBDevFS.bulktransfer$Struct);
-        USBDevFS.bulktransfer_ep.set(transfer, endpointAddress);
-        USBDevFS.bulktransfer_len.set(transfer, (int) data.byteSize());
-        USBDevFS.bulktransfer_data.set(transfer, data.address());
+        var transfer = session.allocate(usbdevfs_bulktransfer.$LAYOUT());
+        usbdevfs_bulktransfer.ep$set(transfer, endpointAddress);
+        usbdevfs_bulktransfer.len$set(transfer, (int) data.byteSize());
+        usbdevfs_bulktransfer.data$set(transfer, data.address());
         return transfer;
     }
 
@@ -105,7 +113,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             buffer.copyFrom(MemorySegment.ofArray(data));
             var transfer = createBulkTransfer(session, endpointNumber, buffer);
 
-            int res = IO.ioctl(fd, USBDevFS.BULK, transfer);
+            int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0)
                 throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber), res);
         }
@@ -118,7 +126,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             var transfer = createBulkTransfer(session, 0x80 | endpointNumber, buffer);
 
-            int res = IO.ioctl(fd, USBDevFS.BULK, transfer);
+            int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0)
                 throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber), res);
 
@@ -128,6 +136,6 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void close() throws Exception {
-        IO.close(fd);
+        unistd.close(fd);
     }
 }

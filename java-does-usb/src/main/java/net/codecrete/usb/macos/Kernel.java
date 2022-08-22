@@ -7,11 +7,12 @@
 
 package net.codecrete.usb.macos;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Addressable;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySession;
 import java.lang.invoke.MethodHandle;
-import java.util.Optional;
 
-import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
