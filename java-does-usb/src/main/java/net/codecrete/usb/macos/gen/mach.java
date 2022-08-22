@@ -6,9 +6,9 @@ import java.lang.foreign.Addressable;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
-public class mach_h  {
+public class mach  {
 
-    /* package-private */ mach_h() {}
+    /* package-private */ mach() {}
     public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
     public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
     public static OfInt C_INT = Constants$root.C_INT$LAYOUT;
