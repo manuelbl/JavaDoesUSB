@@ -9,4 +9,4 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --target-package net.codecrete.usb.windows.gen.cfgmgr32 ^
   --include-function CM_Get_Parent ^
   --include-function CM_Get_Device_IDW ^
-  windows_cfgmgr32.h
+  windows_headers.h

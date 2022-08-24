@@ -13,4 +13,4 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-function WinUsb_ControlTransfer ^
   --include-function WinUsb_WritePipe ^
   --include-function WinUsb_ReadPipe ^
-  windows_winusb.h
+  windows_headers.h

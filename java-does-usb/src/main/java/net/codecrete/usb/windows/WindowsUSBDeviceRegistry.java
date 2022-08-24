@@ -17,6 +17,7 @@ import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
 import net.codecrete.usb.windows.gen.setupapi._SP_DEVINFO_DATA;
 import net.codecrete.usb.windows.gen.stdlib.StdLib;
+import net.codecrete.usb.windows.gen.usbioctl.USBIoctl;
 
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
@@ -37,7 +38,7 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
 
         try (var outerSession = MemorySession.openConfined()) {
             // get as set of all USB devices present
-            final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(SetupApi.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
+            final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
                 throw new USBException("internal error (SetupDiGetClassDevsW)");
 
@@ -96,7 +97,7 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
 
                     // get the interface data
                     if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, devInfo,
-                            SetupApi.GUID_DEVINTERFACE_USB_DEVICE, 0, devInfoData) == 0) {
+                            USBHelper.GUID_DEVINTERFACE_USB_DEVICE, 0, devInfoData) == 0) {
                         int lastError = Kernel32.GetLastError();
                         if (lastError == Kernel32.ERROR_NO_MORE_ITEMS())
                             throw new USBException("Internal error (SetupDiEnumDeviceInterfaces)");
@@ -104,15 +105,15 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
                     }
 
                     // get path of first interface
-                    var intfDetailData = MemorySegment.allocateNative(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W$Struct, session);
-                    SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W_cbSize.set(intfDetailData, 8);
-                    int intfDatailDataSize = (int) SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W$Struct.byteSize();
+                    var intfDetailData = MemorySegment.allocateNative(SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT(), session);
+                    SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData, 8);
+                    int intfDatailDataSize = (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT().byteSize();
                     if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devInfoData,
                             intfDetailData, intfDatailDataSize, NULL, NULL) == 0)
                         throw new USBException("Internal error (SetupDiGetDeviceInterfaceDetailA - 2)", Kernel32.GetLastError());
 
-                    long pathLen = StdLib.wcslen(intfDetailData.address().addOffset(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W_DevicePath$Offset));
-                    char[] devicePathChars = intfDetailData.asSlice(SetupApi.SP_DEVICE_INTERFACE_DETAIL_DATA_W_DevicePath$Offset, pathLen * 2).toArray(JAVA_CHAR);
+                    long pathLen = StdLib.wcslen(intfDetailData.address().addOffset(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset));
+                    char[] devicePathChars = intfDetailData.asSlice(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset, pathLen * 2).toArray(JAVA_CHAR);
                     String devicePath = new String(devicePathChars);
 
                     // get device's hub port number
@@ -137,20 +138,20 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
         try (var session = MemorySession.openConfined()) {
 
             // get device descriptor
-            var connInfo = session.allocate(USBIOCtl.USB_NODE_CONNECTION_INFORMATION_EX$Struct);
-            USBIOCtl.USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex.set(connInfo, usbPortNum);
+            var connInfo = session.allocate(USBHelper.USB_NODE_CONNECTION_INFORMATION_EX$Struct);
+            USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex.set(connInfo, usbPortNum);
             var sizeHolder = session.allocate(JAVA_INT);
-            if (Kernel32.DeviceIoControl(hubHandle, USBIOCtl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX,
+            if (Kernel32.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX(),
                     connInfo, (int) connInfo.byteSize(),
                     connInfo, (int) connInfo.byteSize(),
                     sizeHolder, NULL) == 0)
                 throw new USBException("Internal error (cannot get device descriptor)", Kernel32.GetLastError());
 
             byte currentConfigurationValue =
-                    (byte) USBIOCtl.USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue.get(connInfo);
+                    (byte) USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue.get(connInfo);
 
             var deviceDesc = connInfo.asSlice(
-                    USBIOCtl.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset,
+                    USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset,
                     USBDescriptors.Device$Struct.byteSize());
 
             // extract info from device descriptor
@@ -181,27 +182,27 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
 
         try (var session = MemorySession.openConfined()) {
             final int dataLen = 32;
-            var descriptorRequest = session.allocate(USBIOCtl.USB_DESCRIPTOR_REQUEST_Data$Offset + dataLen);
-            USBIOCtl.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
+            var descriptorRequest = session.allocate(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset + dataLen);
+            USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
             var setupPacket = descriptorRequest.asSlice(
-                    USBIOCtl.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
+                    USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
                     USBStructs.SetupPacket$Struct.byteSize());
             USBStructs.SetupPacket_bmRequest.set(setupPacket, (byte) 0x80);
-            USBStructs.SetupPacket_bRequest.set(setupPacket, USBIOCtl.USB_REQUEST_GET_DESCRIPTOR);
-            USBStructs.SetupPacket_wValue.set(setupPacket, (short) ((USBIOCtl.USB_STRING_DESCRIPTOR_TYPE << 8) | index));
+            USBStructs.SetupPacket_bRequest.set(setupPacket, USBHelper.USB_REQUEST_GET_DESCRIPTOR);
+            USBStructs.SetupPacket_wValue.set(setupPacket, (short) ((USBHelper.USB_STRING_DESCRIPTOR_TYPE << 8) | index));
             USBStructs.SetupPacket_wIndex.set(setupPacket, (short) 0x0409);
             USBStructs.SetupPacket_wLength.set(setupPacket, (short) dataLen);
 
             var sizeHolder = session.allocate(JAVA_INT);
-            if (Kernel32.DeviceIoControl(hubHandle, USBIOCtl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
+            if (Kernel32.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION(),
                     descriptorRequest, (int) descriptorRequest.byteSize(),
                     descriptorRequest, (int) descriptorRequest.byteSize(),
                     sizeHolder, NULL) == 0)
                 throw new USBException(String.format("Cannot retrieve string descriptor %d", index), Kernel32.GetLastError());
 
-            var stringDesc = descriptorRequest.asSlice(USBIOCtl.USB_DESCRIPTOR_REQUEST_Data$Offset, dataLen);
-            int stringLen = 255 & (byte) USBIOCtl.USB_STRING_DESCRIPTOR_bLength.get(stringDesc);
-            var chars = stringDesc.asSlice(USBIOCtl.USB_STRING_DESCRIPTOR_bString$Offset, stringLen - 2)
+            var stringDesc = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, dataLen);
+            int stringLen = 255 & (byte) USBHelper.USB_STRING_DESCRIPTOR_bLength.get(stringDesc);
+            var chars = stringDesc.asSlice(USBHelper.USB_STRING_DESCRIPTOR_bString$Offset, stringLen - 2)
                     .toArray(JAVA_CHAR);
             return new String(chars);
         }

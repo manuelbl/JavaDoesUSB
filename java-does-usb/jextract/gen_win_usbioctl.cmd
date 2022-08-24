@@ -7,7 +7,9 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --header-class-name USBIoctl ^
   --target-package net.codecrete.usb.windows.gen.usbioctl ^
   --include-struct _USB_NODE_CONNECTION_INFORMATION_EX ^
-  windows_usbioctl.h
+  --include-macro IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX ^
+  --include-macro IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION ^
+  windows_headers.h
 
 :: Generated code is invalid: No instance of type _USB_NODE_CONNECTION_INFORMATION_EX can be created.0
 :: They crash with:

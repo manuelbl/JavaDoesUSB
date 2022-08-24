@@ -4,4 +4,4 @@ set JEXTRACT=..\..\..\jextract\build\jextract\bin\jextract.bat
   --header-class-name StdLib ^
   --target-package net.codecrete.usb.windows.gen.stdlib ^
   --include-function wcslen ^
-  windows_stdlib.h
+  windows_headers.h

@@ -14,6 +14,12 @@ public class USBIoctl  {
     public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static int IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION() {
+        return (int)2229264L;
+    }
+    public static int IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX() {
+        return (int)2229320L;
+    }
 }
 
 

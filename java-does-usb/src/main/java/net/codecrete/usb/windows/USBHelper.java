@@ -11,6 +11,7 @@ import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBStructs;
 
 import java.lang.foreign.GroupLayout;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
@@ -18,12 +19,13 @@ import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.*;
 
 /**
- * USB IO Control functions and structures
+ * USB constants and struct
+ * <p>
+ *     Mainly used to work around an alignment problem with the generated
+ *     USB_NODE_CONNECTION_INFORMATION_EX struct.
+ * </p>
  */
-public class USBIOCtl {
-
-    public static final int IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX = 2229320;
-    public static final int IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION = 2229264;
+public class USBHelper {
 
     public static final byte USB_REQUEST_GET_DESCRIPTOR = 0x06;
 
@@ -43,6 +45,10 @@ public class USBIOCtl {
     public static final VarHandle USB_STRING_DESCRIPTOR_bLength;
     public static final VarHandle USB_STRING_DESCRIPTOR_bDescriptorType;
     public static final long USB_STRING_DESCRIPTOR_bString$Offset;
+    // A5DCBF10-6530-11D2-901F-00C04FB951ED
+    public static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.CreateGUID(0xA5DCBF10, (short) 0x6530, (short) 0x11D2,
+            (byte) 0x90, (byte) 0x1F, (byte) 0x00, (byte) 0xC0,
+            (byte) 0x4F, (byte) 0xB9, (byte) 0x51, (byte) 0xED);
 
 
     static {

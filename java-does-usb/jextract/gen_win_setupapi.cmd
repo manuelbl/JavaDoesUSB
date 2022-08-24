@@ -19,4 +19,4 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-macro DIGCF_PRESENT ^
   --include-macro DIGCF_DEVICEINTERFACE ^
   --include-macro SPDRP_ADDRESS ^
-  windows_setupapi.h
+  windows_headers.h

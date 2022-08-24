@@ -19,4 +19,5 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-macro FILE_ATTRIBUTE_NORMAL ^
   --include-macro FILE_FLAG_OVERLAPPED ^
   --include-macro OPEN_EXISTING ^
-  windows_kernel32.h
+  --include-struct _GUID ^
+  windows_headers.h
