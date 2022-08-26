@@ -65,7 +65,7 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
 
                     // get the parent device (a USB hub)
                     var parentDevInstHolder = session.allocate(JAVA_INT);
-                    int devInst = (int) _SP_DEVINFO_DATA.DevInst$get(devInfo);
+                    int devInst = _SP_DEVINFO_DATA.DevInst$get(devInfo);
                     int cmRet = CfgMgr32.CM_Get_Parent(parentDevInstHolder, devInst, 0);
                     if (cmRet != 0)
                         throw new USBException("Internal error (CM_Get_Parent)");

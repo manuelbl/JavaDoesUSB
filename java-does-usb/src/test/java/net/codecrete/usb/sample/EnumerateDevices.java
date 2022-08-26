@@ -10,7 +10,7 @@ package net.codecrete.usb.sample;
 import net.codecrete.usb.USB;
 
 /**
- * Sample program enumerating the connected USB devices
+ * Sample program displaying the connected USB devices
  */
 public class EnumerateDevices {
 

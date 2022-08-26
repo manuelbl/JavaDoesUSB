@@ -28,6 +28,7 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
     private Consumer<USBDeviceInfo> onDeviceConnectedHandler;
     private Consumer<USBDeviceInfo> onDeviceDisconnectedHandler;
     private boolean isMonitorThreadStarted;
+    private boolean isMonitoringReady;
 
     public List<USBDeviceInfo> getAllDevices() {
 
@@ -38,7 +39,9 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
                 throw new RuntimeException("IORegistryGetRootEntry failed");
             session.addCloseAction(() -> IoKit.IOObjectRelease(entry));
 
+            // create an iterator for USB devices
             var iterHolder = session.allocate(JAVA_INT);
+            // TODO: passing 'entry' as the first argument does not work - why?
             int ret = IoKit.IORegistryCreateIterator(0, IoKit.kIOUSBPlane, IoKit.kIORegistryIterateRecursively, iterHolder);
             final var iter = iterHolder.get(JAVA_INT, 0);
             if (ret != 0)
@@ -50,42 +53,34 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
     }
 
     /**
-     * Return all devices of the iterator in a list
+     * Process the iterator and return a list of devices ({@link USBDeviceInfo}).
+     *
+     * @param iterator iterator
+     * @param isDisconnected flag is the iterator is for disconnected devices
+     * @return list of devices
      */
-    private List<USBDeviceInfo> iterateDevices(int iter, boolean isDisconnected) {
+    private List<USBDeviceInfo> iterateDevices(int iterator, boolean isDisconnected) {
 
         List<USBDeviceInfo> result = new ArrayList<>();
 
         int svc;
-        while ((svc = IoKit.IOIteratorNext(iter)) != 0) {
+        while ((svc = IoKit.IOIteratorNext(iterator)) != 0) {
             try (var session = MemorySession.openConfined()) {
 
                 final int service = svc;
                 session.addCloseAction(() -> IoKit.IOObjectRelease(service));
 
-                // Test if service has user client interface (if not, it is likely a hub)
+                // test if service has user client interface (if not, it is likely a controller)
                 if (!isDisconnected) {
-                    final MemoryAddress device = IoKitHelper.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID, IoKit.kIOUSBDeviceInterfaceID100);
+                    final var device = IoKitHelper.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID, IoKit.kIOUSBDeviceInterfaceID100);
                     if (device == null)
                         continue;
                     IoKit.Release(device);
                 }
 
-                // Get registry path
-                String path;
-                var pathSegment = session.allocateArray(JAVA_BYTE, 512);
-                int ret = IoKit.IORegistryEntryGetPath(service, IoKit.kIOServicePlane, pathSegment);
-                if (ret == 0) {
-                    path = pathSegment.getUtf8String(0);
-                } else if (isDisconnected) {
-                    path = "<disconnected>";
-                } else {
-                    continue;
-                }
-
-                // Get entry ID
+                // get entry ID (as unique ID)
                 var entryIdHolder = session.allocate(JAVA_LONG);
-                ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
+                int ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
                 if (ret != 0)
                     throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
@@ -172,6 +167,7 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
             // iterate current devices in order to arm the notifications
             onDeviceDisconnected(NULL, deviceDisconnectedIter);
 
+            isMonitoringReady = true;
             CoreFoundation.CFRunLoopRun();
 
         } catch (NoSuchMethodException | IllegalAccessException e) {
@@ -181,7 +177,7 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
 
     private void onDeviceConnected(MemoryAddress ignoredRefCon, int iterator) {
         var devices = iterateDevices(iterator, false);
-        if (onDeviceConnectedHandler == null)
+        if (onDeviceConnectedHandler == null || !isMonitoringReady)
             return;
 
         for (var device : devices)
@@ -190,7 +186,7 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
 
     private void onDeviceDisconnected(MemoryAddress ignoredRefCon, int iterator) {
         var devices = iterateDevices(iterator, true);
-        if (onDeviceDisconnectedHandler == null)
+        if (onDeviceDisconnectedHandler == null || !isMonitoringReady)
             return;
 
         for (var device : devices)
@@ -198,6 +194,7 @@ public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
     }
 
     private USBDeviceInfo createDeviceInfo(long entryID, int service) {
+
         Integer vendorId = IoKitHelper.GetPropertyInt(service, "idVendor");
         Integer productId = IoKitHelper.GetPropertyInt(service, "idProduct");
         String manufacturer = IoKitHelper.GetPropertyString(service, "kUSBVendorString");
