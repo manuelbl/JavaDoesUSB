@@ -18,6 +18,10 @@ package net.codecrete.usb;
  * Instances of this class are not associated with any native resources
  * and can thus be easily handled in Java.
  * </p>
+ * <p>
+ * Multiple instances of the class might exist for the same USB device.
+ * Use {@code equals()} to test if they refer to the same device.
+ * </p>
  */
 public interface USBDeviceInfo {
     /**

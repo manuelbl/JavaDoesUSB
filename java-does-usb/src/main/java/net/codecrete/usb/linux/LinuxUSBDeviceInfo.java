@@ -13,17 +13,17 @@ import net.codecrete.usb.common.USBDeviceInfoImpl;
 public class LinuxUSBDeviceInfo extends USBDeviceInfoImpl {
 
     LinuxUSBDeviceInfo(
-            String path, int vendorId, int productId,
+            Object id, int vendorId, int productId,
             String manufacturer, String product, String serial,
             int classCode, int subclassCode, int protocolCode) {
 
-        super(path, vendorId, productId,
+        super(id, vendorId, productId,
                 manufacturer, product, serial,
                 classCode, subclassCode, protocolCode);
     }
 
     @Override
     public USBDevice open() {
-        return new LinuxUSBDevice(path, this);
+        return new LinuxUSBDevice(id, this);
     }
 }

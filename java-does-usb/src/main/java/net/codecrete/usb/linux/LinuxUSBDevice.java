@@ -28,11 +28,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private final int fd;
 
-    LinuxUSBDevice(String path, USBDeviceInfo info) {
-        super(path, info);
+    LinuxUSBDevice(Object id, USBDeviceInfo info) {
+        super(id, info);
 
         try (var session = MemorySession.openConfined()) {
-            var pathUtf8 = session.allocateUtf8String(path);
+            var pathUtf8 = session.allocateUtf8String(id.toString());
             fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
             if (fd == -1)
                 throw new USBException("Cannot open USB device", IO.getErrno());

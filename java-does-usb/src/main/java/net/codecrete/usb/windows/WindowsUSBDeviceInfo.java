@@ -15,12 +15,12 @@ public class WindowsUSBDeviceInfo extends USBDeviceInfoImpl {
     private final byte currentConfigurationValue;
 
     WindowsUSBDeviceInfo(
-            String path, int vendorId, int productId,
+            Object id, int vendorId, int productId,
             String manufacturer, String product, String serial,
             int classCode, int subclassCode, int protocolCode,
             byte currentConfigurationValue) {
 
-        super(path, vendorId, productId,
+        super(id, vendorId, productId,
                 manufacturer, product, serial,
                 classCode, subclassCode, protocolCode);
         this.currentConfigurationValue = currentConfigurationValue;
@@ -28,6 +28,6 @@ public class WindowsUSBDeviceInfo extends USBDeviceInfoImpl {
 
     @Override
     public USBDevice open() {
-        return new WindowsUSBDevice(path, this, currentConfigurationValue);
+        return new WindowsUSBDevice(id, this, currentConfigurationValue);
     }
 }

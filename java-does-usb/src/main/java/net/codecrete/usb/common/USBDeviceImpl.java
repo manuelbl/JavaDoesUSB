@@ -9,12 +9,10 @@ package net.codecrete.usb.common;
 
 import net.codecrete.usb.*;
 
-import java.util.Objects;
-
 public abstract class USBDeviceImpl implements USBDevice {
 
 
-    protected final String path;
+    protected final Object id;
     protected final int productId;
     protected final int vendorId;
     protected final String product;
@@ -27,14 +25,16 @@ public abstract class USBDeviceImpl implements USBDevice {
     /**
      * Creates a new instance.
      *
-     * @param path device path
+     * @param id unique identifier
      * @param info USB device information
      */
     protected USBDeviceImpl(
-            String path,
+            Object id,
             USBDeviceInfo info) {
 
-        this.path = path;
+        assert id != null;
+
+        this.id = id;
         this.productId = info.getProductId();
         this.vendorId = info.getVendorId();
         this.product = info.getProduct();
@@ -117,12 +117,12 @@ public abstract class USBDeviceImpl implements USBDevice {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         USBDeviceImpl that = (USBDeviceImpl) o;
-        return productId == that.productId && vendorId == that.vendorId && classCode == that.classCode && subclassCode == that.subclassCode && protocolCode == that.protocolCode && path.equals(that.path) && Objects.equals(product, that.product) && Objects.equals(manufacturer, that.manufacturer) && Objects.equals(serial, that.serial);
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, productId, vendorId, product, manufacturer, serial, classCode, subclassCode, protocolCode);
+        return id.hashCode();
     }
 
     @Override
@@ -137,7 +137,7 @@ public abstract class USBDeviceImpl implements USBDevice {
                 product +
                 ", serial: " +
                 serial +
-                ", path: " +
-                path;
+                ", ID: " +
+                id.toString();
     }
 }

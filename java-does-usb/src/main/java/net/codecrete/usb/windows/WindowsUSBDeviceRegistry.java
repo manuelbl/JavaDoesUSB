@@ -25,6 +25,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
@@ -206,5 +207,13 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
                     .toArray(JAVA_CHAR);
             return new String(chars);
         }
+    }
+
+    @Override
+    public void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
+    }
+
+    @Override
+    public void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
     }
 }

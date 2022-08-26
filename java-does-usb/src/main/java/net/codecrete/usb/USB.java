@@ -13,6 +13,7 @@ import net.codecrete.usb.macos.MacosUSBDeviceRegistry;
 import net.codecrete.usb.windows.WindowsUSBDeviceRegistry;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -103,5 +104,23 @@ public class USB {
     public static USBDeviceInfo getDevice(List<USBDeviceFilter> filters) {
         return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters))
                 .findFirst().orElse(null);
+    }
+
+    /**
+     * Sets the handler to be called when a USB device is connected.
+     *
+     * @param handler handler function, or {@code null} to remove a previous handler
+     */
+    public static void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
+        instance().setOnDeviceConnected(handler);
+    }
+
+    /**
+     * Sets the handler to be called when a USB device is disconnected.
+     *
+     * @param handler handler function, or {@code null} to remove a previous handler
+     */
+    public static void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
+        instance().setOnDeviceDisconnected(handler);
     }
 }

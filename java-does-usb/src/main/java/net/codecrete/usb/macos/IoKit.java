@@ -7,8 +7,6 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.common.Foreign;
-
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
@@ -16,175 +14,198 @@ import java.lang.invoke.VarHandle;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.ValueLayout.*;
-import static net.codecrete.usb.macos.CoreFoundation.*;
+import static net.codecrete.usb.macos.CoreFoundation.CFUUIDBytes;
+import static net.codecrete.usb.macos.CoreFoundation.javaStringToCfString;
 
 public class IoKit {
 
+    private static final Linker linker = Linker.nativeLinker();
+    private static final MemorySession ioKitSession = MemorySession.openShared();
+    private static final SymbolLookup ioKitLookup = SymbolLookup.libraryLookup("IOKit.framework/IOKit", ioKitSession);
+
+    public static final Addressable kIOUSBPlane = ioKitSession.allocateUtf8String("IOUSB");
+    public static final Addressable kIOServicePlane = ioKitSession.allocateUtf8String("IOService");
+
+    public static final GroupLayout IOCFPlugInInterface$Struct = MemoryLayout.structLayout(
+            ADDRESS.withName("_reserved"), // void *_reserved;
+            ADDRESS.withName("QueryInterface"), // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
+            ADDRESS.withName("AddRef"), // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
+            ADDRESS.withName("Release"), // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer);
+            JAVA_SHORT.withName("version"), // UInt16 version;
+            JAVA_SHORT.withName("revision"), // UInt16 revision;
+            ADDRESS.withName("Probe"), // IOReturn (*Probe)(void *thisPointer, CFDictionaryRef propertyTable, io_service_t service, SInt32 * order);
+            ADDRESS.withName("Start"), // IOReturn (*Start)(void *thisPointer, CFDictionaryRef propertyTable, io_service_t service);
+            ADDRESS.withName("Stop") // IOReturn (*Stop)(void *thisPointer);
+    );
+
+    private static final VarHandle IUnknown_QueryInterface = IOCFPlugInInterface$Struct.varHandle(groupElement("QueryInterface"));
+    private static final VarHandle IUnknown_AddRef = IOCFPlugInInterface$Struct.varHandle(groupElement("AddRef"));
+    private static final VarHandle IUnknown_Release = IOCFPlugInInterface$Struct.varHandle(groupElement("Release"));
+
+    // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
+    private static final MethodHandle QueryInterface$Func = linker.downcallHandle(
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, CFUUIDBytes, ADDRESS)
+    );
+
+    // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
+    private static final MethodHandle AddRef$Func = linker.downcallHandle(
+            FunctionDescriptor.of(JAVA_INT, ADDRESS)
+    );
+
+    // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer);
+    private static final MethodHandle Release$Func = linker.downcallHandle(
+            FunctionDescriptor.of(JAVA_INT, ADDRESS)
+    );
+
+    // io_registry_entry_t IORegistryGetRootEntry(mach_port_t mainPort);
+    private static final MethodHandle IORegistryGetRootEntry$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryGetRootEntry").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT)
+    );
+
+    // kern_return_t IOObjectRelease(io_object_t object);
+    private static final MethodHandle IOObjectRelease$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOObjectRelease").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT)
+    );
+
+    // kern_return_t IORegistryEntryCreateIterator(io_registry_entry_t entry, const io_name_t plane, IOOptionBits options, io_iterator_t *iterator);
+    private static final MethodHandle IORegistryCreateIterator$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryCreateIterator").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS)
+    );
+
+    // io_object_t IOIteratorNext(io_iterator_t iterator);
+    private static final MethodHandle IOIteratorNext$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOIteratorNext").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT)
+    );
+
+    // kern_return_t IORegistryEntryGetPath(io_registry_entry_t entry, const io_name_t plane, io_string_t path);
+    private static final MethodHandle IORegistryEntryGetPath$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryEntryGetPath").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, ADDRESS)
+    );
+
+    // CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options);
+    private static final MethodHandle IORegistryEntryCreateCFProperty$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryEntryCreateCFProperty").get(),
+            FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS, ADDRESS, JAVA_INT)
+    );
+
+    // kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore);
+    private static final MethodHandle IOCreatePlugInInterfaceForService$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOCreatePlugInInterfaceForService").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS)
+    );
+
+    // io_registry_entry_t IORegistryEntryFromPath(mach_port_t mainPort, const io_string_t path);
+    private static final MethodHandle IORegistryEntryFromPath$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryEntryFromPath").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
+    );
+
+    // IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort);
+    private static final MethodHandle IONotificationPortCreate$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IONotificationPortCreate").get(),
+            FunctionDescriptor.of(ADDRESS, JAVA_INT)
+    );
+
+    // CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify);
+    private static final MethodHandle IONotificationPortGetRunLoopSource$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IONotificationPortGetRunLoopSource").get(),
+            FunctionDescriptor.of(ADDRESS, ADDRESS)
+    );
+
+    // io_service_t IOServiceGetMatchingService(mach_port_t mainPort, CFDictionaryRef matching);
+    private static final MethodHandle IOServiceGetMatchingService$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOServiceGetMatchingService").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
+    );
+
+    // kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification);
+    private static final MethodHandle IOServiceAddMatchingNotification$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOServiceAddMatchingNotification").get(),
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS)
+    );
+
+    // CFMutableDictionaryRef IOServiceMatching(const char *name);
+    private static final MethodHandle IOServiceMatching$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IOServiceMatching").get(),
+            FunctionDescriptor.of(ADDRESS, ADDRESS)
+    );
+
+    // CFMutableDictionaryRef IORegistryEntryIDMatching(uint64_t entryID);
+    private static final MethodHandle IORegistryEntryIDMatching$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryEntryIDMatching").get(),
+            FunctionDescriptor.of(ADDRESS, JAVA_LONG)
+    );
+
+    // kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID);
+    private static final MethodHandle IORegistryEntryGetRegistryEntryID$Func = linker.downcallHandle(
+            ioKitLookup.lookup("IORegistryEntryGetRegistryEntryID").get(),
+            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
+    );
+
+    public static final MemoryAddress kIOUSBDeviceUserClientTypeID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
+            NULL,
+            new byte[]{
+                    (byte) 0x9d, (byte) 0xc7, (byte) 0xb7, (byte) 0x80,
+                    (byte) 0x9e, (byte) 0xc0, (byte) 0x11, (byte) 0xD4,
+                    (byte) 0xa5, (byte) 0x4f, (byte) 0x00, (byte) 0x0a,
+                    (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
+            });
+
+    public static final MemoryAddress kIOUSBInterfaceUserClientTypeID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
+            NULL,
+            new byte[]{
+                    (byte) 0x2d, (byte) 0x97, (byte) 0x86, (byte) 0xc6,
+                    (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
+                    (byte) 0xad, (byte) 0x51, (byte) 0x00, (byte) 0x0a,
+                    (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
+            });
+
+    public static final MemoryAddress kIOUSBDeviceInterfaceID100 = CoreFoundation.CFUUIDCreateFromUUIDBytes(
+            NULL,
+            new byte[]{
+                    (byte) 0x5c, (byte) 0x81, (byte) 0x87, (byte) 0xd0,
+                    (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
+                    (byte) 0x8b, (byte) 0x45, (byte) 0x00, (byte) 0x0a,
+                    (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
+            });
+
+    public static final MemoryAddress kIOUSBInterfaceInterfaceID100 = CoreFoundation.CFUUIDCreateFromUUIDBytes(
+            NULL,
+            new byte[]{
+                    (byte) 0x73, (byte) 0xc9, (byte) 0x7a, (byte) 0xe8,
+                    (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
+                    (byte) 0xb1, (byte) 0xd0, (byte) 0x00, (byte) 0x0a,
+                    (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
+            });
+
+    public static final MemoryAddress kIOCFPlugInInterfaceID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
+            NULL,
+            new byte[]{
+                    (byte) 0xC2, (byte) 0x44, (byte) 0xE8, (byte) 0x58,
+                    (byte) 0x10, (byte) 0x9C, (byte) 0x11, (byte) 0xD4,
+                    (byte) 0x91, (byte) 0xD4, (byte) 0x00, (byte) 0x50,
+                    (byte) 0xE4, (byte) 0xC6, (byte) 0x42, (byte) 0x6F
+            });
     public static final int kIOMasterPortDefault;
-    public static final Addressable kIOUSBPlane;
-    public static final Addressable kIOServicePlane;
     public static final int kIORegistryIterateRecursively = 1;
-    public static final MemoryAddress kIOUSBDeviceUserClientTypeID;
-    public static final MemoryAddress kIOUSBInterfaceUserClientTypeID;
-    public static final MemoryAddress kIOUSBDeviceInterfaceID100;
-    public static final MemoryAddress kIOUSBInterfaceInterfaceID100;
-    public static final MemoryAddress kIOCFPlugInInterfaceID;
 
-    public static final GroupLayout IOCFPlugInInterface$Struct;
-    private static final VarHandle IUnknown_QueryInterface;
-    private static final VarHandle IUnknown_AddRef;
-    private static final VarHandle IUnknown_Release;
+    public static final MemorySegment kIOUSBDeviceClassName = ioKitSession.allocateUtf8String("IOUSBDevice");
+    public static final MemorySegment kIOFirstMatchNotification = ioKitSession.allocateUtf8String("IOServiceFirstMatch");
+    public static final MemorySegment kIOTerminatedNotification = ioKitSession.allocateUtf8String("IOServiceTerminate");
 
-    private static final MethodHandle QueryInterface$Func;
-    private static final MethodHandle AddRef$Func;
-    private static final MethodHandle Release$Func;
 
-    private static final MethodHandle IORegistryGetRootEntry$Func;
-    private static final MethodHandle IOObjectRelease$Func;
-    private static final MethodHandle IORegistryCreateIterator$Func;
-    private static final MethodHandle IOIteratorNext$Func;
-    private static final MethodHandle IORegistryEntryCreateCFProperty$Func;
-    private static final MethodHandle IORegistryEntryGetPath$Func;
-    private static final MethodHandle IOCreatePlugInInterfaceForService$Func;
-    private static final MethodHandle IORegistryEntryFromPath$Func;
+    public static final MemoryAddress kCFRunLoopDefaultMode = javaStringToCfString("kCFRunLoopDefaultMode");
 
     static {
-        var linker = Linker.nativeLinker();
-        var ioKitSession = MemorySession.openShared();
-        var ioKitLookup = SymbolLookup.libraryLookup("IOKit.framework/IOKit", ioKitSession);
-
         try (var session = MemorySession.openConfined()) {
             var kIOMasterPortDefaultAddress = ioKitLookup.lookup("kIOMasterPortDefault").get().address();
             kIOMasterPortDefault = MemorySegment.ofAddress(kIOMasterPortDefaultAddress, 4, session).get(JAVA_INT, 0);
         }
-
-        kIOUSBPlane = ioKitSession.allocateUtf8String("IOUSB");
-        kIOServicePlane = ioKitSession.allocateUtf8String("IOService");
-
-        IOCFPlugInInterface$Struct = MemoryLayout.structLayout(
-                ADDRESS.withName("_reserved"), // void *_reserved;
-                ADDRESS.withName("QueryInterface"), // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
-                ADDRESS.withName("AddRef"), // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
-                ADDRESS.withName("Release"), // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer);
-                JAVA_SHORT.withName("version"), // UInt16 version;
-                JAVA_SHORT.withName("revision"), // UInt16 revision;
-                ADDRESS.withName("Probe"), // IOReturn (*Probe)(void *thisPointer, CFDictionaryRef propertyTable, io_service_t service, SInt32 * order);
-                ADDRESS.withName("Start"), // IOReturn (*Start)(void *thisPointer, CFDictionaryRef propertyTable, io_service_t service);
-                ADDRESS.withName("Stop") // IOReturn (*Stop)(void *thisPointer);
-        );
-
-        IUnknown_QueryInterface = IOCFPlugInInterface$Struct.varHandle(groupElement("QueryInterface"));
-        IUnknown_AddRef = IOCFPlugInInterface$Struct.varHandle(groupElement("AddRef"));
-        IUnknown_Release = IOCFPlugInInterface$Struct.varHandle(groupElement("Release"));
-
-        // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
-        QueryInterface$Func = linker.downcallHandle(
-                FunctionDescriptor.of(JAVA_INT, ADDRESS, CFUUIDBytes, ADDRESS)
-        );
-
-        // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
-        AddRef$Func = linker.downcallHandle(
-                FunctionDescriptor.of(JAVA_INT, ADDRESS)
-        );
-
-        // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer);
-        Release$Func = linker.downcallHandle(
-                FunctionDescriptor.of(JAVA_INT, ADDRESS)
-        );
-
-
-        // io_registry_entry_t IORegistryGetRootEntry(mach_port_t mainPort);
-        IORegistryGetRootEntry$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IORegistryGetRootEntry").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT)
-        );
-
-        // kern_return_t IOObjectRelease(io_object_t object);
-        IOObjectRelease$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IOObjectRelease").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT)
-        );
-
-        // kern_return_t IORegistryEntryCreateIterator(io_registry_entry_t entry, const io_name_t plane, IOOptionBits options, io_iterator_t *iterator);
-        IORegistryCreateIterator$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IORegistryCreateIterator").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS)
-        );
-
-        // io_object_t IOIteratorNext(io_iterator_t iterator);
-        IOIteratorNext$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IOIteratorNext").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT)
-        );
-
-        // kern_return_t IORegistryEntryGetPath(io_registry_entry_t entry, const io_name_t plane, io_string_t path);
-        IORegistryEntryGetPath$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IORegistryEntryGetPath").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, ADDRESS)
-        );
-
-        // CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options);
-        IORegistryEntryCreateCFProperty$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IORegistryEntryCreateCFProperty").get(),
-                FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS, ADDRESS, JAVA_INT)
-        );
-
-        // kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore);
-        IOCreatePlugInInterfaceForService$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IOCreatePlugInInterfaceForService").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS)
-        );
-
-        // io_registry_entry_t IORegistryEntryFromPath(mach_port_t mainPort, const io_string_t path);
-        IORegistryEntryFromPath$Func = linker.downcallHandle(
-                ioKitLookup.lookup("IORegistryEntryFromPath").get(),
-                FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
-        );
-
-        kIOUSBDeviceUserClientTypeID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
-                NULL,
-                new byte[]{
-                        (byte) 0x9d, (byte) 0xc7, (byte) 0xb7, (byte) 0x80,
-                        (byte) 0x9e, (byte) 0xc0, (byte) 0x11, (byte) 0xD4,
-                        (byte) 0xa5, (byte) 0x4f, (byte) 0x00, (byte) 0x0a,
-                        (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
-                });
-
-        kIOUSBInterfaceUserClientTypeID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
-                NULL,
-                new byte[]{
-                        (byte) 0x2d, (byte) 0x97, (byte) 0x86, (byte) 0xc6,
-                        (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
-                        (byte) 0xad, (byte) 0x51, (byte) 0x00, (byte) 0x0a,
-                        (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
-                });
-
-        kIOUSBDeviceInterfaceID100 = CoreFoundation.CFUUIDCreateFromUUIDBytes(
-                NULL,
-                new byte[]{
-                        (byte) 0x5c, (byte) 0x81, (byte) 0x87, (byte) 0xd0,
-                        (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
-                        (byte) 0x8b, (byte) 0x45, (byte) 0x00, (byte) 0x0a,
-                        (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
-                });
-
-        kIOUSBInterfaceInterfaceID100 = CoreFoundation.CFUUIDCreateFromUUIDBytes(
-                NULL,
-                new byte[]{
-                        (byte) 0x73, (byte) 0xc9, (byte) 0x7a, (byte) 0xe8,
-                        (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4,
-                        (byte) 0xb1, (byte) 0xd0, (byte) 0x00, (byte) 0x0a,
-                        (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61
-                });
-
-        kIOCFPlugInInterfaceID = CoreFoundation.CFUUIDCreateFromUUIDBytes(
-                NULL,
-                new byte[]{
-                        (byte) 0xC2, (byte) 0x44, (byte) 0xE8, (byte) 0x58,
-                        (byte) 0x10, (byte) 0x9C, (byte) 0x11, (byte) 0xD4,
-                        (byte) 0x91, (byte) 0xD4, (byte) 0x00, (byte) 0x50,
-                        (byte) 0xE4, (byte) 0xC6, (byte) 0x42, (byte) 0x6F
-                });
     }
 
     // io_registry_entry_t IORegistryGetRootEntry(mach_port_t mainPort);
@@ -270,6 +291,70 @@ public class IoKit {
         return (MemoryAddress) varHandle.get(obj);
     }
 
+    // IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort);
+    public static MemoryAddress IONotificationPortCreate(int mainPort) {
+        try {
+            return (MemoryAddress) IONotificationPortCreate$Func.invokeExact(mainPort);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify);
+    public static MemoryAddress IONotificationPortGetRunLoopSource(Addressable notify) {
+        try {
+            return (MemoryAddress) IONotificationPortGetRunLoopSource$Func.invokeExact(notify);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification);
+    public static int IOServiceAddMatchingNotification(Addressable notifyPort, Addressable notificationType, Addressable matching, Addressable callback, Addressable refCon, Addressable notificationHolder) {
+        try {
+            return (int) IOServiceAddMatchingNotification$Func.invokeExact(notifyPort, notificationType, matching, callback, refCon, notificationHolder);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // CFMutableDictionaryRef IOServiceMatching(const char *name);
+    public static MemoryAddress IOServiceMatching(Addressable name) {
+        try {
+            return (MemoryAddress) IOServiceMatching$Func.invokeExact(name);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // CFMutableDictionaryRef IORegistryEntryIDMatching(uint64_t entryID);
+    public static MemoryAddress IORegistryEntryIDMatching(long entryID) {
+        try {
+            return (MemoryAddress) IORegistryEntryIDMatching$Func.invokeExact(entryID);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // io_service_t IOServiceGetMatchingService(mach_port_t mainPort, CFDictionaryRef matching);
+    public static int IOServiceGetMatchingService(int mainPort, Addressable matching) {
+        try {
+            return (int) IOServiceGetMatchingService$Func.invokeExact(mainPort, matching);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    // kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID);
+    public static int IORegistryEntryGetRegistryEntryID(int entry, Addressable entryIdHolder) {
+        try {
+            return (int) IORegistryEntryGetRegistryEntryID$Func.invokeExact(entry, entryIdHolder);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+
     // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
     public static int QueryInterface(MemoryAddress thisPointer, MemorySegment iid, Addressable ppv) {
         try (var session = MemorySession.openShared()) {
@@ -300,40 +385,4 @@ public class IoKit {
         }
     }
 
-    /**
-     * Get an interface of the specified service.
-     * <p>
-     * This method first request the specified plugin interfaces and then
-     * queries for the specified interface.
-     * </p>
-     *
-     * @param service     the service
-     * @param pluginType  the plugin interface type
-     * @param interfaceId the interface ID
-     * @return the interface, or <code>null</code> if the plugin type or interface is not available
-     */
-    public static MemoryAddress GetInterface(int service, Addressable pluginType, MemoryAddress interfaceId) {
-        try (var session = MemorySession.openConfined()) {
-            // MemorySegment for holding IOCFPlugInInterface**
-            var plugPointer = session.allocate(ADDRESS, NULL);
-            // MemorySegment for holding score
-            var score = session.allocate(JAVA_INT, 0);
-            int ret = IOCreatePlugInInterfaceForService(service, pluginType, kIOCFPlugInInterfaceID, plugPointer, score);
-            if (ret != 0)
-                return null;
-
-            var plug = Foreign.derefAddress(plugPointer.address(), session);
-            // MemorySegment for holding XXXInterface**
-            var intf = session.allocate(ADDRESS, NULL);
-            // UUID bytes
-            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUID.byteSize(), session);
-            ret = QueryInterface(plug, refiid, intf);
-            Release(plug);
-
-            if (ret != 0)
-                return null;
-            return Foreign.derefAddress(intf.address(), session);
-        }
-
-    }
 }

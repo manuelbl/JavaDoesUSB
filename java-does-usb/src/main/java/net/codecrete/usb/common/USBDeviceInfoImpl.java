@@ -10,12 +10,10 @@ package net.codecrete.usb.common;
 import net.codecrete.usb.USBDevice;
 import net.codecrete.usb.USBDeviceInfo;
 
-import java.util.Objects;
-
 public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
 
 
-    protected final String path;
+    protected final Object id;
     protected final int productId;
     protected final int vendorId;
     protected final String product;
@@ -28,7 +26,7 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
     /**
      * Creates a new instance.
      *
-     * @param path         device path
+     * @param id           unique device ID
      * @param vendorId     USB vendor ID
      * @param productId    USB product ID
      * @param manufacturer manufacturer name
@@ -39,11 +37,13 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
      * @param protocolCode USB device protocol
      */
     protected USBDeviceInfoImpl(
-            String path, int vendorId, int productId,
+            Object id, int vendorId, int productId,
             String manufacturer, String product, String serial,
             int classCode, int subclassCode, int protocolCode) {
 
-        this.path = path;
+        assert id != null;
+
+        this.id = id;
         this.productId = productId;
         this.vendorId = vendorId;
         this.product = product;
@@ -93,12 +93,12 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         USBDeviceInfoImpl that = (USBDeviceInfoImpl) o;
-        return productId == that.productId && vendorId == that.vendorId && classCode == that.classCode && subclassCode == that.subclassCode && protocolCode == that.protocolCode && path.equals(that.path) && Objects.equals(product, that.product) && Objects.equals(manufacturer, that.manufacturer) && Objects.equals(serial, that.serial);
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, productId, vendorId, product, manufacturer, serial, classCode, subclassCode, protocolCode);
+        return id.hashCode();
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
                 product +
                 ", serial: " +
                 serial +
-                ", path: " +
-                path;
+                ", ID: " +
+                id;
     }
 }

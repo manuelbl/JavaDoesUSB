@@ -10,114 +10,228 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.USBDeviceInfo;
 import net.codecrete.usb.common.USBDeviceRegistry;
 
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySession;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
-import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.*;
 
 public class MacosUSBDeviceRegistry implements USBDeviceRegistry {
 
-    private static final long NUMBER_TYPE_ID = CoreFoundation.CFNumberGetTypeID();
-    private static final long STRING_TYPE_ID = CoreFoundation.CFStringGetTypeID();
+    private Consumer<USBDeviceInfo> onDeviceConnectedHandler;
+    private Consumer<USBDeviceInfo> onDeviceDisconnectedHandler;
+    private boolean isMonitorThreadStarted;
 
     public List<USBDeviceInfo> getAllDevices() {
 
-        List<USBDeviceInfo> result = new ArrayList<>();
-        try (var outerSession = MemorySession.openConfined()) {
+        try (var session = MemorySession.openConfined()) {
 
             final int entry = IoKit.IORegistryGetRootEntry(IoKit.kIOMasterPortDefault);
             if (entry == 0)
                 throw new RuntimeException("IORegistryGetRootEntry failed");
-            outerSession.addCloseAction(() -> IoKit.IOObjectRelease(entry));
+            session.addCloseAction(() -> IoKit.IOObjectRelease(entry));
 
-            var iterHolder = outerSession.allocate(JAVA_INT);
+            var iterHolder = session.allocate(JAVA_INT);
             int ret = IoKit.IORegistryCreateIterator(0, IoKit.kIOUSBPlane, IoKit.kIORegistryIterateRecursively, iterHolder);
             final var iter = iterHolder.get(JAVA_INT, 0);
             if (ret != 0)
                 throw new RuntimeException("IORegistryCreateIterator failed");
-            outerSession.addCloseAction(() -> IoKit.IOObjectRelease(iter));
+            session.addCloseAction(() -> IoKit.IOObjectRelease(iter));
 
-            int svc;
-            while ((svc = IoKit.IOIteratorNext(iter)) != 0) {
-                try (var session = MemorySession.openConfined()) {
+            return iterateDevices(iter, false);
+        }
+    }
 
-                    final int service = svc;
-                    session.addCloseAction(() -> IoKit.IOObjectRelease(service));
+    /**
+     * Return all devices of the iterator in a list
+     */
+    private List<USBDeviceInfo> iterateDevices(int iter, boolean isDisconnected) {
 
-                    // Test if service has user client interface (if not, it is likely a hub)
-                    final MemoryAddress device = IoKit.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID, IoKit.kIOUSBDeviceInterfaceID100);
+        List<USBDeviceInfo> result = new ArrayList<>();
+
+        int svc;
+        while ((svc = IoKit.IOIteratorNext(iter)) != 0) {
+            try (var session = MemorySession.openConfined()) {
+
+                final int service = svc;
+                session.addCloseAction(() -> IoKit.IOObjectRelease(service));
+
+                // Test if service has user client interface (if not, it is likely a hub)
+                if (!isDisconnected) {
+                    final MemoryAddress device = IoKitHelper.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID, IoKit.kIOUSBDeviceInterfaceID100);
                     if (device == null)
                         continue;
                     IoKit.Release(device);
-
-                    // Get registry path
-                    var path = session.allocateArray(JAVA_BYTE, 512);
-                    ret = IoKit.IORegistryEntryGetPath(service, IoKit.kIOServicePlane, path);
-                    if (ret != 0)
-                        continue;
-
-                    var deviceInfo = createDeviceInfo(path.getUtf8String(0), service);
-
-                    if (deviceInfo != null)
-                        result.add(deviceInfo);
                 }
+
+                // Get registry path
+                String path;
+                var pathSegment = session.allocateArray(JAVA_BYTE, 512);
+                int ret = IoKit.IORegistryEntryGetPath(service, IoKit.kIOServicePlane, pathSegment);
+                if (ret == 0) {
+                    path = pathSegment.getUtf8String(0);
+                } else if (isDisconnected) {
+                    path = "<disconnected>";
+                } else {
+                    continue;
+                }
+
+                // Get entry ID
+                var entryIdHolder = session.allocate(JAVA_LONG);
+                ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
+                if (ret != 0)
+                    throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
+                var entryId = entryIdHolder.get(JAVA_LONG, 0);
+
+                var deviceInfo = createDeviceInfo(entryId, service);
+
+                if (deviceInfo != null)
+                    result.add(deviceInfo);
             }
         }
 
         return result;
     }
 
-    private USBDeviceInfo createDeviceInfo(String path, int service) {
-        Integer vendorId = GetPropertyInt(service, "idVendor");
-        Integer productId = GetPropertyInt(service, "idProduct");
-        String manufacturer = GetPropertyString(service, "kUSBVendorString");
-        String product = GetPropertyString(service, "kUSBProductString");
-        String serial = GetPropertyString(service, "kUSBSerialNumberString");
-        Integer classCode = GetPropertyInt(service, "bDeviceClass");
-        Integer subclassCode = GetPropertyInt(service, "bDeviceSubClass");
-        Integer protocolCode = GetPropertyInt(service, "bDeviceProtocol");
+    private synchronized void startDeviceMonitor() {
+        if (isMonitorThreadStarted)
+            return;
+
+        isMonitorThreadStarted = true;
+        Thread t = new Thread(this::monitorDevices, "USB device monitor");
+        t.start();
+    }
+
+    private void monitorDevices() {
+
+        try (var session = MemorySession.openConfined()) {
+
+            var notifyPort = IoKit.IONotificationPortCreate(IoKit.kIOMasterPortDefault);
+            var runLoopSource = IoKit.IONotificationPortGetRunLoopSource(notifyPort);
+
+            var runLoop = CoreFoundation.CFRunLoopGetCurrent();
+            CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IoKit.kCFRunLoopDefaultMode);
+
+            var matchingDict = IoKit.IOServiceMatching(IoKit.kIOUSBDeviceClassName);
+
+            // create callback stub (connected devices)
+            var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(
+                    MacosUSBDeviceRegistry.class,
+                    "onDeviceConnected",
+                    MethodType.methodType(void.class, MemoryAddress.class, int.class)
+            ).bindTo(this);
+            var onDeviceConnectedStub = Linker.nativeLinker().upcallStub(
+                    onDeviceConnectedMH,
+                    FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT),
+                    session
+            );
+
+            // Set up a notification to be called when a device is first matched by I/O Kit.
+            // This method consumes the matchingDict reference.
+            var deviceIterHolder = session.allocate(JAVA_INT);
+            int ret = IoKit.IOServiceAddMatchingNotification(notifyPort, IoKit.kIOFirstMatchNotification,
+                    matchingDict, onDeviceConnectedStub, NULL, deviceIterHolder);
+            if (ret != 0)
+                throw new MacosUSBException("IOServiceAddMatchingNotification failed", ret);
+            var deviceConnectedIter = deviceIterHolder.get(JAVA_INT, 0);
+
+            // iterate current devices in order to arm the notifications
+            onDeviceConnected(NULL, deviceConnectedIter);
+
+            // new matching dictionary for disconnected notifications
+            matchingDict = IoKit.IOServiceMatching(IoKit.kIOUSBDeviceClassName);
+
+            // create callback stub (connected devices)
+            var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(
+                    MacosUSBDeviceRegistry.class,
+                    "onDeviceDisconnected",
+                    MethodType.methodType(void.class, MemoryAddress.class, int.class)
+            ).bindTo(this);
+            var onDeviceDisconnectedStub = Linker.nativeLinker().upcallStub(
+                    onDeviceDisconnectedMH,
+                    FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT),
+                    session
+            );
+
+            // Set up a notification to be called when a device is terminated by I/O Kit.
+            // This method consumes the matchingDict reference.
+            deviceIterHolder.set(JAVA_INT, 0, 0);
+            ret = IoKit.IOServiceAddMatchingNotification(notifyPort, IoKit.kIOTerminatedNotification,
+                    matchingDict, onDeviceDisconnectedStub, NULL, deviceIterHolder);
+            if (ret != 0)
+                throw new MacosUSBException("IOServiceAddMatchingNotification (2) failed", ret);
+            var deviceDisconnectedIter = deviceIterHolder.get(JAVA_INT, 0);
+
+            // iterate current devices in order to arm the notifications
+            onDeviceDisconnected(NULL, deviceDisconnectedIter);
+
+            CoreFoundation.CFRunLoopRun();
+
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void onDeviceConnected(MemoryAddress ignoredRefCon, int iterator) {
+        var devices = iterateDevices(iterator, false);
+        if (onDeviceConnectedHandler == null)
+            return;
+
+        for (var device : devices)
+            onDeviceConnectedHandler.accept(device);
+    }
+
+    private void onDeviceDisconnected(MemoryAddress ignoredRefCon, int iterator) {
+        var devices = iterateDevices(iterator, true);
+        if (onDeviceDisconnectedHandler == null)
+            return;
+
+        for (var device : devices)
+            onDeviceDisconnectedHandler.accept(device);
+    }
+
+    private USBDeviceInfo createDeviceInfo(long entryID, int service) {
+        Integer vendorId = IoKitHelper.GetPropertyInt(service, "idVendor");
+        Integer productId = IoKitHelper.GetPropertyInt(service, "idProduct");
+        String manufacturer = IoKitHelper.GetPropertyString(service, "kUSBVendorString");
+        String product = IoKitHelper.GetPropertyString(service, "kUSBProductString");
+        String serial = IoKitHelper.GetPropertyString(service, "kUSBSerialNumberString");
+        Integer classCode = IoKitHelper.GetPropertyInt(service, "bDeviceClass");
+        Integer subclassCode = IoKitHelper.GetPropertyInt(service, "bDeviceSubClass");
+        Integer protocolCode = IoKitHelper.GetPropertyInt(service, "bDeviceProtocol");
 
         if (vendorId == null || productId == null || classCode == null || subclassCode == null || protocolCode == null)
             return null;
 
-        return new MacosUSBDeviceInfo(path, vendorId, productId, manufacturer, product, serial, classCode, subclassCode, protocolCode);
+        return new MacosUSBDeviceInfo(entryID, vendorId, productId, manufacturer, product, serial, classCode, subclassCode, protocolCode);
     }
 
-    private static Integer GetPropertyInt(int service, String key) {
-        var value = IoKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
-        if (value == NULL)
-            return null;
-
-        Integer result = null;
-        var type = CoreFoundation.CFGetTypeID(value);
-        if (type == NUMBER_TYPE_ID) {
-
-            try (var session = MemorySession.openConfined()) {
-                var numberValue = session.allocate(JAVA_INT, 0);
-                if (CoreFoundation.CFNumberGetValue(value, CoreFoundation.kCFNumberSInt32Type, numberValue))
-                    result = numberValue.get(JAVA_INT, 0);
-            }
+    @Override
+    public void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
+        if (handler == null) {
+            onDeviceConnectedHandler = null;
+            return;
         }
 
-        CoreFoundation.CFRelease(value);
-        return result;
+        onDeviceConnectedHandler = handler;
+        startDeviceMonitor();
     }
 
-    private static String GetPropertyString(int service, String key) {
-        var value = IoKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
-        if (value == NULL)
-            return null;
+    @Override
+    public void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
+        if (handler == null) {
+            onDeviceDisconnectedHandler = null;
+            return;
+        }
 
-        String result = null;
-        var type = CoreFoundation.CFGetTypeID(value);
-        if (type == STRING_TYPE_ID)
-            result = CoreFoundation.cfStringToJavaString(value);
-
-        CoreFoundation.CFRelease(value);
-        return result;
+        onDeviceDisconnectedHandler = handler;
+        startDeviceMonitor();
     }
 }

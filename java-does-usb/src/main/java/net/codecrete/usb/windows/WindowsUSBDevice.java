@@ -43,16 +43,16 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private List<Interface> claimedInterfaces;
 
 
-    WindowsUSBDevice(String path, USBDeviceInfo info, byte currentConfigurationValue) {
-        super(path, info);
+    WindowsUSBDevice(Object id, USBDeviceInfo info, byte currentConfigurationValue) {
+        super(id, info);
         this.currentConfigurationValue = currentConfigurationValue;
 
         try (var session = MemorySession.openConfined()) {
 
             // open Windows device
-            var chars = path.toCharArray();
-            var pathSegment = session.allocateArray(ValueLayout.JAVA_CHAR, chars.length + 1);
-            pathSegment.copyFrom(MemorySegment.ofArray(chars));
+            var pathChars = id.toString().toCharArray();
+            var pathSegment = session.allocateArray(ValueLayout.JAVA_CHAR, pathChars.length + 1);
+            pathSegment.copyFrom(MemorySegment.ofArray(pathChars));
             device = Kernel32.CreateFileW(pathSegment,
                     Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
                     Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(),
