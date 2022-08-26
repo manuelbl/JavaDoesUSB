@@ -11,7 +11,6 @@ import net.codecrete.usb.*;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
-
     protected final Object id;
     protected final int productId;
     protected final int vendorId;
@@ -111,6 +110,19 @@ public abstract class USBDeviceImpl implements USBDevice {
         return result;
     }
 
+    @Override
+    public boolean isSameDevice(USBDeviceInfo device) {
+        if (device instanceof USBDeviceInfoImpl)
+            return id.equals(((USBDeviceInfoImpl)device).id);
+        return false;
+    }
+
+    @Override
+    public boolean isSameDevice(USBDevice device) {
+        if (device instanceof USBDeviceImpl)
+            return id.equals(((USBDeviceImpl)device).id);
+        return false;
+    }
 
     @Override
     public boolean equals(Object o) {

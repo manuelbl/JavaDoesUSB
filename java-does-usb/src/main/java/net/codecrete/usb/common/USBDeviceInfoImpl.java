@@ -12,7 +12,6 @@ import net.codecrete.usb.USBDeviceInfo;
 
 public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
 
-
     protected final Object id;
     protected final int productId;
     protected final int vendorId;
@@ -86,6 +85,20 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
 
     public int getProtocolCode() {
         return protocolCode;
+    }
+
+    @Override
+    public boolean isSameDevice(USBDeviceInfo device) {
+        if (device instanceof USBDeviceInfoImpl)
+            return id.equals(((USBDeviceInfoImpl)device).id);
+        return false;
+    }
+
+    @Override
+    public boolean isSameDevice(USBDevice device) {
+        if (device instanceof USBDeviceImpl)
+            return id.equals(((USBDeviceImpl)device).id);
+        return false;
     }
 
     @Override

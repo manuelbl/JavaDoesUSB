@@ -19,8 +19,9 @@ package net.codecrete.usb;
  * and can thus be easily handled in Java.
  * </p>
  * <p>
- * Multiple instances of the class might exist for the same USB device.
- * Use {@code equals()} to test if they refer to the same device.
+ * Multiple instances of this class might exist for the same USB device.
+ * Use {@code equals()} or {@code isSameDevice()} to test if two instances
+ * represent the same USB device.
  * </p>
  */
 public interface USBDeviceInfo {
@@ -94,4 +95,22 @@ public interface USBDeviceInfo {
      * @return USB device
      */
     USBDevice open();
+
+    /**
+     * Returns if this instance and another {@link USBDevice} instance
+     * represent the same USB device.
+     *
+     * @param device other device instance
+     * @return {@code true} if they are the same, {@code false} otherwise
+     */
+    boolean isSameDevice(USBDevice device);
+
+    /**
+     * Returns if this instance and another {@link USBDeviceInfo} instance
+     * represent the same USB device.
+     *
+     * @param device other device info instance
+     * @return {@code true} if they are the same, {@code false} otherwise
+     */
+    boolean isSameDevice(USBDeviceInfo device);
 }

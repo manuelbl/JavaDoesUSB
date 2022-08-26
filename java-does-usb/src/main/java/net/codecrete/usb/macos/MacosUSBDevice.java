@@ -294,9 +294,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void close() throws Exception {
-        for (InterfaceInfo interfaceInfo : claimedInterfaces) {
-            IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
-            IoKit.Release(interfaceInfo.asMemoryAddress());
+        if (claimedInterfaces != null) {
+            for (InterfaceInfo interfaceInfo : claimedInterfaces) {
+                IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
+                IoKit.Release(interfaceInfo.asMemoryAddress());
+            }
         }
 
         IoKitUSB.USBDeviceClose(device);

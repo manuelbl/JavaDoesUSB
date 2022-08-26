@@ -151,4 +151,23 @@ public interface USBDevice extends AutoCloseable {
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength);
+
+
+    /**
+     * Returns if this instance and another {@link USBDeviceInfo} instance
+     * represent the same USB device.
+     *
+     * @param device other device instance
+     * @return {@code true} if they are the same, {@code false} otherwise
+     */
+    boolean isSameDevice(USBDeviceInfo device);
+
+    /**
+     * Returns if this instance and another {@link USBDevice} instance
+     * represent the same USB device.
+     *
+     * @param device other device info instance
+     * @return {@code true} if they are the same, {@code false} otherwise
+     */
+    boolean isSameDevice(USBDevice device);
 }
