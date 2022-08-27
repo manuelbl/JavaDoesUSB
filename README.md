@@ -17,7 +17,7 @@ It has been tested with Azul Zulu 19.0.75 EA 33.
 
 ## Testing
 
-In order to run the unit tests, a special test device must be connected to the computer. See the [stm32-loopback](stm32-loopback) directory.
+In order to run the unit tests, a special test device must be connected to the computer. See the [loopback-stm32](test-devices/loopback-stm32) directory.
 
 Tests can be run from the command line:
 
@@ -81,7 +81,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libsystemd* is used to discover USB devices. So it only runs on Linux distributions with systemd and the related library.
+*libsystemd* is used to discover USB devices. So it only runs on Linux distributions with systemd and the related library. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfills this.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that aren't claimed by an operating system driver or another application.
 
@@ -93,18 +93,18 @@ Create a file called `/etc/udev/rules.d/80-javadoesusb-udev.rules` with the belo
 SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", MODE="0666"
 ```
 
-This adds the rule to assign permission mode 0666 to all USB devices with vendor ID 0xCAFE. This non-register vendor ID is used by test device.
+This adds the rule to assign permission mode 0666 to all USB devices with vendor ID `0xCAFE`. This non-register vendor ID is used by test device.
 
 
 ### Windows
 
-The Windows driver model is more rigid than the one in macOS or Linux. It's not possible to open any USB device by default. Instead, only devices using the WinUSB driver can be opened. This even applies to device with no installed driver.
+The Windows driver model is more rigid than the ones of macOS or Linux. It's not possible to open any USB device by default. Instead, only devices using the WinUSB driver can be opened. This even applies to devices with no installed driver.
 
 USB devices can implement certain control requests to instruct Windows to automatically install the WinUSB driver (search for WCID or Microsoft OS Compatibility Descriptors). The driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
 The test device implements these control requests. So the driver is installed automatically.
 
-This library does not yet run reliably on Windows as the Foreign Function & Memory API as the Java VM sometimes overwrites the last error code, which is not just needed in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
+This library does not yet run reliably on Windows as Java VM sometimes overwrites the last error code, which is not just needed in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
 
 The library has not been tested on Windows for ARM64. It might or might not work.
 

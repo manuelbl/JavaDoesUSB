@@ -7,7 +7,7 @@ For testing the *Java Does USB* library, a dedicated USB test device is needed. 
 
 ### Loopback
 
-All data sent to endpoint 0x01 (OUT) is sent back on endpoint 0x82 (IN). Both endpoints use bulk transfer with a maximum packet size of 64 bytes. The device uses an internal buffer of about 500 bytes. Up to this amount, the data can be first sent and then received.
+All data sent to endpoint 0x01 (OUT) is sent back on endpoint 0x82 (IN). Both endpoints use bulk transfer with a maximum packet size of 64 bytes. The device uses an internal buffer of about 1000 bytes. Up to this amount, the data can be first sent and then received.
 
 ### Control requests
 

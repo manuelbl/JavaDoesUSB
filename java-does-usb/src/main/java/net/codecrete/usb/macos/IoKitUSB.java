@@ -418,7 +418,7 @@ public class IoKitUSB {
             ADDRESS.withName("pData"),
             JAVA_INT.withName("wLenDone")
     );
-    
+
     public static final VarHandle IOUSBDevRequest_bmRequestType = IOUSBDevRequest$Struct.varHandle(groupElement("bmRequestType"));
     public static final VarHandle IOUSBDevRequest_bRequest = IOUSBDevRequest$Struct.varHandle(groupElement("bRequest"));
     public static final VarHandle IOUSBDevRequest_wValue = IOUSBDevRequest$Struct.varHandle(groupElement("wValue"));
