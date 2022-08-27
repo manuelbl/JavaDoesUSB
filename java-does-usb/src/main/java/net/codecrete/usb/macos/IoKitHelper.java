@@ -110,7 +110,7 @@ public class IoKitHelper {
         String result = null;
         var type = CoreFoundation.CFGetTypeID(value);
         if (type == STRING_TYPE_ID)
-            result = CoreFoundation.cfStringToJavaString(value);
+            result = CoreFoundationHelper.stringFromCFStringRef(value);
 
         CoreFoundation.CFRelease(value);
         return result;

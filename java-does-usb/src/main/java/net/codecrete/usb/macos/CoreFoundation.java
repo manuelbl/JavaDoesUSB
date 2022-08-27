@@ -11,11 +11,17 @@ import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.MemoryLayout.sequenceLayout;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.*;
 
+/**
+ * Constants and functions for the Core Foundation framework.
+ * <p>
+ * In the future, jextract will hopefully be able to generate code for
+ * macOS frameworks in order to generate most of this.
+ * </p>
+ */
 public class CoreFoundation {
     // Fixed-width types
     public static final long kCFNumberSInt8Type = 1;
@@ -82,109 +88,6 @@ public class CoreFoundation {
                     ADDRESS, ADDRESS, CFUUIDBytes
             )
     );
-
-    // CFStringRef CFUUIDCreateString(CFAllocatorRef alloc, CFUUIDRef uuid);
-    private static final MethodHandle CFUUIDCreateString$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFUUIDCreateString").get(),
-            FunctionDescriptor.of(
-                    ADDRESS, ADDRESS, ADDRESS
-            )
-    );
-
-    // void CFRelease(CFTypeRef cf);
-    private static final MethodHandle CFRelease$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFRelease").get(),
-            FunctionDescriptor.ofVoid(ADDRESS)
-    );
-
-    // CFIndex CFStringGetLength(CFStringRef theString);
-    private static final MethodHandle CFStringGetLength$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFStringGetLength").get(),
-            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
-    );
-
-    // void CFStringGetCharacters(CFStringRef theString, CFRange range, UniChar *buffer);
-    private static final MethodHandle CFStringGetCharacters$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFStringGetCharacters").get(),
-            FunctionDescriptor.ofVoid(ADDRESS, CFRange, ADDRESS)
-    );
-
-    // CFStringRef CFStringCreateWithCharacters(CFAllocatorRef alloc, const UniChar *chars, CFIndex numChars);
-    private static final MethodHandle CFStringCreateWithCharacters$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFStringCreateWithCharacters").get(),
-            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_LONG)
-    );
-
-    // CFTypeID CFGetTypeID(CFTypeRef cf);
-    private static final MethodHandle CFGetTypeID$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFGetTypeID").get(),
-            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
-    );
-
-    // CFTypeID CFNumberGetTypeID(void);
-    private static final MethodHandle CFNumberGetTypeID$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFNumberGetTypeID").get(),
-            FunctionDescriptor.of(JAVA_LONG)
-    );
-
-    // CFTypeID CFStringGetTypeID(void);
-    private static final MethodHandle CFStringGetTypeID$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFStringGetTypeID").get(),
-            FunctionDescriptor.of(JAVA_LONG)
-    );
-
-    // CFNumberType CFNumberGetType(CFNumberRef number);
-    private static final MethodHandle CFNumberGetType$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFNumberGetType").get(),
-            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
-    );
-
-    // Boolean CFNumberGetValue(CFNumberRef number, CFNumberType theType, void *valuePtr);
-    private static final MethodHandle CFNumberGetValue$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFNumberGetValue").get(),
-            FunctionDescriptor.of(JAVA_BOOLEAN, ADDRESS, JAVA_LONG, ADDRESS)
-    );
-    // CFRunLoopRef CFRunLoopGetCurrent(void);
-    private static final MethodHandle CFRunLoopGetCurrent$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFRunLoopGetCurrent").get(),
-            FunctionDescriptor.of(ADDRESS)
-    );
-    // void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
-    private static final MethodHandle CFRunLoopAddSource$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFRunLoopAddSource").get(),
-            FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, ADDRESS)
-    );
-    // void CFRunLoopRun(void);
-    private static final MethodHandle CFRunLoopRun$Func = linker.downcallHandle(
-            coreFoundationLookup.lookup("CFRunLoopRun").get(),
-            FunctionDescriptor.ofVoid()
-    );
-
-
-    public static String cfStringToJavaString(MemoryAddress string) {
-        try (var session = MemorySession.openConfined()) {
-            long strLen = CFStringGetLength(string);
-            var buffer = session.allocateArray(JAVA_CHAR, strLen);
-            var range = session.allocate(CFRange);
-            CFRange_location.set(range, 0);
-            CFRange_range.set(range, strLen);
-            CFStringGetCharacters(string, range, buffer);
-            return new String(buffer.toArray(JAVA_CHAR));
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }
-
-    public static MemoryAddress javaStringToCfString(String string) {
-        try (var session = MemorySession.openConfined()) {
-            char[] charArray = string.toCharArray();
-            var chars = session.allocateArray(JAVA_CHAR, charArray.length);
-            chars.copyFrom(MemorySegment.ofArray(charArray));
-            return CFStringCreateWithCharacters(NULL, chars, string.length());
-        }
-    }
-
-    // CFUUIDRef CFUUIDCreateFromUUIDBytes(CFAllocatorRef alloc, CFUUIDBytes bytes);
     public static MemoryAddress CFUUIDCreateFromUUIDBytes(Addressable allocator, byte[] bytes) {
         try (var session = MemorySession.openConfined()) {
             var uuidBytes = session.allocate(16);
@@ -196,10 +99,16 @@ public class CoreFoundation {
     }
 
     // CFStringRef CFUUIDCreateString(CFAllocatorRef alloc, CFUUIDRef uuid);
+    private static final MethodHandle CFUUIDCreateString$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFUUIDCreateString").get(),
+            FunctionDescriptor.of(
+                    ADDRESS, ADDRESS, ADDRESS
+            )
+    );
     public static String CFUUIDCreateString(Addressable allocator, Addressable uuid) {
         try {
             MemoryAddress str = (MemoryAddress) CFUUIDCreateString$Func.invokeExact(allocator, uuid);
-            String result = cfStringToJavaString(str);
+            String result = CoreFoundationHelper.stringFromCFStringRef(str);
             CFRelease(str);
             return result;
         } catch (Throwable t) {
@@ -208,6 +117,10 @@ public class CoreFoundation {
     }
 
     // void CFRelease(CFTypeRef cf);
+    private static final MethodHandle CFRelease$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFRelease").get(),
+            FunctionDescriptor.ofVoid(ADDRESS)
+    );
     public static void CFRelease(Addressable object) {
         try {
             CFRelease$Func.invokeExact(object);
@@ -217,6 +130,10 @@ public class CoreFoundation {
     }
 
     // CFIndex CFStringGetLength(CFStringRef theString);
+    private static final MethodHandle CFStringGetLength$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFStringGetLength").get(),
+            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
+    );
     public static long CFStringGetLength(Addressable str) {
         try {
             return (long) CFStringGetLength$Func.invokeExact(str);
@@ -226,6 +143,10 @@ public class CoreFoundation {
     }
 
     // void CFStringGetCharacters(CFStringRef theString, CFRange range, UniChar *buffer);
+    private static final MethodHandle CFStringGetCharacters$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFStringGetCharacters").get(),
+            FunctionDescriptor.ofVoid(ADDRESS, CFRange, ADDRESS)
+    );
     public static void CFStringGetCharacters(Addressable str, MemorySegment range, Addressable buffer) {
         try {
             CFStringGetCharacters$Func.invokeExact(str, range, buffer);
@@ -235,6 +156,10 @@ public class CoreFoundation {
     }
 
     // CFStringRef CFStringCreateWithCharacters(CFAllocatorRef alloc, const UniChar *chars, CFIndex numChars);
+    private static final MethodHandle CFStringCreateWithCharacters$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFStringCreateWithCharacters").get(),
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_LONG)
+    );
     public static MemoryAddress CFStringCreateWithCharacters(Addressable allocator, Addressable chars, long numChars) {
         try {
             return (MemoryAddress) CFStringCreateWithCharacters$Func.invokeExact(allocator, chars, numChars);
@@ -244,6 +169,10 @@ public class CoreFoundation {
     }
 
     // CFTypeID CFGetTypeID(CFTypeRef cf);
+    private static final MethodHandle CFGetTypeID$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFGetTypeID").get(),
+            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
+    );
     public static long CFGetTypeID(Addressable cf) {
         try {
             return (long) CFGetTypeID$Func.invokeExact(cf);
@@ -253,6 +182,10 @@ public class CoreFoundation {
     }
 
     // CFTypeID CFNumberGetTypeID(void);
+    private static final MethodHandle CFNumberGetTypeID$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFNumberGetTypeID").get(),
+            FunctionDescriptor.of(JAVA_LONG)
+    );
     public static long CFNumberGetTypeID() {
         try {
             return (long) CFNumberGetTypeID$Func.invokeExact();
@@ -262,6 +195,10 @@ public class CoreFoundation {
     }
 
     // CFTypeID CFStringGetTypeID(void);
+    private static final MethodHandle CFStringGetTypeID$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFStringGetTypeID").get(),
+            FunctionDescriptor.of(JAVA_LONG)
+    );
     public static long CFStringGetTypeID() {
         try {
             return (long) CFStringGetTypeID$Func.invokeExact();
@@ -271,6 +208,10 @@ public class CoreFoundation {
     }
 
     // CFNumberType CFNumberGetType(CFNumberRef number);
+    private static final MethodHandle CFNumberGetType$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFNumberGetType").get(),
+            FunctionDescriptor.of(JAVA_LONG, ADDRESS)
+    );
     public static long CFNumberGetType(Addressable number) {
         try {
             return (long) CFNumberGetType$Func.invokeExact(number);
@@ -280,6 +221,10 @@ public class CoreFoundation {
     }
 
     // Boolean CFNumberGetValue(CFNumberRef number, CFNumberType theType, void *valuePtr);
+    private static final MethodHandle CFNumberGetValue$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFNumberGetValue").get(),
+            FunctionDescriptor.of(JAVA_BOOLEAN, ADDRESS, JAVA_LONG, ADDRESS)
+    );
     public static boolean CFNumberGetValue(Addressable number, long theType, Addressable valuePtr) {
         try {
             return (boolean) CFNumberGetValue$Func.invokeExact(number, theType, valuePtr);
@@ -289,6 +234,10 @@ public class CoreFoundation {
     }
 
     // CFRunLoopRef CFRunLoopGetCurrent(void);
+    private static final MethodHandle CFRunLoopGetCurrent$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFRunLoopGetCurrent").get(),
+            FunctionDescriptor.of(ADDRESS)
+    );
     public static MemoryAddress CFRunLoopGetCurrent() {
         try {
             return (MemoryAddress) CFRunLoopGetCurrent$Func.invokeExact();
@@ -298,6 +247,10 @@ public class CoreFoundation {
     }
 
     // void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
+    private static final MethodHandle CFRunLoopAddSource$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFRunLoopAddSource").get(),
+            FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, ADDRESS)
+    );
     public static void CFRunLoopAddSource(Addressable runLoop, Addressable source, Addressable mode) {
         try {
             CFRunLoopAddSource$Func.invokeExact(runLoop, source, mode);
@@ -307,6 +260,10 @@ public class CoreFoundation {
     }
 
     // void CFRunLoopRun(void);
+    private static final MethodHandle CFRunLoopRun$Func = linker.downcallHandle(
+            coreFoundationLookup.lookup("CFRunLoopRun").get(),
+            FunctionDescriptor.ofVoid()
+    );
     public static void CFRunLoopRun() {
         try {
             CFRunLoopRun$Func.invokeExact();
