@@ -3,3 +3,4 @@
 #include <string.h>
 #include <usbioctl.h>
 #include <winusb.h>
+#include <dbt.h>

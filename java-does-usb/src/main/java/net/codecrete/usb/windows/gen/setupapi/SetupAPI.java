@@ -63,6 +63,17 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle SetupDiOpenDeviceInterfaceW$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInterfaceW$MH,"SetupDiOpenDeviceInterfaceW");
+    }
+    public static int SetupDiOpenDeviceInterfaceW ( Addressable DeviceInfoSet,  Addressable DevicePath,  int OpenFlags,  Addressable DeviceInterfaceData) {
+        var mh$ = SetupDiOpenDeviceInterfaceW$MH();
+        try {
+            return (int)mh$.invokeExact(DeviceInfoSet, DevicePath, OpenFlags, DeviceInterfaceData);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle SetupDiGetDeviceInterfaceDetailW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
     }
@@ -86,7 +97,7 @@ public class SetupAPI  {
         }
     }
     public static MethodHandle SetupDiGetDevicePropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDevicePropertyW$MH,"SetupDiGetDevicePropertyW");
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDevicePropertyW$MH,"SetupDiGetDevicePropertyW");
     }
     public static int SetupDiGetDevicePropertyW ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  Addressable PropertyKey,  Addressable PropertyType,  Addressable PropertyBuffer,  int PropertyBufferSize,  Addressable RequiredSize,  int Flags) {
         var mh$ = SetupDiGetDevicePropertyW$MH();

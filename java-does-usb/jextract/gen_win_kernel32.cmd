@@ -11,6 +11,7 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-function CloseHandle ^
   --include-function DeviceIoControl ^
   --include-function GetLastError ^
+  --include-function GetModuleHandleW ^
   --include-macro ERROR_SUCCESS ^
   --include-macro ERROR_NO_MORE_ITEMS ^
   --include-macro ERROR_INSUFFICIENT_BUFFER ^

@@ -15,15 +15,19 @@ public class WindowsUSBDeviceInfo extends USBDeviceInfoImpl {
     private final byte currentConfigurationValue;
 
     WindowsUSBDeviceInfo(
-            Object id, int vendorId, int productId,
+            String devicePath, int vendorId, int productId,
             String manufacturer, String product, String serial,
             int classCode, int subclassCode, int protocolCode,
             byte currentConfigurationValue) {
 
-        super(id, vendorId, productId,
+        super(devicePath, vendorId, productId,
                 manufacturer, product, serial,
                 classCode, subclassCode, protocolCode);
         this.currentConfigurationValue = currentConfigurationValue;
+    }
+
+    String devicePath() {
+        return (String) id;
     }
 
     @Override

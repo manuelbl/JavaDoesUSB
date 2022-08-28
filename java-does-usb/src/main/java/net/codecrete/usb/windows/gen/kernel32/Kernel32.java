@@ -77,6 +77,17 @@ public class Kernel32  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle GetModuleHandleW$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.GetModuleHandleW$MH,"GetModuleHandleW");
+    }
+    public static MemoryAddress GetModuleHandleW ( Addressable lpModuleName) {
+        var mh$ = GetModuleHandleW$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(lpModuleName);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static int GENERIC_READ() {
         return (int)2147483648L;
     }

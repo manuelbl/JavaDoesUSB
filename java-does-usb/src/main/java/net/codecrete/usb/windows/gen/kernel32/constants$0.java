@@ -45,6 +45,13 @@ class constants$0 {
         "DeviceIoControl",
         constants$0.DeviceIoControl$FUNC
     );
+    static final FunctionDescriptor GetModuleHandleW$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle GetModuleHandleW$MH = RuntimeHelper.downcallHandle(
+        "GetModuleHandleW",
+        constants$0.GetModuleHandleW$FUNC
+    );
 }
 
 

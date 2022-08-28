@@ -6,6 +6,20 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
 class constants$1 {
 
+    static final FunctionDescriptor SetupDiGetDevicePropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT
+    );
+    static final MethodHandle SetupDiGetDevicePropertyW$MH = RuntimeHelper.downcallHandle(
+        "SetupDiGetDevicePropertyW",
+        constants$1.SetupDiGetDevicePropertyW$FUNC
+    );
     static final FunctionDescriptor SetupDiGetDeviceRegistryPropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
