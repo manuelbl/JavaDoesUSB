@@ -23,7 +23,6 @@ import net.codecrete.usb.windows.gen.winusb.WinUSB;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
-import java.lang.foreign.ValueLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,9 +49,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
 
             // open Windows device
-            var pathChars = id.toString().toCharArray();
-            var pathSegment = session.allocateArray(ValueLayout.JAVA_CHAR, pathChars.length + 1);
-            pathSegment.copyFrom(MemorySegment.ofArray(pathChars));
+            var pathSegment = Win.createSegmentFromString(id.toString(), session);
             device = Kernel32.CreateFileW(pathSegment,
                     Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
                     Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(),

@@ -12,7 +12,6 @@ import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.kernel32._GUID;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
 import net.codecrete.usb.windows.gen.setupapi._SP_DEVICE_INTERFACE_DATA;
-import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemorySegment;
@@ -75,15 +74,14 @@ public class DeviceProperty {
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
                 throw new USBException("Internal error (SetupDiGetDevicePropertyW)", Kernel32.GetLastError());
 
-            return new String(propertyValueHolder.asSlice(0, 2L * stringLen).toArray(JAVA_CHAR));
+            return Win.createStringFromSegment(propertyValueHolder);
         }
     }
 
     public static String getDevicePath(String instanceID, Addressable interfaceGuid) {
         try (var session = MemorySession.openConfined()) {
             // get device info set for instance
-            var instanceIDSegment = session.allocateArray(JAVA_CHAR, instanceID.length() + 1);
-            instanceIDSegment.asSlice(0, instanceID.length() * 2L).copyFrom(MemorySegment.ofArray(instanceID.toCharArray()));
+            var instanceIDSegment = Win.createSegmentFromString(instanceID, session);
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
                 throw new USBException("internal error (SetupDiGetClassDevsW)");
@@ -105,8 +103,7 @@ public class DeviceProperty {
                     intfDetailData, intfDetailDataSize, NULL, NULL) == 0)
                 throw new USBException("Internal error (SetupDiGetDeviceInterfaceDetailW)", Kernel32.GetLastError());
 
-            long pathLen = StdLib.wcslen(intfDetailData.address().addOffset(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset));
-            return new String(intfDetailData.asSlice(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset, 2L * pathLen).toArray(JAVA_CHAR));
+            return Win.createStringFromSegment(intfDetailData.asSlice(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset));
         }
     }
 

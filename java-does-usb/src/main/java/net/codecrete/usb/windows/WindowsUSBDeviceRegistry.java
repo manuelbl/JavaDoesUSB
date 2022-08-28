@@ -67,8 +67,7 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
                     var hubPath = DeviceProperty.getDevicePath(parentInstanceID, USBHelper.GUID_DEVINTERFACE_USB_HUB);
 
                     // open hub
-                    var hubPathSeg = session.allocateArray(JAVA_CHAR, hubPath.length() + 2);
-                    hubPathSeg.copyFrom(MemorySegment.ofArray(hubPath.toCharArray()));
+                    var hubPathSeg = Win.createSegmentFromString(hubPath, session);
                     final var hubHandle = Kernel32.CreateFileW(hubPathSeg, Kernel32.GENERIC_WRITE(), Kernel32.FILE_SHARE_WRITE(),
                             NULL, Kernel32.OPEN_EXISTING(), 0, NULL);
                     if (Win.IsInvalidHandle(hubHandle))
@@ -152,6 +151,7 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
                     sizeHolder, NULL) == 0)
                 throw new USBException(String.format("Cannot retrieve string descriptor %d", index), Kernel32.GetLastError());
 
+            // The string descriptor is not null terminated
             var stringDesc = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, dataLen);
             int stringLen = 255 & (byte) USBHelper.USB_STRING_DESCRIPTOR_bLength.get(stringDesc);
             var chars = stringDesc.asSlice(USBHelper.USB_STRING_DESCRIPTOR_bString$Offset, stringLen - 2)

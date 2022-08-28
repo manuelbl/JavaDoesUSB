@@ -8,12 +8,15 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.windows.gen.kernel32._GUID;
+import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
+import java.lang.foreign.ValueLayout;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 
 /**
  * Windows helpers.
@@ -28,6 +31,36 @@ public class Win {
      */
     public static boolean IsInvalidHandle(MemoryAddress handle) {
         return handle.toRawLongValue() == -1L;
+    }
+
+    /**
+     * Creates a memory segment as a copy of a Java string.
+     * <p>
+     * The memory segment contains a copy of the string (null-terminated, UTF-16/wide characters).
+     * </p>
+     * @param str the string to copy
+     * @param session the memory session for the memory segment
+     * @return the resulting memory segment
+     */
+    public static MemorySegment createSegmentFromString(String str, MemorySession session) {
+        // allocate segment (including space for terminating null)
+        var segment = session.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1);
+        // copy characters
+        segment.copyFrom(MemorySegment.ofArray(str.toCharArray()));
+        return segment;
+    }
+
+    /**
+     * Creates a copy of the string in the memory segment.
+     * <p>
+     * The string must be a null-terminated UTF-16 (wide character) string.
+     * </p>
+     * @param segment the memory segment
+     * @return copied string
+     */
+    public static String createStringFromSegment(MemorySegment segment) {
+        long strLen = StdLib.wcslen(segment);
+        return new String(segment.asSlice(0, 2L * strLen).toArray(JAVA_CHAR));
     }
 
     /**
