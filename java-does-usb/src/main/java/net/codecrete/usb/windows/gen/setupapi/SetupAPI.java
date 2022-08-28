@@ -18,6 +18,12 @@ public class SetupAPI  {
     public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static int DEVPROP_TYPE_UINT32() {
+        return (int)7L;
+    }
+    public static int DEVPROP_TYPE_STRING() {
+        return (int)18L;
+    }
     public static int DIGCF_PRESENT() {
         return (int)2L;
     }
@@ -79,8 +85,19 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle SetupDiGetDevicePropertyW$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDevicePropertyW$MH,"SetupDiGetDevicePropertyW");
+    }
+    public static int SetupDiGetDevicePropertyW ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  Addressable PropertyKey,  Addressable PropertyType,  Addressable PropertyBuffer,  int PropertyBufferSize,  Addressable RequiredSize,  int Flags) {
+        var mh$ = SetupDiGetDevicePropertyW$MH();
+        try {
+            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, Flags);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle SetupDiGetDeviceRegistryPropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
     }
     public static int SetupDiGetDeviceRegistryPropertyW ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  int Property,  Addressable PropertyRegDataType,  Addressable PropertyBuffer,  int PropertyBufferSize,  Addressable RequiredSize) {
         var mh$ = SetupDiGetDeviceRegistryPropertyW$MH();

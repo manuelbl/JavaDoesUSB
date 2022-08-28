@@ -12,11 +12,9 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.common.USBStructs;
-import net.codecrete.usb.windows.gen.cfgmgr32.CfgMgr32;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
 import net.codecrete.usb.windows.gen.setupapi._SP_DEVINFO_DATA;
-import net.codecrete.usb.windows.gen.stdlib.StdLib;
 import net.codecrete.usb.windows.gen.usbioctl.USBIoctl;
 
 import java.lang.foreign.Addressable;
@@ -38,8 +36,10 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
         List<USBDeviceInfo> result = new ArrayList<>();
 
         try (var outerSession = MemorySession.openConfined()) {
-            // get as set of all USB devices present
-            final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
+            // get device information set of all USB devices present
+            final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(
+                    USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL,
+                    SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
                 throw new USBException("internal error (SetupDiGetClassDevsW)");
 
@@ -49,82 +49,33 @@ public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
             var devInfo = MemorySegment.allocateNative(_SP_DEVINFO_DATA.$LAYOUT(), outerSession);
             _SP_DEVINFO_DATA.cbSize$set(devInfo, (int) _SP_DEVINFO_DATA.$LAYOUT().byteSize());
 
-            var devInfoData = MemorySegment.allocateNative(_SP_DEVINFO_DATA.$LAYOUT(), outerSession);
-            _SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) _SP_DEVINFO_DATA.$LAYOUT().byteSize());
-
+            // iterate all devices
             for (int i = 0; true; i++) {
                 if (SetupAPI.SetupDiEnumDeviceInfo(devInfoSetHandle, i, devInfo) == 0) {
                     int err = Kernel32.GetLastError();
-                    if (err != Kernel32.ERROR_NO_MORE_ITEMS()) {
-                        throw new USBException("Internal error (SetupDiEnumDeviceInfo) ");
-                    }
-                    break;
+                    if (err == Kernel32.ERROR_NO_MORE_ITEMS() || err == Kernel32.ERROR_SUCCESS())
+                        break;
+                    throw new USBException("Internal error (SetupDiEnumDeviceInfo) ");
                 }
 
                 try (var session = MemorySession.openConfined()) {
 
-                    // get the parent device (a USB hub)
-                    var parentDevInstHolder = session.allocate(JAVA_INT);
-                    int devInst = _SP_DEVINFO_DATA.DevInst$get(devInfo);
-                    int cmRet = CfgMgr32.CM_Get_Parent(parentDevInstHolder, devInst, 0);
-                    if (cmRet != 0)
-                        throw new USBException("Internal error (CM_Get_Parent)");
-                    var parentDevInst = parentDevInstHolder.get(JAVA_INT, 0);
+                    var usbPortNum = DeviceProperty.getDeviceIntProperty(devInfoSetHandle, devInfo, DeviceProperty.DEVPKEY_Device_Address);
+                    var instanceID = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo, DeviceProperty.DEVPKEY_Device_InstanceId);
+                    var devicePath = DeviceProperty.getDevicePath(instanceID, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+                    var parentInstanceID = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo, DeviceProperty.DEVPKEY_Device_Parent);
+                    var hubPath = DeviceProperty.getDevicePath(parentInstanceID, USBHelper.GUID_DEVINTERFACE_USB_HUB);
 
-                    // get parent device path
-                    var pathBuffer = session.allocateArray(JAVA_CHAR, 260);
-                    cmRet = CfgMgr32.CM_Get_Device_IDW(parentDevInst, pathBuffer, 260, 0);
-                    if (cmRet != 0)
-                        throw new USBException("Internal error (CM_Get_Device_ID)");
-
-                    // create hub path
-                    var pathChars = pathBuffer.toArray(JAVA_CHAR);
-                    var index = 0;
-                    for (; pathChars[index] != 0; index++) {
-                        if (pathChars[index] == '\\' || pathChars[index] == '$')
-                            pathChars[index] = '#';
-                    }
-                    var hubPath = "\\\\?\\" + new String(pathChars, 0, index) + "#{f18a0e88-c30c-11d0-8815-00a0c906bed8}\0";
-
-                    var hubPathSeg = session.allocateArray(JAVA_CHAR, hubPath.length());
+                    // open hub
+                    var hubPathSeg = session.allocateArray(JAVA_CHAR, hubPath.length() + 2);
                     hubPathSeg.copyFrom(MemorySegment.ofArray(hubPath.toCharArray()));
-
                     final var hubHandle = Kernel32.CreateFileW(hubPathSeg, Kernel32.GENERIC_WRITE(), Kernel32.FILE_SHARE_WRITE(),
                             NULL, Kernel32.OPEN_EXISTING(), 0, NULL);
                     if (Win.IsInvalidHandle(hubHandle))
-                        throw new USBException("Cannot open USB hub");
+                        throw new USBException("Cannot open USB hub", Kernel32.GetLastError());
 
+                    // ensure the hub is closed later
                     session.addCloseAction(() -> Kernel32.CloseHandle(hubHandle));
-
-                    // get the interface data
-                    if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, devInfo,
-                            USBHelper.GUID_DEVINTERFACE_USB_DEVICE, 0, devInfoData) == 0) {
-                        int lastError = Kernel32.GetLastError();
-                        if (lastError == Kernel32.ERROR_NO_MORE_ITEMS())
-                            throw new USBException("Internal error (SetupDiEnumDeviceInterfaces)");
-                        continue;
-                    }
-
-                    // get path of first interface
-                    var intfDetailData = MemorySegment.allocateNative(SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT(), session);
-                    SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData, 8);
-                    int intfDatailDataSize = (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT().byteSize();
-                    if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devInfoData,
-                            intfDetailData, intfDatailDataSize, NULL, NULL) == 0)
-                        throw new USBException("Internal error (SetupDiGetDeviceInterfaceDetailA - 2)", Kernel32.GetLastError());
-
-                    long pathLen = StdLib.wcslen(intfDetailData.address().addOffset(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset));
-                    char[] devicePathChars = intfDetailData.asSlice(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset, pathLen * 2).toArray(JAVA_CHAR);
-                    String devicePath = new String(devicePathChars);
-
-                    // get device's hub port number
-                    var usbPortNumHolder = session.allocate(JAVA_INT);
-                    var sizeHolder = session.allocate(JAVA_INT);
-                    if (SetupAPI.SetupDiGetDeviceRegistryPropertyW(devInfoSetHandle, devInfo,
-                            SetupAPI.SPDRP_ADDRESS(), NULL, usbPortNumHolder,
-                            (int) usbPortNumHolder.byteSize(), sizeHolder) == 0)
-                        throw new USBException("Internal error (cannot get device hub port)", Kernel32.GetLastError());
-                    int usbPortNum = usbPortNumHolder.get(JAVA_INT, 0);
 
                     result.add(createDeviceInfo(devicePath, hubHandle, usbPortNum));
                 }

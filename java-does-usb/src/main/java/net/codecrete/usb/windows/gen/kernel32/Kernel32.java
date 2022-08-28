@@ -83,6 +83,12 @@ public class Kernel32  {
     public static int GENERIC_WRITE() {
         return (int)1073741824L;
     }
+    public static int ERROR_SUCCESS() {
+        return (int)0L;
+    }
+    public static int ERROR_INSUFFICIENT_BUFFER() {
+        return (int)122L;
+    }
     public static int ERROR_NO_MORE_ITEMS() {
         return (int)259L;
     }

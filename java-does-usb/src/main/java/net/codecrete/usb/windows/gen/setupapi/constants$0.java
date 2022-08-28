@@ -55,18 +55,19 @@ class constants$0 {
         "SetupDiGetClassDevsW",
         constants$0.SetupDiGetClassDevsW$FUNC
     );
-    static final FunctionDescriptor SetupDiGetDeviceRegistryPropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+    static final FunctionDescriptor SetupDiGetDevicePropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
+        Constants$root.C_LONG$LAYOUT
     );
-    static final MethodHandle SetupDiGetDeviceRegistryPropertyW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiGetDeviceRegistryPropertyW",
-        constants$0.SetupDiGetDeviceRegistryPropertyW$FUNC
+    static final MethodHandle SetupDiGetDevicePropertyW$MH = RuntimeHelper.downcallHandle(
+        "SetupDiGetDevicePropertyW",
+        constants$0.SetupDiGetDevicePropertyW$FUNC
     );
 }
 

@@ -50,6 +50,12 @@ public class USBHelper {
             (byte) 0x90, (byte) 0x1F, (byte) 0x00, (byte) 0xC0,
             (byte) 0x4F, (byte) 0xB9, (byte) 0x51, (byte) 0xED);
 
+    // f18a0e88-c30c-11d0-8815-00a0c906bed8
+
+    public static final MemorySegment GUID_DEVINTERFACE_USB_HUB = Win.CreateGUID(0xf18a0e88, (short) 0xc30c, (short) 0x11d0,
+            (byte) 0x88, (byte) 0x15, (byte) 0x00, (byte) 0xa0,
+            (byte) 0xc9, (byte) 0x06, (byte) 0xbe, (byte) 0xd8);
+
 
     static {
 

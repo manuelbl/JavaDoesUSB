@@ -13,10 +13,13 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-function SetupDiEnumDeviceInterfaces ^
   --include-function SetupDiGetDeviceInterfaceDetailW ^
   --include-function SetupDiGetDeviceRegistryPropertyW ^
+  --include-function SetupDiGetDevicePropertyW ^
   --include-struct _SP_DEVINFO_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
   --include-macro DIGCF_PRESENT ^
   --include-macro DIGCF_DEVICEINTERFACE ^
   --include-macro SPDRP_ADDRESS ^
+  --include-macro DEVPROP_TYPE_UINT32 ^
+  --include-macro DEVPROP_TYPE_STRING ^
   windows_headers.h
