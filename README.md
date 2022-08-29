@@ -52,12 +52,12 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Enumeration of USB devices
 - Control transfer
 - Bulk transfer
+- Notification about connected/disconnected devices
 
 ### To do
 
 - Interrupt transfer
 - Isochronous transfer
-- Notification about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
 - Alternate interface settings
 - Composite devices (on Windows)
@@ -81,7 +81,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libsystemd* is used to discover USB devices. So it only runs on Linux distributions with systemd and the related library. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfills this.
+*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfills this requriement.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that aren't claimed by an operating system driver or another application.
 
