@@ -25,17 +25,23 @@ import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
 
+/**
+ * Windows implementation of USB device registry.
+ * <p>
+ * This singleton class maintains a list of connected USB devices.
+ * It starts a background thread monitoring the USB devices being
+ * connected and disconnected.
+ * </p>
+ * <p>
+ * The background thread also enumerates the already present devices
+ * and builds the initial device list.
+ * </p>
+ */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
-
-    private volatile List<USBDeviceInfo> devices;
-    private Consumer<USBDeviceInfo> onDeviceConnectedHandler;
-    private Consumer<USBDeviceInfo> onDeviceDisconnectedHandler;
-    private boolean isMonitorThreadStarted;
 
     /**
      * Create new instance
@@ -44,8 +50,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
      * </p>
      */
     public WindowsUSBDeviceRegistry() {
-        startDeviceMonitor();
-        enumeratePresentDevices();
+        startDeviceMonitor(this::monitorDevices);
     }
 
     public List<USBDeviceInfo> getAllDevices() {
@@ -192,15 +197,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private synchronized void startDeviceMonitor() {
-        if (isMonitorThreadStarted)
-            return;
-
-        isMonitorThreadStarted = true;
-        Thread t = new Thread(this::monitorDevices, "USB device monitor");
-        t.start();
-    }
-
     private void monitorDevices() {
         try (var session = MemorySession.openConfined()) {
 
@@ -243,6 +239,12 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter, User32.DEVICE_NOTIFY_WINDOW_HANDLE());
             if (notifyHandle == NULL)
                 throw new USBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
+
+            // initial device enumeration
+            enumeratePresentDevices();
+
+            // signal that the enumeration is complete
+            signalEnumerationComplete();
 
             // process messages
             var msg = session.allocate(tagMSG.$LAYOUT());
@@ -310,7 +312,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             session.addCloseAction(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
 
             // check for duplicates
-            if (findDeviceIndex(devicePath) >= 0)
+            if (findDeviceIndex(devices, devicePath) >= 0)
                 return;
 
             // create device info instance
@@ -322,59 +324,39 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             devices = newDeviceList;
 
             // send notification
-            if (onDeviceConnectedHandler == null)
-                return;
-            onDeviceConnectedHandler.accept(deviceInfo);
+            emitOnDeviceConnected(deviceInfo);
         }
     }
 
     private void onDeviceDisconnected(String devicePath) {
-        int index = findDeviceIndex(devicePath);
+
+        // locate device to be removed
+        int index = findDeviceIndex(devices, devicePath);
         if (index < 0)
             return; // strange
 
-        // copy list
+        // copy list and remove device
         var deviceInfo = devices.get(index);
         var newDeviceList = new ArrayList<>(devices);
         newDeviceList.remove(index);
         devices = newDeviceList;
 
         // send notification
-        if (onDeviceDisconnectedHandler == null)
-            return;
-        onDeviceDisconnectedHandler.accept(deviceInfo);
+        emitOnDeviceDisconnected(deviceInfo);
     }
 
-    private int findDeviceIndex(String devicePath) {
-        if (devices == null)
-            return -1;
-        for (int i = 0; i < devices.size(); i++) {
-            var winInfo = (WindowsUSBDeviceInfo) devices.get(i);
+    /**
+     * Finds the index of the device with the given path in the device list
+     * @param deviceList the device list
+     * @param devicePath the device path
+     * @return return the index, or -1 if the device is not found
+     */
+    private static int findDeviceIndex(List<USBDeviceInfo> deviceList, String devicePath) {
+        for (int i = 0; i < deviceList.size(); i++) {
+            var winInfo = (WindowsUSBDeviceInfo) deviceList.get(i);
             if (winInfo.devicePath().equalsIgnoreCase(devicePath))
                 return i;
         }
         return -1;
-    }
-
-    @Override
-    public void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
-        if (handler == null) {
-            onDeviceConnectedHandler = null;
-            return;
-        }
-
-        onDeviceConnectedHandler = handler;
-        startDeviceMonitor();
-    }
-
-    @Override
-    public void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
-        if (handler == null) {
-            onDeviceDisconnectedHandler = null;
-            return;
-        }
-
-        onDeviceDisconnectedHandler = handler;
-        startDeviceMonitor();
     }
 }

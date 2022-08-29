@@ -16,9 +16,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -27,7 +24,7 @@ import static java.lang.foreign.ValueLayout.*;
  * MacOS implementation of USB device registry.
  * <p>
  * This singleton class maintains a list of connected USB devices.
- * It start a background thread monitoring the USB devices that are
+ * It starts a background thread monitoring the USB devices being
  * connected and disconnected.
  * </p>
  * <p>
@@ -38,12 +35,8 @@ import static java.lang.foreign.ValueLayout.*;
  */
 public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private volatile List<USBDeviceInfo> devices;
-    private final Lock lock = new ReentrantLock();
-    private final Condition enumerationComplete = lock.newCondition();
-
     public MacosUSBDeviceRegistry() {
-        startDeviceMonitor();
+        startDeviceMonitor(this::monitorDevices);
     }
 
     public List<USBDeviceInfo> getAllDevices() {
@@ -111,26 +104,6 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     /**
-     * Starts the background thread and waits until the first device enumeration is complete.
-     */
-    private void startDeviceMonitor() {
-        // start new thread
-        Thread t = new Thread(this::monitorDevices, "USB device monitor");
-        t.setDaemon(true);
-        t.start();
-
-        // wait for initial device enumeration
-        lock.lock();
-        try {
-            while (devices == null) {
-                enumerationComplete.awaitUninterruptibly();
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
      * Monitors the USB devices.
      * <p>
      * This method is the core of the background thread. It runs forever and does not terminate.
@@ -157,12 +130,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             devices = iterateDevices(deviceConnectedIter, false);
 
             // signal completion of initial device enumeration
-            lock.lock();
-            try {
-                enumerationComplete.signalAll();
-            } finally {
-                lock.unlock();
-            }
+            signalEnumerationComplete();
 
             // setup notification for disconnected devices
             var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(
