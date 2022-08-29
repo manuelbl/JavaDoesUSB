@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
 
-public class WindowsUSBDeviceRegistry implements USBDeviceRegistry {
+public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
     private volatile List<USBDeviceInfo> devices;
     private Consumer<USBDeviceInfo> onDeviceConnectedHandler;

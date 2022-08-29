@@ -23,7 +23,7 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 /**
  * USB implementation for Linux
  */
-public class LinuxUSBDeviceRegistry implements USBDeviceRegistry {
+public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     @Override
     public List<USBDeviceInfo> getAllDevices() {
 

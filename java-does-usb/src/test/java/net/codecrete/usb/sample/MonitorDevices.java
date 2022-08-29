@@ -17,9 +17,13 @@ import net.codecrete.usb.USB;
  */
 public class MonitorDevices {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("Monitoring USB devices...");
         USB.setOnDeviceConnected((dev) -> System.out.println("Connected:    " + dev.toString()));
         USB.setOnDeviceDisconnected((dev) -> System.out.println("Disconnected: " + dev.toString()));
+
+        while (true) {
+            Thread.sleep(1000000);
+        }
     }
 }
