@@ -26,4 +26,8 @@ public class LinuxUSBDeviceInfo extends USBDeviceInfoImpl {
     public USBDevice open() {
         return new LinuxUSBDevice(id, this);
     }
+
+    Object devicePath() {
+        return id;
+    }
 }

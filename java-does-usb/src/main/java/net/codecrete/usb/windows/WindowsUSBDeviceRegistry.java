@@ -10,6 +10,7 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.USBDeviceInfo;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDescriptors;
+import net.codecrete.usb.common.USBDeviceInfoImpl;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.common.USBStructs;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -311,50 +312,25 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             final var hubHandles = new HashMap<String, MemoryAddress>();
             session.addCloseAction(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
 
-            // check for duplicates
-            if (findDeviceIndex(devices, devicePath) >= 0)
-                return;
-
             // create device info instance
             var deviceInfo = createDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
 
-            // copy list
-            var newDeviceList = new ArrayList<>(devices);
-            newDeviceList.add(deviceInfo);
-            devices = newDeviceList;
-
-            // send notification
-            emitOnDeviceConnected(deviceInfo);
+            // add it to device list
+            addDevice(deviceInfo);
         }
     }
 
     private void onDeviceDisconnected(String devicePath) {
-
-        // locate device to be removed
-        int index = findDeviceIndex(devices, devicePath);
-        if (index < 0)
-            return; // strange
-
-        // copy list and remove device
-        var deviceInfo = devices.get(index);
-        var newDeviceList = new ArrayList<>(devices);
-        newDeviceList.remove(index);
-        devices = newDeviceList;
-
-        // send notification
-        emitOnDeviceDisconnected(deviceInfo);
+        // remove from device list
+        removeDevice(devicePath);
     }
 
-    /**
-     * Finds the index of the device with the given path in the device list
-     * @param deviceList the device list
-     * @param devicePath the device path
-     * @return return the index, or -1 if the device is not found
-     */
-    private static int findDeviceIndex(List<USBDeviceInfo> deviceList, String devicePath) {
+    @Override
+    protected int findDeviceIndex(List<USBDeviceInfo> deviceList, Object deviceId) {
+        var id = deviceId.toString();
         for (int i = 0; i < deviceList.size(); i++) {
-            var winInfo = (WindowsUSBDeviceInfo) deviceList.get(i);
-            if (winInfo.devicePath().equalsIgnoreCase(devicePath))
+            var dev = (USBDeviceInfoImpl) deviceList.get(i);
+            if (id.equalsIgnoreCase(dev.getUniqueId().toString()))
                 return i;
         }
         return -1;

@@ -73,11 +73,33 @@ public class udev  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle udev_device_get_devtype$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.udev_device_get_devtype$MH,"udev_device_get_devtype");
+    }
+    public static MemoryAddress udev_device_get_devtype ( Addressable udev_device) {
+        var mh$ = udev_device_get_devtype$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle udev_device_get_devnode$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_device_get_devnode$MH,"udev_device_get_devnode");
+        return RuntimeHelper.requireNonNull(constants$1.udev_device_get_devnode$MH,"udev_device_get_devnode");
     }
     public static MemoryAddress udev_device_get_devnode ( Addressable udev_device) {
         var mh$ = udev_device_get_devnode$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle udev_device_get_action$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.udev_device_get_action$MH,"udev_device_get_action");
+    }
+    public static MemoryAddress udev_device_get_action ( Addressable udev_device) {
+        var mh$ = udev_device_get_action$MH();
         try {
             return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
         } catch (Throwable ex$) {
@@ -95,8 +117,63 @@ public class udev  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle udev_monitor_new_from_netlink$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_new_from_netlink$MH,"udev_monitor_new_from_netlink");
+    }
+    public static MemoryAddress udev_monitor_new_from_netlink ( Addressable udev,  Addressable name) {
+        var mh$ = udev_monitor_new_from_netlink$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev, name);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle udev_monitor_enable_receiving$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_enable_receiving$MH,"udev_monitor_enable_receiving");
+    }
+    public static int udev_monitor_enable_receiving ( Addressable udev_monitor) {
+        var mh$ = udev_monitor_enable_receiving$MH();
+        try {
+            return (int)mh$.invokeExact(udev_monitor);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle udev_monitor_get_fd$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_get_fd$MH,"udev_monitor_get_fd");
+    }
+    public static int udev_monitor_get_fd ( Addressable udev_monitor) {
+        var mh$ = udev_monitor_get_fd$MH();
+        try {
+            return (int)mh$.invokeExact(udev_monitor);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle udev_monitor_receive_device$MH() {
+        return RuntimeHelper.requireNonNull(constants$2.udev_monitor_receive_device$MH,"udev_monitor_receive_device");
+    }
+    public static MemoryAddress udev_monitor_receive_device ( Addressable udev_monitor) {
+        var mh$ = udev_monitor_receive_device$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_monitor);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle udev_monitor_filter_add_match_subsystem_devtype$MH() {
+        return RuntimeHelper.requireNonNull(constants$2.udev_monitor_filter_add_match_subsystem_devtype$MH,"udev_monitor_filter_add_match_subsystem_devtype");
+    }
+    public static int udev_monitor_filter_add_match_subsystem_devtype ( Addressable udev_monitor,  Addressable subsystem,  Addressable devtype) {
+        var mh$ = udev_monitor_filter_add_match_subsystem_devtype$MH();
+        try {
+            return (int)mh$.invokeExact(udev_monitor, subsystem, devtype);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle udev_enumerate_unref$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_enumerate_unref$MH,"udev_enumerate_unref");
+        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_unref$MH,"udev_enumerate_unref");
     }
     public static MemoryAddress udev_enumerate_unref ( Addressable udev_enumerate) {
         var mh$ = udev_enumerate_unref$MH();
@@ -107,7 +184,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_new$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_enumerate_new$MH,"udev_enumerate_new");
+        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_new$MH,"udev_enumerate_new");
     }
     public static MemoryAddress udev_enumerate_new ( Addressable udev) {
         var mh$ = udev_enumerate_new$MH();
@@ -118,7 +195,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_add_match_subsystem$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_enumerate_add_match_subsystem$MH,"udev_enumerate_add_match_subsystem");
+        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_add_match_subsystem$MH,"udev_enumerate_add_match_subsystem");
     }
     public static int udev_enumerate_add_match_subsystem ( Addressable udev_enumerate,  Addressable subsystem) {
         var mh$ = udev_enumerate_add_match_subsystem$MH();
@@ -129,7 +206,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_scan_devices$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_enumerate_scan_devices$MH,"udev_enumerate_scan_devices");
+        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_scan_devices$MH,"udev_enumerate_scan_devices");
     }
     public static int udev_enumerate_scan_devices ( Addressable udev_enumerate) {
         var mh$ = udev_enumerate_scan_devices$MH();
@@ -140,7 +217,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_get_list_entry$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_enumerate_get_list_entry$MH,"udev_enumerate_get_list_entry");
+        return RuntimeHelper.requireNonNull(constants$3.udev_enumerate_get_list_entry$MH,"udev_enumerate_get_list_entry");
     }
     public static MemoryAddress udev_enumerate_get_list_entry ( Addressable udev_enumerate) {
         var mh$ = udev_enumerate_get_list_entry$MH();

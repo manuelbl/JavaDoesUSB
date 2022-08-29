@@ -26,10 +26,6 @@ public class WindowsUSBDeviceInfo extends USBDeviceInfoImpl {
         this.currentConfigurationValue = currentConfigurationValue;
     }
 
-    String devicePath() {
-        return (String) id;
-    }
-
     @Override
     public USBDevice open() {
         return new WindowsUSBDevice(id, this, currentConfigurationValue);

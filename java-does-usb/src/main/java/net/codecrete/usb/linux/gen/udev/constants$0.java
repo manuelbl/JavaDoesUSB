@@ -40,12 +40,12 @@ class constants$0 {
         "udev_device_new_from_syspath",
         constants$0.udev_device_new_from_syspath$FUNC
     );
-    static final FunctionDescriptor udev_device_get_devnode$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+    static final FunctionDescriptor udev_device_get_devtype$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle udev_device_get_devnode$MH = RuntimeHelper.downcallHandle(
-        "udev_device_get_devnode",
-        constants$0.udev_device_get_devnode$FUNC
+    static final MethodHandle udev_device_get_devtype$MH = RuntimeHelper.downcallHandle(
+        "udev_device_get_devtype",
+        constants$0.udev_device_get_devtype$FUNC
     );
 }
 

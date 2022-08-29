@@ -6,6 +6,20 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
 class constants$1 {
 
+    static final FunctionDescriptor udev_device_get_devnode$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle udev_device_get_devnode$MH = RuntimeHelper.downcallHandle(
+        "udev_device_get_devnode",
+        constants$1.udev_device_get_devnode$FUNC
+    );
+    static final FunctionDescriptor udev_device_get_action$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle udev_device_get_action$MH = RuntimeHelper.downcallHandle(
+        "udev_device_get_action",
+        constants$1.udev_device_get_action$FUNC
+    );
     static final FunctionDescriptor udev_device_get_sysattr_value$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -14,41 +28,27 @@ class constants$1 {
         "udev_device_get_sysattr_value",
         constants$1.udev_device_get_sysattr_value$FUNC
     );
-    static final FunctionDescriptor udev_enumerate_unref$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_enumerate_unref$MH = RuntimeHelper.downcallHandle(
-        "udev_enumerate_unref",
-        constants$1.udev_enumerate_unref$FUNC
-    );
-    static final FunctionDescriptor udev_enumerate_new$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_enumerate_new$MH = RuntimeHelper.downcallHandle(
-        "udev_enumerate_new",
-        constants$1.udev_enumerate_new$FUNC
-    );
-    static final FunctionDescriptor udev_enumerate_add_match_subsystem$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+    static final FunctionDescriptor udev_monitor_new_from_netlink$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle udev_enumerate_add_match_subsystem$MH = RuntimeHelper.downcallHandle(
-        "udev_enumerate_add_match_subsystem",
-        constants$1.udev_enumerate_add_match_subsystem$FUNC
+    static final MethodHandle udev_monitor_new_from_netlink$MH = RuntimeHelper.downcallHandle(
+        "udev_monitor_new_from_netlink",
+        constants$1.udev_monitor_new_from_netlink$FUNC
     );
-    static final FunctionDescriptor udev_enumerate_scan_devices$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+    static final FunctionDescriptor udev_monitor_enable_receiving$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle udev_enumerate_scan_devices$MH = RuntimeHelper.downcallHandle(
-        "udev_enumerate_scan_devices",
-        constants$1.udev_enumerate_scan_devices$FUNC
+    static final MethodHandle udev_monitor_enable_receiving$MH = RuntimeHelper.downcallHandle(
+        "udev_monitor_enable_receiving",
+        constants$1.udev_monitor_enable_receiving$FUNC
     );
-    static final FunctionDescriptor udev_enumerate_get_list_entry$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+    static final FunctionDescriptor udev_monitor_get_fd$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle udev_enumerate_get_list_entry$MH = RuntimeHelper.downcallHandle(
-        "udev_enumerate_get_list_entry",
-        constants$1.udev_enumerate_get_list_entry$FUNC
+    static final MethodHandle udev_monitor_get_fd$MH = RuntimeHelper.downcallHandle(
+        "udev_monitor_get_fd",
+        constants$1.udev_monitor_get_fd$FUNC
     );
 }
 

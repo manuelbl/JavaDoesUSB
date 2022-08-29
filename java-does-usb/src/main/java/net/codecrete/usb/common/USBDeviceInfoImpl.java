@@ -87,6 +87,10 @@ public abstract class USBDeviceInfoImpl implements USBDeviceInfo {
         return protocolCode;
     }
 
+    public Object getUniqueId() {
+        return id;
+    }
+
     @Override
     public boolean isSameDevice(USBDeviceInfo device) {
         if (device instanceof USBDeviceInfoImpl)
