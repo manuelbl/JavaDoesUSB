@@ -51,3 +51,22 @@ $JEXTRACT --source --output ../src/main/java \
   --include-macro USBDEVFS_CLAIMINTERFACE \
   --include-macro USBDEVFS_RELEASEINTERFACE \
   /usr/include/linux/usbdevice_fs.h
+
+# libudev.h
+$JEXTRACT --source --output ../src/main/java \
+  --header-class-name udev \
+  --target-package net.codecrete.usb.linux.gen.udev \
+  -l udev \
+  --include-function udev_new \
+  --include-function udev_enumerate_new \
+  --include-function udev_enumerate_add_match_subsystem \
+  --include-function udev_enumerate_scan_devices \
+  --include-function udev_enumerate_get_list_entry \
+  --include-function udev_list_entry_get_next \
+  --include-function udev_list_entry_get_name \
+  --include-function udev_device_new_from_syspath \
+  --include-function udev_device_get_devnode \
+  --include-function udev_device_get_sysattr_value \
+  --include-function udev_device_unref \
+  --include-function udev_enumerate_unref \
+  /usr/include/libudev.h
