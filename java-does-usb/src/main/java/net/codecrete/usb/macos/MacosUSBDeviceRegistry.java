@@ -16,6 +16,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -44,15 +45,13 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     /**
-     * Process the device iterator and return a list of devices ({@link USBDeviceInfo}).
+     * Process the devices resulting from the iterator
      *
-     * @param iterator iterator
+     * @param iterator the iterator
      * @param isDisconnected flag is the iterator is for disconnected devices
-     * @return list of devices
+     * @param function a function that will be called for each device with the entry ID and the service
      */
-    private List<USBDeviceInfo> iterateDevices(int iterator, boolean isDisconnected) {
-
-        List<USBDeviceInfo> result = new ArrayList<>();
+    private void iterateDevices(int iterator, boolean isDisconnected, BiConsumer<Long, Integer> function) {
 
         int svc;
         while ((svc = IoKit.IOIteratorNext(iterator)) != 0) {
@@ -76,17 +75,13 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
 
-                var deviceInfo = createDeviceInfo(entryId, service);
-
-                if (deviceInfo != null)
-                    result.add(deviceInfo);
+                // call function to process device
+                function.accept(entryId, service);
             }
         }
-
-        return result;
     }
 
-    private USBDeviceInfo createDeviceInfo(long entryID, int service) {
+    private USBDeviceInfo createDeviceInfo(Long entryID, int service) {
 
         Integer vendorId = IoKitHelper.GetPropertyInt(service, "idVendor");
         Integer productId = IoKitHelper.GetPropertyInt(service, "idProduct");
@@ -126,8 +121,13 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     MethodType.methodType(void.class, MemoryAddress.class, int.class));
             int deviceConnectedIter = setupNotification(session, notifyPort, IoKit.kIOFirstMatchNotification, onDeviceConnectedMH);
 
-            // iterate current devices in order to arm the notifications
-            devices = iterateDevices(deviceConnectedIter, false);
+            // iterate current devices in order to arm the notifications (and build initial device list)
+            devices = new ArrayList<>();
+            iterateDevices(deviceConnectedIter, false, (entryId, service) -> {
+                var deviceInfo = createDeviceInfo(entryId, service);
+                if (deviceInfo != null)
+                    devices.add(deviceInfo);
+            });
 
             // signal completion of initial device enumeration
             signalEnumerationComplete();
@@ -182,16 +182,13 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param iterator device iterator
      */
     private void onDevicesConnected(MemoryAddress ignoredRefCon, int iterator) {
-        // retrieve device info for connected devices
-        var connectedDevices = iterateDevices(iterator, false);
 
-        // create new device list with connected devices
-        var newDeviceList = new ArrayList<>(devices);
-        newDeviceList.addAll(connectedDevices);
-        devices = newDeviceList;
-
-        // emit events
-        connectedDevices.forEach(this::emitOnDeviceConnected);
+        // process device info for connected devices
+        iterateDevices(iterator, false, (entryId, service) -> {
+            var deviceInfo = createDeviceInfo(entryId, service);
+            if (deviceInfo != null)
+                addDevice(deviceInfo);
+        });
     }
 
     /**
@@ -203,38 +200,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param iterator device iterator
      */
     private void onDevicesDisconnected(MemoryAddress ignoredRefCon, int iterator) {
-        // retrieve device info for disconnected devices
-        var disconnectedDevices = iterateDevices(iterator, true);
 
-        // create new device list without the disconnected devices
-        var newDeviceList = new ArrayList<>(devices);
-        for (var device : disconnectedDevices) {
-            int index = findDeviceIndex(newDeviceList, device);
-            if (index >= 0)
-                newDeviceList.remove(index);
-        }
-        devices = newDeviceList;
-
-        // emit events
-        disconnectedDevices.forEach(this::emitOnDeviceDisconnected);
-    }
-
-    /**
-     * Find the index of the device in the device list.
-     * <p>
-     * Devices are compared by their IO registry entry ID.
-     * </p>
-     * @param deviceList the device list
-     * @param device the device
-     * @return the index of the device, or -1 if it is not found
-     */
-    private static int findDeviceIndex(List<USBDeviceInfo> deviceList, USBDeviceInfo device) {
-        Object id = ((MacosUSBDeviceInfo)device).getId();
-        for (int i = 0; i < deviceList.size(); i++) {
-            var macDevice = (MacosUSBDeviceInfo) deviceList.get(i);
-            if (id.equals(macDevice.getId()))
-                return i;
-        }
-        return -1;
+        // process device info for disconnected devices
+        iterateDevices(iterator, true, (entryId, service) -> removeDevice(entryId));
     }
 }

@@ -95,7 +95,7 @@ public abstract class USBDeviceRegistry {
         emitOnDeviceConnected(device);
     }
 
-    protected void removeDevice(String deviceId) {
+    protected void removeDevice(Object deviceId) {
         // locate device to be removed
         int index = findDeviceIndex(devices, deviceId);
         if (index < 0)
@@ -110,7 +110,6 @@ public abstract class USBDeviceRegistry {
         // send notification
         emitOnDeviceDisconnected(deviceInfo);
     }
-
 
     /**
      * Finds the index of the device with the given ID in the device list
