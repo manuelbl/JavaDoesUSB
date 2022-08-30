@@ -84,5 +84,5 @@ $JEXTRACT --source --output ../src/main/java \
   --header-class-name select \
   --target-package net.codecrete.usb.linux.gen.select \
   --include-function select \
-  --include-macro FD_SETSIZE \
+  --include-typedef fd_set \
   /usr/include/x86_64-linux-gnu/sys/select.h

@@ -28,9 +28,6 @@ public class select  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static int FD_SETSIZE() {
-        return (int)1024L;
-    }
 }
 
 

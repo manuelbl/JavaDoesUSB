@@ -10,6 +10,7 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.USBDeviceInfo;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDeviceRegistry;
+import net.codecrete.usb.linux.gen.select.fd_set;
 import net.codecrete.usb.linux.gen.select.select;
 import net.codecrete.usb.linux.gen.udev.udev;
 
@@ -17,7 +18,6 @@ import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
-import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +72,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                 throw new USBException("internal error (udev_enumerate_scan_devices)");
 
             // enumerate devices
-            for (var entry= udev.udev_enumerate_get_list_entry(enumerate);
+            for (var entry = udev.udev_enumerate_get_list_entry(enumerate);
                  entry != NULL;
                  entry = udev.udev_list_entry_get_next(entry)) {
 
@@ -178,6 +178,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * If the device is missing one of vendor ID, product ID or device path,
      * {@code null} is returned.
      * </p>
+     *
      * @param device the device
      * @return the device info
      */
@@ -221,35 +222,22 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     private static String getDeviceName(Addressable device) {
-        return callStringFunction(device, udev.udev_device_get_devnode$MH());
+        return Linux.createStringFromAddress(udev.udev_device_get_devnode(device));
     }
 
     private static String getDeviceAction(Addressable device) {
-        return callStringFunction(device, udev.udev_device_get_action$MH());
-    }
-
-    private static String callStringFunction(Addressable device, MethodHandle function) {
-        try (var session = MemorySession.openConfined()) {
-            var devNameAddr = (MemoryAddress) function.invokeExact(device);
-            if (devNameAddr == NULL)
-                return null;
-
-            var ret = MemorySegment.ofAddress(devNameAddr, 2000, session);
-            return ret.getUtf8String(0);
-
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
+        return Linux.createStringFromAddress(udev.udev_device_get_action(device));
     }
 
     /**
      * Waits until the specified file descriptor becomes ready for reading.
-     * @param fd the file descriptor
+     *
+     * @param fd      the file descriptor
      * @param session a memory session for allocating memory
      */
     private static void waitForFileDescriptor(int fd, MemorySession session) {
-        // fd_set is a bit array with a capacity of FD_SETSIZE bits
-        var fds = session.allocate(JAVA_LONG, select.FD_SETSIZE() / JAVA_LONG.bitSize());
+        // fd_set is a bit array (constructed from 64-bit integers)
+        var fds = session.allocate(fd_set.$LAYOUT());
         fds.set(JAVA_LONG, fd / JAVA_LONG.bitSize(), 1L << (fd % JAVA_LONG.bitSize()));
 
         int res = select.select(fd + 1, fds, NULL, NULL, NULL);
