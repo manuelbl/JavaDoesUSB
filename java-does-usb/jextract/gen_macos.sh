@@ -15,6 +15,5 @@ $JEXTRACT --source --output ../src/main/java \
   -I $SDK_DIR/usr/include \
   --header-class-name mach \
   --target-package net.codecrete.usb.macos.gen.mach \
-  --include-function mach_error \
   --include-function mach_error_string \
   $SDK_DIR/usr/include/mach/mach.h

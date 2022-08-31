@@ -13,14 +13,6 @@ class constants$0 {
         "mach_error_string",
         constants$0.mach_error_string$FUNC
     );
-    static final FunctionDescriptor mach_error$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle mach_error$MH = RuntimeHelper.downcallHandle(
-        "mach_error",
-        constants$0.mach_error$FUNC
-    );
 }
 
 

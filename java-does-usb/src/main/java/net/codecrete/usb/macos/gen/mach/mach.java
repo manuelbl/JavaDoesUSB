@@ -2,7 +2,6 @@
 
 package net.codecrete.usb.macos.gen.mach;
 
-import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.invoke.MethodHandle;
 
@@ -25,17 +24,6 @@ public class mach  {
         var mh$ = mach_error_string$MH();
         try {
             return (java.lang.foreign.MemoryAddress)mh$.invokeExact(error_value);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle mach_error$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.mach_error$MH,"mach_error");
-    }
-    public static void mach_error ( Addressable str,  int error_value) {
-        var mh$ = mach_error$MH();
-        try {
-            mh$.invokeExact(str, error_value);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
