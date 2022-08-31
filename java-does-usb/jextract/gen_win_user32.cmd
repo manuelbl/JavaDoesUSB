@@ -1,4 +1,4 @@
-set JEXTRACT=..\..\..\jextract\build\jextract\bin\jextract.bat
+set JEXTRACT=..\..\..\jextract-19\bin\jextract.bat
 set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
 %JEXTRACT% --source --output ../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
@@ -19,7 +19,11 @@ set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
   --include-macro DBT_DEVICEREMOVECOMPLETE ^
   --include-macro DBT_DEVTYP_DEVICEINTERFACE ^
   --include-struct tagMSG ^
+  --include-typedef MSG ^
   --include-struct tagWNDCLASSEXW ^
+  --include-typedef WNDCLASSEXW ^
   --include-struct _DEV_BROADCAST_HDR ^
+  --include-typedef DEV_BROADCAST_HDR ^
   --include-struct _DEV_BROADCAST_DEVICEINTERFACE_W ^
+  --include-typedef DEV_BROADCAST_DEVICEINTERFACE_W ^
   windows_headers.h

@@ -1,4 +1,4 @@
-set JEXTRACT=..\..\..\jextract\build\jextract\bin\jextract.bat
+set JEXTRACT=..\..\..\jextract-19\bin\jextract.bat
 set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
 %JEXTRACT% --source --output ../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^

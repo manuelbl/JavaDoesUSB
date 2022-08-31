@@ -8,10 +8,10 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.kernel32._GUID;
+import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVICE_INTERFACE_DATA;
 
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemorySegment;
@@ -90,8 +90,8 @@ public class DeviceProperty {
             session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
             // retrieve first element of enumeration
-            var devIntfData = session.allocate(_SP_DEVICE_INTERFACE_DATA.$LAYOUT());
-            _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
+            var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
+            SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, NULL, interfaceGuid, 0, devIntfData) == 0)
                 throw new USBException("internal error (SetupDiEnumDeviceInterfaces)");
 
@@ -111,11 +111,11 @@ public class DeviceProperty {
                                            byte data4_0, byte data4_1, byte data4_2, byte data4_3,
                                            byte data4_4, byte data4_5, byte data4_6, byte data4_7,
                                          int pid) {
-        var propKey = MemorySession.global().allocate(_GUID.sizeof() + JAVA_INT.byteSize());
-        _GUID.Data1$set(propKey, data1);
-        _GUID.Data2$set(propKey, data2);
-        _GUID.Data3$set(propKey, data3);
-        var data4 = _GUID.Data4$slice(propKey);
+        var propKey = MemorySession.global().allocate(GUID.sizeof() + JAVA_INT.byteSize());
+        GUID.Data1$set(propKey, data1);
+        GUID.Data2$set(propKey, data2);
+        GUID.Data3$set(propKey, data3);
+        var data4 = GUID.Data4$slice(propKey);
         data4.set(JAVA_BYTE, 0, data4_0);
         data4.set(JAVA_BYTE, 1, data4_1);
         data4.set(JAVA_BYTE, 2, data4_2);

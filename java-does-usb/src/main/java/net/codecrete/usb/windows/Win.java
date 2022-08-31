@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.windows.gen.kernel32._GUID;
+import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
 import java.lang.foreign.MemoryAddress;
@@ -82,11 +82,11 @@ public class Win {
     public static MemorySegment CreateGUID(int data1, short data2, short data3,
                                            byte data4_0, byte data4_1, byte data4_2, byte data4_3,
                                            byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
-        var guid = MemorySegment.allocateNative(_GUID.$LAYOUT(), MemorySession.global());
-        _GUID.Data1$set(guid, data1);
-        _GUID.Data2$set(guid, data2);
-        _GUID.Data3$set(guid, data3);
-        var data4 = _GUID.Data4$slice(guid);
+        var guid = MemorySegment.allocateNative(GUID.$LAYOUT(), MemorySession.global());
+        GUID.Data1$set(guid, data1);
+        GUID.Data2$set(guid, data2);
+        GUID.Data3$set(guid, data3);
+        var data4 = GUID.Data4$slice(guid);
         data4.set(JAVA_BYTE, 0, data4_0);
         data4.set(JAVA_BYTE, 1, data4_1);
         data4.set(JAVA_BYTE, 2, data4_2);

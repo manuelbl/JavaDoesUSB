@@ -14,9 +14,9 @@ import net.codecrete.usb.common.USBDeviceInfoImpl;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.common.USBStructs;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
+import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
+import net.codecrete.usb.windows.gen.setupapi.SP_DEVINFO_DATA;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVICE_INTERFACE_DATA;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVINFO_DATA;
 import net.codecrete.usb.windows.gen.usbioctl.USBIoctl;
 import net.codecrete.usb.windows.gen.user32.*;
 
@@ -73,8 +73,8 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             // ensure the result is destroyed when the scope is left
             outerSession.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
-            var devInfo = MemorySegment.allocateNative(_SP_DEVINFO_DATA.$LAYOUT(), outerSession);
-            _SP_DEVINFO_DATA.cbSize$set(devInfo, (int) _SP_DEVINFO_DATA.$LAYOUT().byteSize());
+            var devInfo = MemorySegment.allocateNative(SP_DEVINFO_DATA.$LAYOUT(), outerSession);
+            SP_DEVINFO_DATA.cbSize$set(devInfo, (int) SP_DEVINFO_DATA.$LAYOUT().byteSize());
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemoryAddress>();
@@ -218,11 +218,11 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             );
 
             // register window class
-            var wx = session.allocate(tagWNDCLASSEXW.$LAYOUT());
-            tagWNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
-            tagWNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
-            tagWNDCLASSEXW.hInstance$set(wx, instance);
-            tagWNDCLASSEXW.lpszClassName$set(wx, className.address());
+            var wx = session.allocate(WNDCLASSEXW.$LAYOUT());
+            WNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
+            WNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
+            WNDCLASSEXW.hInstance$set(wx, instance);
+            WNDCLASSEXW.lpszClassName$set(wx, className.address());
             User32.RegisterClassExW(wx);
 
             // create message-only window
@@ -232,10 +232,10 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 throw new USBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
 
             // configure notifications
-            var notificationFilter = session.allocate(_DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
-            _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
-            _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter, User32.DBT_DEVTYP_DEVICEINTERFACE());
-            _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+            var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter, User32.DBT_DEVTYP_DEVICEINTERFACE());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
 
             var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter, User32.DEVICE_NOTIFY_WINDOW_HANDLE());
             if (notifyHandle == NULL)
@@ -248,7 +248,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             signalEnumerationComplete();
 
             // process messages
-            var msg = session.allocate(tagMSG.$LAYOUT());
+            var msg = session.allocate(MSG.$LAYOUT());
             while (User32.GetMessageW(msg, hwnd, 0, 0) > 0)
                 ; // do nothing
 
@@ -262,11 +262,11 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         // check for message related to connecting/disconnecting devices
         if (uMsg == User32.WM_DEVICECHANGE() && (wParam == User32.DBT_DEVICEARRIVAL() || wParam == User32.DBT_DEVICEREMOVECOMPLETE())) {
             try (var session = MemorySession.openConfined()) {
-                var data = MemorySegment.ofAddress(MemoryAddress.ofLong(lParam), _DEV_BROADCAST_DEVICEINTERFACE_W.sizeof(), session);
-                if (_DEV_BROADCAST_HDR.dbch_devicetype$get(data) == User32.DBT_DEVTYP_DEVICEINTERFACE()) {
+                var data = MemorySegment.ofAddress(MemoryAddress.ofLong(lParam), DEV_BROADCAST_DEVICEINTERFACE_W.sizeof(), session);
+                if (DEV_BROADCAST_HDR.dbch_devicetype$get(data) == User32.DBT_DEVTYP_DEVICEINTERFACE()) {
 
                     // get device path
-                    var nameSlice = MemorySegment.ofAddress(_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name$slice(data).address(), 500, session);
+                    var nameSlice = MemorySegment.ofAddress(DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name$slice(data).address(), 500, session);
                     var devicePath = Win.createStringFromSegment(nameSlice);
                     if (wParam == User32.DBT_DEVICEARRIVAL())
                         onDeviceConnected(devicePath);
@@ -294,14 +294,14 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             // ensure the result is destroyed when the scope is left
             session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
-            var devIntfData = session.allocate(_SP_DEVICE_INTERFACE_DATA.$LAYOUT());
-            _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
+            var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
+            SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, session);
             if (SetupAPI.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0, devIntfData) == 0)
                 throw new USBException("internal error (SetupDiOpenDeviceInterfaceW)", Kernel32.GetLastError());
 
-            var devInfo = session.allocate(_SP_DEVINFO_DATA.$LAYOUT());
-            _SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
+            var devInfo = session.allocate(SP_DEVINFO_DATA.$LAYOUT());
+            SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, NULL, 0, NULL, devInfo) == 0) {
                 int err = Kernel32.GetLastError();
                 if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
