@@ -1,6 +1,6 @@
 # Code Generation with *jextract*
 
-Some of the binding code for accessing native functions and data structures is generated with [jextract](https://jdk.java.net/jextract/). The tool is still under construction and has its limitations.
+Some of the binding code for accessing native functions and data structures is generated with [jextract](https://jdk.java.net/jextract/). The tool is still under construction and has its limitations. 
 
 In order to generate the code, the scripts in this directory have to be run (`gen_linux.sh`, `gen_macos.sh` and `gen_win_xxx.cmd`). Each script has to be run on that particular operating system.
 
@@ -9,6 +9,11 @@ The code is generated in directories below `gen`, i.e. `main/java/net/codecrete/
 The scripts explicitly specify the functions, structs etc. to include as generating code for entire operating system header files can result in an excessive amount of Java source files and classes.
 
 The resulting code is then committed to the source code repository. Before the commit, imports are cleaned up to get rid of superfluous imports. Most IDEs provide a convenient command to execute this on entire directories.
+
+
+## General limitations
+
+- Binaries of *jextract* can be downloaded from https://jdk.java.net/jextract/. Only x64 binaries are available. It is unclear if the x64 jextract run on macOS with Apple Silicon (ARM64) using the Rosetta emulator produces valid bindings. So far, not problems have been detected.
 
 
 ## Linux

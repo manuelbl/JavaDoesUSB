@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../jextract-19/bin/jextract
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 # CoreFoundation
