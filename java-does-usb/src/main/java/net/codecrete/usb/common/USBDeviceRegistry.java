@@ -10,6 +10,7 @@ package net.codecrete.usb.common;
 import net.codecrete.usb.USBDeviceInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -17,18 +18,55 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
- * USB device registry.
+ * Base class for USB device registry.
+ * <p>
+ * This singleton class maintains a list of connected USB devices.
+ * It starts a background thread monitoring the USB devices being
+ * connected and disconnected.
+ * </p>
+ * <p>
+ * The background thread enumerates the already present devices
+ * and builds the initial device list.
+ * </p>
  */
 public abstract class USBDeviceRegistry {
 
-    protected volatile List<USBDeviceInfo> devices;
+    private volatile List<USBDeviceInfo> devices;
     protected Consumer<USBDeviceInfo> onDeviceConnectedHandler;
     protected Consumer<USBDeviceInfo> onDeviceDisconnectedHandler;
 
     private final Lock lock = new ReentrantLock();
     private final Condition enumerationComplete = lock.newCondition();
 
-    public abstract List<USBDeviceInfo> getAllDevices();
+    /**
+     * Start this device registry.
+     * <p>
+     * This method blocks until the initial device enumeration has
+     * completed.
+     * </p>
+     */
+    public void start() {
+        startDeviceMonitor(this::monitorDevices);
+    }
+
+    /**
+     * Enumerate the already present devices and then start monitoring
+     * devices being connected and disconnected.
+     * <p>
+     * Implementors of this method are expected to call, {@link #setInitialDeviceList(List)}
+     * after the initial device implementation.
+     * </p>
+     */
+    protected abstract void monitorDevices();
+
+    /**
+     * Gets the list of the currently connected USB devices.
+     *
+     * @return list of devices
+     */
+    public List<USBDeviceInfo> getAllDevices() {
+        return Collections.unmodifiableList(devices);
+    }
 
     public void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
         onDeviceConnectedHandler = handler;
@@ -50,6 +88,12 @@ public abstract class USBDeviceRegistry {
 
     /**
      * Starts the background thread and waits until the first device enumeration is complete.
+     * <p>
+     * In order to signal that the initial enumeration is complete, the monitor task is expected
+     * to call {@link #setInitialDeviceList(List)}.
+     * </p>
+     *
+     * @param monitorTask the task to start in the background
      */
     protected void startDeviceMonitor(Runnable monitorTask) {
         // start new thread
@@ -71,7 +115,7 @@ public abstract class USBDeviceRegistry {
     /**
      * Signals completion of initial device enumeration.
      */
-    protected void signalEnumerationComplete() {
+    private void signalEnumerationComplete() {
         lock.lock();
         try {
             enumerationComplete.signalAll();
@@ -80,9 +124,27 @@ public abstract class USBDeviceRegistry {
         }
     }
 
+    /**
+     * Sets the device list of the initial device enumeration.
+     * <p>
+     * This function singals to the spawning thread that the enumeration is complete.
+     * </p>
+     *
+     * @param deviceList the device list
+     */
+    protected void setInitialDeviceList(List<USBDeviceInfo> deviceList) {
+        devices = deviceList;
+        signalEnumerationComplete();
+    }
+
+    /**
+     * Adds a device to the list of connected USB devices.
+     *
+     * @param device device to add
+     */
     protected void addDevice(USBDeviceInfo device) {
         // check for duplicates
-        if (findDeviceIndex(devices, ((USBDeviceInfoImpl)device).getUniqueId()) >= 0)
+        if (findDeviceIndex(devices, ((USBDeviceInfoImpl) device).getUniqueId()) >= 0)
             return;
 
         // copy list
@@ -95,6 +157,11 @@ public abstract class USBDeviceRegistry {
         emitOnDeviceConnected(device);
     }
 
+    /**
+     * Removes a device from the list of connected USB devices.
+     *
+     * @param deviceId the unique ID of the device to remove
+     */
     protected void removeDevice(Object deviceId) {
         // locate device to be removed
         int index = findDeviceIndex(devices, deviceId);
@@ -113,8 +180,9 @@ public abstract class USBDeviceRegistry {
 
     /**
      * Finds the index of the device with the given ID in the device list
+     *
      * @param deviceList the device list
-     * @param deviceId the unique device ID
+     * @param deviceId   the unique device ID
      * @return return the index, or -1 if the device is not found
      */
     protected int findDeviceIndex(List<USBDeviceInfo> deviceList, Object deviceId) {

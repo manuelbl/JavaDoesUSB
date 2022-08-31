@@ -41,8 +41,10 @@ public class USB {
     private static USBDeviceRegistry _instance = null;
 
     private static synchronized USBDeviceRegistry instance() {
-        if (_instance == null)
+        if (_instance == null) {
             _instance = createInstance();
+            _instance.start();
+        }
         return _instance;
     }
 

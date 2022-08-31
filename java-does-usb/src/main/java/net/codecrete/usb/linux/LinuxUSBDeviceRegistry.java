@@ -26,15 +26,6 @@ import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 /**
  * Linux implementation of USB device registry.
- * <p>
- * This singleton class maintains a list of connected USB devices.
- * It starts a background thread monitoring the USB devices being
- * connected and disconnected.
- * </p>
- * <p>
- * The background thread also enumerates the already present devices
- * and builds the initial device list.
- * </p>
  */
 public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
@@ -42,16 +33,55 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     private static final MemorySegment MONITOR_NAME = MemorySession.global().allocateUtf8String("udev");
     private static final MemorySegment DEVTYPE_USB_DEVICE = MemorySession.global().allocateUtf8String("usb_device");
 
-    /**
-     * Creates a new instance.
-     */
-    public LinuxUSBDeviceRegistry() {
-        startDeviceMonitor(this::monitorDevices);
-    }
-
     @Override
-    public List<USBDeviceInfo> getAllDevices() {
-        return devices;
+    protected void monitorDevices() {
+
+        // setup udev monitor
+        var udevInstance = udev.udev_new();
+        if (udevInstance == NULL)
+            throw new USBException("internal error (udev_new)");
+
+        var monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
+        if (monitor == NULL)
+            throw new USBException("internal error (udev_monitor_new_from_netlink)");
+
+        if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
+            throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
+
+        if (udev.udev_monitor_enable_receiving(monitor) < 0)
+            throw new USBException("internal error (udev_monitor_enable_receiving)");
+
+        int fd = udev.udev_monitor_get_fd(monitor);
+        if (fd < 0)
+            throw new USBException("internal error (udev_monitor_get_fd)");
+
+        // create initial list of devices
+        enumeratePresentDevices(udevInstance);
+
+        // monitor device changes
+        while (true) {
+            try (var session = MemorySession.openConfined()) {
+
+                // wait for next change
+                waitForFileDescriptor(fd, session);
+
+                // retrieve change
+                var dev = udev.udev_monitor_receive_device(monitor);
+                if (dev == null)
+                    continue; // shouldn't happen
+
+                session.addCloseAction(() -> udev.udev_device_unref(dev));
+
+                // get details
+                var action = getDeviceAction(dev);
+
+                if ("add".equals(action)) {
+                    onDeviceConnected(dev);
+                } else if ("remove".equals(action)) {
+                    onDeviceDisconnected(dev);
+                }
+            }
+        }
     }
 
     private void enumeratePresentDevices(Addressable udevInstance) {
@@ -98,60 +128,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             }
         }
 
-        devices = result;
-    }
-
-    private void monitorDevices() {
-
-        // setup udev monitor
-        var udevInstance = udev.udev_new();
-        if (udevInstance == NULL)
-            throw new USBException("internal error (udev_new)");
-
-        var monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
-        if (monitor == NULL)
-            throw new USBException("internal error (udev_monitor_new_from_netlink)");
-
-        if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
-            throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
-
-        if (udev.udev_monitor_enable_receiving(monitor) < 0)
-            throw new USBException("internal error (udev_monitor_enable_receiving)");
-
-        int fd = udev.udev_monitor_get_fd(monitor);
-        if (fd < 0)
-            throw new USBException("internal error (udev_monitor_get_fd)");
-
-        // create initial list of devices
-        enumeratePresentDevices(udevInstance);
-
-        // signal initial enumeration is complete
-        signalEnumerationComplete();
-
-        // monitor device changes
-        while (true) {
-            try (var session = MemorySession.openConfined()) {
-
-                // wait for next change
-                waitForFileDescriptor(fd, session);
-
-                // retrieve change
-                var dev = udev.udev_monitor_receive_device(monitor);
-                if (dev == null)
-                    continue; // shouldn't happen
-
-                session.addCloseAction(() -> udev.udev_device_unref(dev));
-
-                // get details
-                var action = getDeviceAction(dev);
-
-                if ("add".equals(action)) {
-                    onDeviceConnected(dev);
-                } else if ("remove".equals(action)) {
-                    onDeviceDisconnected(dev);
-                }
-            }
-        }
+        setInitialDeviceList(result);
     }
 
     private void onDeviceConnected(MemoryAddress device) {

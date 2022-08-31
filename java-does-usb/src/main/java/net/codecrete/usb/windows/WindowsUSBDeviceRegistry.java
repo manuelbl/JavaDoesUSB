@@ -32,30 +32,64 @@ import static java.lang.foreign.ValueLayout.*;
 
 /**
  * Windows implementation of USB device registry.
- * <p>
- * This singleton class maintains a list of connected USB devices.
- * It starts a background thread monitoring the USB devices being
- * connected and disconnected.
- * </p>
- * <p>
- * The background thread also enumerates the already present devices
- * and builds the initial device list.
- * </p>
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
-    /**
-     * Create new instance
-     * <p>
-     * Starts a second thread and immediately iterates all USB devices.
-     * </p>
-     */
-    public WindowsUSBDeviceRegistry() {
-        startDeviceMonitor(this::monitorDevices);
-    }
+    @Override
+    protected void monitorDevices() {
+        try (var session = MemorySession.openConfined()) {
 
-    public List<USBDeviceInfo> getAllDevices() {
-        return devices;
+            final var className = Win.createSegmentFromString("USB_MONITOR", session);
+            final var windowName = Win.createSegmentFromString("USB device monitor", session);
+            final var instance = Kernel32.GetModuleHandleW(NULL);
+
+            // create upcall for handling window messages
+            var handleWindowMessageMH = MethodHandles.lookup().findVirtual(
+                    WindowsUSBDeviceRegistry.class,
+                    "handleWindowMessage",
+                    MethodType.methodType(long.class, MemoryAddress.class, int.class, long.class, long.class)
+            ).bindTo(this);
+            var handleWindowMessageStub = Linker.nativeLinker().upcallStub(
+                    handleWindowMessageMH,
+                    FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG),
+                    session
+            );
+
+            // register window class
+            var wx = session.allocate(WNDCLASSEXW.$LAYOUT());
+            WNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
+            WNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
+            WNDCLASSEXW.hInstance$set(wx, instance);
+            WNDCLASSEXW.lpszClassName$set(wx, className.address());
+            User32.RegisterClassExW(wx);
+
+            // create message-only window
+            Addressable hwnd = User32.CreateWindowExW(0, className, windowName, 0,
+                    0, 0, 0, 0, User32.HWND_MESSAGE(), NULL, instance, NULL);
+            if (hwnd == NULL)
+                throw new USBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
+
+            // configure notifications
+            var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter, User32.DBT_DEVTYP_DEVICEINTERFACE());
+            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+
+            var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter, User32.DEVICE_NOTIFY_WINDOW_HANDLE());
+            if (notifyHandle == NULL)
+                throw new USBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
+
+            // initial device enumeration
+            enumeratePresentDevices();
+
+            // process messages
+            var msg = session.allocate(MSG.$LAYOUT());
+            while (User32.GetMessageW(msg, hwnd, 0, 0) > 0)
+                ; // do nothing
+
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void enumeratePresentDevices() {
@@ -96,7 +130,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 deviceList.add(createDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
             }
 
-            devices = deviceList;
+            setInitialDeviceList(deviceList);
         }
     }
 
@@ -198,66 +232,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private void monitorDevices() {
-        try (var session = MemorySession.openConfined()) {
-
-            final var className = Win.createSegmentFromString("USB_MONITOR", session);
-            final var windowName = Win.createSegmentFromString("USB device monitor", session);
-            final var instance = Kernel32.GetModuleHandleW(NULL);
-
-            // create upcall for handling window messages
-            var handleWindowMessageMH = MethodHandles.lookup().findVirtual(
-                    WindowsUSBDeviceRegistry.class,
-                    "handleWindowMessage",
-                    MethodType.methodType(long.class, MemoryAddress.class, int.class, long.class, long.class)
-            ).bindTo(this);
-            var handleWindowMessageStub = Linker.nativeLinker().upcallStub(
-                    handleWindowMessageMH,
-                    FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG),
-                    session
-            );
-
-            // register window class
-            var wx = session.allocate(WNDCLASSEXW.$LAYOUT());
-            WNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
-            WNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
-            WNDCLASSEXW.hInstance$set(wx, instance);
-            WNDCLASSEXW.lpszClassName$set(wx, className.address());
-            User32.RegisterClassExW(wx);
-
-            // create message-only window
-            Addressable hwnd = User32.CreateWindowExW(0, className, windowName, 0,
-                    0, 0, 0, 0, User32.HWND_MESSAGE(), NULL, instance, NULL);
-            if (hwnd == NULL)
-                throw new USBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
-
-            // configure notifications
-            var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter, User32.DBT_DEVTYP_DEVICEINTERFACE());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
-
-            var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter, User32.DEVICE_NOTIFY_WINDOW_HANDLE());
-            if (notifyHandle == NULL)
-                throw new USBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
-
-            // initial device enumeration
-            enumeratePresentDevices();
-
-            // signal that the enumeration is complete
-            signalEnumerationComplete();
-
-            // process messages
-            var msg = session.allocate(MSG.$LAYOUT());
-            while (User32.GetMessageW(msg, hwnd, 0, 0) > 0)
-                ; // do nothing
-
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private long handleWindowMessage(MemoryAddress hWnd,  int uMsg,  long wParam,  long lParam) {
+    private long handleWindowMessage(MemoryAddress hWnd, int uMsg, long wParam, long lParam) {
 
         // check for message related to connecting/disconnecting devices
         if (uMsg == User32.WM_DEVICECHANGE() && (wParam == User32.DBT_DEVICEARRIVAL() || wParam == User32.DBT_DEVICEREMOVECOMPLETE())) {
@@ -325,6 +300,17 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         removeDevice(devicePath);
     }
 
+    /**
+     * Finds the index of the device in the list.
+     * <p>
+     * This override uses a case-insensitive string comparison as Windows uses different casing
+     * when initially enumerating devices and during later monitoring.
+     * </p>
+     *
+     * @param deviceList the device list
+     * @param deviceId   the unique device ID
+     * @return index, or -1 if not found
+     */
     @Override
     protected int findDeviceIndex(List<USBDeviceInfo> deviceList, Object deviceId) {
         var id = deviceId.toString();
