@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../jextract-19/bin/jextract
 
 # sd-device.h (install libsystemd-dev if file is missing)
 # Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'
