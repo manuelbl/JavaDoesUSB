@@ -25,18 +25,23 @@ import static java.lang.foreign.ValueLayout.*;
 
 public class MacosUSBDevice extends USBDeviceImpl {
 
-    private final MemoryAddress device;
-    private final int configurationValue;
+    private MemoryAddress device;
+    private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
     private List<EndpointInfo> endpoints;
 
     MacosUSBDevice(Object id, USBDeviceInfo info) {
         super(id, info);
+    }
+
+    @Override
+    public void open() {
+        if (device != null)
+            return;
 
         try (var session = MemorySession.openConfined()) {
 
-//            // get service from IO registry
-//            final int service = IoKit.IORegistryEntryFromPath(0, path);
+            // get service from IO registry
             var matching = IoKit.IORegistryEntryIDMatching((Long) id);
             if (matching == NULL)
                 throw new MacosUSBException("IORegistryEntryIDMatching failed");
@@ -56,6 +61,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             int ret = IoKitUSB.USBDeviceOpen(device);
             if (ret != 0) {
                 IoKit.Release(device);
+                device = null;
                 throw new MacosUSBException("unable to open USB device", ret);
             }
 
@@ -78,9 +84,28 @@ public class MacosUSBDevice extends USBDeviceImpl {
             } catch (Throwable e) {
                 IoKitUSB.USBDeviceClose(device);
                 IoKit.Release(device);
+                device = null;
+                configurationValue = 0;
                 throw e;
             }
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (device == null)
+            return;
+
+        if (claimedInterfaces != null) {
+            for (InterfaceInfo interfaceInfo : claimedInterfaces) {
+                IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
+                IoKit.Release(interfaceInfo.asMemoryAddress());
+            }
+        }
+
+        IoKitUSB.USBDeviceClose(device);
+        IoKit.Release(device);
+        device = null;
     }
 
     private InterfaceInfo findInterface(int interfaceNumber) {
@@ -290,19 +315,6 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
             return result;
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (claimedInterfaces != null) {
-            for (InterfaceInfo interfaceInfo : claimedInterfaces) {
-                IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
-                IoKit.Release(interfaceInfo.asMemoryAddress());
-            }
-        }
-
-        IoKitUSB.USBDeviceClose(device);
-        IoKit.Release(device);
     }
 
     static class InterfaceInfo {

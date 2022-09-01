@@ -24,7 +24,9 @@ public class MacosUSBDeviceInfo extends USBDeviceInfoImpl {
 
     @Override
     public USBDevice open() {
-        return new MacosUSBDevice(id, this);
+        var device = new MacosUSBDevice(id, this);
+        device.open();
+        return device;
     }
 
     Object getId() {

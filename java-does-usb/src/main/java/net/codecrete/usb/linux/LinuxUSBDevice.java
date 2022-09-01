@@ -26,10 +26,16 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 public class LinuxUSBDevice extends USBDeviceImpl {
 
-    private final int fd;
+    private int fd = -1;
 
     LinuxUSBDevice(Object id, USBDeviceInfo info) {
         super(id, info);
+    }
+
+    @Override
+    public void open() {
+        if (fd != -1)
+            return;
 
         try (var session = MemorySession.openConfined()) {
             var pathUtf8 = session.allocateUtf8String(id.toString());
@@ -37,6 +43,15 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             if (fd == -1)
                 throw new USBException("Cannot open USB device", IO.getErrno());
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (fd == -1)
+            return;
+
+        unistd.close(fd);
+        fd = -1;
     }
 
     public void claimInterface(int interfaceNumber) {
@@ -132,10 +147,5 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        unistd.close(fd);
     }
 }

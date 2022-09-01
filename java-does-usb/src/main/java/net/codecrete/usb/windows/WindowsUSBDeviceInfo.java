@@ -28,6 +28,8 @@ public class WindowsUSBDeviceInfo extends USBDeviceInfoImpl {
 
     @Override
     public USBDevice open() {
-        return new WindowsUSBDevice(id, this, currentConfigurationValue);
+        var device = new WindowsUSBDevice(id, this, currentConfigurationValue);
+        device.open();
+        return device;
     }
 }

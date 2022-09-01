@@ -34,10 +34,10 @@ import static java.lang.foreign.ValueLayout.*;
  */
 public class WindowsUSBDevice extends USBDeviceImpl {
 
-    private final MemoryAddress device;
-    private final MemoryAddress firstInterface;
+    private MemoryAddress device;
+    private MemoryAddress firstInterface;
     private final byte currentConfigurationValue;
-    private final Configuration configuration;
+    private Configuration configuration;
 
     private List<Interface> claimedInterfaces;
 
@@ -45,6 +45,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     WindowsUSBDevice(Object id, USBDeviceInfo info, byte currentConfigurationValue) {
         super(id, info);
         this.currentConfigurationValue = currentConfigurationValue;
+    }
+
+    @Override
+    public void open() {
+
+        if (device != null)
+            return;
 
         try (var session = MemorySession.openConfined()) {
 
@@ -81,9 +88,25 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
             } catch (Throwable e) {
                 Kernel32.CloseHandle(device);
+                configuration = null;
+                firstInterface = null;
+                device = null;
                 throw e;
             }
         }
+    }
+
+
+    @Override
+    public void close() throws Exception {
+        if (device == null)
+            return;
+
+        WinUSB.WinUsb_Free(firstInterface);
+        firstInterface = null;
+        Kernel32.CloseHandle(device);
+        device = null;
+        configuration = null;
     }
 
     public void claimInterface(int interfaceNumber) {
@@ -196,11 +219,5 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             int len = lengthHolder.get(JAVA_INT, 0);
             return buffer.asSlice(0, len).toArray(JAVA_BYTE);
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        WinUSB.WinUsb_Free(firstInterface);
-        Kernel32.CloseHandle(device);
     }
 }

@@ -24,7 +24,9 @@ public class LinuxUSBDeviceInfo extends USBDeviceInfoImpl {
 
     @Override
     public USBDevice open() {
-        return new LinuxUSBDevice(id, this);
+        var device = new LinuxUSBDevice(id, this);
+        device.open();
+        return device;
     }
 
     Object devicePath() {

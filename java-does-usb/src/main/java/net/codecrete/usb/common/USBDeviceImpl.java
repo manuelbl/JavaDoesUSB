@@ -44,6 +44,8 @@ public abstract class USBDeviceImpl implements USBDevice {
         this.protocolCode = info.getProtocolCode();
     }
 
+    public abstract void open();
+
     public int getProductId() {
         return productId;
     }
