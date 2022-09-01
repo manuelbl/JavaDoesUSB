@@ -198,7 +198,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return null;
 
         try (var session = MemorySession.openConfined()) {
-            final int dataLen = 32;
+            final int dataLen = 255;
             var descriptorRequest = session.allocate(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset + dataLen);
             USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
             var setupPacket = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
