@@ -7,15 +7,18 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBControlTransfer;
+import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.USBRecipient;
+import net.codecrete.usb.USBRequestType;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
     protected final Object id;
-    protected final int productId;
     protected final int vendorId;
-    protected final String product;
+    protected final int productId;
     protected final String manufacturer;
+    protected final String product;
     protected final String serial;
     protected final int classCode;
     protected final int subclassCode;
@@ -24,27 +27,37 @@ public abstract class USBDeviceImpl implements USBDevice {
     /**
      * Creates a new instance.
      *
-     * @param id unique identifier
-     * @param info USB device information
+     * @param id           unique device ID
+     * @param vendorId     USB vendor ID
+     * @param productId    USB product ID
+     * @param manufacturer manufacturer name
+     * @param product      product name
+     * @param serial       serial number
+     * @param classCode    USB device class code
+     * @param subclassCode USB device subclass code
+     * @param protocolCode USB device protocol
      */
-    protected USBDeviceImpl(
-            Object id,
-            USBDeviceInfo info) {
+    protected USBDeviceImpl(Object id, int vendorId, int productId, String manufacturer, String product,
+                            String serial, int classCode, int subclassCode, int protocolCode) {
 
         assert id != null;
 
         this.id = id;
-        this.productId = info.getProductId();
-        this.vendorId = info.getVendorId();
-        this.product = info.getProduct();
-        this.manufacturer = info.getManufacturer();
-        this.serial = info.getSerial();
-        this.classCode = info.getClassCode();
-        this.subclassCode = info.getSubclassCode();
-        this.protocolCode = info.getProtocolCode();
+        this.vendorId = vendorId;
+        this.productId = productId;
+        this.manufacturer = manufacturer;
+        this.product = product;
+        this.serial = serial;
+        this.classCode = classCode;
+        this.subclassCode = subclassCode;
+        this.protocolCode = protocolCode;
     }
 
     public abstract void open();
+
+    public abstract void close();
+
+    public abstract boolean isOpen();
 
     public int getProductId() {
         return productId;
@@ -78,6 +91,10 @@ public abstract class USBDeviceImpl implements USBDevice {
         return protocolCode;
     }
 
+    public Object getUniqueId() {
+        return id;
+    }
+
     public abstract void claimInterface(int interfaceNumber);
 
     public abstract void releaseInterface(int interfaceNumber);
@@ -93,37 +110,20 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     protected byte[] getDescriptor(int descriptorType, int index, int language) {
         // get descriptor header
-        var result = controlTransferIn(
-                new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE,
-                        (byte) 0x06, (short) (descriptorType << 8 | index), (short) language), 9);
+        var result = controlTransferIn(new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE,
+                (byte) 0x06, (short) (descriptorType << 8 | index), (short) language), 9);
 
         // get effective length from header
         int length;
         if (descriptorType == USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE)
             length = (result[2] & 255) + 256 * (result[3] & 255);
-        else
-            length = result[0] & 255;
+        else length = result[0] & 255;
 
         // get full descriptor
-        result = controlTransferIn(
-                new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE,
-                        (byte) 0x06, (short) (descriptorType << 8 | index), (short) language), length);
+        result = controlTransferIn(new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE, (byte) 0x06,
+                (short) (descriptorType << 8 | index), (short) language), length);
 
         return result;
-    }
-
-    @Override
-    public boolean isSameDevice(USBDeviceInfo device) {
-        if (device instanceof USBDeviceInfoImpl)
-            return id.equals(((USBDeviceInfoImpl)device).id);
-        return false;
-    }
-
-    @Override
-    public boolean isSameDevice(USBDevice device) {
-        if (device instanceof USBDeviceImpl)
-            return id.equals(((USBDeviceImpl)device).id);
-        return false;
     }
 
     @Override
@@ -141,17 +141,7 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public String toString() {
-        return "VID: 0x" +
-                String.format("%04x", vendorId) +
-                ", PID: 0x" +
-                String.format("%04x", productId) +
-                ", manufacturer: " +
-                manufacturer +
-                ", product: " +
-                product +
-                ", serial: " +
-                serial +
-                ", ID: " +
-                id.toString();
+        return "VID: 0x" + String.format("%04x", vendorId) + ", PID: 0x" + String.format("%04x", productId) + ", " +
+                "manufacturer: " + manufacturer + ", product: " + product + ", serial: " + serial + ", ID: " + id;
     }
 }

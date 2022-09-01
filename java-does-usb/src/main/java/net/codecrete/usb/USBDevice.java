@@ -9,13 +9,17 @@ package net.codecrete.usb;
 
 /**
  * USB device.
- *
  * <p>
- * Instances of this class are associated with operating system resources
- * and must be close when they are no longer used.
+ * In order to make control requests and transfer data, the device must be
+ * opened and an interface must be claimed. In the open state, this current
+ * process has exclusive access to the device.
+ * </p>
+ * <p>
+ * Information about the device can be queried in both the open and the
+ * closed state.
  * </p>
  */
-public interface USBDevice extends AutoCloseable {
+public interface USBDevice {
 
     /**
      * USB product ID.
@@ -76,6 +80,23 @@ public interface USBDevice extends AutoCloseable {
      * @return protocol code
      */
     int getProtocolCode();
+
+    /**
+     * Opens the device for communication.
+     */
+    void open();
+
+    /**
+     * Indicates if the device is open.
+     *
+     * @return {@code true} if the device is open, {@code false} if it is closed.
+     */
+    boolean isOpen();
+
+    /**
+     * Closes the device.
+     */
+    void close();
 
     /**
      * Claims the specified interface for exclusive use.
@@ -151,23 +172,4 @@ public interface USBDevice extends AutoCloseable {
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength);
-
-
-    /**
-     * Returns if this instance and another {@link USBDeviceInfo} instance
-     * represent the same USB device.
-     *
-     * @param device other device instance
-     * @return {@code true} if they are the same, {@code false} otherwise
-     */
-    boolean isSameDevice(USBDeviceInfo device);
-
-    /**
-     * Returns if this instance and another {@link USBDevice} instance
-     * represent the same USB device.
-     *
-     * @param device other device info instance
-     * @return {@code true} if they are the same, {@code false} otherwise
-     */
-    boolean isSameDevice(USBDevice device);
 }

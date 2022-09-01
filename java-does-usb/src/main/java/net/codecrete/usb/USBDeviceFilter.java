@@ -172,7 +172,7 @@ public class USBDeviceFilter {
      * @param deviceInfo USB device information
      * @return {@code true} if it matches, {@code false} otherwise
      */
-    public boolean matches(USBDeviceInfo deviceInfo) {
+    public boolean matches(USBDevice deviceInfo) {
         if (vendorId != null && deviceInfo.getVendorId() != vendorId)
             return false;
         if (productId != null && deviceInfo.getProductId() != productId)
@@ -186,7 +186,7 @@ public class USBDeviceFilter {
         return protocolCode == null || deviceInfo.getProtocolCode() == protocolCode;
     }
 
-    public static boolean matchesAny(USBDeviceInfo deviceInfo, List<USBDeviceFilter> filters) {
+    public static boolean matchesAny(USBDevice deviceInfo, List<USBDeviceFilter> filters) {
         return filters.stream().anyMatch(filter -> filter.matches(deviceInfo));
     }
 }

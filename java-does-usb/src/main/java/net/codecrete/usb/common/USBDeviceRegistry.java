@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBDeviceInfo;
+import net.codecrete.usb.USBDevice;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,9 +31,9 @@ import java.util.function.Consumer;
  */
 public abstract class USBDeviceRegistry {
 
-    private volatile List<USBDeviceInfo> devices;
-    protected Consumer<USBDeviceInfo> onDeviceConnectedHandler;
-    protected Consumer<USBDeviceInfo> onDeviceDisconnectedHandler;
+    private volatile List<USBDevice> devices;
+    protected Consumer<USBDevice> onDeviceConnectedHandler;
+    protected Consumer<USBDevice> onDeviceDisconnectedHandler;
 
     private final Lock lock = new ReentrantLock();
     private final Condition enumerationComplete = lock.newCondition();
@@ -64,26 +64,24 @@ public abstract class USBDeviceRegistry {
      *
      * @return list of devices
      */
-    public List<USBDeviceInfo> getAllDevices() {
+    public List<USBDevice> getAllDevices() {
         return Collections.unmodifiableList(devices);
     }
 
-    public void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
+    public void setOnDeviceConnected(Consumer<USBDevice> handler) {
         onDeviceConnectedHandler = handler;
     }
 
-    public void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
+    public void setOnDeviceDisconnected(Consumer<USBDevice> handler) {
         onDeviceDisconnectedHandler = handler;
     }
 
-    protected void emitOnDeviceConnected(USBDeviceInfo device) {
-        if (onDeviceConnectedHandler != null)
-            onDeviceConnectedHandler.accept(device);
+    protected void emitOnDeviceConnected(USBDevice device) {
+        if (onDeviceConnectedHandler != null) onDeviceConnectedHandler.accept(device);
     }
 
-    protected void emitOnDeviceDisconnected(USBDeviceInfo device) {
-        if (onDeviceDisconnectedHandler != null)
-            onDeviceDisconnectedHandler.accept(device);
+    protected void emitOnDeviceDisconnected(USBDevice device) {
+        if (onDeviceDisconnectedHandler != null) onDeviceDisconnectedHandler.accept(device);
     }
 
     /**
@@ -132,7 +130,7 @@ public abstract class USBDeviceRegistry {
      *
      * @param deviceList the device list
      */
-    protected void setInitialDeviceList(List<USBDeviceInfo> deviceList) {
+    protected void setInitialDeviceList(List<USBDevice> deviceList) {
         devices = deviceList;
         signalEnumerationComplete();
     }
@@ -142,13 +140,12 @@ public abstract class USBDeviceRegistry {
      *
      * @param device device to add
      */
-    protected void addDevice(USBDeviceInfo device) {
+    protected void addDevice(USBDevice device) {
         // check for duplicates
-        if (findDeviceIndex(devices, ((USBDeviceInfoImpl) device).getUniqueId()) >= 0)
-            return;
+        if (findDeviceIndex(devices, ((USBDeviceImpl) device).getUniqueId()) >= 0) return;
 
         // copy list
-        var newDeviceList = new ArrayList<USBDeviceInfo>(devices.size() + 1);
+        var newDeviceList = new ArrayList<USBDevice>(devices.size() + 1);
         newDeviceList.addAll(devices);
         newDeviceList.add(device);
         devices = newDeviceList;
@@ -165,8 +162,7 @@ public abstract class USBDeviceRegistry {
     protected void removeDevice(Object deviceId) {
         // locate device to be removed
         int index = findDeviceIndex(devices, deviceId);
-        if (index < 0)
-            return; // strange
+        if (index < 0) return; // strange
 
         // copy list and remove device
         var deviceInfo = devices.get(index);
@@ -185,11 +181,10 @@ public abstract class USBDeviceRegistry {
      * @param deviceId   the unique device ID
      * @return return the index, or -1 if the device is not found
      */
-    protected int findDeviceIndex(List<USBDeviceInfo> deviceList, Object deviceId) {
+    protected int findDeviceIndex(List<USBDevice> deviceList, Object deviceId) {
         for (int i = 0; i < deviceList.size(); i++) {
-            var dev = (USBDeviceInfoImpl) deviceList.get(i);
-            if (deviceId.equals(dev.getUniqueId()))
-                return i;
+            var dev = (USBDeviceImpl) deviceList.get(i);
+            if (deviceId.equals(dev.getUniqueId())) return i;
         }
         return -1;
     }

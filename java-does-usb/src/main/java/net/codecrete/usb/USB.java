@@ -33,7 +33,8 @@ public class USB {
         } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new LinuxUSBDeviceRegistry();
         } else {
-            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture %s/%s", osName, osArch));
+            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " +
+                    "%s/%s", osName, osArch));
         }
         return impl;
     }
@@ -62,7 +63,7 @@ public class USB {
      *
      * @return list of USB devices
      */
-    public static List<USBDeviceInfo> getAllDevices() {
+    public static List<USBDevice> getAllDevices() {
         return instance().getAllDevices();
     }
 
@@ -72,7 +73,7 @@ public class USB {
      * @param filter device filter
      * @return list of USB devices
      */
-    public static List<USBDeviceInfo> getDevices(USBDeviceFilter filter) {
+    public static List<USBDevice> getDevices(USBDeviceFilter filter) {
         return instance().getAllDevices().stream().filter(filter::matches).collect(Collectors.toList());
     }
 
@@ -82,7 +83,7 @@ public class USB {
      * @param filters list of device filters
      * @return list of USB devices
      */
-    public static List<USBDeviceInfo> getDevices(List<USBDeviceFilter> filters) {
+    public static List<USBDevice> getDevices(List<USBDeviceFilter> filters) {
         return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters))
                 .collect(Collectors.toList());
     }
@@ -93,7 +94,7 @@ public class USB {
      * @param filter device filter
      * @return USB device, or {@code null} if no device matches
      */
-    public static USBDeviceInfo getDevice(USBDeviceFilter filter) {
+    public static USBDevice getDevice(USBDeviceFilter filter) {
         return instance().getAllDevices().stream().filter(filter::matches).findFirst().orElse(null);
     }
 
@@ -103,7 +104,7 @@ public class USB {
      * @param filters list of device filters
      * @return USB device, or {@code null} if no device matches
      */
-    public static USBDeviceInfo getDevice(List<USBDeviceFilter> filters) {
+    public static USBDevice getDevice(List<USBDeviceFilter> filters) {
         return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters))
                 .findFirst().orElse(null);
     }
@@ -113,7 +114,7 @@ public class USB {
      *
      * @param handler handler function, or {@code null} to remove a previous handler
      */
-    public static void setOnDeviceConnected(Consumer<USBDeviceInfo> handler) {
+    public static void setOnDeviceConnected(Consumer<USBDevice> handler) {
         instance().setOnDeviceConnected(handler);
     }
 
@@ -122,7 +123,7 @@ public class USB {
      *
      * @param handler handler function, or {@code null} to remove a previous handler
      */
-    public static void setOnDeviceDisconnected(Consumer<USBDeviceInfo> handler) {
+    public static void setOnDeviceDisconnected(Consumer<USBDevice> handler) {
         instance().setOnDeviceDisconnected(handler);
     }
 }
