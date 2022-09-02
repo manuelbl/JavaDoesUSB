@@ -19,7 +19,8 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 
 import static java.lang.foreign.MemoryAddress.NULL;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.JAVA_CHAR;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 /**
  * Device property GUIDs and functions

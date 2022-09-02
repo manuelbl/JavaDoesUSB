@@ -39,7 +39,7 @@ public class IoKitHelper {
      * @param interfaceId the interface ID
      * @return the interface, or <code>null</code> if the plugin type or interface is not available
      */
-    public static MemoryAddress GetInterface(int service, Addressable pluginType, MemoryAddress interfaceId) {
+    public static MemoryAddress getInterface(int service, Addressable pluginType, MemoryAddress interfaceId) {
         try (var session = MemorySession.openConfined()) {
             // MemorySegment for holding IOCFPlugInInterface**
             var plugPointer = session.allocate(ADDRESS, NULL);
@@ -50,7 +50,7 @@ public class IoKitHelper {
                 return null;
 
             var plug = Foreign.derefAddress(plugPointer.address(), session);
-            // MemorySegment for holding XXXInterface**
+            // MemorySegment for holding xxxInterface**
             var intf = session.allocate(ADDRESS, NULL);
             // UUID bytes
             var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUID.byteSize(), session);
@@ -73,7 +73,7 @@ public class IoKitHelper {
      * @param key the property key
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static Integer GetPropertyInt(int service, String key) {
+    public static Integer getPropertyInt(int service, String key) {
         var value = IoKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
         if (value == NULL)
             return null;
@@ -102,7 +102,7 @@ public class IoKitHelper {
      * @param key the property key
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static String GetPropertyString(int service, String key) {
+    public static String getPropertyString(int service, String key) {
         var value = IoKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
         if (value == NULL)
             return null;

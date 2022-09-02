@@ -9,6 +9,8 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBException;
+import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
 
@@ -18,96 +20,97 @@ import java.lang.foreign.MemorySession;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.MemoryAddress.ofLong;
 import static java.lang.foreign.ValueLayout.*;
 
 public class MacosUSBDevice extends USBDeviceImpl {
 
-    private MemoryAddress device;
+    private final MemoryAddress device;
     private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
     private List<EndpointInfo> endpoints;
 
-    MacosUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
-                   int classCode, int subclassCode, int protocolCode) {
-        super(id, vendorId, productId, manufacturer, product, serial, classCode, subclassCode, protocolCode);
+    MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
+        super(id, vendorId, productId, manufacturer, product, serial);
+        this.device = device;
+        IoKit.AddRef(device);
+
+        try {
+            loadDescription();
+        } finally {
+            closeFully();
+        }
     }
 
     @Override
     public boolean isOpen() {
-        return device != null;
+        return claimedInterfaces != null;
     }
 
     @Override
     public void open() {
-        if (device != null) return;
+        if (isOpen())
+            throw new USBException("the device is already open");
 
-        try (var session = MemorySession.openConfined()) {
+        // open device
+        int ret = IoKitUSB.USBDeviceOpen(device);
+        if (ret != 0)
+            throw new MacosUSBException("unable to open USB device", ret);
 
-            // get service from IO registry
-            var matching = IoKit.IORegistryEntryIDMatching((Long) id);
-            if (matching == NULL) throw new MacosUSBException("IORegistryEntryIDMatching failed");
+        // set configuration
+        ret = IoKitUSB.SetConfiguration(device, (byte) configurationValue);
+        if (ret != 0)
+            throw new MacosUSBException("failed to set configuration", ret);
 
-            // Consumes matching instance
-            int service = IoKit.IOServiceGetMatchingService(IoKit.kIOMasterPortDefault, matching);
-            if (service == 0) throw new MacosUSBException("unable to open USB device (IOServiceGetMatchingService)");
-            session.addCloseAction(() -> IoKit.IOObjectRelease(service));
-
-            // get user client interface
-            device = IoKitHelper.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID,
-                    IoKit.kIOUSBDeviceInterfaceID100);
-            if (device == null) throw new MacosUSBException("unable to open USB device (get client interface)");
-
-            // open device
-            int ret = IoKitUSB.USBDeviceOpen(device);
-            if (ret != 0) {
-                IoKit.Release(device);
-                device = null;
-                throw new MacosUSBException("unable to open USB device", ret);
-            }
-
-            try {
-                // retrieve information of first configuration
-                var descPtrHolder = session.allocate(ADDRESS);
-                ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder);
-                if (ret != 0) throw new MacosUSBException("failed to query first configuration", ret);
-
-                // get value of first configuration
-                var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
-                        USBDescriptors.Configuration.byteSize(), session);
-                configurationValue = 255 & (byte) USBDescriptors.Configuration_bConfigurationValue.get(configDesc);
-
-                // set configuration
-                ret = IoKitUSB.SetConfiguration(device, (byte) configurationValue);
-                if (ret != 0) throw new MacosUSBException("failed to set configuration", ret);
-
-            } catch (Throwable e) {
-                IoKitUSB.USBDeviceClose(device);
-                IoKit.Release(device);
-                device = null;
-                configurationValue = 0;
-                throw e;
-            }
-        }
+        claimedInterfaces = new ArrayList<>();
     }
 
     @Override
     public void close() {
-        if (device == null) return;
+        if (!isOpen())
+            return;
 
-        if (claimedInterfaces != null) {
-            for (InterfaceInfo interfaceInfo : claimedInterfaces) {
-                IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
-                IoKit.Release(interfaceInfo.asMemoryAddress());
-            }
-            claimedInterfaces = null;
-            endpoints = null;
+        for (InterfaceInfo interfaceInfo : claimedInterfaces) {
+            IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
+            IoKit.Release(interfaceInfo.asMemoryAddress());
         }
+        claimedInterfaces = null;
+        endpoints = null;
+    }
 
+    void closeFully() {
+        close();
         IoKitUSB.USBDeviceClose(device);
         IoKit.Release(device);
-        device = null;
+    }
+
+    private void loadDescription() {
+        try (var session = MemorySession.openConfined()) {
+
+            try {
+                // retrieve information of first configuration
+                var descPtrHolder = session.allocate(ADDRESS);
+                int ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder);
+                if (ret != 0)
+                    throw new MacosUSBException("failed to query first configuration", ret);
+
+                // get value of first configuration
+                var configDescHeader = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
+                        USBDescriptors.Configuration.byteSize(), session);
+                int totalLength = (short) USBDescriptors.Configuration_wTotalLength.get(configDescHeader);
+                var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
+                        totalLength, session);
+
+                var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc);
+
+                configurationValue = 255 & configuration.configValue;
+                setInterfaces(configuration.interfaces);
+
+            } catch (Throwable e) {
+                configurationValue = 0;
+                throw e;
+            }
+        }
     }
 
     private InterfaceInfo findInterface(int interfaceNumber) {
@@ -132,7 +135,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     final int service_final = service;
                     session.addCloseAction(() -> IoKit.IOObjectRelease(service_final));
 
-                    final MemoryAddress intf = IoKitHelper.GetInterface(service,
+                    final MemoryAddress intf = IoKitHelper.getInterface(service,
                             IoKit.kIOUSBInterfaceUserClientTypeID, IoKit.kIOUSBInterfaceInterfaceID100);
                     if (intf == null) continue;
 
@@ -155,6 +158,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     public void claimInterface(int interfaceNumber) {
+        checkIsOpen();;
+
         var interfaceInfo = findInterface(interfaceNumber);
 
         try {
@@ -165,13 +170,14 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throw t;
         }
 
-        if (claimedInterfaces == null) claimedInterfaces = new ArrayList<>();
         claimedInterfaces.add(interfaceInfo);
 
         updateEndpointList();
     }
 
     public void releaseInterface(int interfaceNumber) {
+        checkIsOpen();
+
         var interfaceInfoOptional =
                 claimedInterfaces.stream().filter(info -> info.interfaceNumber == interfaceNumber).findFirst();
         if (interfaceInfoOptional.isEmpty())

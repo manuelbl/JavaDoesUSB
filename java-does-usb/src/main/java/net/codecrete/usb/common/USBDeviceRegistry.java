@@ -165,7 +165,8 @@ public abstract class USBDeviceRegistry {
     protected void removeDevice(Object deviceId) {
         // locate device to be removed
         int index = findDeviceIndex(devices, deviceId);
-        if (index < 0) return; // strange
+        if (index < 0)
+            return; // strange
 
         // copy list and remove device
         var device = devices.get(index);
@@ -190,5 +191,17 @@ public abstract class USBDeviceRegistry {
             if (deviceId.equals(dev.getUniqueId())) return i;
         }
         return -1;
+    }
+    /**
+     * Finds the device with the given ID in the device list
+     *
+     * @param deviceId   the unique device ID
+     * @return return device, or {@code null} if not found.
+     */
+    protected USBDevice findDevice(Object deviceId) {
+        int index = findDeviceIndex(devices, deviceId);
+        if (index < 0)
+            return null;
+        return devices.get(index);
     }
 }

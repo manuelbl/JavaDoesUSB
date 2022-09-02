@@ -196,12 +196,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             int vendorId = 0xffff & (short) USBDescriptors.Device_idVendor.get(deviceDesc);
             int productId = 0xffff & (short) USBDescriptors.Device_idProduct.get(deviceDesc);
-            int classCode = 255 & (byte) USBDescriptors.Device_bDeviceClass.get(deviceDesc);
-            int subClassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
-            int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
 
             return new WindowsUSBDevice(devicePath, vendorId, productId, manufacturer, product, serialNumber,
-                    classCode, subClassCode, protocolCode, currentConfigurationValue);
+                    currentConfigurationValue);
         }
     }
 

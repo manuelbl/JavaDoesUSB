@@ -168,7 +168,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
         // create device instance
         return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(udevDevice, "manufacturer"),
-                getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"), 0, 0, 0);
+                getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
     }
 
     private static String getDeviceAttribute(Addressable udevDevice, String attribute) {

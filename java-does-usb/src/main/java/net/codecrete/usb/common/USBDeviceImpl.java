@@ -7,10 +7,10 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBRecipient;
-import net.codecrete.usb.USBRequestType;
+import net.codecrete.usb.*;
+
+import java.util.Collections;
+import java.util.List;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
@@ -20,9 +20,11 @@ public abstract class USBDeviceImpl implements USBDevice {
     protected final String manufacturer;
     protected final String product;
     protected final String serial;
-    protected final int classCode;
-    protected final int subclassCode;
-    protected final int protocolCode;
+    protected int classCode;
+    protected int subclassCode;
+    protected int protocolCode;
+
+    protected List<USBInterface> interfaces;
 
     /**
      * Creates a new instance.
@@ -33,12 +35,9 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param manufacturer manufacturer name
      * @param product      product name
      * @param serial       serial number
-     * @param classCode    USB device class code
-     * @param subclassCode USB device subclass code
-     * @param protocolCode USB device protocol
      */
     protected USBDeviceImpl(Object id, int vendorId, int productId, String manufacturer, String product,
-                            String serial, int classCode, int subclassCode, int protocolCode) {
+                            String serial) {
 
         assert id != null;
 
@@ -48,45 +47,58 @@ public abstract class USBDeviceImpl implements USBDevice {
         this.manufacturer = manufacturer;
         this.product = product;
         this.serial = serial;
-        this.classCode = classCode;
-        this.subclassCode = subclassCode;
-        this.protocolCode = protocolCode;
     }
 
+    @Override
     public abstract void open();
 
+    @Override
     public abstract void close();
 
+    @Override
     public abstract boolean isOpen();
 
+    protected void checkIsOpen() {
+        if (!isOpen())
+            throw new USBException("The device needs to be open to call this method");
+    }
+
+    @Override
     public int getProductId() {
         return productId;
     }
 
+    @Override
     public int getVendorId() {
         return vendorId;
     }
 
+    @Override
     public String getProduct() {
         return product;
     }
 
+    @Override
     public String getManufacturer() {
         return manufacturer;
     }
 
+    @Override
     public String getSerial() {
         return serial;
     }
 
+    @Override
     public int getClassCode() {
         return classCode;
     }
 
+    @Override
     public int getSubclassCode() {
         return subclassCode;
     }
 
+    @Override
     public int getProtocolCode() {
         return protocolCode;
     }
@@ -95,17 +107,32 @@ public abstract class USBDeviceImpl implements USBDevice {
         return id;
     }
 
+    @Override
+    public List<USBInterface> getInterfaces() {
+        return Collections.unmodifiableList(interfaces);
+    }
+
+    public void setInterfaces(List<USBInterface> interfaces) {
+        this.interfaces = interfaces;
+    }
+
+    @Override
     public abstract void claimInterface(int interfaceNumber);
 
+    @Override
     public abstract void releaseInterface(int interfaceNumber);
 
+    @Override
     public abstract byte[] controlTransferIn(USBControlTransfer setup, int length);
 
+    @Override
     public abstract void controlTransferOut(USBControlTransfer setup, byte[] data);
 
 
+    @Override
     public abstract void transferOut(int endpointNumber, byte[] data);
 
+    @Override
     public abstract byte[] transferIn(int endpointNumber, int maxLength);
 
     protected byte[] getDescriptor(int descriptorType, int index, int language) {

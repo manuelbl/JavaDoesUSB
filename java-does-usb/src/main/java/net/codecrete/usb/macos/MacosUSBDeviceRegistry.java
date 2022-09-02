@@ -15,7 +15,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -51,8 +50,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
             // iterate current devices in order to arm the notifications (and build initial device list)
             var deviceList = new ArrayList<USBDevice>();
-            iterateDevices(deviceConnectedIter, false, (entryId, service) -> {
-                var device = createDevice(entryId, service);
+            iterateDevices(deviceConnectedIter, (entryId, service, deviceIntf) -> {
+                var device = createDevice(entryId, service, deviceIntf);
                 if (device != null)
                     deviceList.add(device);
             });
@@ -79,10 +78,9 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * Process the devices resulting from the iterator
      *
      * @param iterator       the iterator
-     * @param isDisconnected flag is the iterator is for disconnected devices
      * @param function       a function that will be called for each device with the entry ID and the service
      */
-    private void iterateDevices(int iterator, boolean isDisconnected, BiConsumer<Long, Integer> function) {
+    private void iterateDevices(int iterator, IOKitDeviceConsumer function) {
 
         int svc;
         while ((svc = IoKit.IOIteratorNext(iterator)) != 0) {
@@ -91,42 +89,37 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 final int service = svc;
                 session.addCloseAction(() -> IoKit.IOObjectRelease(service));
 
-                // test if service has user client interface (if not, it is likely a controller)
-                if (!isDisconnected) {
-                    final var device = IoKitHelper.GetInterface(service, IoKit.kIOUSBDeviceUserClientTypeID,
-                            IoKit.kIOUSBDeviceInterfaceID100);
-                    if (device == null) continue;
-                    IoKit.Release(device);
-                }
+                var device = IoKitHelper.getInterface(service, IoKit.kIOUSBDeviceUserClientTypeID,
+                        IoKit.kIOUSBDeviceInterfaceID100);
 
                 // get entry ID (as unique ID)
                 var entryIdHolder = session.allocate(JAVA_LONG);
                 int ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
-                if (ret != 0) throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
+                if (ret != 0)
+                    throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
 
                 // call function to process device
-                function.accept(entryId, service);
+                function.accept(entryId, service, device);
             }
         }
     }
 
-    private USBDevice createDevice(Long entryID, int service) {
+    private USBDevice createDevice(Long entryID, int service, MemoryAddress deviceIntf) {
 
-        Integer vendorId = IoKitHelper.GetPropertyInt(service, "idVendor");
-        Integer productId = IoKitHelper.GetPropertyInt(service, "idProduct");
-        String manufacturer = IoKitHelper.GetPropertyString(service, "kUSBVendorString");
-        String product = IoKitHelper.GetPropertyString(service, "kUSBProductString");
-        String serial = IoKitHelper.GetPropertyString(service, "kUSBSerialNumberString");
-        Integer classCode = IoKitHelper.GetPropertyInt(service, "bDeviceClass");
-        Integer subclassCode = IoKitHelper.GetPropertyInt(service, "bDeviceSubClass");
-        Integer protocolCode = IoKitHelper.GetPropertyInt(service, "bDeviceProtocol");
-
-        if (vendorId == null || productId == null || classCode == null || subclassCode == null || protocolCode == null)
+        if (deviceIntf == null)
             return null;
 
-        return new MacosUSBDevice(entryID, vendorId, productId, manufacturer, product, serial, classCode,
-                subclassCode, protocolCode);
+        Integer vendorId = IoKitHelper.getPropertyInt(service, "idVendor");
+        Integer productId = IoKitHelper.getPropertyInt(service, "idProduct");
+        String manufacturer = IoKitHelper.getPropertyString(service, "kUSBVendorString");
+        String product = IoKitHelper.getPropertyString(service, "kUSBProductString");
+        String serial = IoKitHelper.getPropertyString(service, "kUSBSerialNumberString");
+
+        if (vendorId == null || productId == null)
+            return null;
+
+        return new MacosUSBDevice(deviceIntf, entryID, vendorId, productId, manufacturer, product, serial);
     }
 
     private int setupNotification(MemorySession session, MemoryAddress notifyPort, MemorySegment notificationType,
@@ -161,8 +154,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     private void onDevicesConnected(MemoryAddress ignoredRefCon, int iterator) {
 
         // process device iterator for connected devices
-        iterateDevices(iterator, false, (entryId, service) -> {
-            var device = createDevice(entryId, service);
+        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
+            var device = createDevice(entryId, service, deviceIntf);
             if (device != null)
                 addDevice(device);
         });
@@ -180,6 +173,18 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     private void onDevicesDisconnected(MemoryAddress ignoredRefCon, int iterator) {
 
         // process device iterator for disconnected devices
-        iterateDevices(iterator, true, (entryId, service) -> removeDevice(entryId));
+        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
+            var device = findDevice(entryId);
+            if (device == null)
+                return;
+
+            ((MacosUSBDevice)device).closeFully();
+            removeDevice(entryId);
+        });
+    }
+
+    @FunctionalInterface
+    public interface IOKitDeviceConsumer {
+        void accept(long entryId, int service, MemoryAddress deviceIntf);
     }
 }

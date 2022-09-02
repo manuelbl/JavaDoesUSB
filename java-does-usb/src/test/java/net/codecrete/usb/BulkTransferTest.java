@@ -9,8 +9,6 @@
 
 package net.codecrete.usb;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -20,13 +18,11 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class BulkTransferTest {
+public class BulkTransferTest extends TestDeviceBase {
 
     private static final int LOOPBACK_EP_OUT = 1;
     private static final int LOOPBACK_EP_IN = 2;
     private static final int MAX_PACKET_SIZE = 64;
-
-    private static USBDevice device;
 
     @Test
     void smallTransfer_succeeds() {
@@ -83,22 +79,5 @@ public class BulkTransferTest {
         var bytes = new byte[numBytes];
         random.nextBytes(bytes);
         return bytes;
-    }
-
-    @BeforeAll
-    static void openDevice() {
-        device = USB.getDevice(new USBDeviceFilter(0xcafe, 0xceaf));
-        if (device == null)
-            throw new IllegalStateException("USB loopback test device must be connected");
-        device.open();
-        device.claimInterface(0);
-    }
-
-    @AfterAll
-    static void closeDevice() {
-        if (device != null) {
-            device.close();
-            device = null;
-        }
     }
 }

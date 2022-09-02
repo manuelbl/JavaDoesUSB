@@ -7,6 +7,8 @@
 
 package net.codecrete.usb;
 
+import java.util.List;
+
 /**
  * USB device.
  * <p>
@@ -97,6 +99,13 @@ public interface USBDevice {
      * Closes the device.
      */
     void close();
+
+    /**
+     * Gets the interfaces of this device.
+     *
+     * @return a list of USB interfaces
+     */
+    List<USBInterface> getInterfaces();
 
     /**
      * Claims the specified interface for exclusive use.

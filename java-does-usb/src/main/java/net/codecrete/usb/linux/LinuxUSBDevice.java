@@ -27,9 +27,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private int fd = -1;
 
-    LinuxUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
-                   int classCode, int subclassCode, int protocolCode) {
-        super(id, vendorId, productId, manufacturer, product, serial, classCode, subclassCode, protocolCode);
+    LinuxUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
+        super(id, vendorId, productId, manufacturer, product, serial);
     }
 
     @Override

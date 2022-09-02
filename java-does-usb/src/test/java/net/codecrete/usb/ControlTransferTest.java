@@ -9,15 +9,14 @@
 
 package net.codecrete.usb;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class ControlTransferTest {
-
-    private static USBDevice device;
+/**
+ * Tests control transfers
+ */
+public class ControlTransferTest extends TestDeviceBase {
 
     @Test
     void storeValue_succeeds() {
@@ -38,22 +37,5 @@ public class ControlTransferTest {
         device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) 0), sentValue);
         var retrievedValue = device.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) 0), 4);
         assertArrayEquals(sentValue, retrievedValue);
-    }
-
-    @BeforeAll
-    static void openDevice() {
-        device = USB.getDevice(new USBDeviceFilter(0xcafe, 0xceaf));
-        if (device == null)
-            throw new IllegalStateException("USB loopback test device must be connected");
-        device.open();
-        device.claimInterface(0);
-    }
-
-    @AfterAll
-    static void closeDevice() {
-        if (device != null) {
-            device.close();
-            device = null;
-        }
     }
 }

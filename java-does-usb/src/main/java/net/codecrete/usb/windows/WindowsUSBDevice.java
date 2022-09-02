@@ -10,9 +10,9 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBInterface;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.DescriptorParser.Configuration;
-import net.codecrete.usb.common.DescriptorParser.Interface;
 import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBStructs;
@@ -37,12 +37,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private MemoryAddress firstInterface;
     private final byte currentConfigurationValue;
     private Configuration configuration;
-    private List<Interface> claimedInterfaces;
+    private List<USBInterface> claimedInterfaces;
 
 
     WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
-                     int classCode, int subclassCode, int protocolCode, byte currentConfigurationValue) {
-        super(id, vendorId, productId, manufacturer, product, serial, classCode, subclassCode, protocolCode);
+                     byte currentConfigurationValue) {
+        super(id, vendorId, productId, manufacturer, product, serial);
         this.currentConfigurationValue = currentConfigurationValue;
     }
 
@@ -110,32 +110,31 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     public void claimInterface(int interfaceNumber) {
-        var intfOptional = configuration.interfaces.stream().filter(intf -> intf.number == interfaceNumber).findFirst();
-        if (intfOptional.isEmpty())
+        var intf = configuration.findInterfaceByNumber(interfaceNumber);
+        if (intf == null)
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
 
         if (claimedInterfaces == null)
             claimedInterfaces = new ArrayList<>();
 
-        claimedInterfaces.add(intfOptional.get());
+        claimedInterfaces.add(intf);
     }
 
     public void releaseInterface(int interfaceNumber) {
-        var intfOptional = claimedInterfaces.stream().filter(intf -> intf.number == interfaceNumber).findFirst();
+        var intfOptional = claimedInterfaces.stream().filter(intf -> intf.getNumber() == interfaceNumber).findFirst();
         if (intfOptional.isEmpty())
-            throw new USBException(String.format("Interface has not been claimed or is invalid: number %d",
+            throw new USBException(String.format("Interface has not been claimed: number %d",
                     interfaceNumber));
 
         claimedInterfaces.remove(intfOptional.get());
     }
 
     private byte checkEndpointNumber(int endpointNumber, USBDirection direction) {
-        byte endpointAddress = (byte) ((direction.ordinal() << 7) | endpointNumber);
         if (endpointNumber >= 1 && endpointNumber <= 127 && claimedInterfaces != null) {
             for (var intf : claimedInterfaces) {
-                for (var ep : intf.endpoints) {
-                    if (ep.address == endpointAddress)
-                        return endpointAddress;
+                for (var ep : intf.getAlternate().getEndpoints()) {
+                    if (ep.getNumber() == endpointNumber && ep.getDirection() == direction)
+                        return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
                 }
             }
         }
