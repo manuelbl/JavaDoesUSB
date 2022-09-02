@@ -11,6 +11,7 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
+import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DETAIL_DATA_W;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
 
 import java.lang.foreign.Addressable;
@@ -95,15 +96,18 @@ public class DeviceProperty {
             if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, NULL, interfaceGuid, 0, devIntfData) == 0)
                 throw new USBException("internal error (SetupDiEnumDeviceInterfaces)");
 
-            // get path
-            var intfDetailData = session.allocate(SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT());
-            SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData, 8);
-            int intfDetailDataSize = (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.$LAYOUT().byteSize();
+            // get device path
+            // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
+            // the device path fits)
+            final int devicePathOffset = 4;
+            var intfDetailData = session.allocate(4 + 260 * 2);
+            SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData, (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
+            int intfDetailDataSize = (int) intfDetailData.byteSize();
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData,
                     intfDetailData, intfDetailDataSize, NULL, NULL) == 0)
                 throw new USBException("Internal error (SetupDiGetDeviceInterfaceDetailW)", Kernel32.GetLastError());
 
-            return Win.createStringFromSegment(intfDetailData.asSlice(SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath$Offset));
+            return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
         }
     }
 
