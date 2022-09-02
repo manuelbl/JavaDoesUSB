@@ -27,7 +27,7 @@ public class DescriptorParser {
         var desc = MemorySegment.ofArray(descriptor);
         var config = parseConfiguration(desc, 0);
         Interface lastInterface = null;
-        Endpoint lastEndpoint = null;
+        Endpoint lastEndpoint;
         int offset = peekDescLength(desc, 0);
 
         while (offset < desc.byteSize()) {
@@ -38,7 +38,6 @@ public class DescriptorParser {
             if (descType == USBDescriptors.INTERFACE_DESCRIPTOR_TYPE) {
                 lastInterface = parseInterface(desc, offset);
                 config.interfaces.add(lastInterface);
-                lastEndpoint = null;
 
             } else if (descType == USBDescriptors.ENDPOINT_DESCRIPTOR_TYPE) {
                 lastEndpoint = parseEndpoint(desc, offset);

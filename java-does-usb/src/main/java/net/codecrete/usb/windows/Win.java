@@ -83,6 +83,13 @@ public class Win {
                                            byte data4_0, byte data4_1, byte data4_2, byte data4_3,
                                            byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
         var guid = MemorySegment.allocateNative(GUID.$LAYOUT(), MemorySession.global());
+        setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
+        return guid;
+    }
+
+    public static void setGUID(MemorySegment guid, int data1, short data2, short data3,
+                               byte data4_0, byte data4_1, byte data4_2, byte data4_3,
+                               byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
         GUID.Data1$set(guid, data1);
         GUID.Data2$set(guid, data2);
         GUID.Data3$set(guid, data3);
@@ -95,6 +102,5 @@ public class Win {
         data4.set(JAVA_BYTE, 5, data4_5);
         data4.set(JAVA_BYTE, 6, data4_6);
         data4.set(JAVA_BYTE, 7, data4_7);
-        return guid;
     }
 }

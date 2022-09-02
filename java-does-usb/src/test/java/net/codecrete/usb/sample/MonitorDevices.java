@@ -22,6 +22,7 @@ public class MonitorDevices {
         USB.setOnDeviceConnected((dev) -> System.out.println("Connected:    " + dev.toString()));
         USB.setOnDeviceDisconnected((dev) -> System.out.println("Disconnected: " + dev.toString()));
 
+        //noinspection InfiniteLoopStatement
         while (true) {
             Thread.sleep(1000000);
         }

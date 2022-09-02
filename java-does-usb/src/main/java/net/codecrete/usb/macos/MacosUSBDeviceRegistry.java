@@ -130,7 +130,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     private int setupNotification(MemorySession session, MemoryAddress notifyPort, MemorySegment notificationType,
-                                  MethodHandle callback) throws NoSuchMethodException, IllegalAccessException {
+                                  MethodHandle callback) {
 
         // new matching dictionary for (dis)connected device notifications
         MemoryAddress matchingDict = IoKit.IOServiceMatching(IoKit.kIOUSBDeviceClassName);

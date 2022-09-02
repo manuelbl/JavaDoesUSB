@@ -50,7 +50,7 @@ public class ControlTransferTest {
     }
 
     @AfterAll
-    static void closeDevice() throws Exception {
+    static void closeDevice() {
         if (device != null) {
             device.close();
             device = null;

@@ -112,18 +112,7 @@ public class DeviceProperty {
                                            byte data4_4, byte data4_5, byte data4_6, byte data4_7,
                                          int pid) {
         var propKey = MemorySession.global().allocate(GUID.sizeof() + JAVA_INT.byteSize());
-        GUID.Data1$set(propKey, data1);
-        GUID.Data2$set(propKey, data2);
-        GUID.Data3$set(propKey, data3);
-        var data4 = GUID.Data4$slice(propKey);
-        data4.set(JAVA_BYTE, 0, data4_0);
-        data4.set(JAVA_BYTE, 1, data4_1);
-        data4.set(JAVA_BYTE, 2, data4_2);
-        data4.set(JAVA_BYTE, 3, data4_3);
-        data4.set(JAVA_BYTE, 4, data4_4);
-        data4.set(JAVA_BYTE, 5, data4_5);
-        data4.set(JAVA_BYTE, 6, data4_6);
-        data4.set(JAVA_BYTE, 7, data4_7);
+        Win.setGUID(propKey, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         propKey.set(JAVA_INT, 16, pid);
         return propKey;
     }

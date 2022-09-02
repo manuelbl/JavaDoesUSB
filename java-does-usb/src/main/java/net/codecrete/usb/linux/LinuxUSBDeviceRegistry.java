@@ -56,6 +56,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         enumeratePresentDevices(udevInstance);
 
         // monitor device changes
+        //noinspection InfiniteLoopStatement
         while (true) {
             try (var session = MemorySession.openConfined()) {
 
