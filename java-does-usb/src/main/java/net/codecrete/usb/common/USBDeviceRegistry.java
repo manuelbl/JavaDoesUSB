@@ -53,7 +53,10 @@ public abstract class USBDeviceRegistry {
      * Enumerate the already present devices and then start monitoring
      * devices being connected and disconnected.
      * <p>
-     * Implementors of this method are expected to call, {@link #setInitialDeviceList(List)}
+     * This function is run in a background thread.
+     * </p>
+     * <p>
+     * Implementors of this method are expected to call {@link #setInitialDeviceList(List)}
      * after the initial device implementation.
      * </p>
      */
@@ -165,13 +168,13 @@ public abstract class USBDeviceRegistry {
         if (index < 0) return; // strange
 
         // copy list and remove device
-        var deviceInfo = devices.get(index);
+        var device = devices.get(index);
         var newDeviceList = new ArrayList<>(devices);
         newDeviceList.remove(index);
         devices = newDeviceList;
 
         // send notification
-        emitOnDeviceDisconnected(deviceInfo);
+        emitOnDeviceDisconnected(device);
     }
 
     /**

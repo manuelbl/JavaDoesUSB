@@ -10,9 +10,9 @@ package net.codecrete.usb;
 import java.util.List;
 
 /**
- * Filter parameters for matching USB device.
+ * Filter condition for matching USB devices.
  * <p>
- * In order to match this filter, all non-null properties
+ * In order to match this condition, all non-null properties
  * of this instance must be equal to the same properties of the USB device.
  * </p>
  * <p>
@@ -169,24 +169,30 @@ public class USBDeviceFilter {
     /**
      * Tests if the specified USB device matches this filter.
      *
-     * @param deviceInfo USB device information
+     * @param device USB device
      * @return {@code true} if it matches, {@code false} otherwise
      */
-    public boolean matches(USBDevice deviceInfo) {
-        if (vendorId != null && deviceInfo.getVendorId() != vendorId)
+    public boolean matches(USBDevice device) {
+        if (vendorId != null && device.getVendorId() != vendorId)
             return false;
-        if (productId != null && deviceInfo.getProductId() != productId)
+        if (productId != null && device.getProductId() != productId)
             return false;
-        if (serialNumber != null && !serialNumber.equals(deviceInfo.getSerial()))
+        if (serialNumber != null && !serialNumber.equals(device.getSerial()))
             return false;
-        if (classCode != null && deviceInfo.getClassCode() != classCode)
+        if (classCode != null && device.getClassCode() != classCode)
             return false;
-        if (subclassCode != null && deviceInfo.getSubclassCode() != subclassCode)
+        if (subclassCode != null && device.getSubclassCode() != subclassCode)
             return false;
-        return protocolCode == null || deviceInfo.getProtocolCode() == protocolCode;
+        return protocolCode == null || device.getProtocolCode() == protocolCode;
     }
 
-    public static boolean matchesAny(USBDevice deviceInfo, List<USBDeviceFilter> filters) {
-        return filters.stream().anyMatch(filter -> filter.matches(deviceInfo));
+    /**
+     * Test if the USB devices matches any of the filter conditions.
+     * @param device the USB device
+     * @param filters a list of filter conditions
+     * @return {@code true} if it matches, {@code false} otherwise
+     */
+    public static boolean matchesAny(USBDevice device, List<USBDeviceFilter> filters) {
+        return filters.stream().anyMatch(filter -> filter.matches(device));
     }
 }

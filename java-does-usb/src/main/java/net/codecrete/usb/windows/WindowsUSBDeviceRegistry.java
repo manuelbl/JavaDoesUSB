@@ -32,6 +32,11 @@ import static java.lang.foreign.ValueLayout.*;
 
 /**
  * Windows implementation of USB device registry.
+ * <p>
+ * To retrieve details of a USB device, this class accesses it indirectly
+ * via the parent. To address it the parent's handle (<i>hub handle</i>) and
+ * the device's port number is needed.
+ * </p>
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
@@ -124,14 +129,14 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                         DeviceProperty.DEVPKEY_Device_InstanceId);
                 var devicePath = DeviceProperty.getDevicePath(instanceID, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
 
-                deviceList.add(createDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
+                deviceList.add(createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
             }
 
             setInitialDeviceList(deviceList);
         }
     }
 
-    private USBDevice createDeviceInfo(MemoryAddress devInfoSetHandle, MemorySegment devInfo, String devicePath,
+    private USBDevice createDeviceFromDeviceInfo(MemoryAddress devInfoSetHandle, MemorySegment devInfo, String devicePath,
                                        HashMap<String, MemoryAddress> hubHandles) {
         try (var session = MemorySession.openConfined()) {
 
@@ -152,11 +157,18 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hubHandles.put(hubPath, hubHandle);
             }
 
-            return createDeviceInfo(devicePath, hubHandle, usbPortNum);
+            return createDevice(devicePath, hubHandle, usbPortNum);
         }
     }
 
-    private USBDevice createDeviceInfo(String devicePath, MemoryAddress hubHandle, int usbPortNum) {
+    /**
+     * Retrieve device descriptor and create {@code USBDevice} instance
+     * @param devicePath the device path
+     * @param hubHandle the hub handle (parent)
+     * @param usbPortNum the USB port number
+     * @return the {@code USBDevice} instance
+     */
+    private USBDevice createDevice(String devicePath, MemoryAddress hubHandle, int usbPortNum) {
 
         try (var session = MemorySession.openConfined()) {
 
@@ -198,6 +210,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return null;
 
         try (var session = MemorySession.openConfined()) {
+
             final int dataLen = 255;
             var descriptorRequest = session.allocate(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset + dataLen);
             USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
@@ -283,11 +296,11 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             final var hubHandles = new HashMap<String, MemoryAddress>();
             session.addCloseAction(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
 
-            // create device info instance
-            var deviceInfo = createDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
+            // create device instance
+            var device = createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
 
             // add it to device list
-            addDevice(deviceInfo);
+            addDevice(device);
         }
     }
 

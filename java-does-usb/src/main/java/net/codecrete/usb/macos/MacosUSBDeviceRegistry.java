@@ -52,8 +52,9 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             // iterate current devices in order to arm the notifications (and build initial device list)
             var deviceList = new ArrayList<USBDevice>();
             iterateDevices(deviceConnectedIter, false, (entryId, service) -> {
-                var deviceInfo = createDeviceInfo(entryId, service);
-                if (deviceInfo != null) deviceList.add(deviceInfo);
+                var device = createDevice(entryId, service);
+                if (device != null)
+                    deviceList.add(device);
             });
             setInitialDeviceList(deviceList);
 
@@ -110,7 +111,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private USBDevice createDeviceInfo(Long entryID, int service) {
+    private USBDevice createDevice(Long entryID, int service) {
 
         Integer vendorId = IoKitHelper.GetPropertyInt(service, "idVendor");
         Integer productId = IoKitHelper.GetPropertyInt(service, "idProduct");
@@ -159,10 +160,11 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      */
     private void onDevicesConnected(MemoryAddress ignoredRefCon, int iterator) {
 
-        // process device info for connected devices
+        // process device iterator for connected devices
         iterateDevices(iterator, false, (entryId, service) -> {
-            var deviceInfo = createDeviceInfo(entryId, service);
-            if (deviceInfo != null) addDevice(deviceInfo);
+            var device = createDevice(entryId, service);
+            if (device != null)
+                addDevice(device);
         });
     }
 
@@ -177,7 +179,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      */
     private void onDevicesDisconnected(MemoryAddress ignoredRefCon, int iterator) {
 
-        // process device info for disconnected devices
+        // process device iterator for disconnected devices
         iterateDevices(iterator, true, (entryId, service) -> removeDevice(entryId));
     }
 }

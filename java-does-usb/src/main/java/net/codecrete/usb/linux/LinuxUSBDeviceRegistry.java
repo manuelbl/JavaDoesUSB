@@ -63,18 +63,18 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                 waitForFileDescriptor(fd, session);
 
                 // retrieve change
-                var dev = udev.udev_monitor_receive_device(monitor);
-                if (dev == null) continue; // shouldn't happen
+                var udevDevice = udev.udev_monitor_receive_device(monitor);
+                if (udevDevice == null) continue; // shouldn't happen
 
-                session.addCloseAction(() -> udev.udev_device_unref(dev));
+                session.addCloseAction(() -> udev.udev_device_unref(udevDevice));
 
                 // get details
-                var action = getDeviceAction(dev);
+                var action = getDeviceAction(udevDevice);
 
                 if ("add".equals(action)) {
-                    onDeviceConnected(dev);
+                    onDeviceConnected(udevDevice);
                 } else if ("remove".equals(action)) {
-                    onDeviceDisconnected(dev);
+                    onDeviceDisconnected(udevDevice);
                 }
             }
         }
@@ -113,8 +113,9 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                     session.addCloseAction(() -> udev.udev_device_unref(dev));
 
                     // get device details
-                    var deviceInfo = getDeviceDetails(dev);
-                    if (deviceInfo != null) result.add(deviceInfo);
+                    var device = getDeviceDetails(dev);
+                    if (device != null)
+                        result.add(device);
                 }
             }
         }
@@ -122,57 +123,57 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         setInitialDeviceList(result);
     }
 
-    private void onDeviceConnected(MemoryAddress device) {
+    private void onDeviceConnected(MemoryAddress udevDevice) {
 
-        var deviceInfo = getDeviceDetails(device);
-        if (deviceInfo == null) return;
+        var device = getDeviceDetails(udevDevice);
+        if (device == null) return;
 
-        addDevice(deviceInfo);
+        addDevice(device);
     }
 
-    private void onDeviceDisconnected(MemoryAddress device) {
+    private void onDeviceDisconnected(MemoryAddress udevDevice) {
 
-        var devPath = getDeviceName(device);
+        var devPath = getDeviceName(udevDevice);
         if (devPath == null) return;
 
         removeDevice(devPath);
     }
 
     /**
-     * Retrieves the device details and returns a {@code USBDeviceInfo} instance.
+     * Retrieves the device details and returns a {@code USBDevice} instance.
      * <p>
      * If the device is missing one of vendor ID, product ID or device path,
      * {@code null} is returned.
      * </p>
      *
-     * @param device the device
-     * @return the device info
+     * @param udevDevice the device (udev_device*)
+     * @return the device instance
      */
-    private static USBDevice getDeviceDetails(MemoryAddress device) {
+    private static USBDevice getDeviceDetails(MemoryAddress udevDevice) {
 
         // retrieve device attributes
-        String idVendor = getDeviceAttribute(device, "idVendor");
+        String idVendor = getDeviceAttribute(udevDevice, "idVendor");
         if (idVendor == null) return null;
 
-        String idProduct = getDeviceAttribute(device, "idProduct");
+        String idProduct = getDeviceAttribute(udevDevice, "idProduct");
         if (idProduct == null) return null;
 
         // get device path
-        var devPath = getDeviceName(device);
+        var devPath = getDeviceName(udevDevice);
         if (devPath == null) return null;
 
         int vendorId = Integer.parseInt(idVendor, 16);
         int productId = Integer.parseInt(idProduct, 16);
 
-        // create device info instance
-        return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(device, "manufacturer"),
-                getDeviceAttribute(device, "product"), getDeviceAttribute(device, "serial"), 0, 0, 0);
+        // create device instance
+        return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(udevDevice, "manufacturer"),
+                getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"), 0, 0, 0);
     }
 
-    private static String getDeviceAttribute(Addressable device, String attribute) {
+    private static String getDeviceAttribute(Addressable udevDevice, String attribute) {
         try (var session = MemorySession.openConfined()) {
             var sysattr = session.allocateUtf8String(attribute);
-            var valueAddr = udev.udev_device_get_sysattr_value(device, sysattr);
+            var valueAddr = udev.udev_device_get_sysattr_value(udevDevice, sysattr);
             if (valueAddr == NULL) return null;
 
             var value = MemorySegment.ofAddress(valueAddr, 2000, session);
@@ -180,12 +181,12 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private static String getDeviceName(Addressable device) {
-        return Linux.createStringFromAddress(udev.udev_device_get_devnode(device));
+    private static String getDeviceName(Addressable udevDevice) {
+        return Linux.createStringFromAddress(udev.udev_device_get_devnode(udevDevice));
     }
 
-    private static String getDeviceAction(Addressable device) {
-        return Linux.createStringFromAddress(udev.udev_device_get_action(device));
+    private static String getDeviceAction(Addressable udevDevice) {
+        return Linux.createStringFromAddress(udev.udev_device_get_action(udevDevice));
     }
 
     /**
