@@ -28,28 +28,28 @@ public interface USBDevice {
      *
      * @return product ID
      */
-    int getProductId();
+    int productId();
 
     /**
      * USB vendor ID.
      *
      * @return vendor ID
      */
-    int getVendorId();
+    int vendorId();
 
     /**
      * Product name.
      *
      * @return product name or {@code null} if not provided by the device
      */
-    String getProduct();
+    String product();
 
     /**
      * Manufacturer name
      *
      * @return manufacturer name or {@code null} if not provided by the device
      */
-    String getManufacturer();
+    String manufacturer();
 
     /**
      * Serial number
@@ -60,28 +60,28 @@ public interface USBDevice {
      *
      * @return serial number or {@code null} if not provided by the device
      */
-    String getSerial();
+    String serialNumber();
 
     /**
      * USB device class code ({@code bDeviceClass} from device descriptor).
      *
      * @return class code
      */
-    int getClassCode();
+    int classCode();
 
     /**
      * USB device subclass code ({@code bDeviceSubClass} from device descriptor).
      *
      * @return subclass code
      */
-    int getSubclassCode();
+    int subclassCode();
 
     /**
      * USB device protocol ({@code bDeviceProtocol} from device descriptor).
      *
      * @return protocol code
      */
-    int getProtocolCode();
+    int protocolCode();
 
     /**
      * Opens the device for communication.
@@ -105,7 +105,7 @@ public interface USBDevice {
      *
      * @return a list of USB interfaces
      */
-    List<USBInterface> getInterfaces();
+    List<USBInterface> interfaces();
 
     /**
      * Claims the specified interface for exclusive use.

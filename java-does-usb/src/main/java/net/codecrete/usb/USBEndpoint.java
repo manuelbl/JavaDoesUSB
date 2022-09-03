@@ -29,7 +29,7 @@ public interface USBEndpoint {
      *
      * @return the endpoint number
      */
-    int getNumber();
+    int number();
 
     /**
      * Gets the direction of the endpoint.
@@ -40,14 +40,14 @@ public interface USBEndpoint {
      *
      * @return the direction
      */
-    USBDirection getDirection();
+    USBDirection direction();
 
     /**
-     * Gets the USB endpoint type.
+     * Gets the USB endpoint transfer type.
      *
-     * @return the type
+     * @return the transfer type
      */
-    USBEndpointType getType();
+    USBTransferType transferType();
 
     /**
      * Gets the packet size.
@@ -58,5 +58,5 @@ public interface USBEndpoint {
      *
      * @return the packet size, in bytes.
      */
-    int getPacketSize();
+    int packetSize();
 }

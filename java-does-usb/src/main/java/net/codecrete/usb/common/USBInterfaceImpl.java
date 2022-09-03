@@ -15,18 +15,18 @@ import java.util.List;
 
 public class USBInterfaceImpl implements USBInterface {
 
-    private int number;
-    private USBAlternateInterface alternate;
-    private List<USBAlternateInterface> alternates;
+    private int number_;
+    private USBAlternateInterface alternate_;
+    private List<USBAlternateInterface> alternates_;
 
     public USBInterfaceImpl(int number, List<USBAlternateInterface> alternates) {
-        this.number = number;
-        this.alternates = alternates;
-        this.alternate = alternates.get(0);
+        number_ = number;
+        alternates_ = alternates;
+        alternate_ = alternates.get(0);
     }
 
     @Override
-    public int getNumber() {
+    public int number() {
         return 0;
     }
 
@@ -36,16 +36,16 @@ public class USBInterfaceImpl implements USBInterface {
     }
 
     @Override
-    public USBAlternateInterface getAlternate() {
-        return alternate;
+    public USBAlternateInterface alternate() {
+        return alternate_;
     }
 
     @Override
-    public List<USBAlternateInterface> getAlternates() {
-        return Collections.unmodifiableList(alternates);
+    public List<USBAlternateInterface> alternates() {
+        return Collections.unmodifiableList(alternates_);
     }
 
     void addAlternate(USBAlternateInterface alt) {
-        alternates.add(alt);
+        alternates_.add(alt);
     }
 }

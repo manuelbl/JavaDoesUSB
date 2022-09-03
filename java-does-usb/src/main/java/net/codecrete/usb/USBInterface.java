@@ -24,7 +24,7 @@ public interface USBInterface {
      *
      * @return the interface number
      */
-    int getNumber();
+    int number();
 
     /**
      * Indicates if this interface is currently claimed for exclusive access.
@@ -41,12 +41,12 @@ public interface USBInterface {
      *
      * @return the alternate interface setting.
      */
-    USBAlternateInterface getAlternate();
+    USBAlternateInterface alternate();
 
     /**
      * Gets all alternate settings of this interface.
      *
      * @return a list of the alternate settings
      */
-    List<USBAlternateInterface> getAlternates();
+    List<USBAlternateInterface> alternates();
 }

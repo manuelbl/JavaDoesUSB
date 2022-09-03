@@ -39,13 +39,13 @@ public class DescriptorParser {
 
             if (descType == USBDescriptors.INTERFACE_DESCRIPTOR_TYPE) {
                 var intf = parseInterface(desc, offset);
-                var parent = config.findInterfaceByNumber(intf.getNumber());
+                var parent = config.findInterfaceByNumber(intf.number());
                 if (parent != null) {
-                    parent.addAlternate(intf.getAlternate());
+                    parent.addAlternate(intf.alternate());
                 } else {
                     config.addInterface(intf);
                 }
-                lastAlternate = (USBAlternateInterfaceImpl) intf.getAlternate();
+                lastAlternate = (USBAlternateInterfaceImpl) intf.alternate();
 
             } else if (descType == USBDescriptors.ENDPOINT_DESCRIPTOR_TYPE) {
                 lastEndpoint = parseEndpoint(desc, offset);
@@ -121,11 +121,11 @@ public class DescriptorParser {
         return address & 0x7f;
     }
 
-    private static USBEndpointType getEndpointType(byte attributes) {
+    private static USBTransferType getEndpointType(byte attributes) {
         return switch (attributes & 0x3) {
-            case 1 -> USBEndpointType.ISOCHRONOUS;
-            case 2 -> USBEndpointType.BULK;
-            case 3 -> USBEndpointType.INTERRUPT;
+            case 1 -> USBTransferType.ISOCHRONOUS;
+            case 2 -> USBTransferType.BULK;
+            case 3 -> USBTransferType.INTERRUPT;
             default -> null;
         };
     }
@@ -164,7 +164,7 @@ public class DescriptorParser {
 
         public USBInterfaceImpl findInterfaceByNumber(int number) {
             return (USBInterfaceImpl) interfaces.stream()
-                    .filter((intf) -> intf.getNumber() == number).findFirst().orElse(null);
+                    .filter((intf) -> intf.number() == number).findFirst().orElse(null);
         }
     }
 }

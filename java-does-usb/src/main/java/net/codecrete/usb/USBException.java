@@ -12,7 +12,7 @@ package net.codecrete.usb;
  */
 public class USBException extends RuntimeException {
 
-    private int errorCode = -1;
+    private int errorCode_ = -1;
 
     /**
      * Creates a new instance with a message.
@@ -31,7 +31,7 @@ public class USBException extends RuntimeException {
      */
     public USBException(String message, int errorCode) {
         super(message + " (error code: " + errorCode + ")");
-        this.errorCode = errorCode;
+        errorCode_ = errorCode;
     }
 
     /**
@@ -49,7 +49,7 @@ public class USBException extends RuntimeException {
      *
      * @return the error code
      */
-    public int GetErrorCode() {
-        return errorCode;
+    public int errorCode() {
+        return errorCode_;
     }
 }

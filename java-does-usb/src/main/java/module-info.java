@@ -7,5 +7,4 @@
 
 module net.codecrete.usb {
     exports net.codecrete.usb;
-    exports net.codecrete.usb.common;
 }

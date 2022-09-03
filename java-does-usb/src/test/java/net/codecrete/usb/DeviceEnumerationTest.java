@@ -29,7 +29,7 @@ public class DeviceEnumerationTest {
     @Test
     void getAllDevices_includesLoopback() {
         var found = USB.getAllDevices().stream()
-                .anyMatch(device -> device.getVendorId() == 0xcafe && device.getProductId() == 0xceaf);
+                .anyMatch(device -> device.vendorId() == 0xcafe && device.productId() == 0xceaf);
         assertTrue(found);
     }
 
@@ -37,8 +37,8 @@ public class DeviceEnumerationTest {
     void getDevicesWithFilter_returnsLoopback() {
         var result = USB.getDevices(new USBDeviceFilter(0xcafe, 0xceaf));
         assertEquals(1, result.size());
-        assertEquals(0xcafe, result.get(0).getVendorId());
-        assertEquals(0xceaf, result.get(0).getProductId());
+        assertEquals(0xcafe, result.get(0).vendorId());
+        assertEquals(0xceaf, result.get(0).productId());
     }
 
     @Test
@@ -48,15 +48,15 @@ public class DeviceEnumerationTest {
                 new USBDeviceFilter(0x0000, 0xffff)
         ));
         assertEquals(1, result.size());
-        assertEquals(0xcafe, result.get(0).getVendorId());
-        assertEquals(0xceaf, result.get(0).getProductId());
+        assertEquals(0xcafe, result.get(0).vendorId());
+        assertEquals(0xceaf, result.get(0).productId());
     }
 
     @Test
     void getDeviceWithFilter_returnsLoopback() {
         var device = USB.getDevice(new USBDeviceFilter(0xcafe, 0xceaf));
-        assertEquals(0xcafe, device.getVendorId());
-        assertEquals(0xceaf, device.getProductId());
+        assertEquals(0xcafe, device.vendorId());
+        assertEquals(0xceaf, device.productId());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class DeviceEnumerationTest {
                 new USBDeviceFilter(0xcafe, 0xceaf),
                 new USBDeviceFilter(0x0000, 0xffff)
         ));
-        assertEquals(0xcafe, device.getVendorId());
-        assertEquals(0xceaf, device.getProductId());
+        assertEquals(0xcafe, device.vendorId());
+        assertEquals(0xceaf, device.productId());
     }
 }

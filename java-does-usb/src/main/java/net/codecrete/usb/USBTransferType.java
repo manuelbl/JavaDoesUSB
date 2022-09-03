@@ -8,9 +8,9 @@
 package net.codecrete.usb;
 
 /**
- * USB endpoint type.
+ * USB endpoint transfer type.
  */
-public enum USBEndpointType {
+public enum USBTransferType {
     /**
      * Bulk transfer
      */

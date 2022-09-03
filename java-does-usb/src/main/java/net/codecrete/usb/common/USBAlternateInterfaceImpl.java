@@ -15,47 +15,47 @@ import java.util.List;
 
 public class USBAlternateInterfaceImpl implements USBAlternateInterface {
 
-    private final int number;
-    private final int classCode;
-    private final int subclassCode;
-    private final int protocolCode;
-    private final List<USBEndpoint> endpoints;
+    private final int number_;
+    private final int classCode_;
+    private final int subclassCode_;
+    private final int protocolCode_;
+    private final List<USBEndpoint> endpoints_;
 
     public USBAlternateInterfaceImpl(int number, int classCode, int subclassCode, int protocolCode,
                                      List<USBEndpoint> endpoints) {
-        this.number = number;
-        this.classCode = classCode;
-        this.subclassCode = subclassCode;
-        this.protocolCode = protocolCode;
-        this.endpoints = endpoints;
+        number_ = number;
+        classCode_ = classCode;
+        subclassCode_ = subclassCode;
+        protocolCode_ = protocolCode;
+        endpoints_ = endpoints;
     }
 
     @Override
-    public int getNumber() {
-        return number;
+    public int number() {
+        return number_;
     }
 
     @Override
-    public int getClassCode() {
-        return classCode;
+    public int classCode() {
+        return classCode_;
     }
 
     @Override
-    public int getSubclassCode() {
-        return subclassCode;
+    public int subclassCode() {
+        return subclassCode_;
     }
 
     @Override
-    public int getProtocolCode() {
-        return protocolCode;
+    public int protocolCode() {
+        return protocolCode_;
     }
 
     @Override
-    public List<USBEndpoint> getEndpoints() {
-        return Collections.unmodifiableList(endpoints);
+    public List<USBEndpoint> endpoints() {
+        return Collections.unmodifiableList(endpoints_);
     }
 
     void addEndpoint(USBEndpoint endpoint) {
-        endpoints.add(endpoint);
+        endpoints_.add(endpoint);
     }
 }

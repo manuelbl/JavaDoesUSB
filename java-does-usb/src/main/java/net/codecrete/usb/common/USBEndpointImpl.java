@@ -9,42 +9,42 @@ package net.codecrete.usb.common;
 
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBEndpoint;
-import net.codecrete.usb.USBEndpointType;
+import net.codecrete.usb.USBTransferType;
 
 /**
  * Implementation of {@code USBEndpoint} interface.
  */
 public class USBEndpointImpl implements USBEndpoint {
 
-    private final int number;
-    private final USBDirection direction;
-    private final USBEndpointType type;
-    private final int packetSize;
+    private final int number_;
+    private final USBDirection direction_;
+    private final USBTransferType type_;
+    private final int packetSize_;
 
-    public USBEndpointImpl(int number, USBDirection direction, USBEndpointType type, int packetSize) {
-        this.number = number;
-        this.direction = direction;
-        this.type = type;
-        this.packetSize = packetSize;
+    public USBEndpointImpl(int number, USBDirection direction, USBTransferType type, int packetSize) {
+        number_ = number;
+        direction_ = direction;
+        type_ = type;
+        packetSize_ = packetSize;
     }
 
     @Override
-    public int getNumber() {
-        return number;
+    public int number() {
+        return number_;
     }
 
     @Override
-    public USBDirection getDirection() {
-        return direction;
+    public USBDirection direction() {
+        return direction_;
     }
 
     @Override
-    public USBEndpointType getType() {
-        return type;
+    public USBTransferType transferType() {
+        return type_;
     }
 
     @Override
-    public int getPacketSize() {
-        return packetSize;
+    public int packetSize() {
+        return packetSize_;
     }
 }

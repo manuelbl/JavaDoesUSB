@@ -24,7 +24,7 @@ public interface USBAlternateInterface {
      *
      * @return the alternate setting number
      */
-    int getNumber();
+    int number();
 
     /**
      * Gets the interface class.
@@ -34,7 +34,7 @@ public interface USBAlternateInterface {
      *
      * @return the interface class
      */
-    int getClassCode();
+    int classCode();
 
     /**
      * Gets the interface subclass.
@@ -44,7 +44,7 @@ public interface USBAlternateInterface {
      *
      * @return the interface subclass
      */
-    int getSubclassCode();
+    int subclassCode();
 
     /**
      * Gets the interface protocol.
@@ -54,12 +54,12 @@ public interface USBAlternateInterface {
      *
      * @return the interface protocol
      */
-    int getProtocolCode();
+    int protocolCode();
 
     /**
      * Gets the endpoints of this alternate interface settings.
      *
      * @return a list of endpoints.
      */
-    List<USBEndpoint> getEndpoints();
+    List<USBEndpoint> endpoints();
 }

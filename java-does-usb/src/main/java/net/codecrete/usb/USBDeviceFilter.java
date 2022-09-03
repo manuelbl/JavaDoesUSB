@@ -21,12 +21,12 @@ import java.util.List;
  * </p>
  */
 public class USBDeviceFilter {
-    private Integer vendorId;
-    private Integer productId;
-    private Integer classCode;
-    private Integer subclassCode;
-    private Integer protocolCode;
-    private String serialNumber;
+    private Integer vendorId_;
+    private Integer productId_;
+    private Integer classCode_;
+    private Integer subclassCode_;
+    private Integer protocolCode_;
+    private String serialNumber_;
 
     /**
      * Creates a new instance.
@@ -41,8 +41,8 @@ public class USBDeviceFilter {
      * @param productId product ID
      */
     public USBDeviceFilter(int vendorId, int productId) {
-        this.vendorId = vendorId;
-        this.productId = productId;
+        vendorId_ = vendorId;
+        productId_ = productId;
     }
 
     /**
@@ -53,9 +53,9 @@ public class USBDeviceFilter {
      * @param serialNumber serial number
      */
     public USBDeviceFilter(int vendorId, int productId, String serialNumber) {
-        this.vendorId = vendorId;
-        this.productId = productId;
-        this.serialNumber = serialNumber;
+        vendorId_ = vendorId;
+        productId_ = productId;
+        serialNumber_ = serialNumber;
     }
 
     /**
@@ -63,8 +63,8 @@ public class USBDeviceFilter {
      *
      * @return vendor ID, or {@code null} if the vendor ID is not relevant for matching
      */
-    public Integer getVendorId() {
-        return vendorId;
+    public Integer vendorId() {
+        return vendorId_;
     }
 
     /**
@@ -73,7 +73,7 @@ public class USBDeviceFilter {
      * @param vendorId vendor ID, or {@code null} if the vendor ID is not relevant for matching
      */
     public void setVendorId(Integer vendorId) {
-        this.vendorId = vendorId;
+        vendorId_ = vendorId;
     }
 
     /**
@@ -81,8 +81,8 @@ public class USBDeviceFilter {
      *
      * @return product ID, or {@code null} if the product ID is not relevant for matching
      */
-    public Integer getProductId() {
-        return productId;
+    public Integer productId() {
+        return productId_;
     }
 
     /**
@@ -91,7 +91,7 @@ public class USBDeviceFilter {
      * @param productId product ID, or {@code null} if the product ID is not relevant for matching
      */
     public void setProductId(Integer productId) {
-        this.productId = productId;
+        productId_ = productId;
     }
 
     /**
@@ -99,8 +99,8 @@ public class USBDeviceFilter {
      *
      * @return class code, or {@code null} if the class code is not relevant for matching
      */
-    public Integer getClassCode() {
-        return classCode;
+    public Integer classCode() {
+        return classCode_;
     }
 
     /**
@@ -109,7 +109,7 @@ public class USBDeviceFilter {
      * @param classCode class code, or {@code null} if the class code is not relevant for matching
      */
     public void setClassCode(Integer classCode) {
-        this.classCode = classCode;
+        classCode_ = classCode;
     }
 
     /**
@@ -117,8 +117,8 @@ public class USBDeviceFilter {
      *
      * @return subclass code, or {@code null} if the subclass code is not relevant for matching
      */
-    public Integer getSubclassCode() {
-        return subclassCode;
+    public Integer subclassCode() {
+        return subclassCode_;
     }
 
     /**
@@ -127,7 +127,7 @@ public class USBDeviceFilter {
      * @param subclassCode subclass code, or {@code null} if the subclass code is not relevant for matching
      */
     public void setSubclassCode(Integer subclassCode) {
-        this.subclassCode = subclassCode;
+        subclassCode_ = subclassCode;
     }
 
     /**
@@ -135,17 +135,17 @@ public class USBDeviceFilter {
      *
      * @return protocol code, or {@code null} if the protocol code is not relevant for matching
      */
-    public Integer getProtocolCode() {
-        return protocolCode;
+    public Integer protocolCode() {
+        return protocolCode_;
     }
 
     /**
      * Sets the USB device protocol code.
      *
-     * @param protocolCode protocol code, or {@code null} if the protocol code is not relevant for matching
+     * @param protocolCode_ protocol code, or {@code null} if the protocol code is not relevant for matching
      */
-    public void setProtocolCode(Integer protocolCode) {
-        this.protocolCode = protocolCode;
+    public void setProtocolCode_(Integer protocolCode_) {
+        protocolCode_ = protocolCode_;
     }
 
     /**
@@ -153,8 +153,8 @@ public class USBDeviceFilter {
      *
      * @return serial number, or {@code null} if the serial number is not relevant for matching
      */
-    public String getSerialNumber() {
-        return serialNumber;
+    public String serialNumber() {
+        return serialNumber_;
     }
 
     /**
@@ -163,7 +163,7 @@ public class USBDeviceFilter {
      * @param serialNumber serial number, or {@code null} if the serial number is not relevant for matching
      */
     public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
+        serialNumber_ = serialNumber;
     }
 
     /**
@@ -173,17 +173,17 @@ public class USBDeviceFilter {
      * @return {@code true} if it matches, {@code false} otherwise
      */
     public boolean matches(USBDevice device) {
-        if (vendorId != null && device.getVendorId() != vendorId)
+        if (vendorId_ != null && device.vendorId() != vendorId_)
             return false;
-        if (productId != null && device.getProductId() != productId)
+        if (productId_ != null && device.productId() != productId_)
             return false;
-        if (serialNumber != null && !serialNumber.equals(device.getSerial()))
+        if (serialNumber_ != null && !serialNumber_.equals(device.serialNumber()))
             return false;
-        if (classCode != null && device.getClassCode() != classCode)
+        if (classCode_ != null && device.classCode() != classCode_)
             return false;
-        if (subclassCode != null && device.getSubclassCode() != subclassCode)
+        if (subclassCode_ != null && device.subclassCode() != subclassCode_)
             return false;
-        return protocolCode == null || device.getProtocolCode() == protocolCode;
+        return protocolCode_ == null || device.protocolCode() == protocolCode_;
     }
 
     /**

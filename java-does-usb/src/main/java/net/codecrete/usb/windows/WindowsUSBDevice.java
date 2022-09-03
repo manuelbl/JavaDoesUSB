@@ -58,7 +58,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
 
             // open Windows device
-            var pathSegment = Win.createSegmentFromString(id.toString(), session);
+            var pathSegment = Win.createSegmentFromString(id_.toString(), session);
             device = Kernel32.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
                     Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(), NULL, Kernel32.OPEN_EXISTING(),
                     Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL);
@@ -84,7 +84,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private void readDescription(MemorySegment configDesc) {
-        configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, getVendorId(), getProductId());
+        configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
         configurationValue = configuration.configValue;
         setInterfaces(configuration.interfaces);
     }
@@ -116,7 +116,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intfOptional = claimedInterfaces.stream().filter(intf -> intf.getNumber() == interfaceNumber).findFirst();
+        var intfOptional = claimedInterfaces.stream().filter(intf -> intf.number() == interfaceNumber).findFirst();
         if (intfOptional.isEmpty())
             throw new USBException(String.format("Interface has not been claimed: number %d",
                     interfaceNumber));
@@ -127,8 +127,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private byte checkEndpointNumber(int endpointNumber, USBDirection direction) {
         if (endpointNumber >= 1 && endpointNumber <= 127 && claimedInterfaces != null) {
             for (var intf : claimedInterfaces) {
-                for (var ep : intf.getAlternate().getEndpoints()) {
-                    if (ep.getNumber() == endpointNumber && ep.getDirection() == direction)
+                for (var ep : intf.alternate().endpoints()) {
+                    if (ep.number() == endpointNumber && ep.direction() == direction)
                         return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
                 }
             }

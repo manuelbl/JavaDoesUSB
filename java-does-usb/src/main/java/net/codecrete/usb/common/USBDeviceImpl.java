@@ -17,17 +17,17 @@ import java.util.List;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
-    protected final Object id;
-    protected final int vendorId;
-    protected final int productId;
-    protected final String manufacturer;
-    protected final String product;
-    protected final String serial;
-    protected int classCode;
-    protected int subclassCode;
-    protected int protocolCode;
+    protected final Object id_;
+    protected final int vendorId_;
+    protected final int productId_;
+    protected final String manufacturer_;
+    protected final String product_;
+    protected final String serialNumber_;
+    protected int classCode_;
+    protected int subclassCode_;
+    protected int protocolCode_;
 
-    protected List<USBInterface> interfaces;
+    protected List<USBInterface> interfaces_;
 
     /**
      * Creates a new instance.
@@ -37,19 +37,19 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param productId    USB product ID
      * @param manufacturer manufacturer name
      * @param product      product name
-     * @param serial       serial number
+     * @param serialNumber serial number
      */
     protected USBDeviceImpl(Object id, int vendorId, int productId, String manufacturer, String product,
-                            String serial) {
+                            String serialNumber) {
 
         assert id != null;
 
-        this.id = id;
-        this.vendorId = vendorId;
-        this.productId = productId;
-        this.manufacturer = manufacturer;
-        this.product = product;
-        this.serial = serial;
+        id_ = id;
+        vendorId_ = vendorId;
+        productId_ = productId;
+        manufacturer_ = manufacturer;
+        product_ = product;
+        serialNumber_ = serialNumber;
     }
 
     @Override
@@ -67,56 +67,56 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     @Override
-    public int getProductId() {
-        return productId;
+    public int productId() {
+        return productId_;
     }
 
     @Override
-    public int getVendorId() {
-        return vendorId;
+    public int vendorId() {
+        return vendorId_;
     }
 
     @Override
-    public String getProduct() {
-        return product;
+    public String product() {
+        return product_;
     }
 
     @Override
-    public String getManufacturer() {
-        return manufacturer;
+    public String manufacturer() {
+        return manufacturer_;
     }
 
     @Override
-    public String getSerial() {
-        return serial;
+    public String serialNumber() {
+        return serialNumber_;
     }
 
     @Override
-    public int getClassCode() {
-        return classCode;
+    public int classCode() {
+        return classCode_;
     }
 
     @Override
-    public int getSubclassCode() {
-        return subclassCode;
+    public int subclassCode() {
+        return subclassCode_;
     }
 
     @Override
-    public int getProtocolCode() {
-        return protocolCode;
+    public int protocolCode() {
+        return protocolCode_;
     }
 
     public Object getUniqueId() {
-        return id;
+        return id_;
     }
 
     @Override
-    public List<USBInterface> getInterfaces() {
-        return Collections.unmodifiableList(interfaces);
+    public List<USBInterface> interfaces() {
+        return Collections.unmodifiableList(interfaces_);
     }
 
     public void setInterfaces(List<USBInterface> interfaces) {
-        this.interfaces = interfaces;
+        interfaces_ = interfaces;
     }
 
     @Override
@@ -143,17 +143,17 @@ public abstract class USBDeviceImpl implements USBDevice {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         USBDeviceImpl that = (USBDeviceImpl) o;
-        return id.equals(that.id);
+        return id_.equals(that.id_);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return id_.hashCode();
     }
 
     @Override
     public String toString() {
-        return "VID: 0x" + String.format("%04x", vendorId) + ", PID: 0x" + String.format("%04x", productId) + ", " +
-                "manufacturer: " + manufacturer + ", product: " + product + ", serial: " + serial + ", ID: " + id;
+        return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " +
+                "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
     }
 }

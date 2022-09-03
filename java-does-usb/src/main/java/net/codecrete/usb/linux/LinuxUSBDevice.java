@@ -49,7 +49,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             // skip device descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
             configDesc.copyFrom(descriptorsSegment.asSlice(18));
-            var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, getVendorId(), getProductId());
+            var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
             setInterfaces(configuration.interfaces);
         }
     }
@@ -64,7 +64,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (fd != -1) return;
 
         try (var session = MemorySession.openConfined()) {
-            var pathUtf8 = session.allocateUtf8String(id.toString());
+            var pathUtf8 = session.allocateUtf8String(id_.toString());
             fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
             if (fd == -1) throw new USBException("Cannot open USB device", IO.getErrno());
         }

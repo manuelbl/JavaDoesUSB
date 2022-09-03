@@ -20,41 +20,41 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void interfaceDescriptors_present() {
-        assertNotNull(device.getInterfaces());
-        assertEquals(1, device.getInterfaces().size());
+        assertNotNull(device.interfaces());
+        assertEquals(1, device.interfaces().size());
 
-        var intf = device.getInterfaces().get(0);
-        assertEquals(0, intf.getNumber());
-        assertNotNull(intf.getAlternate());
+        var intf = device.interfaces().get(0);
+        assertEquals(0, intf.number());
+        assertNotNull(intf.alternate());
         assertFalse(intf.isClaimed());
     }
 
     @Test
     void alternateInterfaceDescriptors_present() {
-        var intf = device.getInterfaces().get(0);
-        var altIntf = intf.getAlternate();
-        assertNotNull(intf.getAlternates());
-        assertEquals(1, intf.getAlternates().size());
-        assertSame(intf.getAlternates().get(0), altIntf);
-        assertEquals(0, altIntf.getNumber());
+        var intf = device.interfaces().get(0);
+        var altIntf = intf.alternate();
+        assertNotNull(intf.alternates());
+        assertEquals(1, intf.alternates().size());
+        assertSame(intf.alternates().get(0), altIntf);
+        assertEquals(0, altIntf.number());
     }
 
     @Test
     void endpointDescriptors_present() {
-        var altIntf = device.getInterfaces().get(0).getAlternate();
-        assertNotNull(altIntf.getEndpoints());
-        assertEquals(2, altIntf.getEndpoints().size());
+        var altIntf = device.interfaces().get(0).alternate();
+        assertNotNull(altIntf.endpoints());
+        assertEquals(2, altIntf.endpoints().size());
 
-        var endpoint = altIntf.getEndpoints().get(0);
-        assertEquals(1, endpoint.getNumber());
-        assertEquals(USBDirection.OUT, endpoint.getDirection());
-        assertEquals(USBEndpointType.BULK, endpoint.getType());
-        assertEquals(64, endpoint.getPacketSize());
+        var endpoint = altIntf.endpoints().get(0);
+        assertEquals(1, endpoint.number());
+        assertEquals(USBDirection.OUT, endpoint.direction());
+        assertEquals(USBTransferType.BULK, endpoint.transferType());
+        assertEquals(64, endpoint.packetSize());
 
-        endpoint = altIntf.getEndpoints().get(1);
-        assertEquals(2, endpoint.getNumber());
-        assertEquals(USBDirection.IN, endpoint.getDirection());
-        assertEquals(USBEndpointType.BULK, endpoint.getType());
-        assertEquals(64, endpoint.getPacketSize());
+        endpoint = altIntf.endpoints().get(1);
+        assertEquals(2, endpoint.number());
+        assertEquals(USBDirection.IN, endpoint.direction());
+        assertEquals(USBTransferType.BULK, endpoint.transferType());
+        assertEquals(64, endpoint.packetSize());
     }
 }
