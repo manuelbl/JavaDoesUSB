@@ -15,9 +15,11 @@ import java.util.List;
 
 public class USBInterfaceImpl implements USBInterface {
 
-    private int number_;
-    private USBAlternateInterface alternate_;
-    private List<USBAlternateInterface> alternates_;
+    private final int number_;
+    private final USBAlternateInterface alternate_;
+    private final List<USBAlternateInterface> alternates_;
+
+    private boolean isClaimed_;
 
     public USBInterfaceImpl(int number, List<USBAlternateInterface> alternates) {
         number_ = number;
@@ -27,12 +29,16 @@ public class USBInterfaceImpl implements USBInterface {
 
     @Override
     public int number() {
-        return 0;
+        return number_;
     }
 
     @Override
     public boolean isClaimed() {
-        return false;
+        return isClaimed_;
+    }
+
+    void setClaimed(boolean claimed) {
+        isClaimed_ = claimed;
     }
 
     @Override

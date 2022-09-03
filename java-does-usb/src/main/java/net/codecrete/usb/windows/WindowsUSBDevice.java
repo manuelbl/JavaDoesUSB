@@ -124,20 +124,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         claimedInterfaces.remove(intfOptional.get());
     }
 
-    private byte checkEndpointNumber(int endpointNumber, USBDirection direction) {
-        if (endpointNumber >= 1 && endpointNumber <= 127 && claimedInterfaces != null) {
-            for (var intf : claimedInterfaces) {
-                for (var ep : intf.alternate().endpoints()) {
-                    if (ep.number() == endpointNumber && ep.direction() == direction)
-                        return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
-                }
-            }
-        }
-
-        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " +
-                "does not operate " + "in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
-    }
-
     private MemorySegment createSetupPacket(MemorySession session, USBDirection direction, USBControlTransfer setup,
                                             MemorySegment data) {
         var setupPacket = session.allocate(USBStructs.SetupPacket$Struct);
@@ -193,9 +179,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
-        checkIsOpen();
-
-        byte endpointAddress = checkEndpointNumber(endpointNumber, USBDirection.OUT);
+        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(data.length);
@@ -210,9 +194,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        checkIsOpen();
-
-        byte endpointAddress = checkEndpointNumber(endpointNumber, USBDirection.IN);
+        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(maxLength);

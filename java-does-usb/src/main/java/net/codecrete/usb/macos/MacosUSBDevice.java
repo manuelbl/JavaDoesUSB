@@ -18,7 +18,9 @@ import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.foreign.MemoryAddress.ofLong;
 import static java.lang.foreign.ValueLayout.*;
@@ -28,7 +30,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private final MemoryAddress device;
     private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
-    private List<EndpointInfo> endpoints;
+    private Map<Byte, EndpointInfo> endpoints;
 
     MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
         super(id, vendorId, productId, manufacturer, product, serial);
@@ -60,6 +62,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throw new MacosUSBException("failed to set configuration", ret);
 
         claimedInterfaces = new ArrayList<>();
+        updateEndpointList();
     }
 
     @Override
@@ -68,8 +71,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             return;
 
         for (InterfaceInfo interfaceInfo : claimedInterfaces) {
-            IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
-            IoKit.Release(interfaceInfo.asMemoryAddress());
+            IoKitUSB.USBInterfaceClose(interfaceInfo.asAddress());
+            IoKit.Release(interfaceInfo.asAddress());
         }
 
         claimedInterfaces = null;
@@ -144,10 +147,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                         continue;
                     }
 
-                    var info = new InterfaceInfo();
-                    info.addr = intf.toRawLongValue();
-                    info.interfaceNumber = interfaceNumber;
-                    return info;
+                    return new InterfaceInfo(intf.toRawLongValue(), interfaceNumber);
                 }
             }
         }
@@ -161,10 +161,13 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var interfaceInfo = findInterface(interfaceNumber);
 
         try {
-            var ret = IoKitUSB.USBInterfaceOpen(interfaceInfo.asMemoryAddress());
-            if (ret != 0) throw new MacosUSBException("Failed to claim interface", ret);
+            var ret = IoKitUSB.USBInterfaceOpen(interfaceInfo.asAddress());
+            if (ret != 0)
+                throw new MacosUSBException("Failed to claim interface", ret);
+            setClaimed(interfaceNumber, true);
+
         } catch (Throwable t) {
-            IoKit.Release(interfaceInfo.asMemoryAddress());
+            IoKit.Release(interfaceInfo.asAddress());
             throw t;
         }
 
@@ -183,25 +186,34 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         var interfaceInfo = interfaceInfoOptional.get();
 
-        int ret = IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
+        int ret = IoKitUSB.USBInterfaceClose(interfaceInfo.asAddress());
         if (ret != 0) throw new MacosUSBException("Failed to release interface", ret);
 
         claimedInterfaces.remove(interfaceInfo);
-        IoKit.Release(interfaceInfo.asMemoryAddress());
+        IoKit.Release(interfaceInfo.asAddress());
+        setClaimed(interfaceNumber, false);
 
         updateEndpointList();
     }
 
+    /**
+     * Update the map of active endpoints.
+     * <p>
+     * MacOS uses a <i>pipe index</i> to refer to endpoints. This method
+     * builds a map from endpoint address to pipe index.
+     * </p>
+     */
     private void updateEndpointList() {
-        endpoints = new ArrayList<>();
+        endpoints = new HashMap<>();
 
         for (InterfaceInfo interfaceInfo : claimedInterfaces) {
             try (var session = MemorySession.openConfined()) {
 
-                var intf = interfaceInfo.asMemoryAddress();
+                var intf = interfaceInfo.asAddress();
                 var numEndpointsHolder = session.allocate(JAVA_BYTE);
                 int ret = IoKitUSB.GetNumEndpoints(intf, numEndpointsHolder);
-                if (ret != 0) throw new MacosUSBException("Failed to get number of endpoints", ret);
+                if (ret != 0)
+                    throw new MacosUSBException("Failed to get number of endpoints", ret);
                 int numEndpoints = numEndpointsHolder.get(JAVA_BYTE, 0) & 255;
 
                 for (int pipeIndex = 1; pipeIndex <= numEndpoints; pipeIndex++) {
@@ -216,27 +228,26 @@ public class MacosUSBDevice extends USBDeviceImpl {
                             transferTypeHolder, maxPacketSizeHolder, intervalHolder);
                     if (ret != 0) throw new MacosUSBException("Failed to get pipe properties", ret);
 
-                    var endpointInfo = new EndpointInfo();
-                    endpointInfo.pipeIndex = pipeIndex;
-                    endpointInfo.endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 255;
+                    int endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 255;
                     int direction = directionHolder.get(JAVA_BYTE, 0) & 255;
-                    endpointInfo.endpointAddress = endpointInfo.endpointNumber | (direction << 7);
-                    endpointInfo.transferType = transferTypeHolder.get(JAVA_BYTE, 0) & 255;
-                    endpointInfo.interfaceInfo = interfaceInfo;
-                    endpoints.add(endpointInfo);
+                    byte endpointAddress = (byte) (endpointNumber | (direction << 7));
+                    var endpointInfo = new EndpointInfo(interfaceInfo.addr, (byte) pipeIndex);
+                    endpoints.put(endpointAddress, endpointInfo);
                 }
             }
         }
     }
 
-    private EndpointInfo getEndpointInfo(int endpointNumber) {
+    private EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction) {
         if (endpoints != null) {
-            var endpointOptional = endpoints.stream().filter(info -> info.endpointNumber == endpointNumber).findFirst();
-            if (endpointOptional.isPresent()) return endpointOptional.get();
+            byte endpointAddress = (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
+            var endpointInfo = endpoints.get(endpointAddress);
+            if (endpointInfo != null)
+                return endpointInfo;
         }
 
-        throw new MacosUSBException(String.format("Endpoint number %d is not part of a claimed interface or invalid",
-                endpointNumber));
+        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " +
+                "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
     }
 
     private static MemorySegment createDeviceRequest(MemorySession session, USBDirection direction,
@@ -255,6 +266,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
+        checkIsOpen();
+
         try (var session = MemorySession.openConfined()) {
             var data = session.allocate(length);
             var deviceRequest = createDeviceRequest(session, USBDirection.IN, setup, data);
@@ -269,6 +282,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
+        checkIsOpen();
+
         try (var session = MemorySession.openConfined()) {
             int dataLength = data != null ? data.length : 0;
             var dataSegment = session.allocate(dataLength);
@@ -283,12 +298,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber);
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, data.length);
             nativeData.copyFrom(MemorySegment.ofArray(data));
-            int ret = IoKitUSB.WritePipe(endpointInfo.interfaceInfo.asMemoryAddress(), (byte) endpointInfo.pipeIndex,
+            int ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex,
                     nativeData, data.length);
             if (ret != 0)
                 throw new MacosUSBException(String.format("Sending data to endpoint %d failed", endpointNumber), ret);
@@ -297,12 +312,13 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        var endpointInfo = getEndpointInfo(endpointNumber);
+
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, maxLength);
             var sizeHolder = session.allocate(JAVA_INT, maxLength);
-            int ret = IoKitUSB.ReadPipe(endpointInfo.interfaceInfo.asMemoryAddress(), (byte) endpointInfo.pipeIndex,
+            int ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex,
                     nativeData, sizeHolder);
             if (ret != 0)
                 throw new MacosUSBException(String.format("Receiving data from endpoint %d failed", endpointNumber),
@@ -317,20 +333,15 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
-    static class InterfaceInfo {
-        long addr;
-        int interfaceNumber;
-
-        MemoryAddress asMemoryAddress() {
+    record InterfaceInfo(long addr, int interfaceNumber) {
+        MemoryAddress asAddress() {
             return ofLong(addr);
         }
     }
 
-    static class EndpointInfo {
-        int endpointNumber;
-        int endpointAddress;
-        int transferType;
-        int pipeIndex;
-        InterfaceInfo interfaceInfo;
+    record EndpointInfo(long interfaceAddr, byte pipeIndex) {
+        MemoryAddress interfacAddress() {
+            return ofLong(interfaceAddr);
+        }
     }
 }

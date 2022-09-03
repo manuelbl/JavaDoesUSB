@@ -7,10 +7,7 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBInterface;
+import net.codecrete.usb.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -130,6 +127,42 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public abstract void releaseInterface(int interfaceNumber);
+
+    public void setClaimed(int interfaceNumber, boolean claimed) {
+        for (var intf : interfaces_) {
+            if (intf.number() == interfaceNumber) {
+                ((USBInterfaceImpl)intf).setClaimed(claimed);
+                return;
+            }
+        }
+        throw new USBException("Internal error (interface not found)");
+    }
+
+    /**
+     * Checks if the specified endpoint is valid for communication and returns the endpoint address.
+     *
+     * @param endpointNumber endpoint number (1 to 127)
+     * @param direction transfer direction
+     * @return endpoint address
+     */
+    protected byte getEndpointAddress(int endpointNumber, USBDirection direction) {
+
+        checkIsOpen();
+
+        if (endpointNumber >= 1 && endpointNumber <= 127) {
+            for (var intf : interfaces_) {
+                if (intf.isClaimed()) {
+                    for (var ep : intf.alternate().endpoints()) {
+                        if (ep.number() == endpointNumber && ep.direction() == direction)
+                            return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
+                    }
+                }
+            }
+        }
+
+        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " +
+                "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
+    }
 
     @Override
     public abstract byte[] controlTransferIn(USBControlTransfer setup, int length);

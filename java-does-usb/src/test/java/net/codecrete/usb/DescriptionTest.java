@@ -37,7 +37,7 @@ public class DescriptionTest extends TestDeviceBase {
         var intf = testDevice.interfaces().get(0);
         assertEquals(0, intf.number());
         assertNotNull(intf.alternate());
-        assertFalse(intf.isClaimed());
+        assertTrue(intf.isClaimed());
     }
 
     @Test
