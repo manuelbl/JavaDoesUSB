@@ -10,6 +10,7 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
@@ -17,8 +18,11 @@ import net.codecrete.usb.linux.gen.unistd.unistd;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_bulktransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
 
+import java.io.IOException;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
@@ -29,6 +33,25 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     LinuxUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
         super(id, vendorId, productId, manufacturer, product, serial);
+        loadDescription((String) id);
+    }
+
+    private void loadDescription(String path) {
+        byte[] descriptors;
+        try {
+            descriptors = Files.readAllBytes(Path.of(path));
+        } catch (IOException e) {
+            throw new USBException("Cannot read configuration descriptor", e);
+        }
+
+        try (var session = MemorySession.openConfined()) {
+            var descriptorsSegment = MemorySegment.ofArray(descriptors);
+            // skip device descriptor
+            var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
+            configDesc.copyFrom(descriptorsSegment.asSlice(18));
+            var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, getVendorId(), getProductId());
+            setInterfaces(configuration.interfaces);
+        }
     }
 
     @Override

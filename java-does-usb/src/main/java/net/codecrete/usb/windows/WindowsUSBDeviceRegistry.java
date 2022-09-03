@@ -140,7 +140,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     deviceList.add(createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
 
                 } catch (Throwable e) {
-                    System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring%n", devicePath);
+                    System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring device%n", devicePath);
                     e.printStackTrace(System.err);
                 }
             }
@@ -349,7 +349,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 addDevice(device);
 
             } catch (Throwable e) {
-                System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring%n", devicePath);
+                System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring device%n", devicePath);
                 e.printStackTrace(System.err);
             }
         }

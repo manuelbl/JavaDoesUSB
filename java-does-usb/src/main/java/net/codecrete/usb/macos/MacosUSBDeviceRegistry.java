@@ -130,7 +130,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
             } catch (Throwable e) {
                 System.err.printf(
-                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring%n",
+                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
                         deviceInfo.vid, deviceInfo.pid);
                 e.printStackTrace(System.err);
             }
@@ -212,7 +212,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             try {
                 ((MacosUSBDevice) device).closeFully();
             } catch (Throwable e) {
-                System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring");
+                System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
                 e.printStackTrace(System.err);
             }
 

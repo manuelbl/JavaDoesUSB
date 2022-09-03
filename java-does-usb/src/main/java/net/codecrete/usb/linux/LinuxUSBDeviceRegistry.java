@@ -14,10 +14,13 @@ import net.codecrete.usb.linux.gen.select.fd_set;
 import net.codecrete.usb.linux.gen.select.select;
 import net.codecrete.usb.linux.gen.udev.udev;
 
+import java.io.IOException;
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -154,14 +157,17 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
         // retrieve device attributes
         String idVendor = getDeviceAttribute(udevDevice, "idVendor");
-        if (idVendor == null) return null;
+        if (idVendor == null)
+            return null;
 
         String idProduct = getDeviceAttribute(udevDevice, "idProduct");
-        if (idProduct == null) return null;
+        if (idProduct == null)
+            return null;
 
         // get device path
         var devPath = getDeviceName(udevDevice);
-        if (devPath == null) return null;
+        if (devPath == null)
+            return null;
 
         int vendorId = Integer.parseInt(idVendor, 16);
         int productId = Integer.parseInt(idProduct, 16);

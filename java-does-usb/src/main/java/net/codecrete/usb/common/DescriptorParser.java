@@ -22,17 +22,6 @@ public class DescriptorParser {
     /**
      * Parse a USB configuration descriptor (incl. interface and endpoint descriptors)
      *
-     * @param descriptor configuration descriptor
-     * @return parsed configuration data
-     */
-    public static Configuration parseConfigurationDescriptor(byte[] descriptor, int vendorID, int productID) {
-        var desc = MemorySegment.ofArray(descriptor);
-        return parseConfigurationDescriptor(desc, vendorID, productID);
-    }
-
-    /**
-     * Parse a USB configuration descriptor (incl. interface and endpoint descriptors)
-     *
      * @param desc configuration descriptor
      * @return parsed configuration data
      */
@@ -75,7 +64,7 @@ public class DescriptorParser {
             } else {
                 // TODO: Remove warning once the relevant descriptors are processed
                 System.err.printf(
-                        "Info: [JavaDoesUSB] unsupported USB descriptor type 0x%02x of device 0x%04x/0x%04x - ignoring%n",
+                        "Info: [JavaDoesUSB] unsupported USB descriptor type 0x%02x of device 0x%04x/0x%04x - ignoring descriptor%n",
                         descType, vendorID, productID);
             }
 
