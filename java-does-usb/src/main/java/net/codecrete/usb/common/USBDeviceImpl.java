@@ -110,6 +110,12 @@ public abstract class USBDeviceImpl implements USBDevice {
         return id_;
     }
 
+    public void setClassCodes(int classCode, int subclassCode, int protocolCode) {
+        classCode_ = classCode;
+        subclassCode_ = subclassCode;
+        protocolCode_ = protocolCode;
+    }
+
     @Override
     public List<USBInterface> interfaces() {
         return Collections.unmodifiableList(interfaces_);

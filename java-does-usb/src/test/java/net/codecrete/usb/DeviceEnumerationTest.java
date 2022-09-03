@@ -17,14 +17,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DeviceEnumerationTest {
-
-    @BeforeAll
-    static void openDevice() {
-        var device = USB.getDevice(new USBDeviceFilter(0xcafe, 0xceaf));
-        if (device == null)
-            throw new IllegalStateException("USB loopback test device must be connected");
-    }
+public class DeviceEnumerationTest extends TestDeviceBase {
 
     @Test
     void getAllDevices_includesLoopback() {

@@ -59,7 +59,7 @@ public class BulkTransferTest extends TestDeviceBase {
         int numBytes = 0;
         while (numBytes < data.length) {
             int size = Math.min(chunkSize, data.length - numBytes);
-            device.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(data, numBytes, numBytes + size));
+            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(data, numBytes, numBytes + size));
             numBytes += size;
         }
     }
@@ -67,7 +67,7 @@ public class BulkTransferTest extends TestDeviceBase {
         var buffer = new ByteArrayOutputStream();
         int bytesRead = 0;
         while (bytesRead < numBytes) {
-            byte[] data = device.transferIn(LOOPBACK_EP_IN, MAX_PACKET_SIZE);
+            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, MAX_PACKET_SIZE);
             buffer.writeBytes(data);
             bytesRead += data.length;
         }

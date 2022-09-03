@@ -154,7 +154,17 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         String product = IoKitHelper.getPropertyString(service, "kUSBProductString");
         String serial = IoKitHelper.getPropertyString(service, "kUSBSerialNumberString");
 
-        return new MacosUSBDevice(deviceIntf, entryID, vendorId, productId, manufacturer, product, serial);
+        var device = new MacosUSBDevice(deviceIntf, entryID, vendorId, productId, manufacturer, product, serial);
+
+        Integer classCode = IoKitHelper.getPropertyInt(service, "bDeviceClass");
+        Integer subclassCode = IoKitHelper.getPropertyInt(service, "bDeviceSubClass");
+        Integer protocolCode = IoKitHelper.getPropertyInt(service, "bDeviceProtocol");
+
+        device.setClassCodes(classCode != null ? classCode : 0,
+                subclassCode != null ? subclassCode : 0,
+                protocolCode != null ? protocolCode : 0);
+
+        return device;
     }
 
     private int setupNotification(MemorySession session, MemoryAddress notifyPort, MemorySegment notificationType,

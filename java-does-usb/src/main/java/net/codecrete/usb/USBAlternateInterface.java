@@ -58,6 +58,10 @@ public interface USBAlternateInterface {
 
     /**
      * Gets the endpoints of this alternate interface settings.
+     * <p>
+     * The endpoint list does not include endpoint 0, which
+     * is always available and reserved for control transfers.
+     * </p>
      *
      * @return a list of endpoints.
      */
