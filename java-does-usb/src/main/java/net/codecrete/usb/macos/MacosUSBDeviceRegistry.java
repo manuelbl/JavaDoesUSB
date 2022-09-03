@@ -15,6 +15,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -36,41 +37,41 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         // as the method runs forever, there is no need to clean up one-time allocations
         try (var session = MemorySession.openConfined()) {
 
-            // setup run loop, run loop source and notification port
-            var notifyPort = IoKit.IONotificationPortCreate(IoKit.kIOMasterPortDefault);
-            var runLoopSource = IoKit.IONotificationPortGetRunLoopSource(notifyPort);
-            var runLoop = CoreFoundation.CFRunLoopGetCurrent();
-            CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IoKit.kCFRunLoopDefaultMode);
+            try {
 
-            // setup notification for connected devices
-            var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
-                    "onDevicesConnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
-            int deviceConnectedIter = setupNotification(session, notifyPort, IoKit.kIOFirstMatchNotification,
-                    onDeviceConnectedMH);
+                // setup run loop, run loop source and notification port
+                var notifyPort = IoKit.IONotificationPortCreate(IoKit.kIOMasterPortDefault);
+                var runLoopSource = IoKit.IONotificationPortGetRunLoopSource(notifyPort);
+                var runLoop = CoreFoundation.CFRunLoopGetCurrent();
+                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IoKit.kCFRunLoopDefaultMode);
 
-            // iterate current devices in order to arm the notifications (and build initial device list)
-            var deviceList = new ArrayList<USBDevice>();
-            iterateDevices(deviceConnectedIter, (entryId, service, deviceIntf) -> {
-                var device = createDevice(entryId, service, deviceIntf);
-                if (device != null)
-                    deviceList.add(device);
-            });
-            setInitialDeviceList(deviceList);
+                // setup notification for connected devices
+                var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
+                        "onDevicesConnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
+                int deviceConnectedIter = setupNotification(session, notifyPort, IoKit.kIOFirstMatchNotification,
+                        onDeviceConnectedMH);
 
-            // setup notification for disconnected devices
-            var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
-                    "onDevicesDisconnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
-            int deviceDisconnectedIter = setupNotification(session, notifyPort, IoKit.kIOTerminatedNotification,
-                    onDeviceDisconnectedMH);
+                // iterate current devices in order to arm the notifications (and build initial device list)
+                var deviceList = new ArrayList<USBDevice>();
+                iterateDevices(deviceConnectedIter, (device) -> deviceList.add(device));
+                setInitialDeviceList(deviceList);
 
-            // iterate current devices in order to arm the notifications
-            onDevicesDisconnected(NULL, deviceDisconnectedIter);
+                // setup notification for disconnected devices
+                var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
+                        "onDevicesDisconnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
+                int deviceDisconnectedIter = setupNotification(session, notifyPort, IoKit.kIOTerminatedNotification,
+                        onDeviceDisconnectedMH);
+
+                // iterate current devices in order to arm the notifications
+                onDevicesDisconnected(NULL, deviceDisconnectedIter);
+
+            } catch (Throwable e) {
+                enumerationFailed(e);
+                return;
+            }
 
             // loop forever
             CoreFoundation.CFRunLoopRun();
-
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -92,6 +93,9 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 var device = IoKitHelper.getInterface(service, IoKit.kIOUSBDeviceUserClientTypeID,
                         IoKit.kIOUSBDeviceInterfaceID100);
 
+                if (device != null)
+                    session.addCloseAction(() -> IoKit.Release(device));
+
                 // get entry ID (as unique ID)
                 var entryIdHolder = session.allocate(JAVA_LONG);
                 int ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
@@ -105,21 +109,50 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private USBDevice createDevice(Long entryID, int service, MemoryAddress deviceIntf) {
+    /**
+     * Calls the consumer for all devices produced by the iterator.
+     * <p>
+     * This method tries to create a {@link USBDevice} instance.
+     * If it fails, an information is printed, but the consumer is not called.
+     * </p>
+     *
+     * @param iterator the iterator
+     * @param consumer the consumer
+     */
+    private void iterateDevices(int iterator, Consumer<USBDevice> consumer) {
+        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
+
+            var deviceInfo = new VidPid();
+            try {
+                var device = createDevice(entryId, service, deviceIntf, deviceInfo);
+                if (device != null)
+                    consumer.accept(device);
+
+            } catch (Throwable e) {
+                System.err.printf(
+                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring%n",
+                        deviceInfo.vid, deviceInfo.pid);
+                e.printStackTrace(System.err);
+            }
+        });
+    }
+
+    private USBDevice createDevice(Long entryID, int service, MemoryAddress deviceIntf, VidPid info) {
 
         if (deviceIntf == null)
             return null;
 
         Integer vendorId = IoKitHelper.getPropertyInt(service, "idVendor");
         Integer productId = IoKitHelper.getPropertyInt(service, "idProduct");
+        if (vendorId == null || productId == null)
+            return null;
+
+        info.vid = vendorId;
+        info.pid = productId;
+
         String manufacturer = IoKitHelper.getPropertyString(service, "kUSBVendorString");
         String product = IoKitHelper.getPropertyString(service, "kUSBProductString");
         String serial = IoKitHelper.getPropertyString(service, "kUSBSerialNumberString");
-
-        if (vendorId == null || productId == null) {
-            IoKit.Release(deviceIntf);
-            return null;
-        }
 
         return new MacosUSBDevice(deviceIntf, entryID, vendorId, productId, manufacturer, product, serial);
     }
@@ -156,11 +189,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     private void onDevicesConnected(MemoryAddress ignoredRefCon, int iterator) {
 
         // process device iterator for connected devices
-        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
-            var device = createDevice(entryId, service, deviceIntf);
-            if (device != null)
-                addDevice(device);
-        });
+        iterateDevices(iterator, this::addDevice);
     }
 
     /**
@@ -180,13 +209,24 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             if (device == null)
                 return;
 
-            ((MacosUSBDevice)device).closeFully();
+            try {
+                ((MacosUSBDevice) device).closeFully();
+            } catch (Throwable e) {
+                System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring");
+                e.printStackTrace(System.err);
+            }
+
             removeDevice(entryId);
         });
     }
 
     @FunctionalInterface
-    public interface IOKitDeviceConsumer {
+    interface IOKitDeviceConsumer {
         void accept(long entryId, int service, MemoryAddress deviceIntf);
+    }
+
+    static class VidPid {
+        int vid;
+        int pid;
     }
 }

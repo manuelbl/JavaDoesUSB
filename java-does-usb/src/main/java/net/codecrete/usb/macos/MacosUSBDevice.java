@@ -34,12 +34,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
         super(id, vendorId, productId, manufacturer, product, serial);
         this.device = device;
 
-        try {
-            loadDescription();
-        } catch (Throwable t) {
-            closeFully();
-            throw t;
-        }
+        loadDescription();
+
+        IoKit.AddRef(device);
     }
 
     @Override
