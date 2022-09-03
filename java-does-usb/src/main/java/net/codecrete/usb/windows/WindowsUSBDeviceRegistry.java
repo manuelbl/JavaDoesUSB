@@ -44,62 +44,67 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     protected void monitorDevices() {
         try (var session = MemorySession.openConfined()) {
 
-            final var className = Win.createSegmentFromString("USB_MONITOR", session);
-            final var windowName = Win.createSegmentFromString("USB device monitor", session);
-            final var instance = Kernel32.GetModuleHandleW(NULL);
+            Addressable hwnd;
 
-            // create upcall for handling window messages
-            var handleWindowMessageMH = MethodHandles.lookup().findVirtual(WindowsUSBDeviceRegistry.class,
-                    "handleWindowMessage", MethodType.methodType(long.class, MemoryAddress.class, int.class,
-                            long.class, long.class)).bindTo(this);
-            var handleWindowMessageStub = Linker.nativeLinker().upcallStub(handleWindowMessageMH,
-                    FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), session);
+            try {
+                final var className = Win.createSegmentFromString("USB_MONITOR", session);
+                final var windowName = Win.createSegmentFromString("USB device monitor", session);
+                final var instance = Kernel32.GetModuleHandleW(NULL);
 
-            // register window class
-            var wx = session.allocate(WNDCLASSEXW.$LAYOUT());
-            WNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
-            WNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
-            WNDCLASSEXW.hInstance$set(wx, instance);
-            WNDCLASSEXW.lpszClassName$set(wx, className.address());
-            User32.RegisterClassExW(wx);
+                // create upcall for handling window messages
+                var handleWindowMessageMH = MethodHandles.lookup().findVirtual(WindowsUSBDeviceRegistry.class,
+                        "handleWindowMessage", MethodType.methodType(long.class, MemoryAddress.class, int.class,
+                                long.class, long.class)).bindTo(this);
+                var handleWindowMessageStub = Linker.nativeLinker().upcallStub(handleWindowMessageMH,
+                        FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), session);
 
-            // create message-only window
-            Addressable hwnd = User32.CreateWindowExW(0, className, windowName, 0, 0, 0, 0, 0, User32.HWND_MESSAGE(),
-                    NULL, instance, NULL);
-            if (hwnd == NULL)
-                throw new USBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
+                // register window class
+                var wx = session.allocate(WNDCLASSEXW.$LAYOUT());
+                WNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
+                WNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub.address());
+                WNDCLASSEXW.hInstance$set(wx, instance);
+                WNDCLASSEXW.lpszClassName$set(wx, className.address());
+                User32.RegisterClassExW(wx);
 
-            // configure notifications
-            var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter,
-                    User32.DBT_DEVTYP_DEVICEINTERFACE());
-            DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+                // create message-only window
+                hwnd = User32.CreateWindowExW(0, className, windowName, 0, 0, 0, 0, 0, User32.HWND_MESSAGE(),
+                        NULL, instance, NULL);
+                if (hwnd == NULL)
+                    throw new USBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
 
-            var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter,
-                    User32.DEVICE_NOTIFY_WINDOW_HANDLE());
-            if (notifyHandle == NULL)
-                throw new USBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
+                // configure notifications
+                var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter,
+                        User32.DBT_DEVTYP_DEVICEINTERFACE());
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
 
-            // initial device enumeration
-            enumeratePresentDevices();
+                var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter,
+                        User32.DEVICE_NOTIFY_WINDOW_HANDLE());
+                if (notifyHandle == NULL)
+                    throw new USBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
+
+                // initial device enumeration
+                enumeratePresentDevices();
+
+            } catch (Throwable e) {
+                enumerationFailed(e);
+                return;
+            }
 
             // process messages
             var msg = session.allocate(MSG.$LAYOUT());
             //noinspection StatementWithEmptyBody
             while (User32.GetMessageW(msg, hwnd, 0, 0) > 0)
                 ; // do nothing
-
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 
     private void enumeratePresentDevices() {
 
         List<USBDevice> deviceList = new ArrayList<>();
-
         try (var outerSession = MemorySession.openConfined()) {
+
             // get device information set of all USB devices present
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
                     NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
@@ -118,6 +123,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             // iterate all devices
             for (int i = 0; true; i++) {
+
                 if (SetupAPI.SetupDiEnumDeviceInfo(devInfoSetHandle, i, devInfo) == 0) {
                     int err = Kernel32.GetLastError();
                     // TODO: Remove check for ERROR_SUCCESS if proper GetLastError() handling is available
@@ -130,7 +136,13 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                         DeviceProperty.DEVPKEY_Device_InstanceId);
                 var devicePath = DeviceProperty.getDevicePath(instanceID, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
 
-                deviceList.add(createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
+                try {
+                    deviceList.add(createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
+
+                } catch (Throwable e) {
+                    System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring%n", devicePath);
+                    e.printStackTrace(System.err);
+                }
             }
 
             setInitialDeviceList(deviceList);
@@ -164,6 +176,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
     /**
      * Retrieve device descriptor and create {@code USBDevice} instance
+     *
      * @param devicePath the device path
      * @param hubHandle the hub handle (parent)
      * @param usbPortNum the USB port number
@@ -182,9 +195,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 throw new USBException("Internal error (cannot get device descriptor)", Kernel32.GetLastError());
 
             var deviceDesc = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
-            var currentConfigurationValue =
-                    255 & (byte) USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue.get(connInfo);
-            var numConfigurations = 255 & (byte) USBDescriptors.Device_bNumConfigurations.get(deviceDesc);
 
             // extract info from device descriptor
             int manufacturerIndex = 255 & (byte) USBDescriptors.Device_iManufacturer.get(deviceDesc);
@@ -197,28 +207,29 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             int vendorId = 0xffff & (short) USBDescriptors.Device_idVendor.get(deviceDesc);
             int productId = 0xffff & (short) USBDescriptors.Device_idProduct.get(deviceDesc);
 
-            // search configuration descriptor with
-            MemorySegment configDesc = null;
-            for (int i = 0; i < numConfigurations; i++) {
-                var desc = getDescriptor(hubHandle, usbPortNum,
-                        USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, i, (short) 0, session);
-                if ((255 & (byte) USBDescriptors.Configuration_bConfigurationValue.get(desc)) == currentConfigurationValue) {
-                    configDesc = desc;
-                    break;
-                }
-            }
-            if (configDesc == null)
-                throw new USBException(String.format("Configuration descriptor %d not found", currentConfigurationValue));
+            var configDesc = getDescriptor(hubHandle, usbPortNum,
+                    USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, session);
 
             return new WindowsUSBDevice(devicePath, vendorId, productId, manufacturer, product, serialNumber, configDesc);
         }
     }
 
     private MemorySegment getDescriptor(Addressable hubHandle, int usbPortNumber,
-                                        int descriptorType, int index, short languageID, MemorySession session) {
+                                        int descriptorType, int index, short languageID,
+                                        MemorySession session) {
+        return getDescriptor(hubHandle, usbPortNumber, descriptorType, index, languageID, 0, session);
 
-        final int dataLen = 512;
-        var descriptorRequest = session.allocate(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset + dataLen);
+    }
+
+
+    private MemorySegment getDescriptor(Addressable hubHandle, int usbPortNumber,
+                                        int descriptorType, int index, short languageID,
+                                        int requestSize, MemorySession session) {
+
+        int size = requestSize != 0 ? requestSize + (int) USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset : 256;
+
+        // create descriptor requests
+        var descriptorRequest = session.allocate(size);
         USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
         var setupPacket = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
                 USBStructs.SetupPacket$Struct.byteSize());
@@ -227,17 +238,35 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         USBStructs.SetupPacket_wValue.set(setupPacket,
                 (short) ((descriptorType << 8) | index));
         USBStructs.SetupPacket_wIndex.set(setupPacket, languageID);
-        USBStructs.SetupPacket_wLength.set(setupPacket, (short) dataLen);
+        USBStructs.SetupPacket_wLength.set(setupPacket, (short) (size - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset));
 
-        var sizeHolder = session.allocate(JAVA_INT);
+        // execute request
+        var effectiveSizeHolder = session.allocate(JAVA_INT);
         if (Kernel32.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION(),
-                descriptorRequest, (int) descriptorRequest.byteSize(), descriptorRequest,
-                (int) descriptorRequest.byteSize(), sizeHolder, NULL) == 0)
+                descriptorRequest, size, descriptorRequest, size, effectiveSizeHolder, NULL) == 0)
             throw new USBException(String.format("Cannot retrieve descriptor %d", index),
                     Kernel32.GetLastError());
 
-        var size = sizeHolder.get(JAVA_INT, 0);
-        return descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, size - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
+        // determine size of descriptor
+        int expectedSize;
+        if (descriptorType != USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE) {
+            expectedSize = 255 & descriptorRequest.get(JAVA_BYTE, USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
+        } else {
+            var configDesc = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset,  USBDescriptors.Configuration.byteSize());
+            expectedSize = (short) USBDescriptors.Configuration_wTotalLength.get(configDesc);
+        }
+
+        // check against effective size
+        var effectiveSize = effectiveSizeHolder.get(JAVA_INT, 0) - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset;
+        if (effectiveSize != expectedSize) {
+            if (requestSize != 0)
+                throw new USBException("Unexpected descriptor size");
+
+            // repeat with correct size
+            return getDescriptor(hubHandle, usbPortNumber, descriptorType, index, languageID, expectedSize, session);
+        }
+
+        return descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, effectiveSize);
     }
 
     private String getStringDescriptor(Addressable hubHandle, int usbPortNumber, int index) {
@@ -246,7 +275,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         try (var session = MemorySession.openConfined()) {
             var stringDesc = getDescriptor(hubHandle, usbPortNumber, USBDescriptors.STRING_DESCRIPTOR_TYPE,
-                    index, (short) 0x0409, session);
+                    index, USBDescriptors.DEFAULT_LANGUAGE, session);
 
             int stringLen = 255 & (byte) USBHelper.USB_STRING_DESCRIPTOR_bLength.get(stringDesc);
             var chars =
@@ -296,6 +325,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, session);
+            // TODO: Check if result needs to be freed
             if (SetupAPI.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0, devIntfData) == 0)
                 throw new USBException("internal error (SetupDiOpenDeviceInterfaceW)", Kernel32.GetLastError());
 
@@ -311,11 +341,17 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             final var hubHandles = new HashMap<String, MemoryAddress>();
             session.addCloseAction(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
 
-            // create device instance
-            var device = createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
+            try {
+                // create device instance
+                var device = createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
 
-            // add it to device list
-            addDevice(device);
+                // add it to device list
+                addDevice(device);
+
+            } catch (Throwable e) {
+                System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring%n", devicePath);
+                e.printStackTrace(System.err);
+            }
         }
     }
 

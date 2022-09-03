@@ -8,6 +8,7 @@
 package net.codecrete.usb.common;
 
 import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.USBException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.function.Consumer;
 public abstract class USBDeviceRegistry {
 
     private volatile List<USBDevice> devices;
+    private volatile Throwable failureCause;
     protected Consumer<USBDevice> onDeviceConnectedHandler;
     protected Consumer<USBDevice> onDeviceDisconnectedHandler;
 
@@ -105,12 +107,15 @@ public abstract class USBDeviceRegistry {
         // wait for initial device enumeration
         lock.lock();
         try {
-            while (devices == null) {
+            while (devices == null && failureCause == null) {
                 enumerationComplete.awaitUninterruptibly();
             }
         } finally {
             lock.unlock();
         }
+
+        if (failureCause != null)
+            throw new USBException("Initial device enumeration has failed", failureCause);
     }
 
     /**
@@ -126,9 +131,19 @@ public abstract class USBDeviceRegistry {
     }
 
     /**
+     * Signal failure of initial device enumeration.
+     *
+     * @param e cause of failure
+     */
+    protected void enumerationFailed(Throwable e) {
+        failureCause = e;
+        signalEnumerationComplete();
+    }
+
+    /**
      * Sets the device list of the initial device enumeration.
      * <p>
-     * This function singals to the spawning thread that the enumeration is complete.
+     * This function signals to the spawning thread that the enumeration is complete.
      * </p>
      *
      * @param deviceList the device list

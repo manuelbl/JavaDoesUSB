@@ -18,9 +18,12 @@ import net.codecrete.usb.USB;
 public class MonitorDevices {
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("Monitoring USB devices...");
-        USB.setOnDeviceConnected((dev) -> System.out.println("Connected:    " + dev.toString()));
-        USB.setOnDeviceDisconnected((dev) -> System.out.println("Disconnected: " + dev.toString()));
+        USB.setOnDeviceConnected((device) -> System.out.println("Connected:    " + device.toString()));
+        USB.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
+
+        for (var device : USB.getAllDevices())
+            System.out.println("Present:      " + device.toString());
+        System.out.println("Monitoring...");
 
         //noinspection InfiniteLoopStatement
         while (true) {

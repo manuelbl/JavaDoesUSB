@@ -63,13 +63,19 @@ public class DescriptorParser {
                 if (lastAlternate != null)
                     lastAlternate.addEndpoint(lastEndpoint);
 
+            } else if (descType == USBDescriptors.INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE) {
+                // TODO: interface associations
+
             } else //noinspection StatementWithEmptyBody
-                if (descType == USBDescriptors.HID_DESCRIPTOR) {
+                if (descType == USBDescriptors.HID_DESCRIPTOR_TYPE
+                        || descType == USBDescriptors.CS_INTERFACE_DESCRIPTOR_TYPE
+                        || descType == USBDescriptors.CS_ENDPOINT_DESCRIPTOR_TYPE) {
                 // known descriptor but not relevant
 
             } else {
+                // TODO: Remove warning once the relevant descriptors are processed
                 System.err.printf(
-                        "Info: [JavaDoesUSB] unsupported USB descriptor type %02x of device %04x/%04x - ignoring%n",
+                        "Info: [JavaDoesUSB] unsupported USB descriptor type 0x%02x of device 0x%04x/0x%04x - ignoring%n",
                         descType, vendorID, productID);
             }
 

@@ -33,11 +33,15 @@ public class USBDescriptors {
     public static final byte INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE = 0x0b;
     public static final byte BOS_DESCRIPTOR_TYPE = 0x0f;
     public static final byte DEVICE_CAPABILITY_DESCRIPTOR_TYPE = 0x10;
-    public static final byte HID_DESCRIPTOR = 0x21;
+    public static final byte HID_DESCRIPTOR_TYPE = 0x21;
+    public static final byte CS_INTERFACE_DESCRIPTOR_TYPE = 0x24;
+    public static final byte CS_ENDPOINT_DESCRIPTOR_TYPE = 0x25;
     public static final byte USB_20_HUB_DESCRIPTOR_TYPE = 0x29;
     public static final byte USB_30_HUB_DESCRIPTOR_TYPE = 0x2a;
     public static final byte SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR_TYPE = 0x30;
     public static final byte SUPERSPEEDPLUS_ISOCH_ENDPOINT_COMPANION_DESCRIPTOR_TYPE = 0x31;
+
+    public static final short DEFAULT_LANGUAGE = 0x0409;
 
     // typedef struct {
     //    UCHAR   bLength;
