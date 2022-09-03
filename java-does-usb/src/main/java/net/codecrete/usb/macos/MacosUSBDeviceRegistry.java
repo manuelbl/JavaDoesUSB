@@ -78,9 +78,9 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * Process the devices resulting from the iterator
      *
      * @param iterator       the iterator
-     * @param function       a function that will be called for each device with the entry ID and the service
+     * @param consumer       a consumer that will be called for each device with the entry ID and the service
      */
-    private void iterateDevices(int iterator, IOKitDeviceConsumer function) {
+    private void iterateDevices(int iterator, IOKitDeviceConsumer consumer) {
 
         int svc;
         while ((svc = IoKit.IOIteratorNext(iterator)) != 0) {
@@ -99,8 +99,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
 
-                // call function to process device
-                function.accept(entryId, service, device);
+                // call consumer to process device
+                consumer.accept(entryId, service, device);
             }
         }
     }
@@ -116,8 +116,10 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         String product = IoKitHelper.getPropertyString(service, "kUSBProductString");
         String serial = IoKitHelper.getPropertyString(service, "kUSBSerialNumberString");
 
-        if (vendorId == null || productId == null)
+        if (vendorId == null || productId == null) {
+            IoKit.Release(deviceIntf);
             return null;
+        }
 
         return new MacosUSBDevice(deviceIntf, entryID, vendorId, productId, manufacturer, product, serial);
     }

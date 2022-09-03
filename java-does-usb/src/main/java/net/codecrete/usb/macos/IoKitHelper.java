@@ -7,8 +7,6 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.common.Foreign;
-
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
@@ -17,7 +15,7 @@ import java.lang.foreign.MemorySession;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static net.codecrete.usb.macos.CoreFoundation.CFUUID;
+import static net.codecrete.usb.macos.CoreFoundation.CFUUIDBytes;
 import static net.codecrete.usb.macos.CoreFoundation.CFUUID_bytes$Offset;
 
 /**
@@ -42,26 +40,24 @@ public class IoKitHelper {
     public static MemoryAddress getInterface(int service, Addressable pluginType, MemoryAddress interfaceId) {
         try (var session = MemorySession.openConfined()) {
             // MemorySegment for holding IOCFPlugInInterface**
-            var plugPointer = session.allocate(ADDRESS, NULL);
+            var plugHolder = session.allocate(ADDRESS, NULL);
             // MemorySegment for holding score
             var score = session.allocate(JAVA_INT, 0);
-            int ret = IoKit.IOCreatePlugInInterfaceForService(service, pluginType, IoKit.kIOCFPlugInInterfaceID, plugPointer, score);
+            int ret = IoKit.IOCreatePlugInInterfaceForService(service, pluginType, IoKit.kIOCFPlugInInterfaceID, plugHolder, score);
             if (ret != 0)
                 return null;
+            var plug = (MemoryAddress) plugHolder.get(ADDRESS, 0);
 
-            var plug = Foreign.derefAddress(plugPointer.address(), session);
             // MemorySegment for holding xxxInterface**
-            var intf = session.allocate(ADDRESS, NULL);
+            var intfHolder = session.allocate(ADDRESS, NULL);
             // UUID bytes
-            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUID.byteSize(), session);
-            ret = IoKit.QueryInterface(plug, refiid, intf);
+            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUIDBytes.byteSize(), session);
+            ret = IoKit.QueryInterface(plug, refiid, intfHolder);
             IoKit.Release(plug);
-
             if (ret != 0)
                 return null;
-            return Foreign.derefAddress(intf.address(), session);
+            return intfHolder.get(ADDRESS, 0);
         }
-
     }
 
     /**
@@ -114,5 +110,14 @@ public class IoKitHelper {
 
         CoreFoundation.CFRelease(value);
         return result;
+    }
+
+    public static int getRefCount(MemoryAddress object) {
+        try (var session = MemorySession.openConfined()) {
+            var objSegment = MemorySegment.ofAddress(object, 16, session);
+            var dataAddr = objSegment.get(ADDRESS, 8);
+            var dataSegment = MemorySegment.ofAddress(dataAddr, 12, session);
+            return dataSegment.get(JAVA_INT, 8);
+        }
     }
 }

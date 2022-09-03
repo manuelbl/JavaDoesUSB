@@ -33,12 +33,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
     MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
         super(id, vendorId, productId, manufacturer, product, serial);
         this.device = device;
-        IoKit.AddRef(device);
 
         try {
             loadDescription();
-        } finally {
+        } catch (Throwable t) {
             closeFully();
+            throw t;
         }
     }
 
@@ -74,13 +74,14 @@ public class MacosUSBDevice extends USBDeviceImpl {
             IoKitUSB.USBInterfaceClose(interfaceInfo.asMemoryAddress());
             IoKit.Release(interfaceInfo.asMemoryAddress());
         }
+
         claimedInterfaces = null;
         endpoints = null;
+        IoKitUSB.USBDeviceClose(device);
     }
 
     void closeFully() {
         close();
-        IoKitUSB.USBDeviceClose(device);
         IoKit.Release(device);
     }
 
