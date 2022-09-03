@@ -14,13 +14,10 @@ import net.codecrete.usb.linux.gen.select.fd_set;
 import net.codecrete.usb.linux.gen.select.select;
 import net.codecrete.usb.linux.gen.udev.udev;
 
-import java.io.IOException;
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,24 +36,34 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     @Override
     protected void monitorDevices() {
 
-        // setup udev monitor
-        var udevInstance = udev.udev_new();
-        if (udevInstance == NULL) throw new USBException("internal error (udev_new)");
+        int fd;
+        MemoryAddress monitor;
 
-        var monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
-        if (monitor == NULL) throw new USBException("internal error (udev_monitor_new_from_netlink)");
+        try {
+            // setup udev monitor
+            var udevInstance = udev.udev_new();
+            if (udevInstance == NULL) throw new USBException("internal error (udev_new)");
 
-        if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
-            throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
+            monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
+            if (monitor == NULL) throw new USBException("internal error (udev_monitor_new_from_netlink)");
 
-        if (udev.udev_monitor_enable_receiving(monitor) < 0)
-            throw new USBException("internal error (udev_monitor_enable_receiving)");
+            if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
+                throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
 
-        int fd = udev.udev_monitor_get_fd(monitor);
-        if (fd < 0) throw new USBException("internal error (udev_monitor_get_fd)");
+            if (udev.udev_monitor_enable_receiving(monitor) < 0)
+                throw new USBException("internal error (udev_monitor_enable_receiving)");
 
-        // create initial list of devices
-        enumeratePresentDevices(udevInstance);
+            fd = udev.udev_monitor_get_fd(monitor);
+            if (fd < 0) throw new USBException("internal error (udev_monitor_get_fd)");
+
+            // create initial list of devices
+            var deviceList = enumeratePresentDevices(udevInstance);
+            setInitialDeviceList(deviceList);
+
+        } catch (Throwable e) {
+            enumerationFailed(e);
+            return;
+        }
 
         // monitor device changes
         //noinspection InfiniteLoopStatement
@@ -84,7 +91,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private void enumeratePresentDevices(Addressable udevInstance) {
+    private List<USBDevice> enumeratePresentDevices(Addressable udevInstance) {
         List<USBDevice> result = new ArrayList<>();
         try (var outerSession = MemorySession.openConfined()) {
 
@@ -107,11 +114,13 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                 try (var session = MemorySession.openConfined()) {
 
                     var path = udev.udev_list_entry_get_name(entry);
-                    if (path == NULL) continue;
+                    if (path == NULL)
+                        continue;
 
                     // get device handle
                     var dev = udev.udev_device_new_from_syspath(udevInstance, path);
-                    if (dev == NULL) continue;
+                    if (dev == NULL)
+                        continue;
 
                     // ensure the device is released
                     session.addCloseAction(() -> udev.udev_device_unref(dev));
@@ -124,15 +133,14 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             }
         }
 
-        setInitialDeviceList(result);
+        return result;
     }
 
     private void onDeviceConnected(MemoryAddress udevDevice) {
 
         var device = getDeviceDetails(udevDevice);
-        if (device == null) return;
-
-        addDevice(device);
+        if (device != null)
+            addDevice(device);
     }
 
     private void onDeviceDisconnected(MemoryAddress udevDevice) {
@@ -155,26 +163,38 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      */
     private static USBDevice getDeviceDetails(MemoryAddress udevDevice) {
 
-        // retrieve device attributes
-        String idVendor = getDeviceAttribute(udevDevice, "idVendor");
-        if (idVendor == null)
+        int vendorId = 0;
+        int productId = 0;
+
+        try {
+            // retrieve device attributes
+            String idVendor = getDeviceAttribute(udevDevice, "idVendor");
+            if (idVendor == null)
+                return null;
+
+            String idProduct = getDeviceAttribute(udevDevice, "idProduct");
+            if (idProduct == null)
+                return null;
+
+            // get device path
+            var devPath = getDeviceName(udevDevice);
+            if (devPath == null)
+                return null;
+
+            vendorId = Integer.parseInt(idVendor, 16);
+            productId = Integer.parseInt(idProduct, 16);
+
+            // create device instance
+            return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(udevDevice, "manufacturer"),
+                    getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
+
+        } catch (Throwable e) {
+            System.err.printf(
+                    "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
+                    vendorId, productId);
+            e.printStackTrace(System.err);
             return null;
-
-        String idProduct = getDeviceAttribute(udevDevice, "idProduct");
-        if (idProduct == null)
-            return null;
-
-        // get device path
-        var devPath = getDeviceName(udevDevice);
-        if (devPath == null)
-            return null;
-
-        int vendorId = Integer.parseInt(idVendor, 16);
-        int productId = Integer.parseInt(idProduct, 16);
-
-        // create device instance
-        return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(udevDevice, "manufacturer"),
-                getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
+        }
     }
 
     private static String getDeviceAttribute(Addressable udevDevice, String attribute) {
