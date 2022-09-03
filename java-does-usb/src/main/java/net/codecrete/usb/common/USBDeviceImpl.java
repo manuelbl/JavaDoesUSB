@@ -7,7 +7,10 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBControlTransfer;
+import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBInterface;
 
 import java.util.Collections;
 import java.util.List;
@@ -134,24 +137,6 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public abstract byte[] transferIn(int endpointNumber, int maxLength);
-
-    protected byte[] getDescriptor(int descriptorType, int index, int language) {
-        // get descriptor header
-        var result = controlTransferIn(new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE,
-                (byte) 0x06, (short) (descriptorType << 8 | index), (short) language), 9);
-
-        // get effective length from header
-        int length;
-        if (descriptorType == USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE)
-            length = (result[2] & 255) + 256 * (result[3] & 255);
-        else length = result[0] & 255;
-
-        // get full descriptor
-        result = controlTransferIn(new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE, (byte) 0x06,
-                (short) (descriptorType << 8 | index), (short) language), length);
-
-        return result;
-    }
 
     @Override
     public boolean equals(Object o) {

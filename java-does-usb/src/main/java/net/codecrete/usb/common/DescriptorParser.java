@@ -7,10 +7,7 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBEndpointType;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBInterface;
+import net.codecrete.usb.*;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
@@ -28,9 +25,9 @@ public class DescriptorParser {
      * @param descriptor configuration descriptor
      * @return parsed configuration data
      */
-    public static Configuration parseConfigurationDescriptor(byte[] descriptor) {
+    public static Configuration parseConfigurationDescriptor(byte[] descriptor, int vendorID, int productID) {
         var desc = MemorySegment.ofArray(descriptor);
-        return parseConfigurationDescriptor(desc);
+        return parseConfigurationDescriptor(desc, vendorID, productID);
     }
 
     /**
@@ -39,8 +36,8 @@ public class DescriptorParser {
      * @param desc configuration descriptor
      * @return parsed configuration data
      */
-    public static Configuration parseConfigurationDescriptor(MemorySegment desc) {
-        var config = parseConfiguration(desc, 0);
+    public static Configuration parseConfigurationDescriptor(MemorySegment desc, int vendorID, int productID) {
+        var config = parseConfiguration(desc);
 
         USBAlternateInterfaceImpl lastAlternate = null;
         USBEndpointImpl lastEndpoint;
@@ -66,8 +63,14 @@ public class DescriptorParser {
                 if (lastAlternate != null)
                     lastAlternate.addEndpoint(lastEndpoint);
 
+            } else //noinspection StatementWithEmptyBody
+                if (descType == USBDescriptors.HID_DESCRIPTOR) {
+                // known descriptor but not relevant
+
             } else {
-                System.err.println("Warning: unsupported USB descriptor type " + descType);
+                System.err.printf(
+                        "Info: [JavaDoesUSB] unsupported USB descriptor type %02x of device %04x/%04x - ignoring%n",
+                        descType, vendorID, productID);
             }
 
             offset += descLength;
@@ -76,11 +79,15 @@ public class DescriptorParser {
         return config;
     }
 
-    private static Configuration parseConfiguration(MemorySegment descriptor, int offset) {
-        var desc = descriptor.asSlice(offset, USBDescriptors.Configuration.byteSize());
+    private static Configuration parseConfiguration(MemorySegment descriptor) {
+        var desc = descriptor.asSlice(0, USBDescriptors.Configuration.byteSize());
         var config = new Configuration();
         if (USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE != (byte) USBDescriptors.Configuration_bDescriptorType.get(desc))
             throw new USBException("Invalid USB configuration descriptor");
+
+        short totalLength = (short) USBDescriptors.Configuration_wTotalLength.get(desc);
+        if (descriptor.byteSize() != totalLength)
+            throw new USBException("Invalid USB configuration descriptor length");
 
         config.configValue = (byte) USBDescriptors.Configuration_bConfigurationValue.get(desc);
         config.attributes = (byte) USBDescriptors.Configuration_bmAttributes.get(desc);
@@ -97,7 +104,9 @@ public class DescriptorParser {
         var subclassCode = 255 & (byte) USBDescriptors.Interface_bInterfaceSubClass.get(desc);
         var protocol = 255 & (byte) USBDescriptors.Interface_bInterfaceProtocol.get(desc);
         var alternate = new USBAlternateInterfaceImpl(altSetting, classCode, subclassCode, protocol, new ArrayList<>());
-        return new USBInterfaceImpl(number, List.of(alternate));
+        var alternates = new ArrayList<USBAlternateInterface>();
+        alternates.add(alternate);
+        return new USBInterfaceImpl(number, alternates);
     }
 
     private static USBEndpointImpl parseEndpoint(MemorySegment descriptor, int offset) {

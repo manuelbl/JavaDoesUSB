@@ -29,7 +29,6 @@ public class USBHelper {
 
     public static final byte USB_REQUEST_GET_DESCRIPTOR = 0x06;
 
-    public static final short USB_STRING_DESCRIPTOR_TYPE = 0x03;
 
     // typedef struct _USB_NODE_CONNECTION_INFORMATION_EX {
     //    ULONG ConnectionIndex;  /* INPUT */
@@ -60,6 +59,9 @@ public class USBHelper {
                 = USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("ConnectionIndex"));
     public static final long USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset
                 = USB_NODE_CONNECTION_INFORMATION_EX$Struct.byteOffset(groupElement("DeviceDescriptor"));
+    public static MemorySegment USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(MemorySegment seg) {
+        return seg.asSlice(USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset, USBDescriptors.Device$Struct.byteSize());
+    }
     public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue
                 = USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("CurrentConfigurationValue"));
 

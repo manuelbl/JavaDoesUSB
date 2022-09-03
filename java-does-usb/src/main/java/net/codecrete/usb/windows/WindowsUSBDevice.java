@@ -13,7 +13,6 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBInterface;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.DescriptorParser.Configuration;
-import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBStructs;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -35,15 +34,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private MemoryAddress device;
     private MemoryAddress firstInterface;
-    private final byte currentConfigurationValue;
+    private byte configurationValue;
     private Configuration configuration;
     private List<USBInterface> claimedInterfaces;
 
-
     WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
-                     byte currentConfigurationValue) {
+                     MemorySegment configDesc) {
         super(id, vendorId, productId, manufacturer, product, serial);
-        this.currentConfigurationValue = currentConfigurationValue;
+        readDescription(configDesc);
     }
 
     @Override
@@ -54,8 +52,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public void open() {
 
-        if (device != null)
-            return;
+        if (isOpen())
+            throw new USBException("the device is already open");
 
         try (var session = MemorySession.openConfined()) {
 
@@ -76,19 +74,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
                 firstInterface = interfaceHandleHolder.get(ADDRESS, 0);
 
-                try {
-                    // read configuration
-                    byte[] desc = getDescriptor(USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
-                    configuration = DescriptorParser.parseConfigurationDescriptor(desc);
-
-                } catch (Throwable e) {
-                    WinUSB.WinUsb_Free(firstInterface);
-                    throw e;
-                }
-
             } catch (Throwable e) {
                 Kernel32.CloseHandle(device);
-                configuration = null;
                 firstInterface = null;
                 device = null;
                 throw e;
@@ -96,20 +83,26 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
+    private void readDescription(MemorySegment configDesc) {
+        configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, getVendorId(), getProductId());
+        configurationValue = configuration.configValue;
+        setInterfaces(configuration.interfaces);
+    }
 
     @Override
     public void close() {
-        if (device == null)
+        if (!isOpen())
             return;
 
         WinUSB.WinUsb_Free(firstInterface);
         firstInterface = null;
         Kernel32.CloseHandle(device);
         device = null;
-        configuration = null;
     }
 
     public void claimInterface(int interfaceNumber) {
+        checkIsOpen();
+
         var intf = configuration.findInterfaceByNumber(interfaceNumber);
         if (intf == null)
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
@@ -121,6 +114,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     public void releaseInterface(int interfaceNumber) {
+        checkIsOpen();
+
         var intfOptional = claimedInterfaces.stream().filter(intf -> intf.getNumber() == interfaceNumber).findFirst();
         if (intfOptional.isEmpty())
             throw new USBException(String.format("Interface has not been claimed: number %d",
@@ -158,6 +153,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
+        checkIsOpen();
+
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(length);
             var setupPacket = createSetupPacket(session, USBDirection.IN, setup, buffer);
@@ -174,6 +171,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
+        checkIsOpen();
+
         try (var session = MemorySession.openConfined()) {
 
             // copy data to native memory
@@ -194,6 +193,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
+        checkIsOpen();
+
         byte endpointAddress = checkEndpointNumber(endpointNumber, USBDirection.OUT);
 
         try (var session = MemorySession.openConfined()) {
@@ -209,6 +210,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
+        checkIsOpen();
+
         byte endpointAddress = checkEndpointNumber(endpointNumber, USBDirection.IN);
 
         try (var session = MemorySession.openConfined()) {

@@ -102,7 +102,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
                         totalLength, session);
 
-                var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc);
+                var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, getVendorId(), getProductId());
 
                 configurationValue = 255 & configuration.configValue;
                 setInterfaces(configuration.interfaces);
