@@ -73,6 +73,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         for (InterfaceInfo interfaceInfo : claimedInterfaces) {
             IoKitUSB.USBInterfaceClose(interfaceInfo.asAddress());
             IoKit.Release(interfaceInfo.asAddress());
+            setClaimed(interfaceInfo.interfaceNumber, false);
         }
 
         claimedInterfaces = null;
