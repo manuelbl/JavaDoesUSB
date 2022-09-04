@@ -16,19 +16,13 @@ public class InvalidOperationTest extends TestDeviceBase {
 
     @Test
     void claimInvalidInterface_throws() {
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.claimInterface(1);
-        });
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.claimInterface(888);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.claimInterface(1));
+        Assertions.assertThrows(USBException.class, () -> testDevice.claimInterface(888));
     }
 
     @Test
     void releaseInvalidInterface_throws() {
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.releaseInterface(1);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.releaseInterface(1));
     }
 
 
@@ -36,28 +30,16 @@ public class InvalidOperationTest extends TestDeviceBase {
     void invalidEndpoint_throws() {
         var data = new byte[] { 34, 23, 99, 0, 17 };
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferOut(2, data);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferOut(2, data));
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferOut(0, data);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferOut(0, data));
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferOut(3, data);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferOut(3, data));
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferIn(1, 64);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(1, 64));
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferIn(0, 64);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(0, 64));
 
-        Assertions.assertThrows(USBException.class, () -> {
-            testDevice.transferIn(4, 64);
-        });
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(4, 64));
     }
 }

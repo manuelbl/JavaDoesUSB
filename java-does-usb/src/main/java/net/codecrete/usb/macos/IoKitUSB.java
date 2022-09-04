@@ -138,20 +138,6 @@ public class IoKitUSB {
         }
     }
 
-    // IOReturn (*GetNumberOfConfigurations)(void *self, UInt8 *numConfig);
-    private static final VarHandle IOUSBDevice_GetNumberOfConfigurations = IOUSBDevice$Struct.varHandle(groupElement("GetNumberOfConfigurations"));
-    private static final MethodHandle GetNumberOfConfigurations$Func = linker.downcallHandle(
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS)
-    );
-    public static int GetNumberOfConfigurations(MemoryAddress thisPointer, Addressable numConfigHolder) {
-        try (var session = MemorySession.openShared()) {
-            var funcPtr = IOUSBDeviceFunctionAddress(thisPointer, IOUSBDevice_GetNumberOfConfigurations, session);
-            return (int) GetNumberOfConfigurations$Func.invokeExact(funcPtr, (Addressable) thisPointer, numConfigHolder);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // IOReturn (*GetConfigurationDescriptorPtr)(void *self, UInt8 configIndex, IOUSBConfigurationDescriptorPtr *desc);
     private static final VarHandle IOUSBDevice_GetConfigurationDescriptorPtr = IOUSBDevice$Struct.varHandle(groupElement("GetConfigurationDescriptorPtr"));
     private static final MethodHandle GetConfigurationDescriptorPtr$Func = linker.downcallHandle(

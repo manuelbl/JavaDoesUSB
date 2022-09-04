@@ -52,7 +52,8 @@ public class DescriptorParser {
                 if (lastAlternate != null)
                     lastAlternate.addEndpoint(lastEndpoint);
 
-            } else if (descType == USBDescriptors.INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE) {
+            } else //noinspection StatementWithEmptyBody
+                if (descType == USBDescriptors.INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE) {
                 // TODO: interface associations
 
             } else //noinspection StatementWithEmptyBody

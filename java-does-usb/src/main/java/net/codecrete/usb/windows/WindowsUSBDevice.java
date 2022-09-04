@@ -10,7 +10,6 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBInterface;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.DescriptorParser.Configuration;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -22,8 +21,6 @@ import net.codecrete.usb.windows.gen.winusb.WinUSB;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -35,7 +32,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private MemoryAddress device;
     private MemoryAddress firstInterface;
-    private byte configurationValue;
     private Configuration configuration;
 
     WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
@@ -85,7 +81,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private void readDescription(MemorySegment configDesc) {
         configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
-        configurationValue = configuration.configValue;
         setInterfaces(configuration.interfaces);
     }
 

@@ -30,9 +30,6 @@ public class IoKit {
     private static final MemorySession ioKitSession = MemorySession.openShared();
     private static final SymbolLookup ioKitLookup = SymbolLookup.libraryLookup("IOKit.framework/IOKit", ioKitSession);
 
-    public static final Addressable kIOUSBPlane = ioKitSession.allocateUtf8String("IOUSB");
-    public static final Addressable kIOServicePlane = ioKitSession.allocateUtf8String("IOService");
-
     public static final int kIOMasterPortDefault;
     public static final int kIORegistryIterateRecursively = 1;
 
@@ -110,19 +107,6 @@ public class IoKit {
         }
     }
 
-    // io_registry_entry_t IORegistryGetRootEntry(mach_port_t mainPort);
-    private static final MethodHandle IORegistryGetRootEntry$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IORegistryGetRootEntry").get(),
-            FunctionDescriptor.of(JAVA_INT, JAVA_INT)
-    );
-    public static int IORegistryGetRootEntry(int mainPort) {
-        try {
-            return (int) IORegistryGetRootEntry$Func.invokeExact(mainPort);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // kern_return_t IOObjectRelease(io_object_t object);
     private static final MethodHandle IOObjectRelease$Func = linker.downcallHandle(
             ioKitLookup.lookup("IOObjectRelease").get(),
@@ -136,19 +120,6 @@ public class IoKit {
         }
     }
 
-    // kern_return_t IORegistryEntryCreateIterator(io_registry_entry_t entry, const io_name_t plane, IOOptionBits options, io_iterator_t *iterator);
-    private static final MethodHandle IORegistryCreateIterator$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IORegistryCreateIterator").get(),
-            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS)
-    );
-    public static int IORegistryCreateIterator(int entry, Addressable plane, int options, Addressable iterator) {
-        try {
-            return (int) IORegistryCreateIterator$Func.invokeExact(entry, plane, options, iterator);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // io_object_t IOIteratorNext(io_iterator_t iterator);
     private static final MethodHandle IOIteratorNext$Func = linker.downcallHandle(
             ioKitLookup.lookup("IOIteratorNext").get(),
@@ -157,19 +128,6 @@ public class IoKit {
     public static int IOIteratorNext(int iter) {
         try {
             return (int) IOIteratorNext$Func.invokeExact(iter);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // kern_return_t IORegistryEntryGetPath(io_registry_entry_t entry, const io_name_t plane, io_string_t path);
-    private static final MethodHandle IORegistryEntryGetPath$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IORegistryEntryGetPath").get(),
-            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, ADDRESS)
-    );
-    public static int IORegistryEntryGetPath(int entry, Addressable plane, Addressable path) {
-        try {
-            return (int) IORegistryEntryGetPath$Func.invokeExact(entry, plane, path);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
@@ -204,20 +162,6 @@ public class IoKit {
         }
     }
 
-    // io_registry_entry_t IORegistryEntryFromPath(mach_port_t mainPort, const io_string_t path);
-    private static final MethodHandle IORegistryEntryFromPath$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IORegistryEntryFromPath").get(),
-            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
-    );
-    public static int IORegistryEntryFromPath(int mainPort, String path) {
-        try (var session = MemorySession.openConfined()) {
-            var pathCStr = session.allocateUtf8String(path);
-            return (int) IORegistryEntryFromPath$Func.invokeExact(mainPort, (Addressable) pathCStr);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort);
     private static final MethodHandle IONotificationPortCreate$Func = linker.downcallHandle(
             ioKitLookup.lookup("IONotificationPortCreate").get(),
@@ -239,19 +183,6 @@ public class IoKit {
     public static MemoryAddress IONotificationPortGetRunLoopSource(Addressable notify) {
         try {
             return (MemoryAddress) IONotificationPortGetRunLoopSource$Func.invokeExact(notify);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }
-
-    // io_service_t IOServiceGetMatchingService(mach_port_t mainPort, CFDictionaryRef matching);
-    private static final MethodHandle IOServiceGetMatchingService$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IOServiceGetMatchingService").get(),
-            FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS)
-    );
-    public static int IOServiceGetMatchingService(int mainPort, Addressable matching) {
-        try {
-            return (int) IOServiceGetMatchingService$Func.invokeExact(mainPort, matching);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -292,19 +223,6 @@ public class IoKit {
     public static MemoryAddress IOServiceMatching(Addressable name) {
         try {
             return (MemoryAddress) IOServiceMatching$Func.invokeExact(name);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }
-
-    // CFMutableDictionaryRef IORegistryEntryIDMatching(uint64_t entryID);
-    private static final MethodHandle IORegistryEntryIDMatching$Func = linker.downcallHandle(
-            ioKitLookup.lookup("IORegistryEntryIDMatching").get(),
-            FunctionDescriptor.of(ADDRESS, JAVA_LONG)
-    );
-    public static MemoryAddress IORegistryEntryIDMatching(long entryID) {
-        try {
-            return (MemoryAddress) IORegistryEntryIDMatching$Func.invokeExact(entryID);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

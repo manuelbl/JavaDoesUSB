@@ -156,7 +156,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     public void claimInterface(int interfaceNumber) {
-        checkIsOpen();;
+        checkIsOpen();
 
         var interfaceInfo = findInterface(interfaceNumber);
 

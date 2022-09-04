@@ -142,10 +142,10 @@ public class USBDeviceFilter {
     /**
      * Sets the USB device protocol code.
      *
-     * @param protocolCode_ protocol code, or {@code null} if the protocol code is not relevant for matching
+     * @param protocolCode protocol code, or {@code null} if the protocol code is not relevant for matching
      */
-    public void setProtocolCode_(Integer protocolCode_) {
-        protocolCode_ = protocolCode_;
+    public void setProtocolCode_(Integer protocolCode) {
+        protocolCode_ = protocolCode;
     }
 
     /**
