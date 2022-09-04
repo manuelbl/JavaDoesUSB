@@ -245,7 +245,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         if (endpoints != null) {
             byte endpointAddress = (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
             var endpointInfo = endpoints.get(endpointAddress);
-            if (endpointInfo != null)
+            if (endpointInfo != null && endpointInfo.transferType == transferType)
                 return endpointInfo;
         }
 
