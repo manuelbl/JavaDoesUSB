@@ -139,6 +139,17 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     /**
+     * Returns the interface with the specified number.
+     * 
+     * @param interfaceNumber the interface number
+     * @return the interface
+     */
+    protected USBInterfaceImpl getInterface(int interfaceNumber) {
+        return (USBInterfaceImpl) interfaces_.stream()
+                .filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
+    }
+    
+    /**
      * Checks if the specified endpoint is valid for communication and returns the endpoint address.
      *
      * @param endpointNumber endpoint number (1 to 127)

@@ -16,7 +16,11 @@ public class InvalidOperationTest extends TestDeviceBase {
 
     @Test
     void claimInvalidInterface_throws() {
+        // throws error because it's already claimed
+        Assertions.assertThrows(USBException.class, () -> testDevice.claimInterface(0));
+        // throws error because it's an invalid interface number
         Assertions.assertThrows(USBException.class, () -> testDevice.claimInterface(1));
+        // throws error because it's an invalid interface number
         Assertions.assertThrows(USBException.class, () -> testDevice.claimInterface(888));
     }
 
