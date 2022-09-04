@@ -37,7 +37,7 @@ public class USBInterfaceImpl implements USBInterface {
         return isClaimed_;
     }
 
-    void setClaimed(boolean claimed) {
+    public void setClaimed(boolean claimed) {
         isClaimed_ = claimed;
     }
 

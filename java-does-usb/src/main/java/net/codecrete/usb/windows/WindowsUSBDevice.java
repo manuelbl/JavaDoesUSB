@@ -14,6 +14,7 @@ import net.codecrete.usb.USBInterface;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.DescriptorParser.Configuration;
 import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.common.USBStructs;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
@@ -36,7 +37,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private MemoryAddress firstInterface;
     private byte configurationValue;
     private Configuration configuration;
-    private List<USBInterface> claimedInterfaces;
 
     WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
                      MemorySegment configDesc) {
@@ -94,6 +94,9 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
+        for (var intf : interfaces_)
+            ((USBInterfaceImpl) intf).setClaimed(false);
+
         WinUSB.WinUsb_Free(firstInterface);
         firstInterface = null;
         Kernel32.CloseHandle(device);
@@ -106,22 +109,20 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         var intf = configuration.findInterfaceByNumber(interfaceNumber);
         if (intf == null)
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
+        if (intf.isClaimed())
+            throw new USBException(String.format("Interface %d has already been claimed", interfaceNumber));
 
-        if (claimedInterfaces == null)
-            claimedInterfaces = new ArrayList<>();
-
-        claimedInterfaces.add(intf);
+        setClaimed(interfaceNumber, true);
     }
 
     public void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intfOptional = claimedInterfaces.stream().filter(intf -> intf.number() == interfaceNumber).findFirst();
-        if (intfOptional.isEmpty())
-            throw new USBException(String.format("Interface has not been claimed: number %d",
-                    interfaceNumber));
+        var intf = configuration.findInterfaceByNumber(interfaceNumber);
+        if (intf == null)
+            throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
 
-        claimedInterfaces.remove(intfOptional.get());
+        setClaimed(interfaceNumber, false);
     }
 
     private MemorySegment createSetupPacket(MemorySession session, USBDirection direction, USBControlTransfer setup,
