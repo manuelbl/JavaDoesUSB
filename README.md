@@ -12,7 +12,7 @@ The Foreign Function & Memory API (aka as project Panama) is in preview and will
 - Java 19 Early Access, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
-It has been tested with Azul Zulu 19.0.75 EA 33.
+It has been tested with Azul Zulu 19.0.77 EA 34.
 
 
 ## Testing
@@ -63,6 +63,7 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Composite devices (on Windows)
 - Generate and publish JavaDoc documentation
 - Make library available on Maven Central
+- Standalone examples
 
 ### Not planned
 
@@ -112,3 +113,9 @@ The library has not been tested on Windows for ARM64. It might or might not work
 ### 32-bit versions
 
 The Foreign Function & Memory API has not been implemented for 32-bit operating systems / JDKs. So it does not support them (and likely never will).
+
+
+
+## Code generation
+
+Many of the bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information.
