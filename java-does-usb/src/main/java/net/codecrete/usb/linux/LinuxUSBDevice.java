@@ -11,6 +11,7 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.DescriptorParser;
+import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
@@ -44,11 +45,24 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             throw new USBException("Cannot read configuration descriptor", e);
         }
 
+        // the read bytes contain the device descriptor and the configuration descriptor
+        // (including the interface descriptors, endpoint descriptors etc.)
+
         try (var session = MemorySession.openConfined()) {
             var descriptorsSegment = MemorySegment.ofArray(descriptors);
+
+            // isolate device descriptor (copy descriptor to fix alignment issues)
+            var deviceDesc = session.allocate(USBDescriptors.Device$Struct);
+            deviceDesc.copyFrom(descriptorsSegment.asSlice(0, USBDescriptors.Device$Struct.byteSize()));
+
+            int classCode = 255 & (byte) USBDescriptors.Device_bDeviceClass.get(deviceDesc);
+            int subclassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
+            int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
+            setClassCodes(classCode, subclassCode, protocolCode);
+
             // skip device descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
-            configDesc.copyFrom(descriptorsSegment.asSlice(18));
+            configDesc.copyFrom(descriptorsSegment.asSlice(USBDescriptors.Device$Struct.byteSize()));
             var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
             setInterfaces(configuration.interfaces);
         }
