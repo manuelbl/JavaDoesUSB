@@ -154,7 +154,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         if (devPath == null)
             return;
 
-        removeDevice(devPath);
+        closeAndRemoveDevice(devPath);
     }
 
     /**

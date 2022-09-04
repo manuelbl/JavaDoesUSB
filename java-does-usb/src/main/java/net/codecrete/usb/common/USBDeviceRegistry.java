@@ -175,6 +175,21 @@ public abstract class USBDeviceRegistry {
         emitOnDeviceConnected(device);
     }
 
+    protected void closeAndRemoveDevice(Object deviceId) {
+        var device = findDevice(deviceId);
+        if (device == null)
+            return;
+
+        try {
+            device.close();
+        } catch (Throwable e) {
+            System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
+            e.printStackTrace(System.err);
+        }
+
+        removeDevice(deviceId);
+    }
+
     /**
      * Removes a device from the list of connected USB devices.
      *
