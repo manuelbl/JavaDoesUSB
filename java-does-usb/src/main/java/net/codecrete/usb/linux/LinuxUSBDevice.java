@@ -132,6 +132,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
             if (ret != 0)
                 throw new USBException("Cannot release USB interface", IO.getErrno());
+            setClaimed(interfaceNumber, false);
         }
     }
 
