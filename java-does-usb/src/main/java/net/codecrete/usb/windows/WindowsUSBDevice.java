@@ -115,6 +115,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         var intf = configuration.findInterfaceByNumber(interfaceNumber);
         if (intf == null)
+            throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
+        if (!intf.isClaimed())
             throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
 
         setClaimed(interfaceNumber, false);
