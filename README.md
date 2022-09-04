@@ -1,6 +1,6 @@
 # Java Does USB: USB library for Java
 
-*Java Does USB* is a library for working with USB devices from Java. It allows to communicate with USB devices other than storage devices, keyboards etc., which implement standard USB classes the operating system takes care of. Typical cases are USB devices with a custom vendor-specific protocol.
+*Java Does USB* is a library for working with USB devices from Java. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
 The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library.
 
@@ -52,13 +52,13 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Enumeration of USB devices
 - Control transfer
 - Bulk transfer
-- Notification about connected/disconnected devices
+- Notifications about connected/disconnected devices
+- Descriptive information about interfaces, settings and endpoints
 
 ### To do
 
 - Interrupt transfer
 - Isochronous transfer
-- Descriptive information about interfaces, settings and endpoints
 - Alternate interface settings
 - Composite devices (on Windows)
 - Generate and publish JavaDoc documentation
@@ -81,7 +81,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfills this requriement.
+*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requriement.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that aren't claimed by an operating system driver or another application.
 
@@ -93,18 +93,18 @@ Create a file called `/etc/udev/rules.d/80-javadoesusb-udev.rules` with the belo
 SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", MODE="0666"
 ```
 
-This adds the rule to assign permission mode 0666 to all USB devices with vendor ID `0xCAFE`. This non-register vendor ID is used by test device.
+This adds the rule to assign permission mode 0666 to all USB devices with vendor ID `0xCAFE`. This unregistered vendor ID is used by test device.
 
 
 ### Windows
 
-The Windows driver model is more rigid than the ones of macOS or Linux. It's not possible to open any USB device by default. Instead, only devices using the WinUSB driver can be opened. This even applies to devices with no installed driver.
+The Windows driver model is more rigid than the ones of macOS or Linux. It's not possible to open any USB device by default. Instead, only devices using the *WinUSB* driver can be opened. This even applies to devices with no installed driver.
 
 USB devices can implement certain control requests to instruct Windows to automatically install the WinUSB driver (search for WCID or Microsoft OS Compatibility Descriptors). The driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
-The test device implements these control requests. So the driver is installed automatically.
+The test device implements the required control requests. So the driver is installed automatically.
 
-This library does not yet run reliably on Windows as Java VM sometimes overwrites the last error code, which is not just needed in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
+This library does not yet run reliably on Windows as the Java VM sometimes overwrites the last error code, which is needed for proper function, not just in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
 
 The library has not been tested on Windows for ARM64. It might or might not work.
 
