@@ -11,7 +11,6 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.DescriptorParser;
-import net.codecrete.usb.common.DescriptorParser.Configuration;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.common.USBStructs;
@@ -32,7 +31,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private MemoryAddress device;
     private MemoryAddress firstInterface;
-    private Configuration configuration;
 
     WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
                      MemorySegment configDesc) {
@@ -80,7 +78,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private void readDescription(MemorySegment configDesc) {
-        configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
+        var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
         setInterfaces(configuration.interfaces);
     }
 
@@ -101,7 +99,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intf = configuration.findInterfaceByNumber(interfaceNumber);
+        var intf = getInterface(interfaceNumber);
         if (intf == null)
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
         if (intf.isClaimed())
@@ -113,7 +111,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intf = configuration.findInterfaceByNumber(interfaceNumber);
+        var intf = getInterface(interfaceNumber);
         if (intf == null)
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
         if (!intf.isClaimed())
