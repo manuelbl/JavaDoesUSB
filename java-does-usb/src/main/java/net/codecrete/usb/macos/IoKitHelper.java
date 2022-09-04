@@ -43,7 +43,8 @@ public class IoKitHelper {
             var plugHolder = session.allocate(ADDRESS, NULL);
             // MemorySegment for holding score
             var score = session.allocate(JAVA_INT, 0);
-            int ret = IoKit.IOCreatePlugInInterfaceForService(service, pluginType, IoKit.kIOCFPlugInInterfaceID, plugHolder, score);
+            int ret = IoKit.IOCreatePlugInInterfaceForService(service, pluginType, IoKit.kIOCFPlugInInterfaceID,
+                    plugHolder, score);
             if (ret != 0)
                 return null;
             var plug = (MemoryAddress) plugHolder.get(ADDRESS, 0);
@@ -51,7 +52,8 @@ public class IoKitHelper {
             // MemorySegment for holding xxxInterface**
             var intfHolder = session.allocate(ADDRESS, NULL);
             // UUID bytes
-            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUIDBytes.byteSize(), session);
+            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUIDBytes.byteSize(),
+                    session);
             ret = IoKit.QueryInterface(plug, refiid, intfHolder);
             IoKit.Release(plug);
             if (ret != 0)
@@ -65,8 +67,9 @@ public class IoKitHelper {
      * <p>
      * The property must be of numeric type.
      * </p>
+     *
      * @param service the service
-     * @param key the property key
+     * @param key     the property key
      * @return the property value, or {@code null} if the service doesn't have the property
      */
     public static Integer getPropertyInt(int service, String key) {
@@ -94,8 +97,9 @@ public class IoKitHelper {
      * <p>
      * The property must be of string type.
      * </p>
+     *
      * @param service the service
-     * @param key the property key
+     * @param key     the property key
      * @return the property value, or {@code null} if the service doesn't have the property
      */
     public static String getPropertyString(int service, String key) {

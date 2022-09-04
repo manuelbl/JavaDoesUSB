@@ -19,6 +19,6 @@ package net.codecrete.usb;
  * @param value       value
  * @param index       index
  */
-public record USBControlTransfer(USBRequestType requestType, USBRecipient recipient,
-                                 byte request, short value, short index) {
+public record USBControlTransfer(USBRequestType requestType, USBRecipient recipient, byte request, short value,
+                                 short index) {
 }

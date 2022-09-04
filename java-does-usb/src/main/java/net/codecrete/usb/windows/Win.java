@@ -38,7 +38,8 @@ public class Win {
      * <p>
      * The memory segment contains a copy of the string (null-terminated, UTF-16/wide characters).
      * </p>
-     * @param str the string to copy
+     *
+     * @param str     the string to copy
      * @param session the memory session for the memory segment
      * @return the resulting memory segment
      */
@@ -55,6 +56,7 @@ public class Win {
      * <p>
      * The string must be a null-terminated UTF-16 (wide character) string.
      * </p>
+     *
      * @param segment the memory segment
      * @return copied string
      */
@@ -79,17 +81,16 @@ public class Win {
      * @param data4_7 Byte 7 of group 4
      * @return GUID as memory segment
      */
-    public static MemorySegment CreateGUID(int data1, short data2, short data3,
-                                           byte data4_0, byte data4_1, byte data4_2, byte data4_3,
-                                           byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
+    public static MemorySegment CreateGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
+                                           byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
+                                           byte data4_7) {
         var guid = MemorySegment.allocateNative(GUID.$LAYOUT(), MemorySession.global());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
     }
 
-    public static void setGUID(MemorySegment guid, int data1, short data2, short data3,
-                               byte data4_0, byte data4_1, byte data4_2, byte data4_3,
-                               byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
+    public static void setGUID(MemorySegment guid, int data1, short data2, short data3, byte data4_0, byte data4_1,
+                               byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
         GUID.Data1$set(guid, data1);
         GUID.Data2$set(guid, data2);
         GUID.Data3$set(guid, data3);

@@ -59,22 +59,12 @@ public class USBDescriptors {
     //    UCHAR   iSerialNumber;
     //    UCHAR   bNumConfigurations;
     //} __attribute__((packed));
-    public static final GroupLayout Device$Struct = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_SHORT.withName("bcdUSB"),
-            JAVA_BYTE.withName("bDeviceClass"),
-            JAVA_BYTE.withName("bDeviceSubClass"),
-            JAVA_BYTE.withName("bDeviceProtocol"),
-            JAVA_BYTE.withName("bMaxPacketSize0"),
-            JAVA_SHORT.withName("idVendor"),
-            JAVA_SHORT.withName("idProduct"),
-            JAVA_SHORT.withName("bcdDevice"),
-            JAVA_BYTE.withName("iManufacturer"),
-            JAVA_BYTE.withName("iProduct"),
-            JAVA_BYTE.withName("iSerialNumber"),
-            JAVA_BYTE.withName("bNumConfigurations")
-    );
+    public static final GroupLayout Device$Struct = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_SHORT.withName("bcdUSB"), JAVA_BYTE.withName("bDeviceClass"),
+            JAVA_BYTE.withName("bDeviceSubClass"), JAVA_BYTE.withName("bDeviceProtocol"), JAVA_BYTE.withName(
+                    "bMaxPacketSize0"), JAVA_SHORT.withName("idVendor"), JAVA_SHORT.withName("idProduct"),
+            JAVA_SHORT.withName("bcdDevice"), JAVA_BYTE.withName("iManufacturer"), JAVA_BYTE.withName("iProduct"),
+            JAVA_BYTE.withName("iSerialNumber"), JAVA_BYTE.withName("bNumConfigurations"));
 
     public static final VarHandle Device_bDeviceClass = Device$Struct.varHandle(groupElement("bDeviceClass"));
     public static final VarHandle Device_bDeviceSubClass = Device$Struct.varHandle(groupElement("bDeviceSubClass"));
@@ -84,7 +74,8 @@ public class USBDescriptors {
     public static final VarHandle Device_iManufacturer = Device$Struct.varHandle(groupElement("iManufacturer"));
     public static final VarHandle Device_iProduct = Device$Struct.varHandle(groupElement("iProduct"));
     public static final VarHandle Device_iSerialNumber = Device$Struct.varHandle(groupElement("iSerialNumber"));
-    public static final VarHandle Device_bNumConfigurations = Device$Struct.varHandle(groupElement("bNumConfigurations"));
+    public static final VarHandle Device_bNumConfigurations = Device$Struct.varHandle(groupElement(
+            "bNumConfigurations"));
 
     // struct USBConfigurationDescriptor
     //{
@@ -101,23 +92,21 @@ public class USBDescriptors {
     /**
      * USB configuration descriptor
      */
-    public static final GroupLayout Configuration = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_SHORT.withName("wTotalLength"),
-            JAVA_BYTE.withName("bNumInterfaces"),
-            JAVA_BYTE.withName("bConfigurationValue"),
-            JAVA_BYTE.withName("iConfiguration"),
-            JAVA_BYTE.withName("bmAttributes"),
-            JAVA_BYTE.withName("bMaxPower")
-    );
+    public static final GroupLayout Configuration = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_SHORT.withName("wTotalLength"), JAVA_BYTE.withName("bNumInterfaces"),
+            JAVA_BYTE.withName("bConfigurationValue"), JAVA_BYTE.withName("iConfiguration"), JAVA_BYTE.withName(
+                    "bmAttributes"), JAVA_BYTE.withName("bMaxPower"));
 
     public static final VarHandle Configuration_bLength = Configuration.varHandle(groupElement("bLength"));
-    public static final VarHandle Configuration_bDescriptorType = Configuration.varHandle(groupElement("bDescriptorType"));
+    public static final VarHandle Configuration_bDescriptorType = Configuration.varHandle(groupElement(
+            "bDescriptorType"));
     public static final VarHandle Configuration_wTotalLength = Configuration.varHandle(groupElement("wTotalLength"));
-    public static final VarHandle Configuration_bNumInterfaces = Configuration.varHandle(groupElement("bNumInterfaces"));
-    public static final VarHandle Configuration_bConfigurationValue = Configuration.varHandle(groupElement("bConfigurationValue"));
-    public static final VarHandle Configuration_iConfiguration = Configuration.varHandle(groupElement("iConfiguration"));
+    public static final VarHandle Configuration_bNumInterfaces = Configuration.varHandle(groupElement("bNumInterfaces"
+    ));
+    public static final VarHandle Configuration_bConfigurationValue = Configuration.varHandle(groupElement(
+            "bConfigurationValue"));
+    public static final VarHandle Configuration_iConfiguration = Configuration.varHandle(groupElement("iConfiguration"
+    ));
     public static final VarHandle Configuration_bmAttributes = Configuration.varHandle(groupElement("bmAttributes"));
     public static final VarHandle Configuration_bMaxPower = Configuration.varHandle(groupElement("bMaxPower"));
 
@@ -134,17 +123,10 @@ public class USBDescriptors {
     //  uint8_t iInterface;
     // } __attribute__((packed));
 
-    public static final GroupLayout Interface = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_BYTE.withName("bInterfaceNumber"),
-            JAVA_BYTE.withName("bAlternateSetting"),
-            JAVA_BYTE.withName("bNumEndpoints"),
-            JAVA_BYTE.withName("bInterfaceClass"),
-            JAVA_BYTE.withName("bInterfaceSubClass"),
-            JAVA_BYTE.withName("bInterfaceProtocol"),
-            JAVA_BYTE.withName("iInterface")
-    );
+    public static final GroupLayout Interface = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_BYTE.withName("bInterfaceNumber"), JAVA_BYTE.withName("bAlternateSetting"),
+            JAVA_BYTE.withName("bNumEndpoints"), JAVA_BYTE.withName("bInterfaceClass"), JAVA_BYTE.withName(
+                    "bInterfaceSubClass"), JAVA_BYTE.withName("bInterfaceProtocol"), JAVA_BYTE.withName("iInterface"));
 
     public static final VarHandle Interface_bLength = Interface.varHandle(groupElement("bLength"));
     public static final VarHandle Interface_bDescriptorType = Interface.varHandle(groupElement("bDescriptorType"));
@@ -152,8 +134,10 @@ public class USBDescriptors {
     public static final VarHandle Interface_bAlternateSetting = Interface.varHandle(groupElement("bAlternateSetting"));
     public static final VarHandle Interface_bNumEndpoints = Interface.varHandle(groupElement("bNumEndpoints"));
     public static final VarHandle Interface_bInterfaceClass = Interface.varHandle(groupElement("bInterfaceClass"));
-    public static final VarHandle Interface_bInterfaceSubClass = Interface.varHandle(groupElement("bInterfaceSubClass"));
-    public static final VarHandle Interface_bInterfaceProtocol = Interface.varHandle(groupElement("bInterfaceProtocol"));
+    public static final VarHandle Interface_bInterfaceSubClass = Interface.varHandle(groupElement("bInterfaceSubClass"
+    ));
+    public static final VarHandle Interface_bInterfaceProtocol = Interface.varHandle(groupElement("bInterfaceProtocol"
+    ));
     public static final VarHandle Interface_iInterface = Interface.varHandle(groupElement("iInterface"));
 
 
@@ -167,14 +151,9 @@ public class USBDescriptors {
     //  uint8_t bInterval;
     // } __attribute__((packed));
 
-    public static final GroupLayout Endpoint = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_BYTE.withName("bEndpointAddress"),
-            JAVA_BYTE.withName("bmAttributes"),
-            JAVA_SHORT.withName("wMaxPacketSize").withBitAlignment(8),
-            JAVA_BYTE.withName("bInterval")
-    );
+    public static final GroupLayout Endpoint = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_BYTE.withName("bEndpointAddress"), JAVA_BYTE.withName("bmAttributes"),
+            JAVA_SHORT.withName("wMaxPacketSize").withBitAlignment(8), JAVA_BYTE.withName("bInterval"));
 
     public static final VarHandle Endpoint_bLength = Endpoint.varHandle(groupElement("bLength"));
     public static final VarHandle Endpoint_bDescriptorType = Endpoint.varHandle(groupElement("bDescriptorType"));

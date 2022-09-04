@@ -44,26 +44,25 @@ public class USBHelper {
     //    USB_CONNECTION_STATUS ConnectionStatus;/* OUTPUT */
     //    USB_PIPE_INFO PipeList[0];/* OUTPUT */
     //} USB_NODE_CONNECTION_INFORMATION_EX, *PUSB_NODE_CONNECTION_INFORMATION_EX;
-    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(
-            JAVA_INT.withName("ConnectionIndex"),
-            USBDescriptors.Device$Struct.withName("DeviceDescriptor"),
-            JAVA_BYTE.withName("CurrentConfigurationValue"),
-            JAVA_BYTE.withName("Speed"),
-            JAVA_BYTE.withName("DeviceIsHub"),
-            JAVA_SHORT.withName("DeviceAddress"),
-            JAVA_INT.withName("NumberOfOpenPipes"),
-            JAVA_INT.withName("ConnectionStatus")
+    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(JAVA_INT.withName(
+            "ConnectionIndex"), USBDescriptors.Device$Struct.withName("DeviceDescriptor"), JAVA_BYTE.withName(
+                    "CurrentConfigurationValue"), JAVA_BYTE.withName("Speed"), JAVA_BYTE.withName("DeviceIsHub"),
+            JAVA_SHORT.withName("DeviceAddress"), JAVA_INT.withName("NumberOfOpenPipes"), JAVA_INT.withName(
+                    "ConnectionStatus")
             // USB_PIPE_INFO PipeList[0]
     );
-    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex
-                = USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("ConnectionIndex"));
-    public static final long USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset
-                = USB_NODE_CONNECTION_INFORMATION_EX$Struct.byteOffset(groupElement("DeviceDescriptor"));
+    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex =
+            USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("ConnectionIndex"));
+    public static final long USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset =
+            USB_NODE_CONNECTION_INFORMATION_EX$Struct.byteOffset(groupElement("DeviceDescriptor"));
+
     public static MemorySegment USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(MemorySegment seg) {
-        return seg.asSlice(USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset, USBDescriptors.Device$Struct.byteSize());
+        return seg.asSlice(USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset,
+                USBDescriptors.Device$Struct.byteSize());
     }
-    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue
-                = USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("CurrentConfigurationValue"));
+
+    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue =
+            USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("CurrentConfigurationValue"));
 
     // typedef struct _USB_DESCRIPTOR_REQUEST {
     //    ULONG ConnectionIndex;
@@ -76,12 +75,12 @@ public class USBHelper {
     //    } SetupPacket;
     //    UCHAR Data[0];
     //} USB_DESCRIPTOR_REQUEST, *PUSB_DESCRIPTOR_REQUEST;
-    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = structLayout(
-            JAVA_INT.withName("ConnectionIndex"),
-            USBStructs.SetupPacket$Struct.withName("SetupPacket")
-    );
-    public static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex = USB_DESCRIPTOR_REQUEST$Struct.varHandle(groupElement("ConnectionIndex"));
-    public static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset = USB_DESCRIPTOR_REQUEST$Struct.byteOffset(groupElement("SetupPacket"));
+    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = structLayout(JAVA_INT.withName("ConnectionIndex")
+            , USBStructs.SetupPacket$Struct.withName("SetupPacket"));
+    public static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex =
+            USB_DESCRIPTOR_REQUEST$Struct.varHandle(groupElement("ConnectionIndex"));
+    public static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset =
+            USB_DESCRIPTOR_REQUEST$Struct.byteOffset(groupElement("SetupPacket"));
     public static final long USB_DESCRIPTOR_REQUEST_Data$Offset = USB_DESCRIPTOR_REQUEST$Struct.byteSize();
 
     // typedef struct _USB_STRING_DESCRIPTOR {
@@ -89,23 +88,23 @@ public class USBHelper {
     //    UCHAR   bDescriptorType;
     //    WCHAR   bString[1];
     //} USB_STRING_DESCRIPTOR, *PUSB_STRING_DESCRIPTOR;
-    public static final GroupLayout USB_STRING_DESCRIPTOR$Struct = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType")
-    );
-    public static final VarHandle USB_STRING_DESCRIPTOR_bLength = USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bLength"));
-    public static final VarHandle USB_STRING_DESCRIPTOR_bDescriptorType = USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bDescriptorType"));
+    public static final GroupLayout USB_STRING_DESCRIPTOR$Struct = structLayout(JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"));
+    public static final VarHandle USB_STRING_DESCRIPTOR_bLength =
+            USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bLength"));
+    public static final VarHandle USB_STRING_DESCRIPTOR_bDescriptorType =
+            USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bDescriptorType"));
     public static final long USB_STRING_DESCRIPTOR_bString$Offset = USB_STRING_DESCRIPTOR$Struct.byteSize();
 
     // A5DCBF10-6530-11D2-901F-00C04FB951ED
-    public static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.CreateGUID(0xA5DCBF10, (short) 0x6530, (short) 0x11D2,
-            (byte) 0x90, (byte) 0x1F, (byte) 0x00, (byte) 0xC0,
-            (byte) 0x4F, (byte) 0xB9, (byte) 0x51, (byte) 0xED);
+    public static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.CreateGUID(0xA5DCBF10, (short) 0x6530,
+            (short) 0x11D2, (byte) 0x90, (byte) 0x1F, (byte) 0x00, (byte) 0xC0, (byte) 0x4F, (byte) 0xB9, (byte) 0x51
+            , (byte) 0xED);
 
     // f18a0e88-c30c-11d0-8815-00a0c906bed8
-    public static final MemorySegment GUID_DEVINTERFACE_USB_HUB = Win.CreateGUID(0xf18a0e88, (short) 0xc30c, (short) 0x11d0,
-            (byte) 0x88, (byte) 0x15, (byte) 0x00, (byte) 0xa0,
-            (byte) 0xc9, (byte) 0x06, (byte) 0xbe, (byte) 0xd8);
+    public static final MemorySegment GUID_DEVINTERFACE_USB_HUB = Win.CreateGUID(0xf18a0e88, (short) 0xc30c,
+            (short) 0x11d0, (byte) 0x88, (byte) 0x15, (byte) 0x00, (byte) 0xa0, (byte) 0xc9, (byte) 0x06, (byte) 0xbe
+            , (byte) 0xd8);
 
     static {
         assert USB_NODE_CONNECTION_INFORMATION_EX$Struct.byteSize() == 35;

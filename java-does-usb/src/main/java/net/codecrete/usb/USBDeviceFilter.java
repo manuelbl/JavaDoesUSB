@@ -188,7 +188,8 @@ public class USBDeviceFilter {
 
     /**
      * Test if the USB devices matches any of the filter conditions.
-     * @param device the USB device
+     *
+     * @param device  the USB device
      * @param filters a list of filter conditions
      * @return {@code true} if it matches, {@code false} otherwise
      */

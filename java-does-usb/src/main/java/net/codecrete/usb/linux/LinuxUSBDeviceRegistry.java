@@ -42,10 +42,12 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         try {
             // setup udev monitor
             var udevInstance = udev.udev_new();
-            if (udevInstance == NULL) throw new USBException("internal error (udev_new)");
+            if (udevInstance == NULL)
+                throw new USBException("internal error (udev_new)");
 
             monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
-            if (monitor == NULL) throw new USBException("internal error (udev_monitor_new_from_netlink)");
+            if (monitor == NULL)
+                throw new USBException("internal error (udev_monitor_new_from_netlink)");
 
             if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
                 throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
@@ -54,7 +56,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                 throw new USBException("internal error (udev_monitor_enable_receiving)");
 
             fd = udev.udev_monitor_get_fd(monitor);
-            if (fd < 0) throw new USBException("internal error (udev_monitor_get_fd)");
+            if (fd < 0)
+                throw new USBException("internal error (udev_monitor_get_fd)");
 
             // create initial list of devices
             var deviceList = enumeratePresentDevices(udevInstance);
@@ -75,7 +78,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
                 // retrieve change
                 var udevDevice = udev.udev_monitor_receive_device(monitor);
-                if (udevDevice == null) continue; // shouldn't happen
+                if (udevDevice == null)
+                    continue; // shouldn't happen
 
                 session.addCloseAction(() -> udev.udev_device_unref(udevDevice));
 
@@ -97,7 +101,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
             // create device enumerator
             var enumerate = udev.udev_enumerate_new(udevInstance);
-            if (enumerate == NULL) throw new USBException("internal error (udev_enumerate_new)");
+            if (enumerate == NULL)
+                throw new USBException("internal error (udev_enumerate_new)");
 
             outerSession.addCloseAction(() -> udev.udev_enumerate_unref(enumerate));
 
@@ -146,7 +151,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     private void onDeviceDisconnected(MemoryAddress udevDevice) {
 
         var devPath = getDeviceName(udevDevice);
-        if (devPath == null) return;
+        if (devPath == null)
+            return;
 
         removeDevice(devPath);
     }
@@ -189,9 +195,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                     getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
 
         } catch (Throwable e) {
-            System.err.printf(
-                    "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
-                    vendorId, productId);
+            System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " +
+                    "ignoring device%n", vendorId, productId);
             e.printStackTrace(System.err);
             return null;
         }
@@ -201,7 +206,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         try (var session = MemorySession.openConfined()) {
             var sysattr = session.allocateUtf8String(attribute);
             var valueAddr = udev.udev_device_get_sysattr_value(udevDevice, sysattr);
-            if (valueAddr == NULL) return null;
+            if (valueAddr == NULL)
+                return null;
 
             var value = MemorySegment.ofAddress(valueAddr, 2000, session);
             return value.getUtf8String(0);
@@ -228,6 +234,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         fds.set(JAVA_LONG, fd / JAVA_LONG.bitSize(), 1L << (fd % JAVA_LONG.bitSize()));
 
         int res = select.select(fd + 1, fds, NULL, NULL, NULL);
-        if (res <= 0) throw new USBException("internal error (select)");
+        if (res <= 0)
+            throw new USBException("internal error (select)");
     }
 }

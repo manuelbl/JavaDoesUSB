@@ -33,8 +33,7 @@ public class USB {
         } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new LinuxUSBDeviceRegistry();
         } else {
-            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " +
-                    "%s/%s", osName, osArch));
+            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " + "%s/%s", osName, osArch));
         }
         return impl;
     }
@@ -84,8 +83,7 @@ public class USB {
      * @return list of USB devices
      */
     public static List<USBDevice> getDevices(List<USBDeviceFilter> filters) {
-        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters))
-                .collect(Collectors.toList());
+        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters)).collect(Collectors.toList());
     }
 
     /**
@@ -105,8 +103,7 @@ public class USB {
      * @return USB device, or {@code null} if no device matches
      */
     public static USBDevice getDevice(List<USBDeviceFilter> filters) {
-        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters))
-                .findFirst().orElse(null);
+        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters)).findFirst().orElse(null);
     }
 
     /**

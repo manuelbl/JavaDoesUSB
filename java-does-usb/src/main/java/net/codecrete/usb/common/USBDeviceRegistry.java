@@ -82,11 +82,13 @@ public abstract class USBDeviceRegistry {
     }
 
     protected void emitOnDeviceConnected(USBDevice device) {
-        if (onDeviceConnectedHandler != null) onDeviceConnectedHandler.accept(device);
+        if (onDeviceConnectedHandler != null)
+            onDeviceConnectedHandler.accept(device);
     }
 
     protected void emitOnDeviceDisconnected(USBDevice device) {
-        if (onDeviceDisconnectedHandler != null) onDeviceDisconnectedHandler.accept(device);
+        if (onDeviceDisconnectedHandler != null)
+            onDeviceDisconnectedHandler.accept(device);
     }
 
     /**
@@ -160,7 +162,8 @@ public abstract class USBDeviceRegistry {
      */
     protected void addDevice(USBDevice device) {
         // check for duplicates
-        if (findDeviceIndex(devices, ((USBDeviceImpl) device).getUniqueId()) >= 0) return;
+        if (findDeviceIndex(devices, ((USBDeviceImpl) device).getUniqueId()) >= 0)
+            return;
 
         // copy list
         var newDeviceList = new ArrayList<USBDevice>(devices.size() + 1);
@@ -203,14 +206,16 @@ public abstract class USBDeviceRegistry {
     protected int findDeviceIndex(List<USBDevice> deviceList, Object deviceId) {
         for (int i = 0; i < deviceList.size(); i++) {
             var dev = (USBDeviceImpl) deviceList.get(i);
-            if (deviceId.equals(dev.getUniqueId())) return i;
+            if (deviceId.equals(dev.getUniqueId()))
+                return i;
         }
         return -1;
     }
+
     /**
      * Finds the device with the given ID in the device list
      *
-     * @param deviceId   the unique device ID
+     * @param deviceId the unique device ID
      * @return return device, or {@code null} if not found.
      */
     protected USBDevice findDevice(Object deviceId) {

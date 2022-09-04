@@ -131,7 +131,7 @@ public abstract class USBDeviceImpl implements USBDevice {
     public void setClaimed(int interfaceNumber, boolean claimed) {
         for (var intf : interfaces_) {
             if (intf.number() == interfaceNumber) {
-                ((USBInterfaceImpl)intf).setClaimed(claimed);
+                ((USBInterfaceImpl) intf).setClaimed(claimed);
                 return;
             }
         }
@@ -140,20 +140,19 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     /**
      * Returns the interface with the specified number.
-     * 
+     *
      * @param interfaceNumber the interface number
      * @return the interface
      */
     protected USBInterfaceImpl getInterface(int interfaceNumber) {
-        return (USBInterfaceImpl) interfaces_.stream()
-                .filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
+        return (USBInterfaceImpl) interfaces_.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
     }
-    
+
     /**
      * Checks if the specified endpoint is valid for communication and returns the endpoint address.
      *
      * @param endpointNumber endpoint number (1 to 127)
-     * @param direction transfer direction
+     * @param direction      transfer direction
      * @return endpoint address
      */
     protected byte getEndpointAddress(int endpointNumber, USBDirection direction) {
@@ -171,8 +170,7 @@ public abstract class USBDeviceImpl implements USBDevice {
             }
         }
 
-        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " +
-                "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
+        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " + "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
     }
 
     @Override
@@ -190,8 +188,10 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         USBDeviceImpl that = (USBDeviceImpl) o;
         return id_.equals(that.id_);
     }
@@ -203,7 +203,6 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public String toString() {
-        return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " +
-                "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
+        return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " + "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
     }
 }

@@ -78,8 +78,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     /**
      * Process the devices resulting from the iterator
      *
-     * @param iterator       the iterator
-     * @param consumer       a consumer that will be called for each device with the entry ID and the service
+     * @param iterator the iterator
+     * @param consumer a consumer that will be called for each device with the entry ID and the service
      */
     private void iterateDevices(int iterator, IOKitDeviceConsumer consumer) {
 
@@ -129,9 +129,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     consumer.accept(device);
 
             } catch (Throwable e) {
-                System.err.printf(
-                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
-                        deviceInfo.vid, deviceInfo.pid);
+                System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " + "ignoring device%n", deviceInfo.vid, deviceInfo.pid);
                 e.printStackTrace(System.err);
             }
         });
@@ -160,8 +158,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         Integer subclassCode = IoKitHelper.getPropertyInt(service, "bDeviceSubClass");
         Integer protocolCode = IoKitHelper.getPropertyInt(service, "bDeviceProtocol");
 
-        device.setClassCodes(classCode != null ? classCode : 0,
-                subclassCode != null ? subclassCode : 0,
+        device.setClassCodes(classCode != null ? classCode : 0, subclassCode != null ? subclassCode : 0,
                 protocolCode != null ? protocolCode : 0);
 
         return device;
@@ -182,7 +179,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         var deviceIterHolder = session.allocate(JAVA_INT);
         int ret = IoKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
                 onDeviceCallbackStub, NULL, deviceIterHolder);
-        if (ret != 0) throw new MacosUSBException("IOServiceAddMatchingNotification failed", ret);
+        if (ret != 0)
+            throw new MacosUSBException("IOServiceAddMatchingNotification failed", ret);
 
         return deviceIterHolder.get(JAVA_INT, 0);
     }

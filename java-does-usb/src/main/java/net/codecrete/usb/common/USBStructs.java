@@ -19,13 +19,9 @@ public class USBStructs {
     //  uint16_t Index;
     //  uint16_t Length;
     //} __attribute__((packed));
-    public static final GroupLayout SetupPacket$Struct = structLayout(
-            JAVA_BYTE.withName("bmRequest"),
-            JAVA_BYTE.withName("bRequest"),
-            JAVA_SHORT.withName("wValue"),
-            JAVA_SHORT.withName("wIndex"),
-            JAVA_SHORT.withName("wLength")
-    );
+    public static final GroupLayout SetupPacket$Struct = structLayout(JAVA_BYTE.withName("bmRequest"),
+            JAVA_BYTE.withName("bRequest"), JAVA_SHORT.withName("wValue"), JAVA_SHORT.withName("wIndex"),
+            JAVA_SHORT.withName("wLength"));
 
     public static final VarHandle SetupPacket_bmRequest = SetupPacket$Struct.varHandle(groupElement("bmRequest"));
     public static final VarHandle SetupPacket_bRequest = SetupPacket$Struct.varHandle(groupElement("bRequest"));

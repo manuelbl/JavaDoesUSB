@@ -82,7 +82,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var pathUtf8 = session.allocateUtf8String(id_.toString());
             fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
-            if (fd == -1) throw new USBException("Cannot open USB device", IO.getErrno());
+            if (fd == -1)
+                throw new USBException("Cannot open USB device", IO.getErrno());
         }
     }
 
@@ -128,7 +129,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
-            if (ret != 0) throw new USBException("Cannot release USB interface", IO.getErrno());
+            if (ret != 0)
+                throw new USBException("Cannot release USB interface", IO.getErrno());
         }
     }
 
@@ -153,7 +155,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var ctrlTransfer = createCtrlTransfer(session, USBDirection.IN, setup, data);
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
-            if (res < 0) throw new USBException("Control IN transfer failed", IO.getErrno());
+            if (res < 0)
+                throw new USBException("Control IN transfer failed", IO.getErrno());
 
             return data.asSlice(0, res).toArray(JAVA_BYTE);
         }
@@ -164,11 +167,13 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             int dataLength = data != null ? data.length : 0;
             var buffer = session.allocate(dataLength);
-            if (dataLength != 0) buffer.copyFrom(MemorySegment.ofArray(data));
+            if (dataLength != 0)
+                buffer.copyFrom(MemorySegment.ofArray(data));
             var ctrlTransfer = createCtrlTransfer(session, USBDirection.OUT, setup, buffer);
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
-            if (res < 0) throw new USBException("Control OUT transfer failed", IO.getErrno());
+            if (res < 0)
+                throw new USBException("Control OUT transfer failed", IO.getErrno());
         }
     }
 
@@ -191,7 +196,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0)
-                throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber), IO.getErrno());
+                throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber),
+                        IO.getErrno());
         }
     }
 
@@ -206,7 +212,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0)
-                throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber), IO.getErrno());
+                throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber),
+                        IO.getErrno());
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
         }
