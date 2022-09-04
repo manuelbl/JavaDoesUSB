@@ -10,6 +10,7 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
@@ -175,7 +176,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
-        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT);
+        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(data.length);
@@ -190,7 +191,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN);
+        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(maxLength);

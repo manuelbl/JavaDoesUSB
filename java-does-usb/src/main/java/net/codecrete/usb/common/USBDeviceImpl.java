@@ -155,7 +155,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param direction      transfer direction
      * @return endpoint address
      */
-    protected byte getEndpointAddress(int endpointNumber, USBDirection direction) {
+    protected byte getEndpointAddress(int endpointNumber, USBDirection direction, USBTransferType transferType) {
 
         checkIsOpen();
 
@@ -163,14 +163,16 @@ public abstract class USBDeviceImpl implements USBDevice {
             for (var intf : interfaces_) {
                 if (intf.isClaimed()) {
                     for (var ep : intf.alternate().endpoints()) {
-                        if (ep.number() == endpointNumber && ep.direction() == direction)
+                        if (ep.number() == endpointNumber && ep.direction() == direction && ep.transferType() == transferType)
                             return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
                     }
                 }
             }
         }
 
-        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " + "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
+        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " +
+                "or is not valid for %s transfer in %s direction", endpointNumber, transferType.name(),
+                direction.name()));
     }
 
     @Override

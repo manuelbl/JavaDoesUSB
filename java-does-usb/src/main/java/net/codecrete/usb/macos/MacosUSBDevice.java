@@ -10,6 +10,7 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -232,14 +233,15 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     int endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 255;
                     int direction = directionHolder.get(JAVA_BYTE, 0) & 255;
                     byte endpointAddress = (byte) (endpointNumber | (direction << 7));
-                    var endpointInfo = new EndpointInfo(interfaceInfo.addr, (byte) pipeIndex);
+                    byte transferType = transferTypeHolder.get(JAVA_BYTE, 0);
+                    var endpointInfo = new EndpointInfo(interfaceInfo.addr, (byte) pipeIndex, getTransferType(transferType));
                     endpoints.put(endpointAddress, endpointInfo);
                 }
             }
         }
     }
 
-    private EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction) {
+    private EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction, USBTransferType transferType) {
         if (endpoints != null) {
             byte endpointAddress = (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
             var endpointInfo = endpoints.get(endpointAddress);
@@ -247,8 +249,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 return endpointInfo;
         }
 
-        throw new USBException(String.format("Endpoint number %d is not part of a claimed interface, the endpoint " +
-                "does not operate in the %s direction or is otherwise invalid", endpointNumber, direction.name()));
+        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " +
+                        "or is not valid for %s transfer in %s direction", endpointNumber, transferType.name(),
+                direction.name()));
     }
 
     private static MemorySegment createDeviceRequest(MemorySession session, USBDirection direction,
@@ -299,7 +302,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT);
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, data.length);
@@ -314,7 +317,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN);
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, maxLength);
@@ -334,13 +337,22 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
+    private static USBTransferType getTransferType(byte macosTransferType) {
+        return switch (macosTransferType) {
+            case 1 -> USBTransferType.ISOCHRONOUS;
+            case 2 -> USBTransferType.BULK;
+            case 3 -> USBTransferType.INTERRUPT;
+            default -> null;
+        };
+    }
+
     record InterfaceInfo(long addr, int interfaceNumber) {
         MemoryAddress asAddress() {
             return ofLong(addr);
         }
     }
 
-    record EndpointInfo(long interfaceAddr, byte pipeIndex) {
+    record EndpointInfo(long interfaceAddr, byte pipeIndex, USBTransferType transferType) {
         MemoryAddress interfacAddress() {
             return ofLong(interfaceAddr);
         }

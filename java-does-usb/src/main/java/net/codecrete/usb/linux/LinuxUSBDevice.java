@@ -10,6 +10,7 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -187,7 +188,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
-        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT);
+        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(data.length);
@@ -203,7 +204,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN);
+        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN, USBTransferType.BULK);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(maxLength);
