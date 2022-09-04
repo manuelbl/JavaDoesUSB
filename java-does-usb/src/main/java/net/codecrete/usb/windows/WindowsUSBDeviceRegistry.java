@@ -210,7 +210,14 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var configDesc = getDescriptor(hubHandle, usbPortNum,
                     USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, session);
 
-            return new WindowsUSBDevice(devicePath, vendorId, productId, manufacturer, product, serialNumber, configDesc);
+            var device = new WindowsUSBDevice(devicePath, vendorId, productId, manufacturer, product, serialNumber, configDesc);
+
+            int classCode = 255 & (byte) USBDescriptors.Device_bDeviceClass.get(deviceDesc);
+            int subclassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
+            int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
+            device.setClassCodes(classCode, subclassCode, protocolCode);
+
+            return device;
         }
     }
 
