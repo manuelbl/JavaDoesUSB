@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../jextract-19/bin/jextract
+JEXTRACT=../../../../jextract-19/bin/jextract
 
 # sd-device.h (install libsystemd-dev if file is missing)
 # Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'
@@ -11,7 +11,7 @@ JEXTRACT=../../../jextract-19/bin/jextract
 #  /usr/include/systemd/sd-device.h
 
 # errno.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-function __errno_location \

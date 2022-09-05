@@ -7,6 +7,9 @@
 
 package net.codecrete.usb.macos;
 
+import net.codecrete.usb.macos.gen.corefoundation.CFRange;
+import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
+
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
@@ -31,9 +34,9 @@ public class CoreFoundationHelper {
 
             long strLen = CoreFoundation.CFStringGetLength(string);
             var buffer = session.allocateArray(JAVA_CHAR, strLen);
-            var range = session.allocate(CoreFoundation.CFRange);
-            CoreFoundation.CFRange_location.set(range, 0);
-            CoreFoundation.CFRange_range.set(range, strLen);
+            var range = session.allocate(CFRange.$LAYOUT());
+            CFRange.location$set(range, 0);
+            CFRange.length$set(range, strLen);
             CoreFoundation.CFStringGetCharacters(string, range, buffer);
             return new String(buffer.toArray(JAVA_CHAR));
 

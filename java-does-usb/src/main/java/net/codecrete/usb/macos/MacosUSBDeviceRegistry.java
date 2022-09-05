@@ -9,6 +9,8 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBDevice;
 import net.codecrete.usb.common.USBDeviceRegistry;
+import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
+import net.codecrete.usb.macos.gen.iokit.IOKit;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -40,15 +42,15 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             try {
 
                 // setup run loop, run loop source and notification port
-                var notifyPort = IoKit.IONotificationPortCreate(IoKit.kIOMasterPortDefault);
-                var runLoopSource = IoKit.IONotificationPortGetRunLoopSource(notifyPort);
+                var notifyPort = IOKit.IONotificationPortCreate(IOKit.kIOMasterPortDefault$get());
+                var runLoopSource = IOKit.IONotificationPortGetRunLoopSource(notifyPort);
                 var runLoop = CoreFoundation.CFRunLoopGetCurrent();
-                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IoKit.kCFRunLoopDefaultMode);
+                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode$get());
 
                 // setup notification for connected devices
                 var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
                         "onDevicesConnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
-                int deviceConnectedIter = setupNotification(session, notifyPort, IoKit.kIOFirstMatchNotification,
+                int deviceConnectedIter = setupNotification(session, notifyPort, IOKit.kIOFirstMatchNotification(),
                         onDeviceConnectedMH);
 
                 // iterate current devices in order to arm the notifications (and build initial device list)
@@ -59,7 +61,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 // setup notification for disconnected devices
                 var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
                         "onDevicesDisconnected", MethodType.methodType(void.class, MemoryAddress.class, int.class));
-                int deviceDisconnectedIter = setupNotification(session, notifyPort, IoKit.kIOTerminatedNotification,
+                int deviceDisconnectedIter = setupNotification(session, notifyPort, IOKit.kIOTerminatedNotification(),
                         onDeviceDisconnectedMH);
 
                 // iterate current devices in order to arm the notifications
@@ -84,21 +86,21 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     private void iterateDevices(int iterator, IOKitDeviceConsumer consumer) {
 
         int svc;
-        while ((svc = IoKit.IOIteratorNext(iterator)) != 0) {
+        while ((svc = IOKit.IOIteratorNext(iterator)) != 0) {
             try (var session = MemorySession.openConfined()) {
 
                 final int service = svc;
-                session.addCloseAction(() -> IoKit.IOObjectRelease(service));
+                session.addCloseAction(() -> IOKit.IOObjectRelease(service));
 
-                var device = IoKitHelper.getInterface(service, IoKit.kIOUSBDeviceUserClientTypeID,
-                        IoKit.kIOUSBDeviceInterfaceID100);
+                var device = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBDeviceUserClientTypeID,
+                        IoKitHelper.kIOUSBDeviceInterfaceID100);
 
                 if (device != null)
-                    session.addCloseAction(() -> IoKit.Release(device));
+                    session.addCloseAction(() -> IoKitUSB.Release(device));
 
                 // get entry ID (as unique ID)
                 var entryIdHolder = session.allocate(JAVA_LONG);
-                int ret = IoKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
+                int ret = IOKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
                 if (ret != 0)
                     throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
@@ -168,7 +170,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                                   MethodHandle callback) {
 
         // new matching dictionary for (dis)connected device notifications
-        MemoryAddress matchingDict = IoKit.IOServiceMatching(IoKit.kIOUSBDeviceClassName);
+        MemoryAddress matchingDict = IOKit.IOServiceMatching(IOKit.kIOUSBDeviceClassName());
 
         // create callback stub
         var onDeviceCallbackStub = Linker.nativeLinker().upcallStub(callback.bindTo(this),
@@ -177,7 +179,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         // Set up a notification to be called when a device is first matched / terminated by I/O Kit.
         // This method consumes the matchingDict reference.
         var deviceIterHolder = session.allocate(JAVA_INT);
-        int ret = IoKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
+        int ret = IOKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
                 onDeviceCallbackStub, NULL, deviceIterHolder);
         if (ret != 0)
             throw new MacosUSBException("IOServiceAddMatchingNotification failed", ret);

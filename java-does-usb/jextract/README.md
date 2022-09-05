@@ -33,26 +33,22 @@ On Linux, *jextract* is very successful. The only limitations are:
 - `libudev.h`: After code generation, the class `RuntimeHelper.java` in `.../linux/gen/udev` must be manually modified as the code to access the library does not work for the directory the library is located in. So replace:
 
 ```
-        System.loadLibrary("udev");
-        SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
+System.loadLibrary("udev");
+SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
 ```
 
 with:
 
 ```
-        SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", MemorySession.openImplicit());
+SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", MemorySession.openImplicit());
 ```
 
 
 ## MacOS
 
-Most of the required native function on macOS are part of a framework. Framework internally have a more complex file organization of header and binary files than appears on the outside. Thus they require a special logic to locate framework header files. *clang* supports it with the `-F` and `-iframework`. *jextract* does not support it. The result is that only a single function is generated. The binding code for all other functions and data structures is written manually.
+Most of the required native functions on macOS are part of a framework. Framework internally have a more complex file organization of header and binary files than appears on the outside. Thus they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
 
-Loading framework libraries at runtime also requires special support. That is already built in and working nicely, e.g. to load the *IOKit* framework, below code can be used.
-
-```
-SymbolLookup ioKitLookup SymbolLookup.libraryLookup("IOKit.framework/IOKit", MemorySession.openImplicit());
-```
+The generated code has the same problem as the Linux code for *udev*. It must be manually changed to use `SymbolLookup.libraryLookup()` for the libraries `CoreFoundation.framework/CoreFoundation` and `IOKit.framework/IOKit` respectively.
 
 
 ## Windows
@@ -69,4 +65,4 @@ The known limitations are:
 
 - `USB_NODE_CONNECTION_INFORMATION_EX`: This struct uses a packed layout without considering alignment. The last four members are on an offset even though they are multiple bytes long. *jextract* creates the correct offsets but defines strict alignment constraints for the members. So the memory layout cannot be instantiated as it throws an exception.
 
-- GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is most likely due to the fact that the constant isn't in any native library at all. Rather they are defined in file that uses them and then multiple copies are discarded at link time using [`__declspec(selectany)`](https://docs.microsoft.com/en-us/cpp/cpp/selectany?view=msvc-170).
+- GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is due to the fact that `GUID_DEVINTERFACE_USB_DEVICE` actually resolve to a variable defintion and not to a variable declaration. So there is no such symbol in any library. Such constants should be skipped by *jextract*.
