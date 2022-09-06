@@ -13,7 +13,15 @@ The resulting code is then committed to the source code repository. Before the c
 
 ## General limitations
 
-- Binaries of *jextract* can be downloaded from https://jdk.java.net/jextract/. Only x64 binaries are available. It is unclear if the x64 jextract run on macOS with Apple Silicon (ARM64) using the Rosetta emulator produces valid bindings. So far, not problems have been detected.
+- Binaries of *jextract* can be downloaded from https://jdk.java.net/jextract/. x64 binaries are available but no ARM64. According to the mailing list, cross-compiling is not possible, i.e. ARM64 binaries are needed on macOS with Apple Silicon. But so far, the x64 binaries have worked without problems.
+
+- `typedef` and `struct`:
+
+  1. If only the `typedef` is included (`--include-typedef`), an empty Java class is generated.
+  2. If both *typedef* and the `struct` it refers to are included, the `typedef` class inherits from the `struct` class, which contains all the `struct` members.
+  3. If the `typedef` refers to an unnamed `struct`, the generated class contains all the `struct` members.
+  
+  Case 1 looks like a bug.
 
 
 ## Linux
@@ -24,7 +32,7 @@ To run the script, most likely the header files for *libudev* must be installed 
 sudo apt-get install libudev-dev
 ```
 
-On Linux, *jextract* is very successful. The only limitations are:
+On Linux, the limitations are:
 
 - `usbdevice_fs.h`: The macro `USBDEVFS_CONTROL` (and all similar ones) are not generated. They are probably considered a function-like macro. *jextract* does not generate code for function-like macro. But `USBDEVFS_CONTROL` is actually a constant.
 
@@ -53,16 +61,12 @@ The generated code has the same problem as the Linux code for *udev*. It must be
 
 ## Windows
 
-On Windows, several scripts must be run as *jextract* is a batch file that never returns. It's not possible to call it multiple times from a single script.
-
 Most Windows SDK header files are not independent. They require that `Windows.h` is included first. So instead of specifying the target header files directly, a helper header file (`windows_headers.h` in this directory) is specified.
 
 The known limitations are:
 
-- `typedef` to `struct`: If only the *typedef* is specified (`--include-typedef`), an empty Java class is generated. If both *typedef* and the *struct* it refers to are specified, the *typedef* class is still empty but inherits from the *struct* class, which contains all the *struct* members.
+- Variable size `struct`: Several Windows struct are of variable size. The last member is an array. The `struct` definition specifies array length 1. But you are expected to allocate more space depending on the actual array size you need. *jextract* generates code for array length 1 and when access array members, the length is checked. So the generated code is difficult to use. Variable size `struct`s are a pain - in any language.
 
-- Variable size *struct*: Several Windows struct are of variable size. The last member is an array. The *struct* definition specifies array length 1. But you are expected to allocate more space depending on the actual array size you need. *jextract* generates code for array length 1 and when access array members, the length is checked. So the generated code isn't really usable.
+- `USB_NODE_CONNECTION_INFORMATION_EX`: This struct uses a packed layout without considering alignment. The last four members are on an odd offset even though they are multiple bytes long. *jextract* creates the correct offsets but defines strict alignment constraints for the members. So the memory layout cannot be instantiated as it throws an exception.
 
-- `USB_NODE_CONNECTION_INFORMATION_EX`: This struct uses a packed layout without considering alignment. The last four members are on an offset even though they are multiple bytes long. *jextract* creates the correct offsets but defines strict alignment constraints for the members. So the memory layout cannot be instantiated as it throws an exception.
-
-- GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is due to the fact that `GUID_DEVINTERFACE_USB_DEVICE` actually resolve to a variable defintion and not to a variable declaration. So there is no such symbol in any library. Such constants should be skipped by *jextract*.
+- GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is due to the fact that `GUID_DEVINTERFACE_USB_DEVICE` actually resolve to a variable definition and not to a variable declaration. It is not part of any library. Such constants should be skipped by *jextract*.

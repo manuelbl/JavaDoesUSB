@@ -13,7 +13,6 @@ import net.codecrete.usb.common.USBDescriptors;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.common.USBStructs;
-import net.codecrete.usb.macos.MacosUSBDevice;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVINFO_DATA;

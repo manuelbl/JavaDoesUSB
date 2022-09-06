@@ -1,0 +1,116 @@
+set JEXTRACT=..\..\..\..\jextract-19\bin\jextract.bat
+set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+  -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+  -I "%SDK_DIR%\um" ^
+  -I "%SDK_DIR%\shared" ^
+  -l Kernel32 ^
+  --header-class-name Kernel32 ^
+  --target-package net.codecrete.usb.windows.gen.kernel32 ^
+  --include-function CreateFileW ^
+  --include-function CloseHandle ^
+  --include-function DeviceIoControl ^
+  --include-function GetLastError ^
+  --include-function GetModuleHandleW ^
+  --include-macro ERROR_SUCCESS ^
+  --include-macro ERROR_NO_MORE_ITEMS ^
+  --include-macro ERROR_INSUFFICIENT_BUFFER ^
+  --include-macro GENERIC_READ ^
+  --include-macro GENERIC_WRITE ^
+  --include-macro FILE_SHARE_READ ^
+  --include-macro FILE_SHARE_WRITE ^
+  --include-macro FILE_ATTRIBUTE_NORMAL ^
+  --include-macro FILE_FLAG_OVERLAPPED ^
+  --include-macro OPEN_EXISTING ^
+  --include-struct _GUID ^
+  --include-typedef GUID ^
+  windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+  -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+  -I "%SDK_DIR%\um" ^
+  -I "%SDK_DIR%\shared" ^
+  -l SetupAPI ^
+  --header-class-name SetupAPI ^
+  --target-package net.codecrete.usb.windows.gen.setupapi ^
+  --include-function SetupDiGetClassDevsW ^
+  --include-function SetupDiDestroyDeviceInfoList ^
+  --include-function SetupDiEnumDeviceInfo ^
+  --include-function SetupDiEnumDeviceInterfaces ^
+  --include-function SetupDiGetDeviceInterfaceDetailW ^
+  --include-function SetupDiGetDeviceRegistryPropertyW ^
+  --include-function SetupDiGetDevicePropertyW ^
+  --include-function SetupDiOpenDeviceInterfaceW ^
+  --include-struct _SP_DEVINFO_DATA ^
+  --include-typedef SP_DEVINFO_DATA ^
+  --include-struct _SP_DEVICE_INTERFACE_DATA ^
+  --include-typedef SP_DEVICE_INTERFACE_DATA ^
+  --include-struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
+  --include-typedef SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
+  --include-macro DIGCF_PRESENT ^
+  --include-macro DIGCF_DEVICEINTERFACE ^
+  --include-macro SPDRP_ADDRESS ^
+  --include-macro DEVPROP_TYPE_UINT32 ^
+  --include-macro DEVPROP_TYPE_STRING ^
+  windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+  -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+  --header-class-name StdLib ^
+  --target-package net.codecrete.usb.windows.gen.stdlib ^
+  --include-function wcslen ^
+  windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+  -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+  -I "%SDK_DIR%\um" ^
+  -I "%SDK_DIR%\shared" ^
+  --header-class-name USBIoctl ^
+  --target-package net.codecrete.usb.windows.gen.usbioctl ^
+  --include-macro IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX ^
+  --include-macro IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION ^
+  windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+       -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+       -I "%SDK_DIR%\um" ^
+       -I "%SDK_DIR%\shared" ^
+       -l User32 ^
+       --header-class-name User32 ^
+       --target-package net.codecrete.usb.windows.gen.user32 ^
+       --include-function RegisterClassExW ^
+       --include-function CreateWindowExW ^
+       --include-function RegisterDeviceNotificationW ^
+       --include-function GetMessageW ^
+       --include-function DefWindowProcW ^
+       --include-macro DEVICE_NOTIFY_WINDOW_HANDLE ^
+       --include-macro HWND_MESSAGE ^
+       --include-macro WM_DEVICECHANGE ^
+       --include-macro DBT_DEVICEARRIVAL ^
+       --include-macro DBT_DEVICEREMOVECOMPLETE ^
+       --include-macro DBT_DEVTYP_DEVICEINTERFACE ^
+       --include-struct tagMSG ^
+       --include-typedef MSG ^
+       --include-struct tagWNDCLASSEXW ^
+       --include-typedef WNDCLASSEXW ^
+       --include-struct _DEV_BROADCAST_HDR ^
+       --include-typedef DEV_BROADCAST_HDR ^
+       --include-struct _DEV_BROADCAST_DEVICEINTERFACE_W ^
+       --include-typedef DEV_BROADCAST_DEVICEINTERFACE_W ^
+       windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+       -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+       -I "%SDK_DIR%\um" ^
+       -I "%SDK_DIR%\shared" ^
+       -l Winusb ^
+       --header-class-name WinUSB ^
+       --target-package net.codecrete.usb.windows.gen.winusb ^
+       --include-function WinUsb_Initialize ^
+       --include-function WinUsb_Free ^
+       --include-function WinUsb_GetDescriptor ^
+       --include-function WinUsb_ControlTransfer ^
+       --include-function WinUsb_WritePipe ^
+       --include-function WinUsb_ReadPipe ^
+       windows_headers.h
