@@ -59,7 +59,7 @@ $JEXTRACT --source --output ../../src/main/java \
   iokit_helper.h
 
 # mach.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
   --header-class-name mach \
   --target-package net.codecrete.usb.macos.gen.mach \
