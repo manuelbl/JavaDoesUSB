@@ -18,14 +18,14 @@ $JEXTRACT --source --output ../../src/main/java \
   /usr/include/errno.h
 
 # ioctl.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name ioctl \
   --target-package net.codecrete.usb.linux.gen.ioctl \
   --include-function ioctl \
   /usr/include/x86_64-linux-gnu/sys/ioctl.h
 
 # fcntl.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name fcntl \
   --target-package net.codecrete.usb.linux.gen.fcntl \
   --include-function open \
@@ -34,7 +34,7 @@ $JEXTRACT --source --output ../src/main/java \
   /usr/include/fcntl.h
 
 # unistd.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name unistd \
   --target-package net.codecrete.usb.linux.gen.unistd \
   --include-function close \
@@ -42,7 +42,7 @@ $JEXTRACT --source --output ../src/main/java \
 
 # usbdevice_fs.h
 # Missing constants like USBDEVFS_CLAIMINTERFACE
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name usbdevice_fs \
   --target-package net.codecrete.usb.linux.gen.usbdevice_fs \
   --include-struct usbdevfs_bulktransfer \
@@ -54,7 +54,7 @@ $JEXTRACT --source --output ../src/main/java \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name udev \
   --target-package net.codecrete.usb.linux.gen.udev \
   -l udev \
@@ -80,7 +80,7 @@ $JEXTRACT --source --output ../src/main/java \
   /usr/include/libudev.h
 
 # select.h
-$JEXTRACT --source --output ../src/main/java \
+$JEXTRACT --source --output ../../src/main/java \
   --header-class-name select \
   --target-package net.codecrete.usb.linux.gen.select \
   --include-function select \
