@@ -58,7 +58,7 @@ public class DescriptionTest extends TestDeviceBase {
     void endpointDescriptors_isCorrect() {
         var altIntf = testDevice.interfaces().get(0).alternate();
         assertNotNull(altIntf.endpoints());
-        assertEquals(2, altIntf.endpoints().size());
+        assertEquals(4, altIntf.endpoints().size());
 
         var endpoint = altIntf.endpoints().get(0);
         assertEquals(1, endpoint.number());
@@ -71,5 +71,17 @@ public class DescriptionTest extends TestDeviceBase {
         assertEquals(USBDirection.IN, endpoint.direction());
         assertEquals(USBTransferType.BULK, endpoint.transferType());
         assertEquals(64, endpoint.packetSize());
+
+        endpoint = altIntf.endpoints().get(2);
+        assertEquals(3, endpoint.number());
+        assertEquals(USBDirection.OUT, endpoint.direction());
+        assertEquals(USBTransferType.INTERRUPT, endpoint.transferType());
+        assertEquals(16, endpoint.packetSize());
+
+        endpoint = altIntf.endpoints().get(3);
+        assertEquals(3, endpoint.number());
+        assertEquals(USBDirection.IN, endpoint.direction());
+        assertEquals(USBTransferType.INTERRUPT, endpoint.transferType());
+        assertEquals(16, endpoint.packetSize());
     }
 }

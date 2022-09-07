@@ -5,9 +5,18 @@ For testing the *Java Does USB* library, a dedicated USB test device is needed. 
 
 ## Test features
 
-### Loopback
+### Endpoints
 
-All data sent to endpoint 0x01 (OUT) is sent back on endpoint 0x82 (IN). Both endpoints use bulk transfer with a maximum packet size of 64 bytes. The device uses an internal buffer of about 1000 bytes. Up to this amount, the data can be first sent and then received.
+| Endpoint | Transfer Type | Direction | Packet Size | Function |
+| - | - | - | - | - |
+| 0x00 | Control | Bidirectional |  | See *Control requests* below |
+| 0x01 | Bulk | Host to device | 64 bytes | Loopback: all data received on this endpoint are then transmitted on endpoint 0x82. |
+| 0x82 | Bulk | Device to host | 64 bytes |  Loopback: Transmits the data received on endpoint 0x01. |
+| 0x03 | Interrupt | Host to device | 16 bytes |  Echo: All packets received on this endpoint are transmitted twice on endpoint 0x83. |
+| 0x83 | Interrupt | Device to host | 16 bytes |  Echo: Transmits all packets received on endpoint 0x03 twice. |
+
+The bulk endpoints 0x01 and 0x82 use an internal buffer of about 1000 bytes. Data up to this amount can be sent and received sequentially. If more data is sent without receiving at the same time, flow control kicks in and endpoint 0x01 will stop receiving data until there is room in the buffer.
+
 
 ### Control requests
 

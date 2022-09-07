@@ -19,6 +19,8 @@
 // Endpoints
 #define EP_LOOPBACK_RX 0x01
 #define EP_LOOPBACK_TX 0x82
+#define EP_ECHO_RX 0x03
+#define EP_ECHO_TX 0x83
 
 // USB descriptor string table
 extern const char *const usb_desc_strings[4];

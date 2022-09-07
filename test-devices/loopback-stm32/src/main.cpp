@@ -23,8 +23,10 @@
 
 static void on_usb_set_config(usbd_device *usbd_dev, uint16_t wValue);
 static usbd_request_return_codes on_usb_control_request(usbd_device *usbd_dev, usb_setup_data *req, uint8_t **buf, uint16_t *len, usbd_control_complete_callback *complete);
-static void on_usb_data_received(usbd_device *usbd_dev, uint8_t ep);
-static void on_usb_data_transmitted(usbd_device *usbd_dev, uint8_t ep);
+static void on_usb_loopback_received(usbd_device *usbd_dev, uint8_t ep);
+static void on_usb_loopback_transmitted(usbd_device *usbd_dev, uint8_t ep);
+static void on_usb_echo_received(usbd_device *usbd_dev, uint8_t ep);
+static void on_usb_echo_transmitted(usbd_device *usbd_dev, uint8_t ep);
 static void check_buffers();
 
 // USB device instance
@@ -40,13 +42,22 @@ static circ_buf<1024> buffer;
 static constexpr int MIN_FREE_SPACE = 2 * BULK_MAX_PACKET_SIZE;
 
 // indicates if loopback data is being transmitted
-static volatile bool is_transmitting = false;
+static bool is_loopback_tx = false;
 
-// indicates if the endpoint is forced to NAK to prevent receiving further data
-static volatile bool is_forced_nak = false;
+// indicates if the loopback RX endpoint is forced to NAK to prevent receiving further data
+static bool is_loopback_rx_nak = false;
 
 // value that can be saved and retrieved with control requests
 static uint32_t saved_value;
+
+// echo message
+static char echo_msg[INTR_MAX_PACKET_SIZE];
+
+// echo message length
+static int echo_msg_len;
+
+// number of echos left to transmit (if > 1, RX endpointed is NAKed)
+static int num_echos_left;
 
 
 void init() {
@@ -90,38 +101,42 @@ void on_usb_set_config(usbd_device *usbd_dev, __attribute__((unused)) uint16_t w
                                    USB_REQ_TYPE_VENDOR | USB_REQ_TYPE_INTERFACE,
                                    USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
                                    on_usb_control_request);
-    usbd_ep_setup(usbd_dev, EP_LOOPBACK_RX, USB_ENDPOINT_ATTR_BULK, BULK_MAX_PACKET_SIZE, on_usb_data_received);
-    usbd_ep_setup(usbd_dev, EP_LOOPBACK_TX, USB_ENDPOINT_ATTR_BULK, BULK_MAX_PACKET_SIZE, on_usb_data_transmitted);
+    usbd_ep_setup(usbd_dev, EP_LOOPBACK_RX, USB_ENDPOINT_ATTR_BULK, BULK_MAX_PACKET_SIZE, on_usb_loopback_received);
+    usbd_ep_setup(usbd_dev, EP_LOOPBACK_TX, USB_ENDPOINT_ATTR_BULK, BULK_MAX_PACKET_SIZE, on_usb_loopback_transmitted);
+    usbd_ep_setup(usbd_dev, EP_ECHO_RX, USB_ENDPOINT_ATTR_INTERRUPT, INTR_MAX_PACKET_SIZE, on_usb_echo_received);
+    usbd_ep_setup(usbd_dev, EP_ECHO_TX, USB_ENDPOINT_ATTR_INTERRUPT, INTR_MAX_PACKET_SIZE, on_usb_echo_transmitted);
 
     buffer.reset();
-    is_transmitting = false;
-    is_forced_nak = false;
+    is_loopback_tx = false;
+    is_loopback_rx_nak = false;
+    num_echos_left = 0;
+    echo_msg_len = 0;
     saved_value = 0;
 }
 
-// Called when data has been received
-void on_usb_data_received(__attribute__((unused)) usbd_device *usbd_dev, __attribute__((unused)) uint8_t ep) {
+// Called when loopback data has been received
+void on_usb_loopback_received(usbd_device *usbd_dev, uint8_t ep) {
     // Retrieve USB data (has side effect of setting endpoint to VALID)
     uint8_t packet[BULK_MAX_PACKET_SIZE] __attribute__((aligned(4)));
-    int len = usbd_ep_read_packet(usb_device, EP_LOOPBACK_RX, packet, sizeof(packet));
+    int len = usbd_ep_read_packet(usbd_dev, ep, packet, sizeof(packet));
 
     // copy data into circular buffer
     buffer.add_data(packet, len);
 
 }
 
-// Called when data has been transmitted
-void on_usb_data_transmitted(__attribute__((unused)) usbd_device *usbd_dev, __attribute__((unused)) uint8_t ep) {
-    is_transmitting = false;
+// Called when loopback data has been transmitted
+void on_usb_loopback_transmitted(__attribute__((unused)) usbd_device *usbd_dev, __attribute__((unused)) uint8_t ep) {
+    is_loopback_tx = false;
 }
 
 void check_buffers() {
 
     // If RX is stopped and there is sufficient space in the buffer, resume it
-    if (is_forced_nak) {
+    if (is_loopback_rx_nak) {
         if (buffer.avail_size() >= MIN_FREE_SPACE) {
             usbd_ep_nak_set(usb_device, EP_LOOPBACK_RX, 0);
-            is_forced_nak = false;
+            is_loopback_rx_nak = false;
         }
     
     // If RX is enabled but the space in the buffer is low, stop it
@@ -130,18 +145,39 @@ void check_buffers() {
         if (buffer.avail_size() < MIN_FREE_SPACE) {
             // set endpoint from VALID to NAK
             usbd_ep_nak_set(usb_device, EP_LOOPBACK_RX, 1);
-            is_forced_nak = true;
+            is_loopback_rx_nak = true;
         }
     }
 
     // If no data is being transmitted and there is data in the buffer, transmit a packet
-    if (!is_transmitting && buffer.data_size() >= 0) {
+    if (!is_loopback_tx && buffer.data_size() >= 0) {
         uint8_t packet[BULK_MAX_PACKET_SIZE] __attribute__((aligned(4)));
         int len = buffer.get_data(packet, BULK_MAX_PACKET_SIZE);
         usbd_ep_write_packet(usb_device, EP_LOOPBACK_TX, packet, len);
-        is_transmitting = true;
+        is_loopback_tx = true;
     }
 }
+
+// Called when echo data has been received
+void on_usb_echo_received(usbd_device *usbd_dev,uint8_t ep) {
+    // Retrieve USB data (has side effect of setting endpoint to VALID)
+    echo_msg_len = usbd_ep_read_packet(usbd_dev, EP_ECHO_RX, echo_msg, sizeof(echo_msg));
+    usbd_ep_nak_set(usbd_dev, ep, 1);
+
+    usbd_ep_write_packet(usbd_dev, EP_ECHO_TX, echo_msg, echo_msg_len);
+    num_echos_left = 2;
+}
+
+// Called when echo data has been transmitted
+void on_usb_echo_transmitted(__attribute__((unused)) usbd_device *usbd_dev, __attribute__((unused)) uint8_t ep) {
+    num_echos_left--;
+    if (num_echos_left > 0) {
+        usbd_ep_write_packet(usbd_dev, ep, echo_msg, echo_msg_len);
+    } else {
+        usbd_ep_nak_set(usbd_dev, EP_ECHO_RX, 0);
+    }
+}
+
 
 usbd_request_return_codes on_usb_control_request(
         __attribute__((unused)) usbd_device *usbd_dev, usb_setup_data *req,

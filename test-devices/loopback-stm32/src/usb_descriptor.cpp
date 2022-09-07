@@ -57,6 +57,26 @@ static const struct usb_endpoint_descriptor comm_endpoint_descs[] = {
         .extra = nullptr,
         .extralen = 0,
     },
+    {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = EP_ECHO_RX,
+        .bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
+        .wMaxPacketSize = INTR_MAX_PACKET_SIZE,
+        .bInterval = 16,
+        .extra = nullptr,
+        .extralen = 0,
+    },
+    {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = EP_ECHO_TX,
+        .bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
+        .wMaxPacketSize = INTR_MAX_PACKET_SIZE,
+        .bInterval = 16,
+        .extra = nullptr,
+        .extralen = 0,
+    },
 };
 
 static const struct usb_interface_descriptor comm_if_descs[] = {
