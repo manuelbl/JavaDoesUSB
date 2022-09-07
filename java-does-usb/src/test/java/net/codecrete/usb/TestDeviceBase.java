@@ -12,6 +12,8 @@ package net.codecrete.usb;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
+import java.util.Random;
+
 /**
  * Base class for tests using the test device.
  */
@@ -33,5 +35,12 @@ public class TestDeviceBase {
             testDevice.close();
             testDevice = null;
         }
+    }
+
+    static byte[] generateRandomBytes(int numBytes, long seed) {
+        var random = new Random(seed);
+        var bytes = new byte[numBytes];
+        random.nextBytes(bytes);
+        return bytes;
     }
 }

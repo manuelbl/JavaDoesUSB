@@ -245,16 +245,23 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction, USBTransferType transferType) {
+    private EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction,
+                                         USBTransferType transferType1, USBTransferType transferType2) {
         if (endpoints != null) {
             byte endpointAddress = (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
             var endpointInfo = endpoints.get(endpointAddress);
-            if (endpointInfo != null && endpointInfo.transferType == transferType)
+            if (endpointInfo != null
+                    && (endpointInfo.transferType == transferType1 || endpointInfo.transferType == transferType2))
                 return endpointInfo;
         }
 
+        String transferTypeDesc;
+        if (transferType2 == null)
+            transferTypeDesc = transferType1.name();
+        else
+            transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
         throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " +
-                        "or is not valid for %s transfer in %s direction", endpointNumber, transferType.name(),
+                        "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc,
                 direction.name()));
     }
 
@@ -306,7 +313,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK);
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, data.length);
@@ -321,7 +329,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK);
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, maxLength);

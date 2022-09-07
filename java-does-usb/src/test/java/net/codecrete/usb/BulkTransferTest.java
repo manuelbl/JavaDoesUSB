@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -72,12 +71,5 @@ public class BulkTransferTest extends TestDeviceBase {
             bytesRead += data.length;
         }
         return buffer.toByteArray();
-    }
-
-    static byte[] generateRandomBytes(int numBytes, long seed) {
-        var random = new Random(seed);
-        var bytes = new byte[numBytes];
-        random.nextBytes(bytes);
-        return bytes;
     }
 }
