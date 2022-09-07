@@ -52,12 +52,12 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Enumeration of USB devices
 - Control transfer
 - Bulk transfer
+- Interrupt transfer
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
 
 ### To do
 
-- Interrupt transfer
 - Isochronous transfer
 - Alternate interface settings
 - Composite devices (on Windows)
