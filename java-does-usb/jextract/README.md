@@ -13,7 +13,7 @@ The resulting code is then committed to the source code repository. Before the c
 
 ## General limitations
 
-- Binaries of *jextract* can be downloaded from https://jdk.java.net/jextract/. x64 binaries are available but no ARM64. According to the mailing list, cross-compiling is not possible, i.e. ARM64 binaries are needed on macOS with Apple Silicon. But so far, the x64 binaries have worked without problems.
+- Binaries of *jextract* can be downloaded from https://jdk.java.net/jextract/. x64 binaries are available but no ARM64 binaries. According to the mailing list, cross-compiling is not possible, i.e. ARM64 binaries are needed on macOS with Apple Silicon. But so far, the x64 binaries (using the Rosetta2 emulation) have worked without problems.
 
 - `typedef` and `struct`:
 
@@ -22,6 +22,16 @@ The resulting code is then committed to the source code repository. Before the c
   3. If the `typedef` refers to an unnamed `struct`, the generated class contains all the `struct` members.
   
   Case 1 looks like a bug.
+
+- *jextract* is not really transparent about what it does. It often skips elements without providing any information. In particular, it will silently skip a requested element in these cases:
+
+  - `--include-var myvar` if `myvar` is declared as `static`.
+  - `--include-var myvar` if `myvar` is an `enum` constant. `enum` constants must be requested with `--include-macro`.
+  - `--include-macro MYMACRO` if `MYMACRO` is function-like, even if it evaluates to a constant.
+  - `--include-struct mystruct` if `mystruct` is actually a `typedef` to a `struct`.
+  - `--include-typedef mystruct` if `mystruct` is actually a `struct`.
+  - `--include-typedef mytypedef` if `mytypedef` is a `typedef` for a primitive type.
+
 
 
 ## Linux
@@ -34,9 +44,9 @@ sudo apt-get install libudev-dev
 
 On Linux, the limitations are:
 
-- `usbdevice_fs.h`: The macro `USBDEVFS_CONTROL` (and all similar ones) are not generated. They are probably considered a function-like macro. *jextract* does not generate code for function-like macro. But `USBDEVFS_CONTROL` is actually a constant.
+- `usbdevice_fs.h`: The macro `USBDEVFS_CONTROL` and all similar ones are not generated. They are probably considered function-like macros. *jextract* does not generate code for function-like macros. But `USBDEVFS_CONTROL` evaluates to a constant.
 
-- `sd-device.h` (header file for *libsystemd*): *jextract* fails with *"Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'"*. The reason is yet unknown. This code is currently not needed as it uses *libudev* instead of *libsystemd*. They are related, *libsystemd* is the future solution, but it is missing support for monitoring devices.
+- `sd-device.h` (header file for *libsystemd*): *jextract* fails with *"Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'"*. The reason is yet unknown. This code is currently not needed as *libudev* is used instead of *libsystemd*. They are related, *libsystemd* is the future solution, but it is missing support for monitoring devices.
 
 - `libudev.h`: After code generation, the class `RuntimeHelper.java` in `.../linux/gen/udev` must be manually modified as the code to access the library does not work for the directory the library is located in. So replace:
 
@@ -70,3 +80,9 @@ The known limitations are:
 - `USB_NODE_CONNECTION_INFORMATION_EX`: This struct uses a packed layout without considering alignment. The last four members are on an odd offset even though they are multiple bytes long. *jextract* creates the correct offsets but defines strict alignment constraints for the members. So the memory layout cannot be instantiated as it throws an exception.
 
 - GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is due to the fact that `GUID_DEVINTERFACE_USB_DEVICE` actually resolve to a variable definition and not to a variable declaration. It is not part of any library. Such constants should be skipped by *jextract*.
+
+- *jextract* is a batch script and turns off *echo mode*. If a single batch scripts has multiple calls of *jextract*, two things need to be considered:
+
+    - If the regular command interpreter `cmd.exe` is used, *jextract* must be called using `call`, i.e. `call jextract header.h`.
+    - If *PowerShell* is used instead, `call` is not needed but *PowerShell* must be configured to allow the execution of scripts.
+    - *jextract* turns off *echo mode*. So the first call will behave differently than the following calls.

@@ -7,7 +7,6 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.macos.gen.corefoundation.CFUUIDBytes;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
@@ -19,7 +18,6 @@ import java.lang.foreign.MemorySession;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static net.codecrete.usb.macos.UUID.CFUUID_bytes$Offset;
 
 /**
  * Constants and helper functions for the IOKit framework.
@@ -73,8 +71,7 @@ public class IoKitHelper {
             // MemorySegment for holding xxxInterface**
             var intfHolder = session.allocate(ADDRESS, NULL);
             // UUID bytes
-            var refiid = MemorySegment.ofAddress(interfaceId.addOffset(CFUUID_bytes$Offset), CFUUIDBytes.sizeof(),
-                    session);
+            var refiid = CoreFoundation.CFUUIDGetUUIDBytes(session, interfaceId);
             ret = IoKitUSB.QueryInterface(plug, refiid, intfHolder.address());
             IoKitUSB.Release(plug);
             if (ret != 0)

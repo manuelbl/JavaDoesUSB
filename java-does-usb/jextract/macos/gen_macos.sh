@@ -1,7 +1,7 @@
 #!/bin/sh
 
 JEXTRACT=../../../../jextract-19/bin/jextract
-# If SDK_DIR is changed, it needs to be changed in compiler flags as well.
+# If SDK_DIR is changed, it needs to be changed in compile_flags.txt as well.
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 # CoreFoundation
@@ -24,6 +24,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function CFRunLoopGetCurrent \
   --include-function CFRunLoopAddSource \
   --include-function CFRunLoopRun \
+  --include-function CFUUIDGetUUIDBytes \
   --include-macro kCFNumberSInt32Type \
   cf_helper.h
 

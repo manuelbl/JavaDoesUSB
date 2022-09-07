@@ -5,6 +5,7 @@ package net.codecrete.usb.macos.gen.corefoundation;
 import java.lang.foreign.Addressable;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
@@ -143,8 +144,19 @@ public class CoreFoundation  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle CFUUIDGetUUIDBytes$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.CFUUIDGetUUIDBytes$MH,"CFUUIDGetUUIDBytes");
+    }
+    public static MemorySegment CFUUIDGetUUIDBytes ( SegmentAllocator allocator,  Addressable uuid) {
+        var mh$ = CFUUIDGetUUIDBytes$MH();
+        try {
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(allocator, uuid);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle CFUUIDCreateFromUUIDBytes$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFUUIDCreateFromUUIDBytes$MH,"CFUUIDCreateFromUUIDBytes");
+        return RuntimeHelper.requireNonNull(constants$2.CFUUIDCreateFromUUIDBytes$MH,"CFUUIDCreateFromUUIDBytes");
     }
     public static MemoryAddress CFUUIDCreateFromUUIDBytes ( Addressable alloc,  MemorySegment bytes) {
         var mh$ = CFUUIDCreateFromUUIDBytes$MH();
