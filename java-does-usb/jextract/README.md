@@ -86,3 +86,22 @@ The known limitations are:
     - If the regular command interpreter `cmd.exe` is used, *jextract* must be called using `call`, i.e. `call jextract header.h`.
     - If *PowerShell* is used instead, `call` is not needed but *PowerShell* must be configured to allow the execution of scripts.
     - *jextract* turns off *echo mode*. So the first call will behave differently than the following calls.
+
+
+## Code Size
+
+*jextract* generates a comprehensive set of methods for each function, struct, struct member etc. Most of it will not be used as a typical application just uses a subset of struct members, might only read or write them etc. So a considerable amount of code is generated. For some types, it's a bit excessive.
+
+The worst example is [`IOUSBInterfaceStruct942`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBDeviceStruct942.java) (macOS). This is a `struct` consisting of about 75 member functions. It's bascially a vtable of a C++ class. *jextract* generates the same number of classes plus a huge class for the struct itself. The total code size (compiled) for this single `struct` is over 300 kByte.
+
+The table below shows statictics for version 0.2.0 of the library:
+
+| Operating Systems | Manually Created | % | Generated | % | Total | % |
+| - | -:| -:| -:| -:| -:| -:|
+| Linux       |  24,140 |  1.96% |   182,774 | 14.84% |   206,914 |  16.80% |
+| macOS       |  57,788 |  4.69% |   666,037 | 54.08% |   723,825 |  58.77% |
+| Windows     |  46,085 |  3.74% |   201,000 | 16.32% |   247,085 |  20.06% |
+| Common      |  53,774 |  4.37% |    53,774 |  0.00% |           |   4.37% |
+| Grand Total | 181,787 | 14.76% | 1,049,811 | 85.24% | 1,231,598 | 100.00% |
+
+*Code Size (compiled), in bytes and percentage of total size*
