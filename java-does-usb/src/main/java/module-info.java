@@ -5,6 +5,9 @@
 // https://opensource.org/licenses/MIT
 //
 
+/**
+ * Java Does USB – work with USB devices
+ */
 module net.codecrete.usb {
     exports net.codecrete.usb;
 }

@@ -8,7 +8,7 @@
 package net.codecrete.usb;
 
 /**
- * USB control transfer parameters
+ * USB control transfer parameters.
  * <p>
  * See USB specification for additional information
  * </p>

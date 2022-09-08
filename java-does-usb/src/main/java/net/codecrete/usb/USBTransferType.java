@@ -8,7 +8,7 @@
 package net.codecrete.usb;
 
 /**
- * USB endpoint transfer type.
+ * USB endpoint transfer type enumeration.
  */
 public enum USBTransferType {
     /**

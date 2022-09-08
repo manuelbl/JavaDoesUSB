@@ -8,7 +8,7 @@
 package net.codecrete.usb;
 
 /**
- * USB control transfer request type
+ * USB control transfer request type enumeration.
  */
 public enum USBRequestType {
     /**

@@ -8,10 +8,13 @@
 package net.codecrete.usb;
 
 /**
- * This exception is thrown if an operation with USB devices fails.
+ * USB exception, thrown if an operation with USB devices fails.
  */
 public class USBException extends RuntimeException {
 
+    /**
+     * Error code.
+     */
     private int errorCode_ = -1;
 
     /**

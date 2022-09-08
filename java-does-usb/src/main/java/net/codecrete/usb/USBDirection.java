@@ -8,7 +8,7 @@
 package net.codecrete.usb;
 
 /**
- * USB endpoint data direction.
+ * USB endpoint data direction enumeration.
  */
 public enum USBDirection {
     /**
