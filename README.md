@@ -63,7 +63,6 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Composite devices (on Windows)
 - Generate and publish JavaDoc documentation
 - Make library available on Maven Central
-- Standalone examples
 
 ### Not planned
 
@@ -119,3 +118,10 @@ The Foreign Function & Memory API has not been implemented for 32-bit operating 
 ## Code generation
 
 Many of the bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information.
+
+
+## Examples
+
+- [Bulk Transfer](examples/bulk_transfer/) demonstrates how to find a USB device, open it and communicate using bulk transfer.
+- [Enumeration](examples/enumerate/) lists all connected USB devices and displays information about interfaces and endpoints.
+- [Monitor](examples/monitor/) lists the connected USB devices and then monitors for USB devices being connected and disconnnected.

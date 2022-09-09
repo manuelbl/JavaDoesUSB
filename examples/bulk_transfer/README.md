@@ -7,6 +7,7 @@ This sample shows how to find a device, open it and transfer data from and to bu
 - Java 19
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
+- A USB device with bulk IN and OUT endpoints (e.g. the test device, see https://github.com/manuelbl/JavaDoesUSB/tree/main/test-devices/loopback-stm32)
 
 ## How to run
 
