@@ -9,6 +9,8 @@ package net.codecrete.usb.examples;
 
 import net.codecrete.usb.*;
 
+import java.util.Optional;
+
 /**
  * Sample application enumerating connected USB devices.
  */
@@ -30,15 +32,26 @@ public class Enumerate {
             System.out.printf("  Product name:  %s%n", device.product());
         if (device.serialNumber() != null)
             System.out.printf("  Serial number: %s%n", device.serialNumber());
-        System.out.printf("  Device class:    0x%02x%n", device.classCode());
-        System.out.printf("  Device subclass: 0x%02x%n", device.subclassCode());
-        System.out.printf("  Device protocol: 0x%02x%n", device.protocolCode());
+        System.out.printf("  Device class:    0x%02x", device.classCode());
+        printInParens(USBClassInfo.lookupClass(device.classCode()));
+        System.out.printf("  Device subclass: 0x%02x", device.subclassCode());
+        printInParens(USBClassInfo.lookupSubclass(device.classCode(), device.subclassCode()));
+        System.out.printf("  Device protocol: 0x%02x", device.protocolCode());
+        printInParens(USBClassInfo.lookupProtocol(device.classCode(), device.subclassCode(), device.protocolCode()));
 
         for (var intf: device.interfaces())
             printInterface(intf);
 
         System.out.println();
         System.out.println();
+    }
+
+    private static void printInParens(Optional<String> text) {
+        if (text.isPresent()) {
+            System.out.printf(" (%s)%n", text.get());
+        } else {
+            System.out.println();
+        }
     }
 
     private static void printInterface(USBInterface intf) {
@@ -54,9 +67,12 @@ public class Enumerate {
             System.out.printf("  Interface %d (alternate %d)%n", intferaceNumber, alt.number());
         }
 
-        System.out.printf("    Interface class:    0x%02x%n", alt.classCode());
-        System.out.printf("    Interface subclass: 0x%02x%n", alt.subclassCode());
-        System.out.printf("    Interface protocol: 0x%02x%n", alt.protocolCode());
+        System.out.printf("    Interface class:    0x%02x", alt.classCode());
+        printInParens(USBClassInfo.lookupClass(alt.classCode()));
+        System.out.printf("    Interface subclass: 0x%02x", alt.subclassCode());
+        printInParens(USBClassInfo.lookupProtocol(alt.classCode(), alt.subclassCode(), alt.protocolCode()));
+        System.out.printf("    Interface protocol: 0x%02x", alt.protocolCode());
+        printInParens(USBClassInfo.lookupProtocol(alt.classCode(), alt.subclassCode(), alt.protocolCode()));
 
         for (var endpoint : alt.endpoints())
             printEndpoint(endpoint);
