@@ -11,17 +11,9 @@ package net.codecrete.usb;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class InterruptTransferTest extends TestDeviceBase {
-
-    private static final int ECHO_EP_OUT = 3;
-    private static final int ECHO_EP_IN = 3;
-    private static final int MAX_PACKET_SIZE = 16;
 
     @Test
     void smallTransfer_succeeds() {
@@ -29,11 +21,11 @@ public class InterruptTransferTest extends TestDeviceBase {
         testDevice.transferOut(ECHO_EP_OUT, sampleData);
 
         // receive first echo
-        byte[] echo = testDevice.transferIn(ECHO_EP_IN, MAX_PACKET_SIZE);
+        byte[] echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE);
         assertArrayEquals(sampleData, echo);
 
         // receive second echo
-        echo = testDevice.transferIn(ECHO_EP_IN, MAX_PACKET_SIZE);
+        echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE);
         assertArrayEquals(sampleData, echo);
     }
 }

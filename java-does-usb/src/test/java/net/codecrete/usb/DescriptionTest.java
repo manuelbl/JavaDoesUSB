@@ -32,17 +32,17 @@ public class DescriptionTest extends TestDeviceBase {
     @Test
     void interfaceDescriptors_isCorrect() {
         assertNotNull(testDevice.interfaces());
-        assertEquals(1, testDevice.interfaces().size());
+        assertEquals(LOOPBACK_INTF + 1, testDevice.interfaces().size());
 
-        var intf = testDevice.interfaces().get(0);
-        assertEquals(0, intf.number());
+        var intf = testDevice.interfaces().get(LOOPBACK_INTF);
+        assertEquals(LOOPBACK_INTF, intf.number());
         assertNotNull(intf.alternate());
         assertTrue(intf.isClaimed());
     }
 
     @Test
     void alternateInterfaceDescriptors_isCorrect() {
-        var intf = testDevice.interfaces().get(0);
+        var intf = testDevice.interfaces().get(LOOPBACK_INTF);
         var altIntf = intf.alternate();
         assertNotNull(intf.alternates());
         assertEquals(1, intf.alternates().size());
@@ -56,7 +56,7 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void endpointDescriptors_isCorrect() {
-        var altIntf = testDevice.interfaces().get(0).alternate();
+        var altIntf = testDevice.interfaces().get(LOOPBACK_INTF).alternate();
         assertNotNull(altIntf.endpoints());
         assertEquals(4, altIntf.endpoints().size());
 

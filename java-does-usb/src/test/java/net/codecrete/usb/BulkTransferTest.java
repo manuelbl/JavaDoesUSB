@@ -19,10 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class BulkTransferTest extends TestDeviceBase {
 
-    private static final int LOOPBACK_EP_OUT = 1;
-    private static final int LOOPBACK_EP_IN = 2;
-    private static final int MAX_PACKET_SIZE = 64;
-
     @Test
     void smallTransfer_succeeds() {
         byte[] sampleData = generateRandomBytes(12, 293872394);
@@ -66,7 +62,7 @@ public class BulkTransferTest extends TestDeviceBase {
         var buffer = new ByteArrayOutputStream();
         int bytesRead = 0;
         while (bytesRead < numBytes) {
-            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, MAX_PACKET_SIZE);
+            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
             buffer.writeBytes(data);
             bytesRead += data.length;
         }

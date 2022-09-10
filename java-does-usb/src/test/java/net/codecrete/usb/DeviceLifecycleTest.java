@@ -12,6 +12,7 @@ package net.codecrete.usb;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import static net.codecrete.usb.TestDeviceBase.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DeviceLifecycleTest {
@@ -20,45 +21,45 @@ public class DeviceLifecycleTest {
 
     @Test
     void lifecycle_showsValidState() {
-        device = USB.getDevice(new USBDeviceFilter(0xcafe, 0xceaf));
+        device = USB.getDevice(new USBDeviceFilter(VID, PID));
         if (device == null)
             throw new IllegalStateException("USB loopback test device must be connected");
 
-        var intf = device.interfaces().get(0);
-        assertEquals(0, intf.number());
+        var intf = device.interfaces().get(LOOPBACK_INTF);
+        assertEquals(LOOPBACK_INTF, intf.number());
 
         assertFalse(device.isOpen());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.claimInterface(0));
-        assertThrows(USBException.class, () -> device.releaseInterface(0));
+        assertThrows(USBException.class, () -> device.claimInterface(LOOPBACK_INTF));
+        assertThrows(USBException.class, () -> device.releaseInterface(LOOPBACK_INTF));
 
         device.open();
 
         assertTrue(device.isOpen());
         assertFalse(intf.isClaimed());
         assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.releaseInterface(0));
+        assertThrows(USBException.class, () -> device.releaseInterface(LOOPBACK_INTF));
 
-        device.claimInterface(0);
+        device.claimInterface(LOOPBACK_INTF);
 
         assertTrue(device.isOpen());
         assertTrue(intf.isClaimed());
         assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.claimInterface(0));
+        assertThrows(USBException.class, () -> device.claimInterface(LOOPBACK_INTF));
 
-        device.releaseInterface(0);
+        device.releaseInterface(LOOPBACK_INTF);
 
         assertTrue(device.isOpen());
         assertFalse(intf.isClaimed());
         assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.releaseInterface(0));
+        assertThrows(USBException.class, () -> device.releaseInterface(LOOPBACK_INTF));
 
         device.close();
 
         assertFalse(device.isOpen());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.claimInterface(0));
-        assertThrows(USBException.class, () -> device.releaseInterface(0));
+        assertThrows(USBException.class, () -> device.claimInterface(LOOPBACK_INTF));
+        assertThrows(USBException.class, () -> device.releaseInterface(LOOPBACK_INTF));
     }
 
     @AfterEach
