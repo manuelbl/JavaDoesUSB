@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "usbd.h": "c",
+        "usb_bos.h": "c",
+        "usb_bos_desc.h": "c"
+    }
+}

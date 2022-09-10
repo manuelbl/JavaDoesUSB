@@ -20,7 +20,7 @@
 #include "circ_buf.h"
 #include "common.h"
 #include "usb_descriptor.h"
-#include "wcid.h"
+#include "usb_bos_desc.h"
 
 #define USB_CDC_REQ_GET_LINE_CODING 0x21
 
@@ -78,6 +78,7 @@ static bool is_serial_tx = false;
 // indicates if the serial RX endpoint is forced to NAK to prevent receiving further data
 static bool is_serial_rx_nak = false;
 
+
 void init() {
     // Enable required clocks
     rcc_clock_setup_in_hse_8mhz_out_72mhz();
@@ -109,18 +110,20 @@ void usb_init() {
 
     // Set callback for config calls
     usbd_register_set_config_callback(usb_device, on_usb_set_config);
-    register_wcid_desc(usb_device);
+    usb_dev_register_bos(usb_device, bos_descs, sizeof(bos_descs) / sizeof(bos_descs[0]),
+            msos_desc_set, MSOS_VENDOR_CODE);
 }
 
 // Called when the host connects to the device and selects a configuration
 void on_usb_set_config(usbd_device *usbd_dev, __attribute__((unused)) uint16_t wValue) {
-    register_wcid_desc(usbd_dev);
+    usb_dev_register_bos(usb_device, bos_descs, sizeof(bos_descs) / sizeof(bos_descs[0]),
+            msos_desc_set, MSOS_VENDOR_CODE);
 
     // register control request handler for vendor specific requests (used for test)
     usbd_register_control_callback(usbd_dev, USB_REQ_TYPE_VENDOR | USB_REQ_TYPE_INTERFACE,
                                    USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT, on_vendor_control_request);
 
-    // resgier control request handler for class specific requests (used for CDC ACM)
+    // register control request handler for class specific requests (used for CDC ACM)
     usbd_register_control_callback(usbd_dev, USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
                                    USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT, on_class_control_request);
 
