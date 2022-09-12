@@ -25,11 +25,11 @@ public class TestDeviceBase {
     /**
      * Test device product ID
      */
-    static final int PID = 0xceaf;
+    static final int PID = 0xcea0;
     /**
      * Test device loopback interface number
      */
-    static final int LOOPBACK_INTF = 0;
+    static final int LOOPBACK_INTF = 2;
     protected static final int LOOPBACK_EP_OUT = 1;
     protected static final int LOOPBACK_EP_IN = 2;
     protected static final int LOOPBACK_MAX_PACKET_SIZE = 64;

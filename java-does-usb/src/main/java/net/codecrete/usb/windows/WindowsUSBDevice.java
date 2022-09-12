@@ -7,20 +7,16 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.*;
 import net.codecrete.usb.common.DescriptorParser;
 import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.common.USBStructs;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
 
-import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
+import java.util.List;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -30,52 +26,27 @@ import static java.lang.foreign.ValueLayout.*;
  */
 public class WindowsUSBDevice extends USBDeviceImpl {
 
-    private MemoryAddress device;
-    private MemoryAddress firstInterface;
+    private final List<CompositeFunction> functions;
+    private boolean isOpen_;
 
-    WindowsUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial,
+    WindowsUSBDevice(String devicePath, List<CompositeFunction> functions, int vendorId, int productId, String manufacturer, String product, String serial,
                      MemorySegment configDesc) {
-        super(id, vendorId, productId, manufacturer, product, serial);
+        super(devicePath, vendorId, productId, manufacturer, product, serial);
+        this.functions = functions;
         readDescription(configDesc);
     }
 
     @Override
     public boolean isOpen() {
-        return device != null;
+        return isOpen_;
     }
 
     @Override
     public void open() {
-
         if (isOpen())
             throw new USBException("the device is already open");
 
-        try (var session = MemorySession.openConfined()) {
-
-            // open Windows device
-            var pathSegment = Win.createSegmentFromString(id_.toString(), session);
-            device = Kernel32.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
-                    Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(), NULL, Kernel32.OPEN_EXISTING(),
-                    Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL);
-
-            if (Win.IsInvalidHandle(device))
-                throw new USBException("Cannot open USB device", Kernel32.GetLastError());
-
-            try {
-                // open first USB interface
-                var interfaceHandleHolder = session.allocate(ADDRESS);
-                if (WinUSB.WinUsb_Initialize(device, interfaceHandleHolder) == 0)
-                    throw new USBException("Cannot open USB device", Kernel32.GetLastError());
-
-                firstInterface = interfaceHandleHolder.get(ADDRESS, 0);
-
-            } catch (Throwable e) {
-                Kernel32.CloseHandle(device);
-                firstInterface = null;
-                device = null;
-                throw e;
-            }
-        }
+        isOpen_ = true;
     }
 
     private void readDescription(MemorySegment configDesc) {
@@ -88,13 +59,54 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
-        for (var intf : interfaces_)
-            ((USBInterfaceImpl) intf).setClaimed(false);
+        for (var intf : interfaces_) {
+            if (intf.isClaimed())
+                releaseInterface(intf.number());
+        }
 
-        WinUSB.WinUsb_Free(firstInterface);
-        firstInterface = null;
-        Kernel32.CloseHandle(device);
-        device = null;
+        isOpen_ = false;
+    }
+
+    private CompositeFunction findFunction(int interfaceNumber) {
+        return functions.stream()
+                .filter((func) -> func.firstInterfaceNumber() == interfaceNumber).findFirst().orElse(null);
+    }
+
+    private CompositeFunction findAnyOpenFunction() {
+        return functions.stream()
+                .filter((func) -> func.firstInterfaceHandle() != null).findFirst().orElse(null);
+    }
+
+    private CompositeFunction findControlTransferFunction(USBControlTransfer setup) {
+
+        int interfaceNumber = -1;
+        int endpointNumber = -1;
+
+        if (setup.recipient() == USBRecipient.INTERFACE) {
+
+            interfaceNumber = setup.index() & 0xff;
+
+        } else if (setup.recipient() == USBRecipient.ENDPOINT) {
+
+            endpointNumber = setup.index() & 0xff;
+            if (endpointNumber != 0) {
+                interfaceNumber = getInterfaceNumber(endpointNumber);
+                if (interfaceNumber == -1)
+                    interfaceNumber = -2;
+            }
+        }
+
+        CompositeFunction function = null;
+        if (interfaceNumber >= 0) {
+            function = findFunction(interfaceNumber);
+        } else if (interfaceNumber == -1) {
+            function = findAnyOpenFunction();
+        }
+
+        if (function == null || function.firstInterfaceHandle() == null)
+            throw new USBException("Interface not claimed for control transfer");
+
+        return function;
     }
 
     public void claimInterface(int interfaceNumber) {
@@ -105,6 +117,37 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
         if (intf.isClaimed())
             throw new USBException(String.format("Interface %d has already been claimed", interfaceNumber));
+        var function = findFunction(interfaceNumber);
+        if (function == null)
+            throw new USBException(String.format("Interface number %d cannot be claimed (no DeviceInterfaceGUID?)", interfaceNumber));
+
+        try (var session = MemorySession.openConfined()) {
+
+            // open Windows device
+            var pathSegment = Win.createSegmentFromString(function.devicePath(), session);
+            var deviceHandle = Kernel32.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
+                    Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(), NULL, Kernel32.OPEN_EXISTING(),
+                    Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL);
+
+            if (Win.IsInvalidHandle(deviceHandle))
+                throw new WindowsUSBException(
+                        String.format("Cannot open USB device %s", function.devicePath()), Kernel32.GetLastError());
+
+            try {
+                // open interface
+                var interfaceHandleHolder = session.allocate(ADDRESS);
+                if (WinUSB.WinUsb_Initialize(deviceHandle, interfaceHandleHolder) == 0)
+                    throw new WindowsUSBException("Cannot open WinUSB device", Kernel32.GetLastError());
+                var interfaceHandle = interfaceHandleHolder.get(ADDRESS, 0);
+
+                function.setDeviceHandle(deviceHandle);
+                function.setFirstInterfaceHandle(interfaceHandle);
+
+            } catch (Throwable e) {
+                Kernel32.CloseHandle(deviceHandle);
+                throw e;
+            }
+        }
 
         setClaimed(interfaceNumber, true);
     }
@@ -117,6 +160,16 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
         if (!intf.isClaimed())
             throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
+
+        var function = findFunction(interfaceNumber);
+        assert function != null;
+
+        if (function.deviceHandle() != null) {
+            WinUSB.WinUsb_Free(function.firstInterfaceHandle());
+            function.setFirstInterfaceHandle(null);
+            Kernel32.CloseHandle(function.deviceHandle());
+            function.setDeviceHandle(null);
+        }
 
         setClaimed(interfaceNumber, false);
     }
@@ -137,15 +190,16 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
         checkIsOpen();
+        var function = findControlTransferFunction(setup);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(length);
             var setupPacket = createSetupPacket(session, USBDirection.IN, setup, buffer);
             var lengthHolder = session.allocate(JAVA_INT);
 
-            if (WinUSB.WinUsb_ControlTransfer(firstInterface, setupPacket, buffer, (int) buffer.byteSize(),
+            if (WinUSB.WinUsb_ControlTransfer(function.firstInterfaceHandle(), setupPacket, buffer, (int) buffer.byteSize(),
                     lengthHolder, NULL) == 0)
-                throw new USBException("Control transfer IN failed", Kernel32.GetLastError());
+                throw new WindowsUSBException("Control transfer IN failed", Kernel32.GetLastError());
 
             int rxLength = lengthHolder.get(JAVA_INT, 0);
             return buffer.asSlice(0, rxLength).toArray(JAVA_BYTE);
@@ -155,6 +209,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
         checkIsOpen();
+        var function = findControlTransferFunction(setup);
 
         try (var session = MemorySession.openConfined()) {
 
@@ -168,40 +223,44 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var setupPacket = createSetupPacket(session, USBDirection.OUT, setup, buffer);
             var lengthHolder = session.allocate(JAVA_INT);
 
-            if (WinUSB.WinUsb_ControlTransfer(firstInterface, setupPacket, buffer, (int) buffer.byteSize(),
+            if (WinUSB.WinUsb_ControlTransfer(function.firstInterfaceHandle(), setupPacket, buffer, (int) buffer.byteSize(),
                     lengthHolder, NULL) == 0)
-                throw new USBException("Control transfer OUT failed", Kernel32.GetLastError());
+                throw new WindowsUSBException("Control transfer OUT failed", Kernel32.GetLastError());
         }
     }
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
-        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        checkIsOpen();
+
+        var endpoint = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var function = findFunction(endpoint.interfaceNumber());
+        assert function != null;
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
             var lengthHolder = session.allocate(JAVA_INT);
 
-            if (WinUSB.WinUsb_WritePipe(firstInterface, endpointAddress, buffer, (int) buffer.byteSize(),
+            if (WinUSB.WinUsb_WritePipe(function.firstInterfaceHandle(), endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
                     lengthHolder, NULL) == 0)
-                throw new USBException("Control transfer IN failed", Kernel32.GetLastError());
+                throw new WindowsUSBException("Bulk/interrupt transfer OUT failed", Kernel32.GetLastError());
         }
     }
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        byte endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var function = findFunction(endpoint.interfaceNumber());
+        assert function != null;
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(maxLength);
             var lengthHolder = session.allocate(JAVA_INT);
 
-            if (WinUSB.WinUsb_ReadPipe(firstInterface, endpointAddress, buffer, (int) buffer.byteSize(), lengthHolder
+            if (WinUSB.WinUsb_ReadPipe(function.firstInterfaceHandle(), endpoint.endpointAddress(), buffer, (int) buffer.byteSize(), lengthHolder
                     , NULL) == 0)
-                throw new USBException("Control transfer IN failed", Kernel32.GetLastError());
+                throw new WindowsUSBException("Bulk/interrupt transfer IN failed", Kernel32.GetLastError());
 
             int len = lengthHolder.get(JAVA_INT, 0);
             return buffer.asSlice(0, len).toArray(JAVA_BYTE);

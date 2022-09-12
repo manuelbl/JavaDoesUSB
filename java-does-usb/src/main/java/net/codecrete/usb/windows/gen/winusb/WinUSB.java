@@ -40,6 +40,17 @@ public class WinUSB  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle WinUsb_GetAssociatedInterface$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetAssociatedInterface$MH,"WinUsb_GetAssociatedInterface");
+    }
+    public static int WinUsb_GetAssociatedInterface ( Addressable InterfaceHandle,  byte AssociatedInterfaceIndex,  Addressable AssociatedInterfaceHandle) {
+        var mh$ = WinUsb_GetAssociatedInterface$MH();
+        try {
+            return (int)mh$.invokeExact(InterfaceHandle, AssociatedInterfaceIndex, AssociatedInterfaceHandle);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle WinUsb_GetDescriptor$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetDescriptor$MH,"WinUsb_GetDescriptor");
     }
@@ -74,7 +85,7 @@ public class WinUSB  {
         }
     }
     public static MethodHandle WinUsb_ControlTransfer$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_ControlTransfer$MH,"WinUsb_ControlTransfer");
+        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ControlTransfer$MH,"WinUsb_ControlTransfer");
     }
     public static int WinUsb_ControlTransfer ( Addressable InterfaceHandle,  MemorySegment SetupPacket,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
         var mh$ = WinUsb_ControlTransfer$MH();

@@ -6,6 +6,25 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
 class constants$0 {
 
+    static final FunctionDescriptor SetupDiCreateDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle SetupDiCreateDeviceInfoList$MH = RuntimeHelper.downcallHandle(
+        "SetupDiCreateDeviceInfoList",
+        constants$0.SetupDiCreateDeviceInfoList$FUNC
+    );
+    static final FunctionDescriptor SetupDiOpenDeviceInfoW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle SetupDiOpenDeviceInfoW$MH = RuntimeHelper.downcallHandle(
+        "SetupDiOpenDeviceInfoW",
+        constants$0.SetupDiOpenDeviceInfoW$FUNC
+    );
     static final FunctionDescriptor SetupDiEnumDeviceInfo$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_LONG$LAYOUT,
@@ -42,28 +61,6 @@ class constants$0 {
     static final MethodHandle SetupDiOpenDeviceInterfaceW$MH = RuntimeHelper.downcallHandle(
         "SetupDiOpenDeviceInterfaceW",
         constants$0.SetupDiOpenDeviceInterfaceW$FUNC
-    );
-    static final FunctionDescriptor SetupDiGetDeviceInterfaceDetailW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiGetDeviceInterfaceDetailW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiGetDeviceInterfaceDetailW",
-        constants$0.SetupDiGetDeviceInterfaceDetailW$FUNC
-    );
-    static final FunctionDescriptor SetupDiGetClassDevsW$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT
-    );
-    static final MethodHandle SetupDiGetClassDevsW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiGetClassDevsW",
-        constants$0.SetupDiGetClassDevsW$FUNC
     );
 }
 

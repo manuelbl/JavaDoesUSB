@@ -18,17 +18,48 @@ public class SetupAPI  {
     public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static int DEVPROP_TYPEMOD_LIST() {
+        return (int)8192L;
+    }
     public static int DEVPROP_TYPE_UINT32() {
         return (int)7L;
     }
     public static int DEVPROP_TYPE_STRING() {
         return (int)18L;
     }
+    public static int DICS_FLAG_GLOBAL() {
+        return (int)1L;
+    }
     public static int DIGCF_PRESENT() {
         return (int)2L;
     }
     public static int DIGCF_DEVICEINTERFACE() {
         return (int)16L;
+    }
+    public static int DIREG_DEV() {
+        return (int)1L;
+    }
+    public static MethodHandle SetupDiCreateDeviceInfoList$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiCreateDeviceInfoList$MH,"SetupDiCreateDeviceInfoList");
+    }
+    public static MemoryAddress SetupDiCreateDeviceInfoList ( Addressable ClassGuid,  Addressable hwndParent) {
+        var mh$ = SetupDiCreateDeviceInfoList$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(ClassGuid, hwndParent);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle SetupDiOpenDeviceInfoW$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInfoW$MH,"SetupDiOpenDeviceInfoW");
+    }
+    public static int SetupDiOpenDeviceInfoW ( Addressable DeviceInfoSet,  Addressable DeviceInstanceId,  Addressable hwndParent,  int OpenFlags,  Addressable DeviceInfoData) {
+        var mh$ = SetupDiOpenDeviceInfoW$MH();
+        try {
+            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInstanceId, hwndParent, OpenFlags, DeviceInfoData);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
     }
     public static MethodHandle SetupDiEnumDeviceInfo$MH() {
         return RuntimeHelper.requireNonNull(constants$0.SetupDiEnumDeviceInfo$MH,"SetupDiEnumDeviceInfo");
@@ -75,7 +106,7 @@ public class SetupAPI  {
         }
     }
     public static MethodHandle SetupDiGetDeviceInterfaceDetailW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
     }
     public static int SetupDiGetDeviceInterfaceDetailW ( Addressable DeviceInfoSet,  Addressable DeviceInterfaceData,  Addressable DeviceInterfaceDetailData,  int DeviceInterfaceDetailDataSize,  Addressable RequiredSize,  Addressable DeviceInfoData) {
         var mh$ = SetupDiGetDeviceInterfaceDetailW$MH();
@@ -86,12 +117,23 @@ public class SetupAPI  {
         }
     }
     public static MethodHandle SetupDiGetClassDevsW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetClassDevsW$MH,"SetupDiGetClassDevsW");
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetClassDevsW$MH,"SetupDiGetClassDevsW");
     }
     public static MemoryAddress SetupDiGetClassDevsW ( Addressable ClassGuid,  Addressable Enumerator,  Addressable hwndParent,  int Flags) {
         var mh$ = SetupDiGetClassDevsW$MH();
         try {
             return (java.lang.foreign.MemoryAddress)mh$.invokeExact(ClassGuid, Enumerator, hwndParent, Flags);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle SetupDiOpenDevRegKey$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiOpenDevRegKey$MH,"SetupDiOpenDevRegKey");
+    }
+    public static MemoryAddress SetupDiOpenDevRegKey ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  int Scope,  int HwProfile,  int KeyType,  int samDesired) {
+        var mh$ = SetupDiOpenDevRegKey$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, Scope, HwProfile, KeyType, samDesired);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

@@ -6,6 +6,40 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
 class constants$1 {
 
+    static final FunctionDescriptor SetupDiGetDeviceInterfaceDetailW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle SetupDiGetDeviceInterfaceDetailW$MH = RuntimeHelper.downcallHandle(
+        "SetupDiGetDeviceInterfaceDetailW",
+        constants$1.SetupDiGetDeviceInterfaceDetailW$FUNC
+    );
+    static final FunctionDescriptor SetupDiGetClassDevsW$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT
+    );
+    static final MethodHandle SetupDiGetClassDevsW$MH = RuntimeHelper.downcallHandle(
+        "SetupDiGetClassDevsW",
+        constants$1.SetupDiGetClassDevsW$FUNC
+    );
+    static final FunctionDescriptor SetupDiOpenDevRegKey$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_LONG$LAYOUT
+    );
+    static final MethodHandle SetupDiOpenDevRegKey$MH = RuntimeHelper.downcallHandle(
+        "SetupDiOpenDevRegKey",
+        constants$1.SetupDiOpenDevRegKey$FUNC
+    );
     static final FunctionDescriptor SetupDiGetDevicePropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,

@@ -3,7 +3,6 @@
 package net.codecrete.usb.windows.gen.winusb;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemoryLayout;
 import java.lang.invoke.MethodHandle;
 class constants$0 {
 
@@ -21,6 +20,15 @@ class constants$0 {
     static final MethodHandle WinUsb_Free$MH = RuntimeHelper.downcallHandle(
         "WinUsb_Free",
         constants$0.WinUsb_Free$FUNC
+    );
+    static final FunctionDescriptor WinUsb_GetAssociatedInterface$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_CHAR$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle WinUsb_GetAssociatedInterface$MH = RuntimeHelper.downcallHandle(
+        "WinUsb_GetAssociatedInterface",
+        constants$0.WinUsb_GetAssociatedInterface$FUNC
     );
     static final FunctionDescriptor WinUsb_GetDescriptor$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -58,24 +66,6 @@ class constants$0 {
     static final MethodHandle WinUsb_WritePipe$MH = RuntimeHelper.downcallHandle(
         "WinUsb_WritePipe",
         constants$0.WinUsb_WritePipe$FUNC
-    );
-    static final FunctionDescriptor WinUsb_ControlTransfer$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        MemoryLayout.structLayout(
-            Constants$root.C_CHAR$LAYOUT.withName("RequestType"),
-            Constants$root.C_CHAR$LAYOUT.withName("Request"),
-            Constants$root.C_SHORT$LAYOUT.withName("Value"),
-            Constants$root.C_SHORT$LAYOUT.withName("Index"),
-            Constants$root.C_SHORT$LAYOUT.withName("Length")
-        ).withName("_WINUSB_SETUP_PACKET"),
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle WinUsb_ControlTransfer$MH = RuntimeHelper.downcallHandle(
-        "WinUsb_ControlTransfer",
-        constants$0.WinUsb_ControlTransfer$FUNC
     );
 }
 

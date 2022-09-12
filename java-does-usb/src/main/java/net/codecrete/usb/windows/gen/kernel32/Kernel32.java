@@ -33,6 +33,15 @@ public class Kernel32  {
     public static int FILE_FLAG_OVERLAPPED() {
         return (int)1073741824L;
     }
+    public static int FORMAT_MESSAGE_ALLOCATE_BUFFER() {
+        return (int)256L;
+    }
+    public static int FORMAT_MESSAGE_IGNORE_INSERTS() {
+        return (int)512L;
+    }
+    public static int FORMAT_MESSAGE_FROM_SYSTEM() {
+        return (int)4096L;
+    }
     public static MethodHandle CreateFileW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.CreateFileW$MH,"CreateFileW");
     }
@@ -88,6 +97,28 @@ public class Kernel32  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle LocalFree$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.LocalFree$MH,"LocalFree");
+    }
+    public static MemoryAddress LocalFree ( Addressable hMem) {
+        var mh$ = LocalFree$MH();
+        try {
+            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(hMem);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+    public static MethodHandle FormatMessageW$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.FormatMessageW$MH,"FormatMessageW");
+    }
+    public static int FormatMessageW ( int dwFlags,  Addressable lpSource,  int dwMessageId,  int dwLanguageId,  Addressable lpBuffer,  int nSize,  Addressable Arguments) {
+        var mh$ = FormatMessageW$MH();
+        try {
+            return (int)mh$.invokeExact(dwFlags, lpSource, dwMessageId, dwLanguageId, lpBuffer, nSize, Arguments);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static int GENERIC_READ() {
         return (int)2147483648L;
     }
@@ -97,8 +128,14 @@ public class Kernel32  {
     public static int ERROR_SUCCESS() {
         return (int)0L;
     }
+    public static int ERROR_FILE_NOT_FOUND() {
+        return (int)2L;
+    }
     public static int ERROR_INSUFFICIENT_BUFFER() {
         return (int)122L;
+    }
+    public static int ERROR_MORE_DATA() {
+        return (int)234L;
     }
     public static int ERROR_NO_MORE_ITEMS() {
         return (int)259L;

@@ -28,10 +28,12 @@ The bulk endpoints 0x01 and 0x82 use an internal buffer of about 1000 bytes. Dat
 Several vendor-specific control requests are supported for testing:
 
 | `bmRequest` | `bRequest` | `wValue` | `wIndex` | `wLength` | Data | Action |
-| - | - | - | - | - | - | - |
-| 0x41 | 0x01 | *value* | 0 | 0 | none | Host to device: *value* is saved in device |
-| 0x41 | 0x02 | 0 | 0 | 4 | *value* (32-bit LE) | Host to device: *value* is saved in device |
-| 0xC1 | 0x03 | 0 | 0 | 4 | *value* (32-bit LE) | Device to host: saved *value* is transmitted |
+| -:| -:| -:| -:| -:| - | - |
+| 0x41 | 0x01 | *value* | 2 | 0 | none | Host to device: *value* is saved in device |
+| 0x41 | 0x02 | 0 | 2 | 4 | *value* (32-bit LE) | Host to device: *value* is saved in device |
+| 0xC1 | 0x03 | 0 | 2 | 4 | *value* (32-bit LE) | Device to host: saved *value* is transmitted |
+
+Note: The lower byte of `wIndex` contains the interface number.
 
 Additionally, the control request of CDC ACM PTSN (for configuring and querying the serial port) are accepted but have no effect in most cases.
 

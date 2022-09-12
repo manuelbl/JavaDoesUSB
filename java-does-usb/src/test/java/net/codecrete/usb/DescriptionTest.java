@@ -24,9 +24,9 @@ public class DescriptionTest extends TestDeviceBase {
         assertEquals("Loopback", testDevice.product());
         assertEquals(12, testDevice.serialNumber().length());
 
-        assertEquals(0xff, testDevice.classCode());
-        assertEquals(0x00, testDevice.subclassCode());
-        assertEquals(0x00, testDevice.protocolCode());
+        assertEquals(0xef, testDevice.classCode());
+        assertEquals(0x02, testDevice.subclassCode());
+        assertEquals(0x01, testDevice.protocolCode());
     }
 
     @Test

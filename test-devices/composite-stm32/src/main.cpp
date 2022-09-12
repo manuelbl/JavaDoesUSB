@@ -263,7 +263,7 @@ usbd_request_return_codes on_vendor_control_request(__attribute__((unused)) usbd
                                                     __attribute__((unused)) usbd_control_complete_callback *complete) {
     switch (req->bRequest) {
         case 1:
-            if (req->wIndex == 0 && req->wLength == 0) {
+            if (req->wIndex == 2 && req->wLength == 0) {
                 saved_value = req->wValue;
                 return USBD_REQ_HANDLED;
             } else {
@@ -272,7 +272,7 @@ usbd_request_return_codes on_vendor_control_request(__attribute__((unused)) usbd
             break;
 
         case 2:
-            if (req->wIndex == 0 && req->wLength == 4) {
+            if (req->wIndex == 2 && req->wLength == 4) {
                 uint32_t *value = reinterpret_cast<uint32_t *>(*buf);
                 saved_value = *value;
                 return USBD_REQ_HANDLED;
@@ -282,7 +282,7 @@ usbd_request_return_codes on_vendor_control_request(__attribute__((unused)) usbd
             break;
 
         case 3:
-            if (req->wIndex == 0) {
+            if (req->wIndex == 2) {
                 uint8_t *value = reinterpret_cast<uint8_t *>(&saved_value);
                 *len = std::min(*len, (uint16_t)4);
                 memcpy(*buf, value, *len);

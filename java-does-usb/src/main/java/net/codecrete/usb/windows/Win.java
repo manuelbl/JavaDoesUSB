@@ -14,6 +14,8 @@ import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 import java.lang.foreign.ValueLayout;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
@@ -63,6 +65,27 @@ public class Win {
     public static String createStringFromSegment(MemorySegment segment) {
         long strLen = StdLib.wcslen(segment);
         return new String(segment.asSlice(0, 2L * strLen).toArray(JAVA_CHAR));
+    }
+
+    /**
+     * Creates a copy of the string list in the memory segment.
+     * <p>
+     * The string list a a series of null-terminated UTF-16 (wide character) strings.
+     * The list is terminated with yet another null character.
+     * </p>
+     *
+     * @param segment the memory segment
+     * @return copied string list
+     */
+    public static List<String> createStringListFromSegment(MemorySegment segment) {
+        var stringList = new ArrayList<String>();
+        int offset = 0;
+        while (segment.get(JAVA_CHAR, offset) != '\0') {
+            var str = Win.createStringFromSegment(segment.asSlice(offset));
+            offset += str.length() * 2 + 2;
+            stringList.add(str);
+        }
+        return stringList;
     }
 
     /**

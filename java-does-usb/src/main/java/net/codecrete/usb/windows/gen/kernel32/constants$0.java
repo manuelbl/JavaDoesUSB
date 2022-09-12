@@ -52,6 +52,13 @@ class constants$0 {
         "GetModuleHandleW",
         constants$0.GetModuleHandleW$FUNC
     );
+    static final FunctionDescriptor LocalFree$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle LocalFree$MH = RuntimeHelper.downcallHandle(
+        "LocalFree",
+        constants$0.LocalFree$FUNC
+    );
 }
 
 

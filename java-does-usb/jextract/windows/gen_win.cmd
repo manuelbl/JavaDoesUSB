@@ -13,9 +13,13 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-function DeviceIoControl ^
   --include-function GetLastError ^
   --include-function GetModuleHandleW ^
+  --include-function FormatMessageW ^
+  --include-function LocalFree ^
   --include-macro ERROR_SUCCESS ^
   --include-macro ERROR_NO_MORE_ITEMS ^
+  --include-macro ERROR_MORE_DATA ^
   --include-macro ERROR_INSUFFICIENT_BUFFER ^
+  --include-macro ERROR_FILE_NOT_FOUND ^
   --include-macro GENERIC_READ ^
   --include-macro GENERIC_WRITE ^
   --include-macro FILE_SHARE_READ ^
@@ -23,6 +27,9 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-macro FILE_ATTRIBUTE_NORMAL ^
   --include-macro FILE_FLAG_OVERLAPPED ^
   --include-macro OPEN_EXISTING ^
+  --include-macro FORMAT_MESSAGE_ALLOCATE_BUFFER ^
+  --include-macro FORMAT_MESSAGE_FROM_SYSTEM ^
+  --include-macro FORMAT_MESSAGE_IGNORE_INSERTS ^
   --include-struct _GUID ^
   --include-typedef GUID ^
   windows_headers.h
@@ -42,6 +49,9 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-function SetupDiGetDeviceRegistryPropertyW ^
   --include-function SetupDiGetDevicePropertyW ^
   --include-function SetupDiOpenDeviceInterfaceW ^
+  --include-function SetupDiCreateDeviceInfoList ^
+  --include-function SetupDiOpenDeviceInfoW ^
+  --include-function SetupDiOpenDevRegKey ^
   --include-struct _SP_DEVINFO_DATA ^
   --include-typedef SP_DEVINFO_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DATA ^
@@ -53,6 +63,9 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-macro SPDRP_ADDRESS ^
   --include-macro DEVPROP_TYPE_UINT32 ^
   --include-macro DEVPROP_TYPE_STRING ^
+  --include-macro DEVPROP_TYPEMOD_LIST ^
+  --include-macro DICS_FLAG_GLOBAL ^
+  --include-macro DIREG_DEV ^
   windows_headers.h
 
 call %JEXTRACT% --source --output ../../src/main/java ^
@@ -113,4 +126,28 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-function WinUsb_ControlTransfer ^
        --include-function WinUsb_WritePipe ^
        --include-function WinUsb_ReadPipe ^
+       --include-function WinUsb_GetAssociatedInterface ^
+       windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+       -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+       -I "%SDK_DIR%\um" ^
+       -I "%SDK_DIR%\shared" ^
+       -l Advapi32 ^
+       --header-class-name Advapi32 ^
+       --target-package net.codecrete.usb.windows.gen.advapi32 ^
+       --include-function RegQueryValueExW ^
+       --include-function RegCloseKey ^
+       --include-macro REG_MULTI_SZ ^
+       --include-macro KEY_READ ^
+       windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+       -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+       -I "%SDK_DIR%\um" ^
+       -I "%SDK_DIR%\shared" ^
+       -l Ole32 ^
+       --header-class-name Ole32 ^
+       --target-package net.codecrete.usb.windows.gen.ole32 ^
+       --include-function CLSIDFromString ^
        windows_headers.h
