@@ -20,13 +20,13 @@ public class ControlTransferTest extends TestDeviceBase {
 
     @Test
     void storeValue_succeeds() {
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 10730, (short) LOOPBACK_INTF), null);
+        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 10730, (short) interfaceNumber), null);
     }
 
     @Test
     void retrieveValue_isSameAsStored() {
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 0x9a41, (short) LOOPBACK_INTF), null);
-        var valueBytes = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) LOOPBACK_INTF), 4);
+        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 0x9a41, (short) interfaceNumber), null);
+        var valueBytes = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
         var expectedBytes = new byte[]{(byte) 0x41, (byte) 0x9a, (byte) 0x00, (byte) 0x00};
         assertArrayEquals(expectedBytes, valueBytes);
     }
@@ -34,8 +34,8 @@ public class ControlTransferTest extends TestDeviceBase {
     @Test
     void storeValueInDataStage_canBeRetrieved() {
         var sentValue = new byte[]{(byte) 0x83, (byte) 0x03, (byte) 0xda, (byte) 0x3e};
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) LOOPBACK_INTF), sentValue);
-        var retrievedValue = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) LOOPBACK_INTF), 4);
+        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) interfaceNumber), sentValue);
+        var retrievedValue = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
         assertArrayEquals(sentValue, retrievedValue);
     }
 }

@@ -24,25 +24,33 @@ public class DescriptionTest extends TestDeviceBase {
         assertEquals("Loopback", testDevice.product());
         assertEquals(12, testDevice.serialNumber().length());
 
-        assertEquals(0xef, testDevice.classCode());
-        assertEquals(0x02, testDevice.subclassCode());
-        assertEquals(0x01, testDevice.protocolCode());
+        if (interfaceNumber == 2) {
+            // composite device
+            assertEquals(0xef, testDevice.classCode());
+            assertEquals(0x02, testDevice.subclassCode());
+            assertEquals(0x01, testDevice.protocolCode());
+        } else {
+            // simple device
+            assertEquals(0xff, testDevice.classCode());
+            assertEquals(0x00, testDevice.subclassCode());
+            assertEquals(0x00, testDevice.protocolCode());
+        }
     }
 
     @Test
     void interfaceDescriptors_isCorrect() {
         assertNotNull(testDevice.interfaces());
-        assertEquals(LOOPBACK_INTF + 1, testDevice.interfaces().size());
+        assertEquals(interfaceNumber + 1, testDevice.interfaces().size());
 
-        var intf = testDevice.interfaces().get(LOOPBACK_INTF);
-        assertEquals(LOOPBACK_INTF, intf.number());
+        var intf = testDevice.interfaces().get(interfaceNumber);
+        assertEquals(interfaceNumber, intf.number());
         assertNotNull(intf.alternate());
         assertTrue(intf.isClaimed());
     }
 
     @Test
     void alternateInterfaceDescriptors_isCorrect() {
-        var intf = testDevice.interfaces().get(LOOPBACK_INTF);
+        var intf = testDevice.interfaces().get(interfaceNumber);
         var altIntf = intf.alternate();
         assertNotNull(intf.alternates());
         assertEquals(1, intf.alternates().size());
@@ -56,7 +64,7 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void endpointDescriptors_isCorrect() {
-        var altIntf = testDevice.interfaces().get(LOOPBACK_INTF).alternate();
+        var altIntf = testDevice.interfaces().get(interfaceNumber).alternate();
         assertNotNull(altIntf.endpoints());
         assertEquals(4, altIntf.endpoints().size());
 
