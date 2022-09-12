@@ -55,12 +55,13 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 - Interrupt transfer
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
+- Support fo composite devices
 
 ### To do
 
-- Isochronous transfer
 - Alternate interface settings
-- Composite devices (on Windows)
+- Support for associated interfaces
+- Isochronous transfer
 - Generate and publish JavaDoc documentation
 - Make library available on Maven Central
 
@@ -81,7 +82,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requriement.
+*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that aren't claimed by an operating system driver or another application.
 
@@ -102,7 +103,7 @@ The Windows driver model is more rigid than the ones of macOS or Linux. It's not
 
 USB devices can implement certain control requests to instruct Windows to automatically install the WinUSB driver (search for WCID or Microsoft OS Compatibility Descriptors). The driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
-The test device implements the required control requests. So the driver is installed automatically.
+The test devices implement the required control requests. So the driver is installed automatically.
 
 This library does not yet run reliably on Windows as the Java VM sometimes overwrites the last error code, which is needed for proper function, not just in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
 
