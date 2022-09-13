@@ -1,5 +1,7 @@
 # Java Does USB: USB library for Java
 
+[![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
+
 *Java Does USB* is a library for working with USB devices from Java. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
 The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library.
@@ -15,34 +17,6 @@ The Foreign Function & Memory API (aka as project Panama) is in preview and will
 It has been tested with Azul Zulu 19.0.77 EA 34.
 
 
-## Testing
-
-In order to run the unit tests, a special test device must be connected to the computer. See the [loopback-stm32](test-devices/loopback-stm32) directory.
-
-Tests can be run from the command line:
-
-```
-mvn clean test
-```
-
-If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to enable preview features and allow native access:
-
-```
---enable-preview --enable-native-access=net.codecrete.usb
-```
-
-Or (if modules are ignored):
-
-```
---enable-preview --enable-native-access=ALL-UNNAMED
-```
-
-If you don't have the test device, you can get a glimpse at the library running the below command. It enumerates all connected USB devices.
-
-```
-MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exec:java -Dexec.classpathScope="test" -DskipTests -Dexec.mainClass="net.codecrete.usb.sample.EnumerateDevices"
-```
-
 
 ## Features
 
@@ -50,20 +24,17 @@ MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exe
 
 - Single API for all operating systems (similar to WebUSB API)
 - Enumeration of USB devices
-- Control transfer
-- Bulk transfer
-- Interrupt transfer
+- Control, bulk and interrupt transfer
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
 - Support fo composite devices
+- Published on Maven Central
 
 ### To do
 
 - Alternate interface settings
 - Support for associated interfaces
 - Isochronous transfer
-- Generate and publish JavaDoc documentation
-- Make library available on Maven Central
 
 ### Not planned
 
@@ -82,7 +53,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. The library is closely tied to *systemd*. So it only runs on Linux distributions with systemd and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement.
+*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library only runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that aren't claimed by an operating system driver or another application.
 
@@ -116,9 +87,10 @@ The Foreign Function & Memory API has not been implemented for 32-bit operating 
 
 
 
-## Code generation
+## Documentation
 
-Many of the bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information.
+- [Javadoc](https://javadoc.io/doc/net.codecrete.usb/java-does-usb) 
+
 
 
 ## Examples
@@ -126,3 +98,39 @@ Many of the bindings for the native APIs have been generated with *jextract*. Se
 - [Bulk Transfer](examples/bulk_transfer/) demonstrates how to find a USB device, open it and communicate using bulk transfer.
 - [Enumeration](examples/enumerate/) lists all connected USB devices and displays information about interfaces and endpoints.
 - [Monitor](examples/monitor/) lists the connected USB devices and then monitors for USB devices being connected and disconnnected.
+
+
+
+## Code generation
+
+Many bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information.
+
+
+
+## Testing
+
+In order to run the unit tests, a special test device must be connected to the computer. See the [loopback-stm32](test-devices/loopback-stm32) directory.
+
+Tests can be run from the command line:
+
+```
+mvn clean test
+```
+
+If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to enable preview features and allow native access:
+
+```
+--enable-preview --enable-native-access=net.codecrete.usb
+```
+
+Or (if modules are ignored):
+
+```
+--enable-preview --enable-native-access=ALL-UNNAMED
+```
+
+If you don't have the test device, you can get a glimpse at the library running the below command. It enumerates all connected USB devices.
+
+```
+MAVEN_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED" mvn install exec:java -Dexec.classpathScope="test" -DskipTests -Dexec.mainClass="net.codecrete.usb.sample.EnumerateDevices"
+```
