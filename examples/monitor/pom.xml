@@ -6,7 +6,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>monitor</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3.0</version>
 
   <name>monitor</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/monitor</url>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.3.0</version>
     </dependency>
   </dependencies>
 
