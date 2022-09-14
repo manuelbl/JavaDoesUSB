@@ -23,6 +23,8 @@ public abstract class USBDeviceImpl implements USBDevice {
     protected int classCode_;
     protected int subclassCode_;
     protected int protocolCode_;
+    protected Version usbVersion_;
+    protected Version deviceVersion_;
 
     protected List<USBInterface> interfaces_;
 
@@ -103,6 +105,12 @@ public abstract class USBDeviceImpl implements USBDevice {
         return protocolCode_;
     }
 
+    @Override
+    public Version usbVersion() { return usbVersion_; }
+
+    @Override
+    public Version deviceVersion() { return deviceVersion_; }
+
     public Object getUniqueId() {
         return id_;
     }
@@ -111,6 +119,11 @@ public abstract class USBDeviceImpl implements USBDevice {
         classCode_ = classCode;
         subclassCode_ = subclassCode;
         protocolCode_ = protocolCode;
+    }
+
+    public void setVersions(int usbVersion, int deviceVersion) {
+        usbVersion_ = new Version(usbVersion);
+        deviceVersion_ = new Version(deviceVersion);
     }
 
     @Override

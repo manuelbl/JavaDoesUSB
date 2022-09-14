@@ -163,6 +163,11 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         device.setClassCodes(classCode != null ? classCode : 0, subclassCode != null ? subclassCode : 0,
                 protocolCode != null ? protocolCode : 0);
 
+        Integer usbVersion = IoKitHelper.getPropertyInt(service, "bcdUSB");
+        Integer deviceVersion = IoKitHelper.getPropertyInt(service, "bcdDevice");
+        //noinspection ConstantConditions
+        device.setVersions(usbVersion, deviceVersion);
+
         return device;
     }
 

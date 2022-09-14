@@ -293,6 +293,10 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
             device.setClassCodes(classCode, subclassCode, protocolCode);
 
+            var usbVersion = (short) USBDescriptors.Device_bcdUSB.get(deviceDesc);
+            var deviceVersion = (short) USBDescriptors.Device_bcdDevice.get(deviceDesc);
+            device.setVersions(usbVersion, deviceVersion);
+
             return device;
         }
     }

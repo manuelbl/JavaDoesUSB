@@ -59,23 +59,33 @@ public class USBDescriptors {
     //    UCHAR   iSerialNumber;
     //    UCHAR   bNumConfigurations;
     //} __attribute__((packed));
-    public static final GroupLayout Device$Struct = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
-            "bDescriptorType"), JAVA_SHORT.withName("bcdUSB"), JAVA_BYTE.withName("bDeviceClass"),
-            JAVA_BYTE.withName("bDeviceSubClass"), JAVA_BYTE.withName("bDeviceProtocol"), JAVA_BYTE.withName(
-                    "bMaxPacketSize0"), JAVA_SHORT.withName("idVendor"), JAVA_SHORT.withName("idProduct"),
-            JAVA_SHORT.withName("bcdDevice"), JAVA_BYTE.withName("iManufacturer"), JAVA_BYTE.withName("iProduct"),
-            JAVA_BYTE.withName("iSerialNumber"), JAVA_BYTE.withName("bNumConfigurations"));
+    public static final GroupLayout Device$Struct = structLayout(
+            JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"),
+            JAVA_SHORT.withName("bcdUSB"),
+            JAVA_BYTE.withName("bDeviceClass"),
+            JAVA_BYTE.withName("bDeviceSubClass"),
+            JAVA_BYTE.withName("bDeviceProtocol"),
+            JAVA_BYTE.withName("bMaxPacketSize0"),
+            JAVA_SHORT.withName("idVendor"),
+            JAVA_SHORT.withName("idProduct"),
+            JAVA_SHORT.withName("bcdDevice"),
+            JAVA_BYTE.withName("iManufacturer"),
+            JAVA_BYTE.withName("iProduct"),
+            JAVA_BYTE.withName("iSerialNumber"),
+            JAVA_BYTE.withName("bNumConfigurations")
+    );
 
+    public static final VarHandle Device_bcdUSB = Device$Struct.varHandle(groupElement("bcdUSB"));
     public static final VarHandle Device_bDeviceClass = Device$Struct.varHandle(groupElement("bDeviceClass"));
     public static final VarHandle Device_bDeviceSubClass = Device$Struct.varHandle(groupElement("bDeviceSubClass"));
     public static final VarHandle Device_bDeviceProtocol = Device$Struct.varHandle(groupElement("bDeviceProtocol"));
     public static final VarHandle Device_idVendor = Device$Struct.varHandle(groupElement("idVendor"));
     public static final VarHandle Device_idProduct = Device$Struct.varHandle(groupElement("idProduct"));
+    public static final VarHandle Device_bcdDevice = Device$Struct.varHandle(groupElement("bcdDevice"));
     public static final VarHandle Device_iManufacturer = Device$Struct.varHandle(groupElement("iManufacturer"));
     public static final VarHandle Device_iProduct = Device$Struct.varHandle(groupElement("iProduct"));
     public static final VarHandle Device_iSerialNumber = Device$Struct.varHandle(groupElement("iSerialNumber"));
-    public static final VarHandle Device_bNumConfigurations = Device$Struct.varHandle(groupElement(
-            "bNumConfigurations"));
 
     // struct USBConfigurationDescriptor
     //{

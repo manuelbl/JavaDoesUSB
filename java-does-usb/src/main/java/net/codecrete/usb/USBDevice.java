@@ -84,6 +84,20 @@ public interface USBDevice {
     int protocolCode();
 
     /**
+     * USB protocol version supported by this device.
+     *
+     * @return version
+     */
+    Version usbVersion();
+
+    /**
+     * Device version (as declared by the manufacturer).
+     *
+     * @return version
+     */
+    Version deviceVersion();
+
+    /**
      * Opens the device for communication.
      */
     void open();
@@ -130,6 +144,12 @@ public interface USBDevice {
      * The control transfer request is sent to endpoint 0. The transfer is expected to
      * have a Data In stage.
      * </p>
+     * <p>
+     * Requests with an interface or an endpoint as recipient are expected to
+     * have the interface and endpoint number, respectively, in the lower byte of
+     * {@code wIndex}. This convention is enforced by Windows. The addressed interface
+     * or the interface of the addressed endpoint must have been claimed.
+     * </p>
      *
      * @param setup  control transfer setup parameters
      * @param length maximum length of expected data
@@ -146,6 +166,12 @@ public interface USBDevice {
      * The control transfer request is sent to endpoint 0. The transfer is expected to either have
      * no data stage or a Data Out stage.
      * </p>
+     * <p>
+     * Requests with an interface or an endpoint as recipient are expected to
+     * have the interface and endpoint number, respectively, in the lower byte of
+     * {@code wIndex}. This convention is enforced by Windows. The addressed interface
+     * or the interface of the addressed endpoint must have been claimed.
+     * </p>
      *
      * @param setup control transfer setup parameters
      * @param data  data to send, or {@code null} if the transfer has no data stage.
@@ -158,7 +184,7 @@ public interface USBDevice {
      * This method blocks until the data has been sent or an error has occurred.
      * </p>
      * <p>
-     * This method is suitable for bulk and interrupt endpoints.
+     * This method can send data to bulk and interrupt endpoints.
      * </p>
      *
      * @param endpointNumber endpoint number (in the range between 1 and 127)
@@ -167,13 +193,13 @@ public interface USBDevice {
     void transferOut(int endpointNumber, byte[] data);
 
     /**
-     * Receives data to this device.
+     * Receives data from this device.
      * <p>
      * This method blocks until at least a packet has been received or an error has occurred.
      * The minimum value for {@code maxLength} is the maximum size of packets sent on the endpoint.
      * </p>
      * <p>
-     * This method is suitable for bulk and interrupt endpoints.
+     * This method can receive data from bulk and interrupt endpoints.
      * </p>
      *
      * @param endpointNumber endpoint number (in the range between 1 and 127, i.e. without the direction bit)

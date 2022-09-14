@@ -35,10 +35,20 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(0x00, testDevice.subclassCode());
             assertEquals(0x00, testDevice.protocolCode());
         }
+
+        boolean isComposite = pid == TestDeviceBase.PID_COMPOSITE;
+
+        assertEquals(2, testDevice.usbVersion().major());
+        assertEquals(isComposite ? 1 : 0, testDevice.usbVersion().minor());
+        assertEquals(0, testDevice.usbVersion().subminor());
+
+        assertEquals(0, testDevice.deviceVersion().major());
+        assertEquals(isComposite ? 3 : 7, testDevice.deviceVersion().minor());
+        assertEquals(isComposite ? 4 : 1, testDevice.deviceVersion().subminor());
     }
 
     @Test
-    void interfaceDescriptors_isCorrect() {
+    void interfaceDescriptor_isCorrect() {
         assertNotNull(testDevice.interfaces());
         assertEquals(interfaceNumber + 1, testDevice.interfaces().size());
 
@@ -49,7 +59,7 @@ public class DescriptionTest extends TestDeviceBase {
     }
 
     @Test
-    void alternateInterfaceDescriptors_isCorrect() {
+    void alternateInterfaceDescriptor_isCorrect() {
         var intf = testDevice.interfaces().get(interfaceNumber);
         var altIntf = intf.alternate();
         assertNotNull(intf.alternates());
@@ -63,7 +73,7 @@ public class DescriptionTest extends TestDeviceBase {
     }
 
     @Test
-    void endpointDescriptors_isCorrect() {
+    void endpointDescriptors_areCorrect() {
         var altIntf = testDevice.interfaces().get(interfaceNumber).alternate();
         assertNotNull(altIntf.endpoints());
         assertEquals(4, altIntf.endpoints().size());

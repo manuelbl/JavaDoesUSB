@@ -32,6 +32,8 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 
 ### To do
 
+- Transfers with time-out
+- Device and USB protocol revision
 - Alternate interface settings
 - Support for associated interfaces
 - Isochronous transfer

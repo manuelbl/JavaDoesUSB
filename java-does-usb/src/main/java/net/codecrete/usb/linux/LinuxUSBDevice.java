@@ -53,7 +53,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var descriptorsSegment = MemorySegment.ofArray(descriptors);
 
-            // isolate device descriptor (copy descriptor to fix alignment issues)
+            // separate device descriptor (and copy it to fix alignment issues)
             var deviceDesc = session.allocate(USBDescriptors.Device$Struct);
             deviceDesc.copyFrom(descriptorsSegment.asSlice(0, USBDescriptors.Device$Struct.byteSize()));
 
@@ -61,6 +61,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             int subclassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
             int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
             setClassCodes(classCode, subclassCode, protocolCode);
+
+            var usbVersion = (short) USBDescriptors.Device_bcdUSB.get(deviceDesc);
+            var deviceVersion = (short) USBDescriptors.Device_bcdDevice.get(deviceDesc);
+            setVersions(usbVersion, deviceVersion);
 
             // skip device descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);

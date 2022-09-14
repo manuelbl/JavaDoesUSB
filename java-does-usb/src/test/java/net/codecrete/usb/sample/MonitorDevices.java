@@ -27,6 +27,7 @@ public class MonitorDevices {
             System.out.println("Present:      " + device.toString());
         System.out.println("Monitoring...");
 
+        //noinspection ResultOfMethodCallIgnored
         System.in.read();
     }
 }
