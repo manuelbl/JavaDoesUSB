@@ -52,6 +52,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-function SetupDiCreateDeviceInfoList ^
   --include-function SetupDiOpenDeviceInfoW ^
   --include-function SetupDiOpenDevRegKey ^
+  --include-function SetupDiDeleteDeviceInterfaceData ^
   --include-struct _SP_DEVINFO_DATA ^
   --include-typedef SP_DEVINFO_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DATA ^

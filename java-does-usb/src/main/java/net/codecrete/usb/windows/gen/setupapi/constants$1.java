@@ -6,6 +6,14 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
 class constants$1 {
 
+    static final FunctionDescriptor SetupDiDeleteDeviceInterfaceData$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle SetupDiDeleteDeviceInterfaceData$MH = RuntimeHelper.downcallHandle(
+        "SetupDiDeleteDeviceInterfaceData",
+        constants$1.SetupDiDeleteDeviceInterfaceData$FUNC
+    );
     static final FunctionDescriptor SetupDiGetDeviceInterfaceDetailW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,

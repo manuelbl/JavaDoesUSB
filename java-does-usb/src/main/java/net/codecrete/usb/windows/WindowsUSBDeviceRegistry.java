@@ -418,9 +418,13 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, NULL, 0, NULL, devInfo) == 0) {
                 int err = Kernel32.GetLastError();
-                if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
+                if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER()) {
+                    SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData);
                     throw new USBException("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
+                }
             }
+
+            SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData);
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemoryAddress>();

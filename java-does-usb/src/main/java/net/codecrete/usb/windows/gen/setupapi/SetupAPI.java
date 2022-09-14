@@ -105,6 +105,17 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle SetupDiDeleteDeviceInterfaceData$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.SetupDiDeleteDeviceInterfaceData$MH,"SetupDiDeleteDeviceInterfaceData");
+    }
+    public static int SetupDiDeleteDeviceInterfaceData ( Addressable DeviceInfoSet,  Addressable DeviceInterfaceData) {
+        var mh$ = SetupDiDeleteDeviceInterfaceData$MH();
+        try {
+            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInterfaceData);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle SetupDiGetDeviceInterfaceDetailW$MH() {
         return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
     }
