@@ -10,7 +10,6 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface;
 import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface;
 
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
@@ -21,7 +20,6 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
  * Helper functions to call the virtual methods of IOKit USB interfaces.
  */
 public class IoKitUSB {
-    private static final Linker linker = Linker.nativeLinker();
 
     private static MemorySegment getVtable(MemoryAddress self, MemorySession session) {
         var object = MemorySegment.ofAddress(self, ADDRESS.byteSize(), session);

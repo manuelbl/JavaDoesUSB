@@ -290,7 +290,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             int ret = IoKitUSB.DeviceRequest(device, deviceRequest.address());
             if (ret != 0) throw new MacosUSBException("Control IN transfer failed", ret);
 
-            int lenDone = (int) IOUSBDevRequest.wLenDone$get(deviceRequest);
+            int lenDone = IOUSBDevRequest.wLenDone$get(deviceRequest);
             return data.asSlice(0, lenDone).toArray(JAVA_BYTE);
         }
     }

@@ -80,7 +80,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private CompositeFunction findControlTransferFunction(USBControlTransfer setup) {
 
         int interfaceNumber = -1;
-        int endpointNumber = -1;
+        int endpointNumber;
 
         if (setup.recipient() == USBRecipient.INTERFACE) {
 

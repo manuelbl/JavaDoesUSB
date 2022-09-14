@@ -9,6 +9,8 @@ package net.codecrete.usb.sample;
 
 import net.codecrete.usb.USB;
 
+import java.io.IOException;
+
 /**
  * Sample program displaying information when USB devices are connected or disconnected.
  * <p>
@@ -17,7 +19,7 @@ import net.codecrete.usb.USB;
  */
 public class MonitorDevices {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws IOException {
         USB.setOnDeviceConnected((device) -> System.out.println("Connected:    " + device.toString()));
         USB.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
 
@@ -25,9 +27,6 @@ public class MonitorDevices {
             System.out.println("Present:      " + device.toString());
         System.out.println("Monitoring...");
 
-        //noinspection InfiniteLoopStatement
-        while (true) {
-            Thread.sleep(1000000);
-        }
+        System.in.read();
     }
 }
