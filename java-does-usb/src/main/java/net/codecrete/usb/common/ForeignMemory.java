@@ -7,7 +7,6 @@
 
 package net.codecrete.usb.common;
 
-import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
 import java.util.function.Consumer;
@@ -30,11 +29,11 @@ public class ForeignMemory {
      * @param action the cleanup action
      */
     public static void addCloseAction(MemorySegment segment, Consumer<MemorySegment> action) {
-        long size = segment.byteSize();
-        MemoryAddress address = segment.address();
+        var size = segment.byteSize();
+        var address = segment.address();
         Runnable closeAction = () -> {
             try (MemorySession closingSession = MemorySession.openConfined()) {
-                MemorySegment dup = MemorySegment.ofAddress(address, size, closingSession);
+                var dup = MemorySegment.ofAddress(address, size, closingSession);
                 action.accept(dup);
             }
         };
