@@ -9,10 +9,7 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBDevice;
 import net.codecrete.usb.USBException;
-import net.codecrete.usb.common.USBDescriptors;
-import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.common.USBDeviceRegistry;
-import net.codecrete.usb.common.USBStructs;
+import net.codecrete.usb.common.*;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.ole32.Ole32;
@@ -410,21 +407,18 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, session);
-            // TODO: Check if result needs to be freed
             if (SetupAPI.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0, devIntfData) == 0)
                 throw new WindowsUSBException("internal error (SetupDiOpenDeviceInterfaceW)", Kernel32.GetLastError());
+
+            ForeignMemory.addCloseAction(devIntfData, (segment) -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, segment));
 
             var devInfo = session.allocate(SP_DEVINFO_DATA.$LAYOUT());
             SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, NULL, 0, NULL, devInfo) == 0) {
                 int err = Kernel32.GetLastError();
-                if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER()) {
-                    SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData);
+                if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
                     throw new USBException("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
-                }
             }
-
-            SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData);
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemoryAddress>();
