@@ -5,3 +5,4 @@ The C++ reference code is used to first implement the features before it is tran
 The C++ code contains less error checking, less test cases and does not cover all features. 
 
 - [MacOS](macos) (for use with Xcode)
+- [Windows](windows) (for use with Visual Studio)

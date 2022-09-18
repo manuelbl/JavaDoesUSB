@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <string>
+#include <mutex>
 #include <thread>
 
 usb_registry::usb_registry()
