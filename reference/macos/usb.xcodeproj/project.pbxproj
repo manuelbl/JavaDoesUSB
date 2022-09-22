@@ -83,20 +83,20 @@
 		64937C6228D5EBF1009BD0C2 /* USB */ = {
 			isa = PBXGroup;
 			children = (
-				64937C6C28D5ED1F009BD0C2 /* iokit_helper.cpp */,
-				64937C6D28D5ED1F009BD0C2 /* iokit_helper.hpp */,
-				64937C6F28D5ED1F009BD0C2 /* scope.hpp */,
-				64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */,
-				64937C6E28D5ED1F009BD0C2 /* usb_registry.hpp */,
-				64937C6328D5EBF1009BD0C2 /* main.cpp */,
-				64937C7428D5ED8D009BD0C2 /* usb_error.cpp */,
-				64937C7528D5ED8D009BD0C2 /* usb_error.hpp */,
-				64937C7728D5FE6D009BD0C2 /* usb_device.cpp */,
-				64937C7828D5FE6D009BD0C2 /* usb_device.hpp */,
-				64937C7F28D6F9DE009BD0C2 /* tests.cpp */,
-				64937C8028D6F9DE009BD0C2 /* tests.hpp */,
-				64937C8228D71D31009BD0C2 /* assertion.cpp */,
 				64937C8328D71D31009BD0C2 /* assertion.hpp */,
+				64937C8228D71D31009BD0C2 /* assertion.cpp */,
+				64937C6D28D5ED1F009BD0C2 /* iokit_helper.hpp */,
+				64937C6C28D5ED1F009BD0C2 /* iokit_helper.cpp */,
+				64937C6328D5EBF1009BD0C2 /* main.cpp */,
+				64937C6F28D5ED1F009BD0C2 /* scope.hpp */,
+				64937C8028D6F9DE009BD0C2 /* tests.hpp */,
+				64937C7F28D6F9DE009BD0C2 /* tests.cpp */,
+				64937C7528D5ED8D009BD0C2 /* usb_error.hpp */,
+				64937C7428D5ED8D009BD0C2 /* usb_error.cpp */,
+				64937C7828D5FE6D009BD0C2 /* usb_device.hpp */,
+				64937C7728D5FE6D009BD0C2 /* usb_device.cpp */,
+				64937C6E28D5ED1F009BD0C2 /* usb_registry.hpp */,
+				64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */,
 			);
 			path = USB;
 			sourceTree = "<group>";
@@ -292,6 +292,7 @@
 		64937C6828D5EBF1009BD0C2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4H9ZA7X4C4;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -302,6 +303,7 @@
 		64937C6928D5EBF1009BD0C2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4H9ZA7X4C4;
 				ENABLE_HARDENED_RUNTIME = YES;

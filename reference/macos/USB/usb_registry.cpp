@@ -59,7 +59,7 @@ void usb_registry::set_on_device_disconnected(std::function<void(usb_device_ptr 
 void usb_registry::start() {
     monitor_thread = std::thread(&usb_registry::monitor, this);
     
-    std::unique_lock wait_lock(monitor_mutex);
+    std::unique_lock<std::mutex> wait_lock(monitor_mutex);
     monitor_condition.wait(wait_lock, [this] { return is_device_list_ready; });
 }
 

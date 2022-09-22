@@ -13,8 +13,8 @@
 #include <iostream>
 #include <random>
 
-using random_bytes_engine = std::independent_bits_engine<
-    std::default_random_engine, CHAR_BIT, unsigned char>;
+using random_ushort_engine = std::independent_bits_engine<
+    std::default_random_engine, 16, unsigned short>;
 
 
 void tests::run() {
@@ -149,10 +149,11 @@ void tests::on_device_disconnected(usb_device_ptr device) {
 }
 
 std::vector<uint8_t> tests::random_bytes(int num) {
-    random_bytes_engine rbe;
-    std::vector<uint8_t> data(num);
+    random_ushort_engine rbe;
+    std::vector<unsigned short> data((num + 1) / 2);
     std::generate(begin(data), end(data), std::ref(rbe));
-    return data;
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(data.data());
+    return std::vector<uint8_t>(p, p + num);
 }
 
 
