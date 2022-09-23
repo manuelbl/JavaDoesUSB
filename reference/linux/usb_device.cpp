@@ -20,11 +20,6 @@
 
 usb_device::usb_device(const char* path, int vendor_id, int product_id)
 : path_(path), fd_(-1), claimed_interface_(-1), vendor_id_(vendor_id), product_id_(product_id) {
-    
-    
-//    manufacturer_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBVendorString));
-//    product_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBProductString));
-//    serial_number_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBSerialNumberString));
 }
 
 usb_device::~usb_device() {
@@ -67,6 +62,7 @@ void usb_device::close() {
         release_interface();
 
     int ret = ::close(fd_);
+    fd_ = -1;
     if (ret != 0)
         usb_error::throw_error("unable to close USB device");
 }
@@ -110,6 +106,7 @@ std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, 
     if (result < 0)
         usb_error::throw_error("error receiving from USB endpoint");
 
+    data.resize(result);
     return data;
 }
 
@@ -140,6 +137,7 @@ int usb_device::control_transfer_core(const usb_control_request &request, uint8_
     ctrl_request.wIndex = request.wIndex;
     ctrl_request.wLength = request.wLength;
     ctrl_request.timeout = timeout;
+    ctrl_request.data = data;
 
     int result = ioctl(fd_, USBDEVFS_CONTROL, &ctrl_request);
     if (result < 0)
