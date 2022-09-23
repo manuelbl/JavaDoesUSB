@@ -11,10 +11,7 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBTransferType;
-import net.codecrete.usb.common.DescriptorParser;
-import net.codecrete.usb.common.USBDescriptors;
-import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.common.USBInterfaceImpl;
+import net.codecrete.usb.common.*;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
@@ -34,8 +31,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private int fd = -1;
 
-    LinuxUSBDevice(Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
-        super(id, vendorId, productId, manufacturer, product, serial);
+    LinuxUSBDevice(Object id, int vendorId, int productId) {
+        super(id, vendorId, productId);
         loadDescription((String) id);
     }
 
@@ -53,22 +50,15 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var descriptorsSegment = MemorySegment.ofArray(descriptors);
 
-            // separate device descriptor (and copy it to fix alignment issues)
-            var deviceDesc = session.allocate(USBDescriptors.Device$Struct);
-            deviceDesc.copyFrom(descriptorsSegment.asSlice(0, USBDescriptors.Device$Struct.byteSize()));
+            // split off device descriptor (and copy it to fix alignment issues)
+            var deviceDesc = session.allocate(DeviceDescriptor.LAYOUT);
+            deviceDesc.copyFrom(descriptorsSegment.asSlice(0, DeviceDescriptor.LAYOUT.byteSize()));
 
-            int classCode = 255 & (byte) USBDescriptors.Device_bDeviceClass.get(deviceDesc);
-            int subclassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
-            int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
-            setClassCodes(classCode, subclassCode, protocolCode);
+            setFromDeviceDescriptor(deviceDesc);
 
-            var usbVersion = (short) USBDescriptors.Device_bcdUSB.get(deviceDesc);
-            var deviceVersion = (short) USBDescriptors.Device_bcdDevice.get(deviceDesc);
-            setVersions(usbVersion, deviceVersion);
-
-            // skip device descriptor
+            // skip to configuration descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
-            configDesc.copyFrom(descriptorsSegment.asSlice(USBDescriptors.Device$Struct.byteSize()));
+            configDesc.copyFrom(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
             var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
             setInterfaces(configuration.interfaces);
         }

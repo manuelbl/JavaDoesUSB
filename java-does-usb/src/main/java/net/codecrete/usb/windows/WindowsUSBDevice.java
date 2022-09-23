@@ -29,9 +29,9 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private final List<CompositeFunction> functions;
     private boolean isOpen_;
 
-    WindowsUSBDevice(String devicePath, List<CompositeFunction> functions, int vendorId, int productId, String manufacturer, String product, String serial,
+    WindowsUSBDevice(String devicePath, List<CompositeFunction> functions, int vendorId, int productId,
                      MemorySegment configDesc) {
-        super(devicePath, vendorId, productId, manufacturer, product, serial);
+        super(devicePath, vendorId, productId);
         this.functions = functions;
         readDescription(configDesc);
     }

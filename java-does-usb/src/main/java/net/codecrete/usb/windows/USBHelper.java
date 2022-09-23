@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.common.USBDescriptors;
+import net.codecrete.usb.common.DeviceDescriptor;
 import net.codecrete.usb.common.USBStructs;
 
 import java.lang.foreign.GroupLayout;
@@ -44,11 +44,15 @@ public class USBHelper {
     //    USB_CONNECTION_STATUS ConnectionStatus;/* OUTPUT */
     //    USB_PIPE_INFO PipeList[0];/* OUTPUT */
     //} USB_NODE_CONNECTION_INFORMATION_EX, *PUSB_NODE_CONNECTION_INFORMATION_EX;
-    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(JAVA_INT.withName(
-            "ConnectionIndex"), USBDescriptors.Device$Struct.withName("DeviceDescriptor"), JAVA_BYTE.withName(
-                    "CurrentConfigurationValue"), JAVA_BYTE.withName("Speed"), JAVA_BYTE.withName("DeviceIsHub"),
-            JAVA_SHORT.withName("DeviceAddress"), JAVA_INT.withName("NumberOfOpenPipes"), JAVA_INT.withName(
-                    "ConnectionStatus")
+    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(
+            JAVA_INT.withName("ConnectionIndex"),
+            DeviceDescriptor.LAYOUT.withName("DeviceDescriptor"),
+            JAVA_BYTE.withName("CurrentConfigurationValue"),
+            JAVA_BYTE.withName("Speed"),
+            JAVA_BYTE.withName("DeviceIsHub"),
+            JAVA_SHORT.withName("DeviceAddress"),
+            JAVA_INT.withName("NumberOfOpenPipes"),
+            JAVA_INT.withName("ConnectionStatus")
             // USB_PIPE_INFO PipeList[0]
     );
     public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex =
@@ -58,11 +62,8 @@ public class USBHelper {
 
     public static MemorySegment USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(MemorySegment seg) {
         return seg.asSlice(USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset,
-                USBDescriptors.Device$Struct.byteSize());
+                DeviceDescriptor.LAYOUT.byteSize());
     }
-
-    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_CurrentConfigurationValue =
-            USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("CurrentConfigurationValue"));
 
     // typedef struct _USB_DESCRIPTOR_REQUEST {
     //    ULONG ConnectionIndex;
@@ -92,8 +93,6 @@ public class USBHelper {
             JAVA_BYTE.withName("bDescriptorType"));
     public static final VarHandle USB_STRING_DESCRIPTOR_bLength =
             USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bLength"));
-    public static final VarHandle USB_STRING_DESCRIPTOR_bDescriptorType =
-            USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bDescriptorType"));
     public static final long USB_STRING_DESCRIPTOR_bString$Offset = USB_STRING_DESCRIPTOR$Struct.byteSize();
 
     // A5DCBF10-6530-11D2-901F-00C04FB951ED

@@ -9,17 +9,19 @@ package net.codecrete.usb.common;
 
 import net.codecrete.usb.*;
 
+import java.lang.foreign.MemorySegment;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
     protected final Object id_;
     protected final int vendorId_;
     protected final int productId_;
-    protected final String manufacturer_;
-    protected final String product_;
-    protected final String serialNumber_;
+    protected String manufacturer_;
+    protected String product_;
+    protected String serialNumber_;
     protected int classCode_;
     protected int subclassCode_;
     protected int protocolCode_;
@@ -34,21 +36,14 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param id           unique device ID
      * @param vendorId     USB vendor ID
      * @param productId    USB product ID
-     * @param manufacturer manufacturer name
-     * @param product      product name
-     * @param serialNumber serial number
      */
-    protected USBDeviceImpl(Object id, int vendorId, int productId, String manufacturer, String product,
-                            String serialNumber) {
+    protected USBDeviceImpl(Object id, int vendorId, int productId) {
 
         assert id != null;
 
         id_ = id;
         vendorId_ = vendorId;
         productId_ = productId;
-        manufacturer_ = manufacturer;
-        product_ = product;
-        serialNumber_ = serialNumber;
     }
 
     @Override
@@ -113,6 +108,49 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     public Object getUniqueId() {
         return id_;
+    }
+
+    /**
+     * Sets the class codes and version for the device descriptor.
+     * @param descriptor the device descriptor
+     */
+    public void setFromDeviceDescriptor(MemorySegment descriptor) {
+        var deviceDescriptor = new DeviceDescriptor(descriptor);
+        classCode_ = deviceDescriptor.bDeviceClass() & 255;
+        subclassCode_ = deviceDescriptor.bDeviceSubClass() & 255;
+        protocolCode_ = deviceDescriptor.bDeviceProtocol() & 255;
+        usbVersion_ = new Version(deviceDescriptor.bcdUSB());
+        deviceVersion_ = new Version(deviceDescriptor.bcdDevice());
+
+    }
+
+    /**
+     * Set the product strings.
+     *
+     * @param manufacturer manufacturer name
+     * @param product      product name
+     * @param serialNumber serial number
+     */
+    public void setProductStrings(String manufacturer, String product, String serialNumber) {
+        manufacturer_ = manufacturer;
+        product_ = product;
+        serialNumber_ = serialNumber;
+    }
+
+    /**
+     * Sets the product strings from the device descriptor.
+     * <p>
+     *     To lookup the string, a lookup function is provided. It takes the
+     *     string ID and returns the string from the string descriptor.
+     * </p>
+     * @param descriptor device descriptor
+     * @param stringLookup string lookup function
+     */
+    public void setProductString(MemorySegment descriptor, Function<Integer, String> stringLookup) {
+        var deviceDescriptor = new DeviceDescriptor(descriptor);
+        manufacturer_ = stringLookup.apply(deviceDescriptor.iManufacturer());
+        product_ = stringLookup.apply(deviceDescriptor.iProduct());
+        serialNumber_ = stringLookup.apply(deviceDescriptor.iSerialNumber());
     }
 
     public void setClassCodes(int classCode, int subclassCode, int protocolCode) {

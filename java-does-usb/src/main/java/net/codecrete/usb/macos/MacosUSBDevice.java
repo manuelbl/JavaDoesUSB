@@ -36,8 +36,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private List<InterfaceInfo> claimedInterfaces;
     private Map<Byte, EndpointInfo> endpoints;
 
-    MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId, String manufacturer, String product, String serial) {
-        super(id, vendorId, productId, manufacturer, product, serial);
+    MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId) {
+        super(id, vendorId, productId);
         this.device = device;
 
         loadDescription();

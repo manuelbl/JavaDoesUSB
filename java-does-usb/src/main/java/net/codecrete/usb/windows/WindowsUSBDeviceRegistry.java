@@ -266,33 +266,18 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     , (int) connInfo.byteSize(), connInfo, (int) connInfo.byteSize(), sizeHolder, NULL) == 0)
                 throw new WindowsUSBException("Internal error (cannot get device descriptor)", Kernel32.GetLastError());
 
-            var deviceDesc = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
+            var descriptorSegment = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
+            var deviceDescriptor = new DeviceDescriptor(descriptorSegment);
 
-            // extract info from device descriptor
-            int manufacturerIndex = 255 & (byte) USBDescriptors.Device_iManufacturer.get(deviceDesc);
-            String manufacturer = getStringDescriptor(hubHandle, usbPortNum, manufacturerIndex);
-            int productIndex = 255 & (byte) USBDescriptors.Device_iProduct.get(deviceDesc);
-            String product = getStringDescriptor(hubHandle, usbPortNum, productIndex);
-            int serialNumberIndex = 255 & (byte) USBDescriptors.Device_iSerialNumber.get(deviceDesc);
-            String serialNumber = getStringDescriptor(hubHandle, usbPortNum, serialNumberIndex);
-
-            int vendorId = 0xffff & (short) USBDescriptors.Device_idVendor.get(deviceDesc);
-            int productId = 0xffff & (short) USBDescriptors.Device_idProduct.get(deviceDesc);
+            int vendorId = deviceDescriptor.idVendor();
+            int productId = deviceDescriptor.idProduct();
 
             var configDesc = getDescriptor(hubHandle, usbPortNum, USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, 0,
                     (short) 0, session);
 
-            var device = new WindowsUSBDevice(devicePath, functions, vendorId, productId, manufacturer, product,
-                    serialNumber, configDesc);
-
-            int classCode = 255 & (byte) USBDescriptors.Device_bDeviceClass.get(deviceDesc);
-            int subclassCode = 255 & (byte) USBDescriptors.Device_bDeviceSubClass.get(deviceDesc);
-            int protocolCode = 255 & (byte) USBDescriptors.Device_bDeviceProtocol.get(deviceDesc);
-            device.setClassCodes(classCode, subclassCode, protocolCode);
-
-            var usbVersion = (short) USBDescriptors.Device_bcdUSB.get(deviceDesc);
-            var deviceVersion = (short) USBDescriptors.Device_bcdDevice.get(deviceDesc);
-            device.setVersions(usbVersion, deviceVersion);
+            var device = new WindowsUSBDevice(devicePath, functions, vendorId, productId, configDesc);
+            device.setFromDeviceDescriptor(descriptorSegment);
+            device.setProductString(descriptorSegment, (index) -> getStringDescriptor(hubHandle, usbPortNum, index));
 
             return device;
         }

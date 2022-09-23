@@ -190,8 +190,12 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             productId = Integer.parseInt(idProduct, 16);
 
             // create device instance
-            return new LinuxUSBDevice(devPath, vendorId, productId, getDeviceAttribute(udevDevice, "manufacturer"),
+            var device = new LinuxUSBDevice(devPath, vendorId, productId);
+
+            device.setProductStrings(getDeviceAttribute(udevDevice, "manufacturer"),
                     getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
+
+            return device;
 
         } catch (Throwable e) {
             System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " +
