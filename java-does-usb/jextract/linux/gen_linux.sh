@@ -54,6 +54,7 @@ $JEXTRACT --source --output ../../src/main/java \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h
+# (install libudev-dev if file is missing)
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name udev \
   --target-package net.codecrete.usb.linux.gen.udev \
@@ -79,10 +80,12 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function udev_monitor_get_fd \
   /usr/include/libudev.h
 
-# select.h
+# poll.h
 $JEXTRACT --source --output ../../src/main/java \
-  --header-class-name select \
-  --target-package net.codecrete.usb.linux.gen.select \
-  --include-function select \
-  --include-typedef fd_set \
-  /usr/include/x86_64-linux-gnu/sys/select.h
+  --header-class-name poll \
+  --target-package net.codecrete.usb.linux.gen.poll \
+  --include-function poll \
+  --include-struct pollfd \
+  --include-macro POLLIN \
+  /usr/include/poll.h
+

@@ -10,8 +10,8 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.USBDevice;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDeviceRegistry;
-import net.codecrete.usb.linux.gen.select.fd_set;
-import net.codecrete.usb.linux.gen.select.select;
+import net.codecrete.usb.linux.gen.poll.poll;
+import net.codecrete.usb.linux.gen.poll.pollfd;
 import net.codecrete.usb.linux.gen.udev.udev;
 
 import java.lang.foreign.Addressable;
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.foreign.MemoryAddress.NULL;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 /**
  * Linux implementation of USB device registry.
@@ -229,12 +228,11 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param session a memory session for allocating memory
      */
     private static void waitForFileDescriptor(int fd, MemorySession session) {
-        // fd_set is a bit array (constructed from 64-bit integers)
-        var fds = session.allocate(fd_set.$LAYOUT());
-        fds.set(JAVA_LONG, fd / JAVA_LONG.bitSize(), 1L << (fd % JAVA_LONG.bitSize()));
-
-        int res = select.select(fd + 1, fds, NULL, NULL, NULL);
-        if (res <= 0)
-            throw new USBException("internal error (select)");
+        var fds = session.allocate(pollfd.$LAYOUT());
+        pollfd.fd$set(fds, fd);
+        pollfd.events$set(fds, (short) poll.POLLIN());
+        int res = poll.poll(fds, 1, -1);
+        if (res < 0)
+            throw new USBException("internal error (poll)");
     }
 }
