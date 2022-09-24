@@ -11,9 +11,9 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBTransferType;
-import net.codecrete.usb.common.DescriptorParser;
-import net.codecrete.usb.common.USBDescriptors;
+import net.codecrete.usb.common.ConfigurationParser;
 import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.macos.gen.iokit.IOUSBDevRequest;
 import net.codecrete.usb.macos.gen.iokit.IOUSBFindInterfaceRequest;
@@ -101,16 +101,16 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     throw new MacosUSBException("failed to query first configuration", ret);
 
                 // get value of first configuration
-                var configDescHeader = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
-                        USBDescriptors.Configuration.byteSize(), session);
-                int totalLength = (short) USBDescriptors.Configuration_wTotalLength.get(configDescHeader);
+                var configDescHeader = new ConfigurationDescriptor(MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
+                        ConfigurationDescriptor.LAYOUT.byteSize(), session));
+                int totalLength = configDescHeader.totalLength();
                 var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
                         totalLength, session);
 
-                var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
+                var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
 
-                configurationValue = 255 & configuration.configValue;
-                setInterfaces(configuration.interfaces);
+                configurationValue = 255 & configuration.configValue();
+                setInterfaces(configuration.interfaces());
 
             } catch (Throwable e) {
                 configurationValue = 0;

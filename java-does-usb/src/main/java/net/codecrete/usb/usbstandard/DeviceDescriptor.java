@@ -5,7 +5,7 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.common;
+package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
@@ -16,6 +16,9 @@ import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 
+/**
+ * USB device descriptor
+ */
 public class DeviceDescriptor {
 
     private final MemorySegment descriptor;
@@ -24,31 +27,31 @@ public class DeviceDescriptor {
         this.descriptor = descriptor;
     }
 
-    public int bcdUSB() {
+    public int usbVersion() {
         return 0xffff & (short) bcdUSB$VH.get(descriptor);
     }
 
-    public int bDeviceClass() {
+    public int deviceClass() {
         return 0xff & (byte) bDeviceClass$VH.get(descriptor);
     }
 
-    public int bDeviceSubClass() {
+    public int deviceSubClass() {
         return 0xff & (byte) bDeviceSubClass$VH.get(descriptor);
     }
 
-    public int bDeviceProtocol() {
+    public int deviceProtocol() {
         return 0xff & (byte) bDeviceProtocol$VH.get(descriptor);
     }
 
-    public int idVendor() {
+    public int vendorID() {
         return 0xffff & (short) idVendor$VH.get(descriptor);
     }
 
-    public int idProduct() {
+    public int productID() {
         return 0xffff & (short) idProduct$VH.get(descriptor);
     }
 
-    public int bcdDevice() {
+    public int deviceVersion() {
         return 0xffff & (short) bcdDevice$VH.get(descriptor);
     }
 
@@ -64,22 +67,22 @@ public class DeviceDescriptor {
         return 0xffff & (short) iSerialNumber$VH.get(descriptor);
     }
 
-    // typedef struct {
-    //    UCHAR   bLength;
-    //    UCHAR   bDescriptorType;
-    //    USHORT  bcdUSB;
-    //    UCHAR   bDeviceClass;
-    //    UCHAR   bDeviceSubClass;
-    //    UCHAR   bDeviceProtocol;
-    //    UCHAR   bMaxPacketSize0;
-    //    USHORT  idVendor;
-    //    USHORT  idProduct;
-    //    USHORT  bcdDevice;
-    //    UCHAR   iManufacturer;
-    //    UCHAR   iProduct;
-    //    UCHAR   iSerialNumber;
-    //    UCHAR   bNumConfigurations;
-    //} __attribute__((packed));
+    // struct USBDeviceDescriptor {
+    //     uint8_t   bLength;
+    //     uint8_t   bDescriptorType;
+    //     uint16_t  bcdUSB;
+    //     uint8_t   bDeviceClass;
+    //     uint8_t   bDeviceSubClass;
+    //     uint8_t   bDeviceProtocol;
+    //     uint8_t   bMaxPacketSize0;
+    //     uint16_t  idVendor;
+    //     uint16_t  idProduct;
+    //     uint16_t  bcdDevice;
+    //     uint8_t   iManufacturer;
+    //     uint8_t   iProduct;
+    //     uint8_t   iSerialNumber;
+    //     uint8_t   bNumConfigurations;
+    // } __attribute__((packed));
     public static final GroupLayout LAYOUT = structLayout(
             JAVA_BYTE.withName("bLength"),
             JAVA_BYTE.withName("bDescriptorType"),
@@ -107,4 +110,9 @@ public class DeviceDescriptor {
     private static final VarHandle iManufacturer$VH = LAYOUT.varHandle(groupElement("iManufacturer"));
     private static final VarHandle iProduct$VH = LAYOUT.varHandle(groupElement("iProduct"));
     private static final VarHandle iSerialNumber$VH = LAYOUT.varHandle(groupElement("iSerialNumber"));
+
+
+    static {
+        assert LAYOUT.byteSize() == 18;
+    }
 }

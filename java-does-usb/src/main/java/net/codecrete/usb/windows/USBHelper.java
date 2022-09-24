@@ -7,8 +7,8 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.common.DeviceDescriptor;
-import net.codecrete.usb.common.USBStructs;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
+import net.codecrete.usb.usbstandard.SetupPacket;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
@@ -76,24 +76,15 @@ public class USBHelper {
     //    } SetupPacket;
     //    UCHAR Data[0];
     //} USB_DESCRIPTOR_REQUEST, *PUSB_DESCRIPTOR_REQUEST;
-    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = structLayout(JAVA_INT.withName("ConnectionIndex")
-            , USBStructs.SetupPacket$Struct.withName("SetupPacket"));
+    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = structLayout(
+            JAVA_INT.withName("ConnectionIndex"),
+            SetupPacket.LAYOUT.withName("SetupPacket")
+    );
     public static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex =
             USB_DESCRIPTOR_REQUEST$Struct.varHandle(groupElement("ConnectionIndex"));
     public static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset =
             USB_DESCRIPTOR_REQUEST$Struct.byteOffset(groupElement("SetupPacket"));
     public static final long USB_DESCRIPTOR_REQUEST_Data$Offset = USB_DESCRIPTOR_REQUEST$Struct.byteSize();
-
-    // typedef struct _USB_STRING_DESCRIPTOR {
-    //    UCHAR   bLength;
-    //    UCHAR   bDescriptorType;
-    //    WCHAR   bString[1];
-    //} USB_STRING_DESCRIPTOR, *PUSB_STRING_DESCRIPTOR;
-    public static final GroupLayout USB_STRING_DESCRIPTOR$Struct = structLayout(JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"));
-    public static final VarHandle USB_STRING_DESCRIPTOR_bLength =
-            USB_STRING_DESCRIPTOR$Struct.varHandle(groupElement("bLength"));
-    public static final long USB_STRING_DESCRIPTOR_bString$Offset = USB_STRING_DESCRIPTOR$Struct.byteSize();
 
     // A5DCBF10-6530-11D2-901F-00C04FB951ED
     public static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.CreateGUID(0xA5DCBF10, (short) 0x6530,

@@ -8,9 +8,10 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
-import net.codecrete.usb.common.DescriptorParser;
+import net.codecrete.usb.common.CompositeFunction;
+import net.codecrete.usb.common.ConfigurationParser;
 import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.common.USBStructs;
+import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
 
@@ -50,8 +51,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private void readDescription(MemorySegment configDesc) {
-        var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
-        setInterfaces(configuration.interfaces);
+        var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
+        setInterfaces(configuration.interfaces());
     }
 
     @Override
@@ -176,15 +177,15 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private MemorySegment createSetupPacket(MemorySession session, USBDirection direction, USBControlTransfer setup,
                                             MemorySegment data) {
-        var setupPacket = session.allocate(USBStructs.SetupPacket$Struct);
+        var setupPacket = new SetupPacket(session);
         var bmRequest =
                 (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        USBStructs.SetupPacket_bmRequest.set(setupPacket, (byte) bmRequest);
-        USBStructs.SetupPacket_bRequest.set(setupPacket, setup.request());
-        USBStructs.SetupPacket_wValue.set(setupPacket, setup.value());
-        USBStructs.SetupPacket_wIndex.set(setupPacket, setup.index());
-        USBStructs.SetupPacket_wLength.set(setupPacket, (short) (data != null ? data.byteSize() : 0));
-        return setupPacket;
+        setupPacket.setRequestType(bmRequest);
+        setupPacket.setRequest(setup.request());
+        setupPacket.setValue(setup.value());
+        setupPacket.setIndex(setup.index());
+        setupPacket.setLength(data != null ? (int) data.byteSize() : 0);
+        return setupPacket.segment();
     }
 
     @Override

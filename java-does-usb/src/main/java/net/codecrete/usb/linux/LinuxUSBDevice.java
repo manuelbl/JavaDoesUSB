@@ -12,6 +12,7 @@ import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.*;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
@@ -59,8 +60,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             // skip to configuration descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
             configDesc.copyFrom(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
-            var configuration = DescriptorParser.parseConfigurationDescriptor(configDesc, vendorId(), productId());
-            setInterfaces(configuration.interfaces);
+            var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
+            setInterfaces(configuration.interfaces());
         }
     }
 

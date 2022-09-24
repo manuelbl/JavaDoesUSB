@@ -8,6 +8,7 @@
 package net.codecrete.usb.common;
 
 import net.codecrete.usb.*;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.lang.foreign.MemorySegment;
 import java.util.Collections;
@@ -116,11 +117,11 @@ public abstract class USBDeviceImpl implements USBDevice {
      */
     public void setFromDeviceDescriptor(MemorySegment descriptor) {
         var deviceDescriptor = new DeviceDescriptor(descriptor);
-        classCode_ = deviceDescriptor.bDeviceClass() & 255;
-        subclassCode_ = deviceDescriptor.bDeviceSubClass() & 255;
-        protocolCode_ = deviceDescriptor.bDeviceProtocol() & 255;
-        usbVersion_ = new Version(deviceDescriptor.bcdUSB());
-        deviceVersion_ = new Version(deviceDescriptor.bcdDevice());
+        classCode_ = deviceDescriptor.deviceClass() & 255;
+        subclassCode_ = deviceDescriptor.deviceSubClass() & 255;
+        protocolCode_ = deviceDescriptor.deviceProtocol() & 255;
+        usbVersion_ = new Version(deviceDescriptor.usbVersion());
+        deviceVersion_ = new Version(deviceDescriptor.deviceVersion());
 
     }
 

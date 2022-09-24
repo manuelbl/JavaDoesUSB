@@ -10,6 +10,10 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.USBDevice;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.*;
+import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
+import net.codecrete.usb.usbstandard.SetupPacket;
+import net.codecrete.usb.usbstandard.StringDescriptor;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.ole32.Ole32;
@@ -29,6 +33,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.usbstandard.Constants.*;
 
 /**
  * Windows implementation of USB device registry.
@@ -269,10 +274,10 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var descriptorSegment = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
             var deviceDescriptor = new DeviceDescriptor(descriptorSegment);
 
-            int vendorId = deviceDescriptor.idVendor();
-            int productId = deviceDescriptor.idProduct();
+            int vendorId = deviceDescriptor.vendorID();
+            int productId = deviceDescriptor.productID();
 
-            var configDesc = getDescriptor(hubHandle, usbPortNum, USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE, 0,
+            var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0,
                     (short) 0, session);
 
             var device = new WindowsUSBDevice(devicePath, functions, vendorId, productId, configDesc);
@@ -297,14 +302,13 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         // create descriptor requests
         var descriptorRequest = session.allocate(size);
         USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
-        var setupPacket = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
-                USBStructs.SetupPacket$Struct.byteSize());
-        USBStructs.SetupPacket_bmRequest.set(setupPacket, (byte) 0x80); // device-to-host / type standard / recipient
-        // device
-        USBStructs.SetupPacket_bRequest.set(setupPacket, USBHelper.USB_REQUEST_GET_DESCRIPTOR);
-        USBStructs.SetupPacket_wValue.set(setupPacket, (short) ((descriptorType << 8) | index));
-        USBStructs.SetupPacket_wIndex.set(setupPacket, languageID);
-        USBStructs.SetupPacket_wLength.set(setupPacket, (short) (size - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset));
+        var setupPacket = new SetupPacket(descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
+                SetupPacket.LAYOUT.byteSize()));
+        setupPacket.setRequestType(0x80); // device-to-host / type standard / recipient device
+        setupPacket.setRequest(USBHelper.USB_REQUEST_GET_DESCRIPTOR);
+        setupPacket.setValue((descriptorType << 8) | index);
+        setupPacket.setIndex(languageID);
+        setupPacket.setLength(size - (int)USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
 
         // execute request
         var effectiveSizeHolder = session.allocate(JAVA_INT);
@@ -314,12 +318,12 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         // determine size of descriptor
         int expectedSize;
-        if (descriptorType != USBDescriptors.CONFIGURATION_DESCRIPTOR_TYPE) {
+        if (descriptorType != CONFIGURATION_DESCRIPTOR_TYPE) {
             expectedSize = 255 & descriptorRequest.get(JAVA_BYTE, USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
         } else {
-            var configDesc = descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset,
-                    USBDescriptors.Configuration.byteSize());
-            expectedSize = (short) USBDescriptors.Configuration_wTotalLength.get(configDesc);
+            var configDesc = new ConfigurationDescriptor(descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset,
+                    ConfigurationDescriptor.LAYOUT.byteSize()));
+            expectedSize = configDesc.totalLength();
         }
 
         // check against effective size
@@ -340,13 +344,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return null;
 
         try (var session = MemorySession.openConfined()) {
-            var stringDesc = getDescriptor(hubHandle, usbPortNumber, USBDescriptors.STRING_DESCRIPTOR_TYPE, index,
-                    USBDescriptors.DEFAULT_LANGUAGE, session);
-
-            int stringLen = 255 & (byte) USBHelper.USB_STRING_DESCRIPTOR_bLength.get(stringDesc);
-            var chars =
-                    stringDesc.asSlice(USBHelper.USB_STRING_DESCRIPTOR_bString$Offset, stringLen - 2).toArray(JAVA_CHAR);
-            return new String(chars);
+            var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE, index,
+                    DEFAULT_LANGUAGE, session));
+            return stringDesc.string();
         }
     }
 

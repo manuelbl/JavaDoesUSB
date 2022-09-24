@@ -5,7 +5,7 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.windows;
+package net.codecrete.usb.common;
 
 import java.lang.foreign.MemoryAddress;
 
@@ -35,9 +35,29 @@ public class CompositeFunction {
 
     private final int firstInterfaceNumber_;
     private final int numInterfaces_;
-    private final String devicePath_;
+    private int classCode_;
+    private int subclassCode_;
+    private int protocolCode_;
+    private String devicePath_;
     private MemoryAddress deviceHandle_;
     private MemoryAddress firstInterfaceHandle_;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param firstInterfaceNumber the number of the first interface
+     * @param numInterfaces        the number of interfaces
+     * @param classCode            the function class
+     * @param subclassCode         the function subclass
+     * @param protocolCode         the function protocol
+     */
+    public CompositeFunction(int firstInterfaceNumber, int numInterfaces, int classCode, int subclassCode, int protocolCode) {
+        firstInterfaceNumber_ = firstInterfaceNumber;
+        numInterfaces_ = numInterfaces;
+        classCode_ = classCode;
+        subclassCode_ = subclassCode;
+        protocolCode_ = protocolCode;
+    }
 
     /**
      * Creates a new instance with a single interface.
@@ -57,6 +77,18 @@ public class CompositeFunction {
 
     public int numInterfaces() {
         return numInterfaces_;
+    }
+
+    public int classCode() {
+        return classCode_;
+    }
+
+    public int subclassCode() {
+        return subclassCode_;
+    }
+
+    public int protocolCode() {
+        return protocolCode_;
     }
 
     public String devicePath() {
