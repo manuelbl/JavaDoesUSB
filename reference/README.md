@@ -6,3 +6,4 @@ The C++ code contains less error checking, less test cases and does not cover al
 
 - [MacOS](macos) (for use with Xcode)
 - [Windows](windows) (for use with Visual Studio)
+- [LInux](linux) (for use with CMake)

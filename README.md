@@ -11,7 +11,7 @@ The Foreign Function & Memory API (aka as project Panama) is in preview and will
 
 ## Prerequisite
 
-- Java 19 Early Access, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
+- Java 19, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
 It has been tested with Azul Zulu 19.0.77 EA 34.
@@ -27,7 +27,7 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 - Control, bulk and interrupt transfer
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
-- Support fo composite devices
+- Support fo composite devices and interface association
 - Published on Maven Central
 
 ### To do
@@ -35,7 +35,6 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 - Transfers with time-out
 - Device and USB protocol revision
 - Alternate interface settings
-- Support for associated interfaces
 - Isochronous transfer
 
 ### Not planned
