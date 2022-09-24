@@ -29,6 +29,7 @@ import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static java.lang.foreign.MemoryAddress.NULL;
@@ -156,14 +157,14 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     /**
-     * Gets the functions of the children of a composite device
+     * Enumerate the children of a composite device.
      *
      * @param childrenIds the children IDs
-     * @return a list of functions (interface number and device path)
+     * @return map of containing children device paths, index by the first interface number
      */
-    private List<CompositeFunction> getCompositeFunctions(List<String> childrenIds) {
+    private Map<Integer, String> enumerateChildren(List<String> childrenIds) {
 
-        var functions = new ArrayList<CompositeFunction>();
+        var children = new HashMap<Integer, String>();
 
         // iterate all children
         for (var instanceId : childrenIds) {
@@ -199,17 +200,16 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                     try {
                         var devicePath = DeviceProperty.getDevicePath(instanceId, clsid);
-                        functions.add(new CompositeFunction(interfaceNumber, devicePath));
+                        children.put(interfaceNumber, devicePath);
                         break;
                     } catch (Exception e) {
                         // ignore and try next one
                     }
                 }
             }
-
         }
 
-        return functions;
+        return children;
     }
 
     private USBDevice createDeviceFromDeviceInfo(MemoryAddress devInfoSetHandle, MemorySegment devInfo,
@@ -237,29 +237,26 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var deviceService = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo,
                     DeviceProperty.DEVPKEY_Device_Service);
 
-            List<CompositeFunction> functions;
+            Map<Integer, String> children = null;
             if (isCompositeDevice(deviceService)) {
-                functions = getCompositeFunctions(DeviceProperty.getDeviceStringListProperty(devInfoSetHandle, devInfo,
+                children = enumerateChildren(DeviceProperty.getDeviceStringListProperty(devInfoSetHandle, devInfo,
                         DeviceProperty.DEVPKEY_Device_Children));
-            } else {
-                functions = new ArrayList<>();
-                functions.add(new CompositeFunction(0, devicePath));
             }
 
-            return createDevice(devicePath, functions, hubHandle, usbPortNum);
+            return createDevice(devicePath, children, hubHandle, usbPortNum);
         }
     }
 
     /**
      * Retrieve device descriptor and create {@code USBDevice} instance
      *
-     * @param functions  composite functions
+     * @param devicePath the device path
+     * @param children map of child device paths, indexed by the first interface number
      * @param hubHandle  the hub handle (parent)
      * @param usbPortNum the USB port number
      * @return the {@code USBDevice} instance
      */
-    private USBDevice createDevice(String devicePath, List<CompositeFunction> functions, MemoryAddress hubHandle,
-                                   int usbPortNum) {
+    private USBDevice createDevice(String devicePath, Map<Integer, String> children, MemoryAddress hubHandle, int usbPortNum) {
 
         try (var session = MemorySession.openConfined()) {
 
@@ -280,7 +277,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0,
                     (short) 0, session);
 
-            var device = new WindowsUSBDevice(devicePath, functions, vendorId, productId, configDesc);
+            var device = new WindowsUSBDevice(devicePath, children, vendorId, productId, configDesc);
             device.setFromDeviceDescriptor(descriptorSegment);
             device.setProductString(descriptorSegment, (index) -> getStringDescriptor(hubHandle, usbPortNum, index));
 

@@ -7,8 +7,6 @@
 
 package net.codecrete.usb.common;
 
-import java.lang.foreign.MemoryAddress;
-
 /**
  * Describes the function of an interface of a composite USB device.
  * <p>
@@ -21,26 +19,13 @@ import java.lang.foreign.MemoryAddress;
  * multiple interfaces must have consecutive interface numbers. The
  * interfaces after the first one are called associated interfaces.
  * </p>
- * <p>
- * On Windows, each function has a separate device path. Each device
- * path must be opened and each interface must be opened.
- * Furthermore, the first and the associated interfaces are
- * treated differently.
- * </p>
  */
 public class CompositeFunction {
-    // TODO: implement associated interfaces
-
-    // TODO: implement devices without interfaces
-
     private final int firstInterfaceNumber_;
     private final int numInterfaces_;
-    private int classCode_;
-    private int subclassCode_;
-    private int protocolCode_;
-    private String devicePath_;
-    private MemoryAddress deviceHandle_;
-    private MemoryAddress firstInterfaceHandle_;
+    private final int classCode_;
+    private final int subclassCode_;
+    private final int protocolCode_;
 
     /**
      * Creates a new instance.
@@ -57,18 +42,6 @@ public class CompositeFunction {
         classCode_ = classCode;
         subclassCode_ = subclassCode;
         protocolCode_ = protocolCode;
-    }
-
-    /**
-     * Creates a new instance with a single interface.
-     *
-     * @param interfaceNumber the interface number
-     * @param devicePath      the device path
-     */
-    public CompositeFunction(int interfaceNumber, String devicePath) {
-        firstInterfaceNumber_ = interfaceNumber;
-        numInterfaces_ = 1;
-        devicePath_ = devicePath;
     }
 
     public int firstInterfaceNumber() {
@@ -89,25 +62,5 @@ public class CompositeFunction {
 
     public int protocolCode() {
         return protocolCode_;
-    }
-
-    public String devicePath() {
-        return devicePath_;
-    }
-
-    public MemoryAddress deviceHandle() {
-        return deviceHandle_;
-    }
-
-    public void setDeviceHandle(MemoryAddress deviceHandle) {
-        deviceHandle_ = deviceHandle;
-    }
-
-    public MemoryAddress firstInterfaceHandle() {
-        return firstInterfaceHandle_;
-    }
-
-    public void setFirstInterfaceHandle(MemoryAddress firstInterfaceHandle) {
-        firstInterfaceHandle_ = firstInterfaceHandle;
     }
 }
