@@ -9,6 +9,7 @@
 
 package net.codecrete.usb;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -17,6 +18,9 @@ public class InterruptTransferTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
+        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+                "Interrupt transfer only supported by loopback test device");
+
         byte[] sampleData = generateRandomBytes(12, 293872394);
         testDevice.transferOut(ECHO_EP_OUT, sampleData);
 

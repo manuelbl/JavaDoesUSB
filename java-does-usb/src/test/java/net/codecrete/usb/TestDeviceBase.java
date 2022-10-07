@@ -19,17 +19,17 @@ import java.util.Random;
  */
 public class TestDeviceBase {
     /**
-     * Simple test device vendor ID
+     * Loopback test device vendor ID
      */
-    static final int VID_SIMPLE = 0xcafe;
+    static final int VID_LOOPBACK = 0xcafe;
     /**
-     * Simple test device product ID
+     * Loopback test device product ID
      */
-    static final int PID_SIMPLE = 0xceaf;
+    static final int PID_LOOPBACK = 0xceaf;
     /**
-     * Simple test device loopback interface number
+     * Loopback test device loopback interface number
      */
-    static final int LOOPBACK_INTF_SIMPLE = 0;
+    static final int LOOPBACK_INTF_LOOPBACK = 0;
     /**
      * Composite test device vendor ID
      */
@@ -59,14 +59,14 @@ public class TestDeviceBase {
     static USBDevice getDevice() {
         var device = USB.getDevice(new USBDeviceFilter(VID_COMPOSITE, PID_COMPOSITE));
         if (device == null)
-            device = USB.getDevice(new USBDeviceFilter(VID_SIMPLE, PID_SIMPLE));
+            device = USB.getDevice(new USBDeviceFilter(VID_LOOPBACK, PID_LOOPBACK));
         if (device == null)
             throw new IllegalStateException("No test device connected");
         return device;
     }
 
     static int getInterfaceNumber(USBDevice device) {
-        return device.productId() == PID_COMPOSITE ? LOOPBACK_INTF_COMPOSITE : LOOPBACK_INTF_SIMPLE;
+        return device.productId() == PID_COMPOSITE ? LOOPBACK_INTF_COMPOSITE : LOOPBACK_INTF_LOOPBACK;
     }
 
     @BeforeAll
