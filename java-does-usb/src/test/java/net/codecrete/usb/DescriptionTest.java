@@ -44,7 +44,7 @@ public class DescriptionTest extends TestDeviceBase {
 
         assertEquals(0, testDevice.deviceVersion().major());
         assertEquals(isComposite ? 3 : 7, testDevice.deviceVersion().minor());
-        assertEquals(isComposite ? 4 : 1, testDevice.deviceVersion().subminor());
+        assertEquals(isComposite ? 5 : 2, testDevice.deviceVersion().subminor());
     }
 
     @Test

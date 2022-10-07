@@ -31,7 +31,7 @@ tusb_desc_device_t const desc_device = {
 
     .idVendor = 0xCAFE,
     .idProduct = 0xCEA0,
-    .bcdDevice = 0x0034,  // version 0.3.4
+    .bcdDevice = 0x0035,  // version 0.3.5
 
     .iManufacturer = 0x01,
     .iProduct = 0x02,
