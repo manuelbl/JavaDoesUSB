@@ -8,7 +8,6 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
-import net.codecrete.usb.common.ConfigurationParser;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -38,8 +37,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private void readDescription(MemorySegment configDesc, String devicePath, Map<Integer, String> children) {
-        var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
-        setInterfaces(configuration.interfaces());
+        var configuration = setConfigurationDescriptor(configDesc);
 
         // build list of interface handles
         interfaceHandles_ = new ArrayList<>();

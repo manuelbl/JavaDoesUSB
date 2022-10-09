@@ -14,18 +14,40 @@ public final class Version {
 
     private final int bcdVersion;
 
+    /**
+     * Creates a new instance.
+     * <p>
+     * {@code bcdVersion} contains the version: the high byte is the major
+     * version. The low byte is split into two nibbles (4 bits), the high one
+     * is minor version, the low one is the subminor version. As an example,
+     * 0x0321 represents the version 3.2.1.
+     * </p>
+     * @param bcdVersion version, encoded as described above
+     */
     public Version(int bcdVersion) {
         this.bcdVersion = bcdVersion;
     }
 
+    /**
+     * Major version
+     * @return major version
+     */
     public int major() {
         return bcdVersion >> 8;
     }
 
+    /**
+     * Minor version
+     * @return minor version
+     */
     public int minor() {
         return (bcdVersion >> 4) & 0x0f;
     }
 
+    /**
+     * Subminor version
+     * @return subminor version
+     */
     public int subminor() {
         return bcdVersion & 0x0f;
     }

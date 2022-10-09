@@ -207,4 +207,11 @@ public interface USBDevice {
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength);
+
+    /**
+     * Gets the configuration descriptor.
+     *
+     * @return the configuration descriptor (as a byte array)
+     */
+    byte[] configurationDescriptor();
 }

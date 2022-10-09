@@ -11,9 +11,12 @@ import net.codecrete.usb.*;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
@@ -30,6 +33,7 @@ public abstract class USBDeviceImpl implements USBDevice {
     protected Version deviceVersion_;
 
     protected List<USBInterface> interfaces_;
+    protected byte[] configurationDescriptor_;
 
     /**
      * Creates a new instance.
@@ -107,6 +111,9 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public Version deviceVersion() { return deviceVersion_; }
 
+    @Override
+    public byte[] configurationDescriptor() { return configurationDescriptor_; }
+
     public Object getUniqueId() {
         return id_;
     }
@@ -122,7 +129,18 @@ public abstract class USBDeviceImpl implements USBDevice {
         protocolCode_ = deviceDescriptor.deviceProtocol() & 255;
         usbVersion_ = new Version(deviceDescriptor.usbVersion());
         deviceVersion_ = new Version(deviceDescriptor.deviceVersion());
+    }
 
+    /**
+     * Sets the configuration descriptor and derives the interface and endpoint descriptions.
+     * @param descriptor configuration descriptor
+     * @return parsed configuration
+     */
+    protected Configuration setConfigurationDescriptor(MemorySegment descriptor) {
+        configurationDescriptor_ = descriptor.toArray(JAVA_BYTE);
+        var configuration = ConfigurationParser.parseConfigurationDescriptor(descriptor);
+        interfaces_ = configuration.interfaces();
+        return configuration;
     }
 
     /**
@@ -168,10 +186,6 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public List<USBInterface> interfaces() {
         return Collections.unmodifiableList(interfaces_);
-    }
-
-    public void setInterfaces(List<USBInterface> interfaces) {
-        interfaces_ = interfaces;
     }
 
     @Override

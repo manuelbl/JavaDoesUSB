@@ -106,4 +106,17 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(16, endpoint.packetSize());
         }
     }
+
+    @Test
+    void configurationDescription_isAvailable() {
+        boolean isLoopbackDevice = testDevice.productId() == PID_LOOPBACK;
+        int expectedLength = isLoopbackDevice ? 46 : 98;
+
+        byte[] configDesc = testDevice.configurationDescriptor();
+        assertNotNull(configDesc);
+        assertEquals(expectedLength, configDesc.length);
+        assertEquals(2, configDesc[1]);
+        assertEquals((byte) expectedLength, configDesc[2]);
+        assertEquals((byte) 0, configDesc[3]);
+    }
 }

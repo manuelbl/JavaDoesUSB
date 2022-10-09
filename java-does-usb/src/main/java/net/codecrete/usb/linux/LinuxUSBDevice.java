@@ -60,8 +60,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             // skip to configuration descriptor
             var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
             configDesc.copyFrom(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
-            var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
-            setInterfaces(configuration.interfaces());
+            setConfigurationDescriptor(configDesc);
         }
     }
 
@@ -137,9 +136,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         var bmRequest =
                 (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
         usbdevfs_ctrltransfer.bRequestType$set(ctrlTransfer, (byte) bmRequest);
-        usbdevfs_ctrltransfer.bRequest$set(ctrlTransfer, setup.request());
-        usbdevfs_ctrltransfer.wValue$set(ctrlTransfer, setup.value());
-        usbdevfs_ctrltransfer.wIndex$set(ctrlTransfer, setup.index());
+        usbdevfs_ctrltransfer.bRequest$set(ctrlTransfer, (byte) setup.request());
+        usbdevfs_ctrltransfer.wValue$set(ctrlTransfer, (short) setup.value());
+        usbdevfs_ctrltransfer.wIndex$set(ctrlTransfer, (short) setup.index());
         usbdevfs_ctrltransfer.wLength$set(ctrlTransfer, (short) data.byteSize());
         usbdevfs_ctrltransfer.data$set(ctrlTransfer, data.address());
         return ctrlTransfer;

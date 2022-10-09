@@ -11,7 +11,6 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBTransferType;
-import net.codecrete.usb.common.ConfigurationParser;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
@@ -107,10 +106,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
                         totalLength, session);
 
-                var configuration = ConfigurationParser.parseConfigurationDescriptor(configDesc);
-
+                var configuration = setConfigurationDescriptor(configDesc);
                 configurationValue = 255 & configuration.configValue();
-                setInterfaces(configuration.interfaces());
 
             } catch (Throwable e) {
                 configurationValue = 0;
@@ -271,9 +268,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var bmRequestType =
                 (direction == USBDirection.IN ? 0x80 : 0x00) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
         IOUSBDevRequest.bmRequestType$set(deviceRequest, (byte) bmRequestType);
-        IOUSBDevRequest.bRequest$set(deviceRequest, setup.request());
-        IOUSBDevRequest.wValue$set(deviceRequest, setup.value());
-        IOUSBDevRequest.wIndex$set(deviceRequest, setup.index());
+        IOUSBDevRequest.bRequest$set(deviceRequest, (byte) setup.request());
+        IOUSBDevRequest.wValue$set(deviceRequest, (short) setup.value());
+        IOUSBDevRequest.wIndex$set(deviceRequest, (short) setup.index());
         IOUSBDevRequest.wLength$set(deviceRequest, (short) data.byteSize());
         IOUSBDevRequest.pData$set(deviceRequest, data.address());
         return deviceRequest;
