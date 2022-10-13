@@ -8,6 +8,7 @@
 package net.codecrete.usb.common;
 
 import net.codecrete.usb.USBAlternateInterface;
+import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBEndpoint;
 
 import java.util.Collections;
@@ -57,5 +58,13 @@ public class USBAlternateInterfaceImpl implements USBAlternateInterface {
 
     void addEndpoint(USBEndpoint endpoint) {
         endpoints_.add(endpoint);
+    }
+
+    @Override
+    public USBEndpoint getEndpoint(int endpointNumber, USBDirection direction) {
+        return endpoints_
+                .stream().filter((ep) -> ep.number() == endpointNumber && ep.direction() == direction)
+                .findFirst()
+                .orElse(null);
     }
 }

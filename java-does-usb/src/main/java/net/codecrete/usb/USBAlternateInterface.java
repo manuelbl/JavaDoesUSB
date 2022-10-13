@@ -66,4 +66,13 @@ public interface USBAlternateInterface {
      * @return a list of endpoints.
      */
     List<USBEndpoint> endpoints();
+
+    /**
+     * Gets the endpoint with the specified number and direction.
+     * @param endpointNumber endpoint number (in the range between 1 and 127, without the direction bit)
+     * @param direction endpoint direction
+     * @return the endpoint, or {@code null} if no endpoint with the given number and direction exists
+     */
+    USBEndpoint getEndpoint(int endpointNumber, USBDirection direction);
+
 }

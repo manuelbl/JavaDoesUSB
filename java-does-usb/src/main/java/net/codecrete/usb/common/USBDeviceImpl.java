@@ -10,6 +10,8 @@ package net.codecrete.usb.common;
 import net.codecrete.usb.*;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.util.Collections;
@@ -204,13 +206,8 @@ public abstract class USBDeviceImpl implements USBDevice {
         throw new USBException("Internal error (interface not found)");
     }
 
-    /**
-     * Returns the interface with the specified number.
-     *
-     * @param interfaceNumber the interface number
-     * @return the interface
-     */
-    protected USBInterfaceImpl getInterface(int interfaceNumber) {
+    @Override
+    public USBInterfaceImpl getInterface(int interfaceNumber) {
         return (USBInterfaceImpl) interfaces_.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
     }
 
@@ -315,6 +312,22 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public abstract byte[] transferIn(int endpointNumber, int maxLength);
+
+    @Override
+    public OutputStream openOutputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        var endpointInfo = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+        var endpoint = getInterface(endpointInfo.interfaceNumber).alternate().getEndpoint(endpointNumber, USBDirection.OUT);
+        return new EndpointOutputStream(this, endpointNumber, endpoint.packetSize());
+    }
+
+    @Override
+    public InputStream openInputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        var endpointInfo = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        var endpoint = getInterface(endpointInfo.interfaceNumber).alternate().getEndpoint(endpointNumber, USBDirection.IN);
+        return new EndpointInputStream(this, endpointNumber, endpoint.packetSize());
+    }
 
     @Override
     public boolean equals(Object o) {

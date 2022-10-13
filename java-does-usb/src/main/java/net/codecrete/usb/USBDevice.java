@@ -7,6 +7,8 @@
 
 package net.codecrete.usb;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -122,6 +124,13 @@ public interface USBDevice {
     List<USBInterface> interfaces();
 
     /**
+     * Gets the interface with the specified number.
+     * @param interfaceNumber the interface number
+     * @return the interface, or {@code null} if no interface with the given number exists
+     */
+    USBInterface getInterface(int interfaceNumber);
+
+    /**
      * Claims the specified interface for exclusive use.
      *
      * @param interfaceNumber the interface number
@@ -196,7 +205,8 @@ public interface USBDevice {
      * Receives data from this device.
      * <p>
      * This method blocks until at least a packet has been received or an error has occurred.
-     * The minimum value for {@code maxLength} is the maximum size of packets sent on the endpoint.
+     * {@code maxLength} must be long enough to hold the full data packet transmitted by the device.
+     * To be on the safe side, it should be equal or greater than the endpoint's maximum packet size.
      * </p>
      * <p>
      * This method can receive data from bulk and interrupt endpoints.
@@ -207,6 +217,33 @@ public interface USBDevice {
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength);
+
+    /**
+     * Opens a new output stream to send data to a bulk endpoint.
+     * <p>
+     * All data written to this output stream is sent to the specified bulk endpoint.
+     * If {@link #transferOut(int, byte[])} and a output stream or multiple output streams
+     * are used concurrently for the same endpoint, the behavior is unpredictable.
+     * </p>
+     *
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127)
+     * @return the new output stream
+     */
+    OutputStream openOutputStream(int endpointNumber);
+
+    /**
+     * Opens a new input stream to receive data from a bulk endpoint.
+     * <p>
+     * All data received from the specified bulk endpoint can be read using this input stream.
+     * </p>
+     * <p>
+     * If {@link #transferIn(int, int)} and an input stream or multiple input streams
+     * are used concurrently for the same endpoint, the behavior is unpredictable.
+     * </p>
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
+     * @return the new input stream
+     */
+    InputStream openInputStream(int endpointNumber);
 
     /**
      * Gets the configuration descriptor.
