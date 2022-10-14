@@ -139,10 +139,25 @@ public class IoKitUSB {
         }
     }
 
+    // IOReturn (* ReadPipeTO)(void* self, UInt8 pipeRef, void* buf, UInt32* size, UInt32 noDataTimeout, UInt32 completionTimeout);
+    public static int ReadPipeTO(MemoryAddress self, byte pipeRef, MemoryAddress buf, MemoryAddress sizeHolder, int noDataTimeout, int completionTimeout) {
+        try (var session = MemorySession.openConfined()) {
+            return IOUSBInterfaceInterface.ReadPipeTO(getVtable(self, session), session)
+                    .apply(self, pipeRef, buf, sizeHolder, noDataTimeout, completionTimeout);
+        }
+    }
+
     // IOReturn (*WritePipe)(void *self, UInt8 pipeRef, void *buf, UInt32 size);
     public static int WritePipe(MemoryAddress self, byte pipeRef, MemoryAddress buf, int size) {
         try (var session = MemorySession.openConfined()) {
             return IOUSBInterfaceInterface.WritePipe(getVtable(self, session), session).apply(self, pipeRef, buf, size);
+        }
+    }
+
+    // IOReturn (* WritePipeTO)(void* self, UInt8 pipeRef, void* buf, UInt32 size, UInt32 noDataTimeout, UInt32 completionTimeout);
+    public static int WritePipeTO(MemoryAddress self, byte pipeRef, MemoryAddress buf, int size, int noDataTimeout, int completionTimeout) {
+        try (var session = MemorySession.openConfined()) {
+            return IOUSBInterfaceInterface.WritePipeTO(getVtable(self, session), session).apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout);
         }
     }
 }

@@ -202,6 +202,22 @@ public interface USBDevice {
     void transferOut(int endpointNumber, byte[] data);
 
     /**
+     * Sends data to this device.
+     * <p>
+     * This method blocks until the data has been sent, the timeout period has expired
+     * or an error has occurred. If the timeout expires, a {@link TimeoutException} is thrown.
+     * </p>
+     * <p>
+     * This method can send data to bulk and interrupt endpoints.
+     * </p>
+     *
+     * @param endpointNumber the endpoint number (in the range between 1 and 127)
+     * @param timeout        the timeout period, in milliseconds
+     * @param data           data to send
+     */
+    void transferOut(int endpointNumber, byte[] data, int timeout);
+
+    /**
      * Receives data from this device.
      * <p>
      * This method blocks until at least a packet has been received or an error has occurred.
@@ -217,6 +233,26 @@ public interface USBDevice {
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength);
+    /**
+     * Receives data from this device.
+     * <p>
+     * This method blocks until at least a packet has been received, the timeout period has expired
+     * or an error has occurred. If the timeout expired, a {@link TimeoutException} is thrown.
+     * </p>
+     * <p>
+     * {@code maxLength} must be long enough to hold the full data packet transmitted by the device.
+     * To be on the safe side, it should be equal or greater than the endpoint's maximum packet size.
+     * </p>
+     * <p>
+     * This method can receive data from bulk and interrupt endpoints.
+     * </p>
+     *
+     * @param endpointNumber the endpoint number (in the range between 1 and 127, i.e. without the direction bit)
+     * @param maxLength      the maximum data length to receive (in number of bytes)
+     * @param timeout        the timeout period, in milliseconds
+     * @return received data
+     */
+    byte[] transferIn(int endpointNumber, int maxLength, int timeout);
 
     /**
      * Opens a new output stream to send data to a bulk endpoint.

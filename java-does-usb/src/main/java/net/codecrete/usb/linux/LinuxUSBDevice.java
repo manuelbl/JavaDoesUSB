@@ -199,6 +199,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
+    public void transferOut(int endpointNumber, byte[] data, int timeout) {
+        throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
         var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -215,5 +220,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
         }
+    }
+
+    @Override
+    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
+        throw new IllegalStateException("not implemented yet");
     }
 }

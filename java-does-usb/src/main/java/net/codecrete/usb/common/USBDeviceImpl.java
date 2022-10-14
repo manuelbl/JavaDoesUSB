@@ -306,12 +306,17 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public abstract void controlTransferOut(USBControlTransfer setup, byte[] data);
 
-
     @Override
     public abstract void transferOut(int endpointNumber, byte[] data);
 
     @Override
+    public abstract void transferOut(int endpointNumber, byte[] data, int timeout);
+
+    @Override
     public abstract byte[] transferIn(int endpointNumber, int maxLength);
+
+    @Override
+    public abstract byte[] transferIn(int endpointNumber, int maxLength, int timeout);
 
     @Override
     public OutputStream openOutputStream(int endpointNumber) {

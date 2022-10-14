@@ -153,6 +153,9 @@ public class IOKit  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static int kIOUSBTransactionTimeout() {
+        return (int)-536854447L;
+    }
     public static MemorySegment kIOFirstMatchNotification() {
         return constants$1.kIOFirstMatchNotification$SEGMENT;
     }

@@ -243,6 +243,11 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
+    public void transferOut(int endpointNumber, byte[] data, int timeout) {
+        throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
         var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
@@ -258,6 +263,11 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             int len = lengthHolder.get(JAVA_INT, 0);
             return buffer.asSlice(0, len).toArray(JAVA_BYTE);
         }
+    }
+
+    @Override
+    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
+        throw new IllegalStateException("not implemented yet");
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {

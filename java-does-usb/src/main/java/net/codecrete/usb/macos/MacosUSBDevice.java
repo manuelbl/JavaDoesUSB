@@ -7,10 +7,7 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.*;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
@@ -309,6 +306,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
+        transferOut(endpointNumber, data, -1);
+    }
+
+    @Override
+    public void transferOut(int endpointNumber, byte[] data, int timeout) {
 
         var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -316,8 +318,15 @@ public class MacosUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, data.length);
             nativeData.copyFrom(MemorySegment.ofArray(data));
-            int ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex,
-                    nativeData.address(), data.length);
+            int ret;
+            if (timeout < 0) {
+                ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
+            } else {
+                ret = IoKitUSB.WritePipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
+                        data.length, timeout, timeout);
+                if (ret == IOKit.kIOUSBTransactionTimeout())
+                    throw new TimeoutException("Transfer out aborted due to timeout");
+            }
             if (ret != 0)
                 throw new MacosUSBException(String.format("Sending data to endpoint %d failed", endpointNumber), ret);
         }
@@ -325,6 +334,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
+        return transferIn(endpointNumber, maxLength, -1);
+    }
+
+    @Override
+    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
 
         var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -332,8 +346,15 @@ public class MacosUSBDevice extends USBDeviceImpl {
         try (var session = MemorySession.openConfined()) {
             var nativeData = session.allocateArray(JAVA_BYTE, maxLength);
             var sizeHolder = session.allocate(JAVA_INT, maxLength);
-            int ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex,
-                    nativeData.address(), sizeHolder.address());
+            int ret;
+            if (timeout < 0) {
+                ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+            } else {
+                ret = IoKitUSB.ReadPipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
+                        sizeHolder.address(), timeout, timeout);
+                if (ret == IOKit.kIOUSBTransactionTimeout())
+                    throw new TimeoutException("Transfer in aborted due to timeout");
+            }
             if (ret != 0)
                 throw new MacosUSBException(String.format("Receiving data from endpoint %d failed", endpointNumber),
                         ret);
