@@ -153,6 +153,9 @@ public class IOKit  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static int kIOReturnAborted() {
+        return (int)-536870165L;
+    }
     public static int kIOUSBTransactionTimeout() {
         return (int)-536854447L;
     }

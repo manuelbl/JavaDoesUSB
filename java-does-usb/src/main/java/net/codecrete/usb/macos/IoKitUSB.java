@@ -160,4 +160,11 @@ public class IoKitUSB {
             return IOUSBInterfaceInterface.WritePipeTO(getVtable(self, session), session).apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout);
         }
     }
+
+    // IOReturn (* AbortPipe)(void* self, UInt8 pipeRef);
+    public static int AbortPipe(MemoryAddress self, byte pipeRef) {
+        try (var session = MemorySession.openConfined()) {
+            return IOUSBInterfaceInterface.AbortPipe(getVtable(self, session), session).apply(self, pipeRef);
+        }
+    }
 }

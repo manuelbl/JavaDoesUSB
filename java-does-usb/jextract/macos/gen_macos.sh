@@ -58,6 +58,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct IOUSBInterfaceStruct942 \
   --include-typedef IOUSBInterfaceInterface \
   --include-macro kIOUSBTransactionTimeout \
+  --include-macro kIOReturnAborted \
   iokit_helper.h
 
 # mach.h

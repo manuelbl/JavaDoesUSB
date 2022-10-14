@@ -9,15 +9,19 @@
 
 package net.codecrete.usb;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import java.io.ByteArrayOutputStream;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TimeoutTest extends TestDeviceBase {
 
     @Test
-    @Timeout(1)
+    @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
         assertThrows(TimeoutException.class, () -> {
             testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
@@ -25,12 +29,27 @@ public class TimeoutTest extends TestDeviceBase {
     }
 
     @Test
-    @Timeout(1)
+    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    void bulkTransfer_doesNotTimeOut() {
+        byte[] data = generateRandomBytes(20, 7280277392L);
+        testDevice.transferOut(LOOPBACK_EP_OUT, data);
+
+        byte[] received = testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
+        assertArrayEquals(data, received);
+
+    }
+
+    @Test
+    @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
-        // The test device has an internal buffer of about 500 bytes
+        // The test device has an internal buffer of about 500 bytes.
+        // So the first transfer should not time out.
+
+        byte[] data = generateRandomBytes(100, 9383073929L);
+        testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
+
         assertThrows(TimeoutException.class, () -> {
-            byte[] data = generateRandomBytes(100, 9383073929L);
-            for (int i = 0; i < 12; i++) {
+            for (int i = 0; i < 10; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
         });
@@ -43,5 +62,33 @@ public class TimeoutTest extends TestDeviceBase {
                 break;
             }
         }
+    }
+
+    @Test
+    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    void interruptTransferIn_timesOut() {
+        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+                "Interrupt transfer only supported by loopback test device");
+
+        assertThrows(TimeoutException.class, () -> {
+            testDevice.transferIn(ECHO_EP_IN, 16, 200);
+        });
+    }
+
+    @Test
+    void interruptTransfer_doesNotTimeOut() {
+        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+                "Interrupt transfer only supported by loopback test device");
+
+        byte[] sampleData = generateRandomBytes(12, 293872394);
+        testDevice.transferOut(ECHO_EP_OUT, sampleData, 200);
+
+        // receive first echo
+        byte[] echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 200);
+        assertArrayEquals(sampleData, echo);
+
+        // receive second echo
+        echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 200);
+        assertArrayEquals(sampleData, echo);
     }
 }

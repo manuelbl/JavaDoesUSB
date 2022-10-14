@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.foreign.MemoryAddress.ofLong;
 import static java.lang.foreign.ValueLayout.*;
@@ -31,6 +35,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
     private Map<Byte, EndpointInfo> endpoints;
+
+    private ScheduledExecutorService scheduledExecutorService;
 
     MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
@@ -319,14 +325,29 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var nativeData = session.allocateArray(JAVA_BYTE, data.length);
             nativeData.copyFrom(MemorySegment.ofArray(data));
             int ret;
+
             if (timeout < 0) {
+                // transfer without timeout
                 ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
-            } else {
+
+            } else if (endpointInfo.transferType == USBTransferType.BULK) {
+
+                // bulk transfer with timeout
                 ret = IoKitUSB.WritePipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
                         data.length, timeout, timeout);
                 if (ret == IOKit.kIOUSBTransactionTimeout())
                     throw new TimeoutException("Transfer out aborted due to timeout");
+
+            } else {
+
+                // interrupt transfer with timeout
+                var transferTimeout = new TransferTimeout(endpointInfo, timeout);
+                ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
+                if (ret == IOKit.kIOReturnAborted())
+                    throw new TimeoutException("Transfer out aborted due to timeout");
+                transferTimeout.markCompleted();
             }
+
             if (ret != 0)
                 throw new MacosUSBException(String.format("Sending data to endpoint %d failed", endpointNumber), ret);
         }
@@ -347,13 +368,27 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var nativeData = session.allocateArray(JAVA_BYTE, maxLength);
             var sizeHolder = session.allocate(JAVA_INT, maxLength);
             int ret;
+
             if (timeout < 0) {
+                // transfer without timeout
                 ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
-            } else {
+
+            } else if (endpointInfo.transferType == USBTransferType.BULK) {
+
+                // bulk transfer with timeout
                 ret = IoKitUSB.ReadPipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
                         sizeHolder.address(), timeout, timeout);
                 if (ret == IOKit.kIOUSBTransactionTimeout())
                     throw new TimeoutException("Transfer in aborted due to timeout");
+
+            } else {
+
+                // interrupt transfer with timeout
+                var transferTimeout = new TransferTimeout(endpointInfo, timeout);
+                ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+                if (ret == IOKit.kIOReturnAborted())
+                    throw new TimeoutException("Transfer in aborted due to timeout");
+                transferTimeout.markCompleted();
             }
             if (ret != 0)
                 throw new MacosUSBException(String.format("Receiving data from endpoint %d failed", endpointNumber),
@@ -366,6 +401,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
             return result;
         }
+    }
+
+    synchronized ScheduledExecutorService getScheduledExecutorService() {
+        if (scheduledExecutorService == null)
+            scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        return scheduledExecutorService;
     }
 
     private static USBTransferType getTransferType(byte macosTransferType) {
@@ -387,5 +428,48 @@ public class MacosUSBDevice extends USBDeviceImpl {
         MemoryAddress interfacAddress() {
             return ofLong(interfaceAddr);
         }
+    }
+
+    /**
+     * Manages the timeout for a USB transfer.
+     * <p>
+     * Not used for bulk transfers as IOKit offers suitable functions ({@code WritePipeTO()}, {@code ReadPipeTO()}).
+     * </p>
+     */
+    class TransferTimeout {
+        /**
+         * Schedules a timeout for the specified endpoint.
+         * <p>
+         * If the timeout expires, the transfer is aborted.
+         * </p>
+         * @param endpointInfo endpoint information
+         * @param timeout timeout, in milliseconds
+         */
+        TransferTimeout(EndpointInfo endpointInfo, int timeout) {
+            this.endpointInfo = endpointInfo;
+            future = getScheduledExecutorService().schedule(this::abort, timeout, TimeUnit.MILLISECONDS);
+        }
+
+        private synchronized void abort() {
+            if (completed)
+                return;
+            int ret = IoKitUSB.AbortPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex());
+            if (ret != 0)
+                throw new MacosUSBException("Failed to abort USB transfer after timeout", ret);
+        }
+
+        /**
+         * Marks the transfer as completed and cancels the timeout.
+         */
+        synchronized void markCompleted() {
+            if (completed)
+                return;
+            completed = true;
+            future.cancel(false);
+        }
+
+        ScheduledFuture<?> future;
+        EndpointInfo endpointInfo;
+        boolean completed;
     }
 }
