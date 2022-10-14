@@ -68,6 +68,12 @@ struct usb_control_request {
     }
 };
 
+struct pipe_info {
+    UInt8 pipe_index;
+    uint8_t endpoint_address;
+    uint8_t transfer_type;
+};
+
 
 /**
  * USB device.
@@ -190,16 +196,16 @@ public:
 private:
     usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id);
     uint64_t entry_id() const { return entry_id_; }
-    UInt8 ep_to_pipe(int endpoint_address);
-    UInt8 ep_out_pipe(int endpoint_number);
-    UInt8 ep_in_pipe(int endpoint_number);
+    const pipe_info* get_pipe(int endpoint_address);
+    const pipe_info* ep_in_pipe(int endpoint_address);
+    const pipe_info* ep_out_pipe(int endpoint_address);
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
 
     uint64_t entry_id_;
     IOUSBDeviceInterface** device_;
     bool is_open_;
     IOUSBInterfaceInterface** interface_;
-    std::vector<UInt8> endpoint_addresses_;
+    std::vector<pipe_info> pipes_;
 
     int product_id_;
     int vendor_id_;

@@ -124,15 +124,18 @@ void usb_device::claim_interface(int interface_number) {
     ret = (*interface)->GetNumEndpoints(interface, &num_pipes);
     usb_error::check(ret, "internal error (GetNumEndpoints)");
 
-    endpoint_addresses_.clear();
+    pipes_.clear();
     for (int i = 1; i <= num_pipes; i++) {
         UInt8 direction = 0;
         UInt8 number = 0;
+        UInt8 transfer_type = 0;
         UInt8 ignore = 0;
         UInt16 ignore2 = 0;
-        ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &ignore, &ignore2, &ignore);
+        ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &transfer_type, &ignore2, &ignore);
         usb_error::check(ret, "internal error (GetPipeProperties)");
-        endpoint_addresses_.push_back((direction << 7) | number);
+        pipe_info pipe{(UInt8) i, (uint8_t)((direction << 7) | number), transfer_type};
+        ;
+        pipes_.push_back(pipe);
     }
 
     interface_ = interface;
@@ -146,20 +149,23 @@ void usb_device::release_interface() {
     (*interface_)->USBInterfaceClose(interface_);
     (*interface_)->Release(interface_);
     interface_ = nullptr;
-    endpoint_addresses_.clear();
+    pipes_.clear();
 }
 
 std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
     if (interface_ == nullptr)
         throw usb_error("no interface has been claimed");
+    
+    auto pipe = ep_in_pipe(endpoint_number);
 
     UInt32 size = data_len;
     std::vector<uint8_t> data(data_len);
     IOReturn ret;
-    if (timeout != 0)
-        ret = (*interface_)->ReadPipeTO(interface_, ep_in_pipe(endpoint_number), data.data(), &size, timeout, timeout);
-    else
-        ret = (*interface_)->ReadPipe(interface_, ep_in_pipe(endpoint_number), data.data(), &size);
+    if (timeout != 0) {
+        ret = (*interface_)->ReadPipeTO(interface_, pipe->pipe_index, data.data(), &size, timeout, timeout);
+    } else {
+        ret = (*interface_)->ReadPipe(interface_, pipe->pipe_index, data.data(), &size);
+    }        
     
     if (ret != kIOReturnSuccess) {
         if (ret == kIOUSBTransactionTimeout)
@@ -178,9 +184,9 @@ void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& d
 
     IOReturn ret;
     if (timeout != 0)
-        ret = (*interface_)->WritePipeTO(interface_, ep_out_pipe(endpoint_number), const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()), timeout, timeout);
+        ret = (*interface_)->WritePipeTO(interface_, ep_out_pipe(endpoint_number)->pipe_index, const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()), timeout, timeout);
     else
-        ret = (*interface_)->WritePipe(interface_, ep_out_pipe(endpoint_number), const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()));
+        ret = (*interface_)->WritePipe(interface_, ep_out_pipe(endpoint_number)->pipe_index, const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()));
 
     if (ret != kIOReturnSuccess) {
         if (ret == kIOUSBTransactionTimeout)
@@ -247,18 +253,19 @@ std::vector<uint8_t> usb_device::control_transfer_in(const usb_control_request& 
     return data;
 }
 
-UInt8 usb_device::ep_to_pipe(int endpoint_address) {
-    auto it = std::find (endpoint_addresses_.begin(), endpoint_addresses_.end(), endpoint_address);
-    if (it != endpoint_addresses_.end())
-        return std::distance(endpoint_addresses_.begin(), it) + 1;
+const pipe_info* usb_device::get_pipe(int endpoint_address) {
+    auto it = std::find_if(pipes_.begin(), pipes_.end(),
+                           [endpoint_address](const pipe_info& pipe){ return pipe.endpoint_address == endpoint_address; });
+    if (it != pipes_.end())
+        return &*it;
     
     throw usb_error("invalid endpoint number");
 }
 
-UInt8 usb_device::ep_out_pipe(int endpoint_number) {
-    return ep_to_pipe(endpoint_number);
+ const pipe_info* usb_device::ep_out_pipe(int endpoint_number) {
+    return get_pipe(endpoint_number);
 }
 
-UInt8 usb_device::ep_in_pipe(int endpoint_number) {
-    return ep_to_pipe(endpoint_number + 128);
+ const pipe_info* usb_device::ep_in_pipe(int endpoint_number) {
+    return get_pipe(endpoint_number + 128);
 }
