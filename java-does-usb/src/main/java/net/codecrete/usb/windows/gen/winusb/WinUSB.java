@@ -18,6 +18,9 @@ public class WinUSB  {
     public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static int PIPE_TRANSFER_TIMEOUT() {
+        return (int)3L;
+    }
     public static MethodHandle WinUsb_Initialize$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_Initialize$MH,"WinUsb_Initialize");
     }
@@ -62,6 +65,17 @@ public class WinUSB  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle WinUsb_SetPipePolicy$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetPipePolicy$MH,"WinUsb_SetPipePolicy");
+    }
+    public static int WinUsb_SetPipePolicy ( Addressable InterfaceHandle,  byte PipeID,  int PolicyType,  int ValueLength,  Addressable Value) {
+        var mh$ = WinUsb_SetPipePolicy$MH();
+        try {
+            return (int)mh$.invokeExact(InterfaceHandle, PipeID, PolicyType, ValueLength, Value);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle WinUsb_ReadPipe$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_ReadPipe$MH,"WinUsb_ReadPipe");
     }
@@ -74,7 +88,7 @@ public class WinUSB  {
         }
     }
     public static MethodHandle WinUsb_WritePipe$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_WritePipe$MH,"WinUsb_WritePipe");
+        return RuntimeHelper.requireNonNull(constants$1.WinUsb_WritePipe$MH,"WinUsb_WritePipe");
     }
     public static int WinUsb_WritePipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
         var mh$ = WinUsb_WritePipe$MH();

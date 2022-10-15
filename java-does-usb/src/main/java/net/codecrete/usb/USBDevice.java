@@ -212,7 +212,7 @@ public interface USBDevice {
      * </p>
      *
      * @param endpointNumber the endpoint number (in the range between 1 and 127)
-     * @param timeout        the timeout period, in milliseconds
+     * @param timeout        the timeout period, in milliseconds (0 for no timeout)
      * @param data           data to send
      */
     void transferOut(int endpointNumber, byte[] data, int timeout);
@@ -249,7 +249,7 @@ public interface USBDevice {
      *
      * @param endpointNumber the endpoint number (in the range between 1 and 127, i.e. without the direction bit)
      * @param maxLength      the maximum data length to receive (in number of bytes)
-     * @param timeout        the timeout period, in milliseconds
+     * @param timeout        the timeout period, in milliseconds (0 for no timeout)
      * @return received data
      */
     byte[] transferIn(int endpointNumber, int maxLength, int timeout);

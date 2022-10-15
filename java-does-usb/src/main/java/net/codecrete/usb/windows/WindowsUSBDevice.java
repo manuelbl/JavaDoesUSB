@@ -9,6 +9,7 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
 import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
@@ -226,48 +227,73 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data) {
+        transferOut(endpointNumber, data, 0);
+    }
+
+    @Override
+    public void transferOut(int endpointNumber, byte[] data, int timeout) {
         checkIsOpen();
 
         var endpoint = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var session = MemorySession.openConfined()) {
+            // set timeout
+            var timeoutHolder = session.allocate(JAVA_INT, timeout);
+            if (WinUSB.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
+                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder) == 0)
+                throw new WindowsUSBException("Setting timeout failed", Kernel32.GetLastError());
+
+            // copy data to native heap
             var buffer = session.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
             var lengthHolder = session.allocate(JAVA_INT);
 
+            // send data
             if (WinUSB.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL) == 0)
-                throw new WindowsUSBException("Bulk/interrupt transfer OUT failed", Kernel32.GetLastError());
+                    lengthHolder, NULL) == 0) {
+                int err = Kernel32.GetLastError();
+                if (err == Kernel32.ERROR_SEM_TIMEOUT())
+                    throw new TimeoutException("Transfer out aborted due to timeout");
+                throw new WindowsUSBException("Bulk/interrupt transfer OUT failed", err);
+            }
         }
-    }
-
-    @Override
-    public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        throw new IllegalStateException("Not implemented yet");
     }
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength) {
-        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
-
-        try (var session = MemorySession.openConfined()) {
-            var buffer = session.allocate(maxLength);
-            var lengthHolder = session.allocate(JAVA_INT);
-
-            if (WinUSB.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL) == 0)
-                throw new WindowsUSBException("Bulk/interrupt transfer IN failed", Kernel32.GetLastError());
-
-            int len = lengthHolder.get(JAVA_INT, 0);
-            return buffer.asSlice(0, len).toArray(JAVA_BYTE);
-        }
+        return transferIn(endpointNumber, maxLength, 0);
     }
 
     @Override
     public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
-        throw new IllegalStateException("not implemented yet");
+        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var session = MemorySession.openConfined()) {
+            // set timeout
+            var timeoutHolder = session.allocate(JAVA_INT, timeout);
+            if (WinUSB.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
+                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder) == 0)
+                throw new WindowsUSBException("Setting timeout failed", Kernel32.GetLastError());
+
+            // create native heap buffer for data
+            var buffer = session.allocate(maxLength);
+            var lengthHolder = session.allocate(JAVA_INT);
+
+            // receive data
+            if (WinUSB.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
+                    lengthHolder, NULL) == 0) {
+                int err = Kernel32.GetLastError();
+                if (err == Kernel32.ERROR_SEM_TIMEOUT())
+                    throw new TimeoutException("Transfer in aborted due to timeout");
+                throw new WindowsUSBException("Bulk/interrupt transfer IN failed", err);
+            }
+
+            // copy data
+            int len = lengthHolder.get(JAVA_INT, 0);
+            return buffer.asSlice(0, len).toArray(JAVA_BYTE);
+        }
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {

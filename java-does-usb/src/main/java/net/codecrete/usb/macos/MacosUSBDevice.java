@@ -326,7 +326,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             nativeData.copyFrom(MemorySegment.ofArray(data));
             int ret;
 
-            if (timeout < 0) {
+            if (timeout <= 0) {
                 // transfer without timeout
                 ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
 
@@ -369,7 +369,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var sizeHolder = session.allocate(JAVA_INT, maxLength);
             int ret;
 
-            if (timeout < 0) {
+            if (timeout <= 0) {
                 // transfer without timeout
                 ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
 

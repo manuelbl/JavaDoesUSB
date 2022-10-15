@@ -7,6 +7,18 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.invoke.MethodHandle;
 class constants$1 {
 
+    static final FunctionDescriptor WinUsb_WritePipe$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_CHAR$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle WinUsb_WritePipe$MH = RuntimeHelper.downcallHandle(
+        "WinUsb_WritePipe",
+        constants$1.WinUsb_WritePipe$FUNC
+    );
     static final FunctionDescriptor WinUsb_ControlTransfer$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         MemoryLayout.structLayout(

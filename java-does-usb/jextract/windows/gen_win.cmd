@@ -20,6 +20,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-macro ERROR_MORE_DATA ^
   --include-macro ERROR_INSUFFICIENT_BUFFER ^
   --include-macro ERROR_FILE_NOT_FOUND ^
+  --include-macro ERROR_SEM_TIMEOUT ^
   --include-macro GENERIC_READ ^
   --include-macro GENERIC_WRITE ^
   --include-macro FILE_SHARE_READ ^
@@ -128,6 +129,8 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-function WinUsb_WritePipe ^
        --include-function WinUsb_ReadPipe ^
        --include-function WinUsb_GetAssociatedInterface ^
+       --include-function WinUsb_SetPipePolicy ^
+       --include-macro PIPE_TRANSFER_TIMEOUT ^
        windows_headers.h
 
 call %JEXTRACT% --source --output ../../src/main/java ^
