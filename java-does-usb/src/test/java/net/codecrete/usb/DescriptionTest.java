@@ -21,7 +21,7 @@ public class DescriptionTest extends TestDeviceBase {
     @Test
     void deviceInfo_isCorrect() {
         assertEquals("JavaDoesUSB", testDevice.manufacturer());
-        assertEquals("Loopback", testDevice.product());
+        assertEquals(isLoopbackDevice() ? "Loopback" : "Composite", testDevice.product());
         assertEquals(12, testDevice.serialNumber().length());
 
         if (interfaceNumber == 2) {
@@ -36,7 +36,7 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(0x00, testDevice.protocolCode());
         }
 
-        boolean isComposite = pid == TestDeviceBase.PID_COMPOSITE;
+        boolean isComposite = isCompositeDevce();
 
         assertEquals(2, testDevice.usbVersion().major());
         assertEquals(isComposite ? 1 : 0, testDevice.usbVersion().minor());
@@ -44,7 +44,7 @@ public class DescriptionTest extends TestDeviceBase {
 
         assertEquals(0, testDevice.deviceVersion().major());
         assertEquals(isComposite ? 3 : 7, testDevice.deviceVersion().minor());
-        assertEquals(isComposite ? 5 : 2, testDevice.deviceVersion().subminor());
+        assertEquals(isComposite ? 6 : 3, testDevice.deviceVersion().subminor());
     }
 
     @Test
@@ -74,11 +74,9 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void endpointDescriptors_areCorrect() {
-        boolean isLoopbackDevice = testDevice.productId() == PID_LOOPBACK;
-
         var altIntf = testDevice.interfaces().get(interfaceNumber).alternate();
         assertNotNull(altIntf.endpoints());
-        assertEquals(isLoopbackDevice ? 4 : 2, altIntf.endpoints().size());
+        assertEquals(isLoopbackDevice() ? 4 : 2, altIntf.endpoints().size());
 
         var endpoint = altIntf.endpoints().get(0);
         assertEquals(1, endpoint.number());
@@ -92,7 +90,7 @@ public class DescriptionTest extends TestDeviceBase {
         assertEquals(USBTransferType.BULK, endpoint.transferType());
         assertEquals(64, endpoint.packetSize());
 
-        if (isLoopbackDevice) {
+        if (isLoopbackDevice()) {
             endpoint = altIntf.endpoints().get(2);
             assertEquals(3, endpoint.number());
             assertEquals(USBDirection.OUT, endpoint.direction());
@@ -109,8 +107,7 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void configurationDescription_isAvailable() {
-        boolean isLoopbackDevice = testDevice.productId() == PID_LOOPBACK;
-        int expectedLength = isLoopbackDevice ? 46 : 98;
+        int expectedLength = isLoopbackDevice() ? 46 : 98;
 
         byte[] configDesc = testDevice.configurationDescriptor();
         assertNotNull(configDesc);

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "usbd.h": "c",
+        "usbd_pvt.h": "c"
+    }
+}

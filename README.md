@@ -24,7 +24,7 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 
 - Single API for all operating systems (similar to WebUSB API)
 - Enumeration of USB devices
-- Control, bulk and interrupt transfer
+- Control, bulk and interrupt transfers (optionally with timeout)
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
 - Support fo composite devices and interface association
@@ -32,15 +32,13 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 
 ### To do
 
-- Transfers with time-out
-- Device and USB protocol revision
 - Alternate interface settings
 - Isochronous transfer
 
 ### Not planned
 
 - Changing configuration: The library selects the first configuration. Changing configurations is rarely used and not supported on Windows.
-- USB 3.0 streams: Not supported on Windows.
+- USB 3.0 streams: Not supported on Windows (limitation of WinUSB).
 - Providing information about USB buses, controllers and hubs
 
 

@@ -67,7 +67,7 @@ public class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void interruptTransferIn_timesOut() {
-        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+        Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
         assertThrows(TimeoutException.class, () -> {
@@ -77,7 +77,7 @@ public class TimeoutTest extends TestDeviceBase {
 
     @Test
     void interruptTransfer_doesNotTimeOut() {
-        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+        Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
         byte[] sampleData = generateRandomBytes(12, 293872394);

@@ -31,7 +31,7 @@ tusb_desc_device_t const desc_device = {
 
     .idVendor = 0xCAFE,
     .idProduct = 0xCEA0,
-    .bcdDevice = 0x0035,  // version 0.3.5
+    .bcdDevice = 0x0036,  // version 0.3.6
 
     .iManufacturer = 0x01,
     .iProduct = 0x02,
@@ -137,7 +137,7 @@ TU_VERIFY_STATIC(sizeof(desc_ms_os_20) == MS_OS_20_DESC_LEN, "Incorrect size");
 const char* const string_table[] = {
     0,                // 0 - supported languages (see below)
     "JavaDoesUSB",    // 1 - manufacturer
-    "Loopback",       // 2 - product
+    "Composite",      // 2 - product
     board_serial_num  // 3 - serial number
 };
 

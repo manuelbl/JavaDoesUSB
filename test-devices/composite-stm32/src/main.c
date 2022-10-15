@@ -25,11 +25,6 @@ uint8_t loopback_buffer[512];
 // RX buffer for loopback
 uint8_t loopback_rx_buffer[64];
 
-// buffer for echoed packet
-uint8_t echo_buffer[16];
-int num_echos;
-
-
 // Blink durations
 enum  {
     BLINK_NOT_MOUNTED = 250,
@@ -44,6 +39,7 @@ static void cdc_task(void);
 static void loopback_init(void);
 static void loopback_check_rx(void);
 static void loopback_check_tx(void);
+static void reset_buffers(void);
 
 
 int main(void) {
@@ -61,6 +57,11 @@ int main(void) {
     }
 
     return 0;
+}
+
+// reset device in predictable state
+void reset_buffers(void) {
+    tu_fifo_clear(&loopback_fifo);
 }
 
 // --- Loopback
@@ -120,7 +121,14 @@ void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
 
 // Invoked when last tx transfer finished
 void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
-    tu_fifo_advance_read_pointer(&loopback_fifo, sent_bytes);
+    // If buffer has been reset in the mean time,
+    // we might not be able to advance it fully or at all.
+    int max_advance = tu_fifo_count(&loopback_fifo);
+    if (sent_bytes > max_advance)
+        sent_bytes = max_advance;
+    if (sent_bytes > 0)
+        tu_fifo_advance_read_pointer(&loopback_fifo, sent_bytes);
+
     loopback_check_tx();
     loopback_check_rx();
 }
@@ -164,6 +172,13 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
             if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wLength == 4) {
                 // transmit from `saved_value`
                 return tud_control_xfer(rhport, request, &saved_value, 4);
+            }
+            break;
+
+        case 0x04:
+            if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 0) {
+                reset_buffers();
+                return tud_control_status(rhport, request);
             }
             break;
 

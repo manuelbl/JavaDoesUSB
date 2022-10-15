@@ -78,6 +78,8 @@ public class TestDeviceBase {
 
         testDevice.open();
         testDevice.claimInterface(interfaceNumber);
+
+        resetDevice();
     }
 
     @AfterAll
@@ -86,6 +88,47 @@ public class TestDeviceBase {
             testDevice.close();
             testDevice = null;
         }
+    }
+
+    static boolean isLoopbackDevice() {
+        return pid == PID_LOOPBACK;
+    }
+
+    static boolean isCompositeDevce() {
+        return pid == PID_COMPOSITE;
+    }
+
+    private static void resetDevice() {
+        // reset buffers
+        resetBuffers();
+
+        // drain loopback data
+        while (true) {
+            try {
+                testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE, 1);
+            } catch (TimeoutException e) {
+                break;
+            }
+        }
+
+        // drain interrupt data
+        if (isLoopbackDevice()) {
+            while (true) {
+                try {
+                    testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 1);
+                } catch (TimeoutException e) {
+                    break;
+                }
+            }
+        }
+
+        // reset buffers again
+        resetBuffers();
+    }
+
+    static void resetBuffers() {
+        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE,
+                (byte) 0x04, (short) 0, (short) interfaceNumber), null);
     }
 
     static byte[] generateRandomBytes(int numBytes, long seed) {

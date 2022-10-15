@@ -18,7 +18,7 @@ public class InterruptTransferTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
-        Assumptions.assumeTrue(testDevice.productId() == PID_LOOPBACK,
+        Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
         byte[] sampleData = generateRandomBytes(12, 293872394);

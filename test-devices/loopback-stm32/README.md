@@ -35,6 +35,7 @@ Several vendor-specific control requests are supported for testing:
 | 0x41 | 0x01 | *value* | 0 | 0 | none | Host to device: *value* is saved in device |
 | 0x41 | 0x02 | 0 | 0 | 4 | *value* (32-bit LE) | Host to device: *value* is saved in device |
 | 0xC1 | 0x03 | 0 | 0 | 4 | *value* (32-bit LE) | Device to host: saved *value* is transmitted |
+| 0x41 | 0x04 | 0 | 0 | 0 | none | Reset internal buffers. Used to put device in a predicatable state. |
 
 
 ## Building the firmware
