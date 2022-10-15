@@ -311,11 +311,6 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data) {
-        transferOut(endpointNumber, data, -1);
-    }
-
-    @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
 
         var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.OUT,
@@ -351,11 +346,6 @@ public class MacosUSBDevice extends USBDeviceImpl {
             if (ret != 0)
                 throw new MacosUSBException(String.format("Sending data to endpoint %d failed", endpointNumber), ret);
         }
-    }
-
-    @Override
-    public byte[] transferIn(int endpointNumber, int maxLength) {
-        return transferIn(endpointNumber, maxLength, -1);
     }
 
     @Override

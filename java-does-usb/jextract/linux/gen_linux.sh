@@ -15,6 +15,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-function __errno_location \
+  --include-macro ETIMEDOUT \
   /usr/include/errno.h
 
 # ioctl.h

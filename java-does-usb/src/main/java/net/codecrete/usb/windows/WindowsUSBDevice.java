@@ -226,11 +226,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data) {
-        transferOut(endpointNumber, data, 0);
-    }
-
-    @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
         checkIsOpen();
 
@@ -258,11 +253,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 throw new WindowsUSBException("Bulk/interrupt transfer OUT failed", err);
             }
         }
-    }
-
-    @Override
-    public byte[] transferIn(int endpointNumber, int maxLength) {
-        return transferIn(endpointNumber, maxLength, 0);
     }
 
     @Override

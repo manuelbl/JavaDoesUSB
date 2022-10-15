@@ -7,11 +7,9 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.*;
 import net.codecrete.usb.common.*;
+import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
@@ -173,57 +171,54 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private MemorySegment createBulkTransfer(MemorySession session, byte endpointAddress, MemorySegment data) {
+    private MemorySegment createBulkTransfer(MemorySession session, byte endpointAddress, MemorySegment data, int timeout) {
         var transfer = session.allocate(usbdevfs_bulktransfer.$LAYOUT());
         usbdevfs_bulktransfer.ep$set(transfer, 255 & endpointAddress);
         usbdevfs_bulktransfer.len$set(transfer, (int) data.byteSize());
         usbdevfs_bulktransfer.data$set(transfer, data.address());
+        usbdevfs_bulktransfer.timeout$set(transfer, timeout);
         return transfer;
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data) {
+    public void transferOut(int endpointNumber, byte[] data, int timeout) {
         var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
-            var transfer = createBulkTransfer(session, endpointAddress, buffer);
+            var transfer = createBulkTransfer(session, endpointAddress, buffer, timeout);
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
-            if (res < 0)
-                throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber),
-                        IO.getErrno());
+            if (res < 0) {
+                int err = IO.getErrno();
+                if (err == errno.ETIMEDOUT())
+                    throw new TimeoutException("Transfer out aborted due to timeout");
+                throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber), err);
+            }
         }
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        throw new IllegalStateException("Not implemented yet");
-    }
-
-    @Override
-    public byte[] transferIn(int endpointNumber, int maxLength) {
+    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
         var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
             var buffer = session.allocate(maxLength);
 
-            var transfer = createBulkTransfer(session, endpointAddress, buffer);
+            var transfer = createBulkTransfer(session, endpointAddress, buffer, timeout);
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
-            if (res < 0)
-                throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber),
-                        IO.getErrno());
+            if (res < 0) {
+                int err = IO.getErrno();
+                if (err == errno.ETIMEDOUT())
+                    throw new TimeoutException("Transfer in aborted due to timeout");
+                throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber), err);
+            }
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
         }
-    }
-
-    @Override
-    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
-        throw new IllegalStateException("not implemented yet");
     }
 }
