@@ -10,6 +10,8 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.*;
 import net.codecrete.usb.common.*;
 import net.codecrete.usb.linux.gen.errno.errno;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
+import net.codecrete.usb.macos.MacosUSBException;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
@@ -112,7 +114,30 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
-        throw new IllegalStateException("not implemented");
+        checkIsOpen();
+
+        var intf = getInterface(interfaceNumber);
+        if (intf == null)
+            throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
+        if (!intf.isClaimed())
+            throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
+
+        // check alternate setting
+        var altSetting = intf.getAlternate(alternateNumber);
+        if (altSetting == null)
+            throw new MacosUSBException(String.format("Interface %d does not have an alternate interface setting %d",
+                    interfaceNumber, alternateNumber));
+
+        try (var session = MemorySession.openConfined()) {
+            var setIntfSegment = session.allocate(usbdevfs_setinterface.$LAYOUT());
+            usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
+            usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
+            int ret = ioctl.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment.address());
+            if (ret != 0)
+                throw new USBException("Failed to set alternate interface", IO.getErrno());
+        }
+
+        intf.setAlternate(altSetting);
     }
 
     public void releaseInterface(int interfaceNumber) {

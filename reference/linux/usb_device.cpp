@@ -15,6 +15,7 @@
 #include <linux/usbdevice_fs.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <iostream>
 
 #include <cstdio>
 
@@ -46,6 +47,7 @@ bool usb_device::is_open() const {
 }
 
 void usb_device::open() {
+    std::cout << USBDEVFS_SETINTERFACE << std::endl;
     if (is_open())
         throw usb_error("USB device is already open", 0);
     

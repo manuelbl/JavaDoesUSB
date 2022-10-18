@@ -48,10 +48,12 @@ $JEXTRACT --source --output ../../src/main/java \
   --target-package net.codecrete.usb.linux.gen.usbdevice_fs \
   --include-struct usbdevfs_bulktransfer \
   --include-struct usbdevfs_ctrltransfer \
+  --include-struct usbdevfs_setinterface \
   --include-macro USBDEVFS_CONTROL \
   --include-macro USBDEVFS_BULK \
   --include-macro USBDEVFS_CLAIMINTERFACE \
   --include-macro USBDEVFS_RELEASEINTERFACE \
+  --include-macro USBDEVFS_SETINTERFACE \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h
