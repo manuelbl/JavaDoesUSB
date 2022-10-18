@@ -63,13 +63,22 @@ public class DescriptionTest extends TestDeviceBase {
         var intf = testDevice.interfaces().get(interfaceNumber);
         var altIntf = intf.alternate();
         assertNotNull(intf.alternates());
-        assertEquals(1, intf.alternates().size());
+        assertEquals(isLoopbackDevice() ? 2 : 1, intf.alternates().size());
         assertSame(intf.alternates().get(0), altIntf);
         assertEquals(0, altIntf.number());
 
         assertEquals(0xff, altIntf.classCode());
         assertEquals(0x00, altIntf.subclassCode());
         assertEquals(0x00, altIntf.protocolCode());
+
+        if (isLoopbackDevice()) {
+            altIntf = intf.alternates().get(1);
+            assertEquals(1, altIntf.number());
+
+            assertEquals(0xff, altIntf.classCode());
+            assertEquals(0x00, altIntf.subclassCode());
+            assertEquals(0x00, altIntf.protocolCode());
+        }
     }
 
     @Test
@@ -102,12 +111,28 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(USBDirection.IN, endpoint.direction());
             assertEquals(USBTransferType.INTERRUPT, endpoint.transferType());
             assertEquals(16, endpoint.packetSize());
+
+            // test alternate interface 1
+            altIntf = testDevice.interfaces().get(interfaceNumber).alternates().get(1);
+            assertEquals(2, altIntf.endpoints().size());
+
+            endpoint = altIntf.endpoints().get(0);
+            assertEquals(1, endpoint.number());
+            assertEquals(USBDirection.OUT, endpoint.direction());
+            assertEquals(USBTransferType.BULK, endpoint.transferType());
+            assertEquals(64, endpoint.packetSize());
+
+            endpoint = altIntf.endpoints().get(1);
+            assertEquals(2, endpoint.number());
+            assertEquals(USBDirection.IN, endpoint.direction());
+            assertEquals(USBTransferType.BULK, endpoint.transferType());
+            assertEquals(64, endpoint.packetSize());
         }
     }
 
     @Test
     void configurationDescription_isAvailable() {
-        int expectedLength = isLoopbackDevice() ? 46 : 98;
+        int expectedLength = isLoopbackDevice() ? 69 : 98;
 
         byte[] configDesc = testDevice.configurationDescriptor();
         assertNotNull(configDesc);

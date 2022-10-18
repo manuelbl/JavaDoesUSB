@@ -110,6 +110,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
+    @Override
+    public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
+        throw new IllegalStateException("not implemented");
+    }
+
     public void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 

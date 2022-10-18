@@ -146,6 +146,15 @@ void cust_vendor_intf_open_cb(uint8_t intf) {
     cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
 }
 
+// Invoked when an alternate interface has been selected
+void cust_vendor_alt_intf_selected_cb(uint8_t intf, uint8_t alt) {
+    reset_buffers();
+    loopback_check_rx();
+    if (alt == 0)
+        cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
+}
+
+
 
 
 // --- Control messages (see README)

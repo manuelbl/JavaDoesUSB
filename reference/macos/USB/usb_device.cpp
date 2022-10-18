@@ -120,24 +120,8 @@ void usb_device::claim_interface(int interface_number) {
     ret = (*interface)->USBInterfaceOpen(interface);
     usb_error::check(ret, "failed to open USB interface");
     
-    UInt8 num_pipes = 0;
-    ret = (*interface)->GetNumEndpoints(interface, &num_pipes);
-    usb_error::check(ret, "internal error (GetNumEndpoints)");
-
-    pipes_.clear();
-    for (int i = 1; i <= num_pipes; i++) {
-        UInt8 direction = 0;
-        UInt8 number = 0;
-        UInt8 transfer_type = 0;
-        UInt8 ignore = 0;
-        UInt16 ignore2 = 0;
-        ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &transfer_type, &ignore2, &ignore);
-        usb_error::check(ret, "internal error (GetPipeProperties)");
-        pipe_info pipe{(UInt8) i, (uint8_t)((direction << 7) | number), transfer_type};
-        ;
-        pipes_.push_back(pipe);
-    }
-
+    build_pipe_info(interface);
+    
     interface_ = interface;
     (*interface_)->AddRef(interface_);
 }
@@ -151,6 +135,32 @@ void usb_device::release_interface() {
     interface_ = nullptr;
     pipes_.clear();
 }
+
+void usb_device::select_alternate_interface(int alternate_setting) {
+    (*interface_)->SetAlternateInterface(interface_, (UInt8) alternate_setting);
+    build_pipe_info(interface_);
+}
+
+void usb_device::build_pipe_info(IOUSBInterfaceInterface** interface) {
+    UInt8 num_pipes = 0;
+    IOReturn ret = (*interface)->GetNumEndpoints(interface, &num_pipes);
+    usb_error::check(ret, "internal error (GetNumEndpoints)");
+
+    pipes_.clear();
+    for (int i = 1; i <= num_pipes; i++) {
+        UInt8 direction = 0;
+        UInt8 number = 0;
+        UInt8 transfer_type = 0;
+        UInt8 ignore = 0;
+        UInt16 ignore2 = 0;
+        ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &transfer_type, &ignore2, &ignore);
+        usb_error::check(ret, "internal error (GetPipeProperties)");
+
+        pipe_info pipe{(UInt8) i, (uint8_t)((direction << 7) | number), transfer_type};
+        pipes_.push_back(pipe);
+    }
+}
+
 
 std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
     if (interface_ == nullptr)

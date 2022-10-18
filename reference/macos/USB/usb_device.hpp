@@ -121,6 +121,15 @@ public:
     void release_interface();
     
     /**
+     * Select an alternate interface setting.
+     *
+     * The affected interface must have been claimed.
+     *
+     *@param alternate_setting alternate setting number
+     */
+    void select_alternate_interface(int alternate_setting);
+    
+    /**
      * Receives data from a bulk or interrupt endpoint.
      *
      * The amount of bytes read will be influced by the underlying USB packets.
@@ -196,6 +205,7 @@ public:
 private:
     usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id);
     uint64_t entry_id() const { return entry_id_; }
+    void build_pipe_info(IOUSBInterfaceInterface** intf);
     const pipe_info* get_pipe(int endpoint_address);
     const pipe_info* ep_in_pipe(int endpoint_address);
     const pipe_info* ep_out_pipe(int endpoint_address);

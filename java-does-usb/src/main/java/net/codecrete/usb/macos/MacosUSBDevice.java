@@ -181,6 +181,31 @@ public class MacosUSBDevice extends USBDeviceImpl {
         updateEndpointList();
     }
 
+    public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
+        // check interface
+        var intf = getInterface(interfaceNumber);
+        if (intf == null)
+            throw new MacosUSBException(String.format("Interface %d does not exist", interfaceNumber));
+        if (!intf.isClaimed())
+            throw new MacosUSBException(String.format("Interface %d has not been claimed", interfaceNumber));
+
+        // check alternate setting
+        var altSetting = intf.getAlternate(alternateNumber);
+        if (altSetting == null)
+            throw new MacosUSBException(String.format("Interface %d does not have an alternate interface setting %d",
+                    interfaceNumber, alternateNumber));
+
+        var intfInfo = claimedInterfaces.stream()
+                .filter((interf) -> interf.interfaceNumber() == interfaceNumber).findFirst().get();
+
+        int ret = IoKitUSB.SetAlternateInterface(intfInfo.asAddress(), (byte) alternateNumber);
+        if (ret != 0)
+            throw new MacosUSBException("Failed to set alternate interface", ret);
+
+        intf.setAlternate(altSetting);
+        updateEndpointList();
+    }
+
     public void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
@@ -192,7 +217,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var interfaceInfo = interfaceInfoOptional.get();
 
         int ret = IoKitUSB.USBInterfaceClose(interfaceInfo.asAddress());
-        if (ret != 0) throw new MacosUSBException("Failed to release interface", ret);
+        if (ret != 0)
+            throw new MacosUSBException("Failed to release interface", ret);
 
         claimedInterfaces.remove(interfaceInfo);
         IoKitUSB.Release(interfaceInfo.asAddress());

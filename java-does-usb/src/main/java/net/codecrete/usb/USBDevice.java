@@ -138,6 +138,16 @@ public interface USBDevice {
     void claimInterface(int interfaceNumber);
 
     /**
+     * Selects the alternate settings for the specified interface.
+     * <p>
+     * The device must be open and the interface must be claimed for exclusive access.
+     * </p>
+     * @param interfaceNumber interface number
+     * @param alternateNumber alternate setting number
+     */
+    void selectAlternateSetting(int interfaceNumber, int alternateNumber);
+
+    /**
      * Releases the specified interface from exclusive use.
      *
      * @param interfaceNumber the interface number

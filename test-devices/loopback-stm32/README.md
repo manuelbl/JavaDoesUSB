@@ -37,6 +37,13 @@ Several vendor-specific control requests are supported for testing:
 | 0xC1 | 0x03 | 0 | 0 | 4 | *value* (32-bit LE) | Device to host: saved *value* is transmitted |
 | 0x41 | 0x04 | 0 | 0 | 0 | none | Reset internal buffers. Used to put device in a predicatable state. |
 
+### Alternate interfaces
+
+Two alternate interfaces are implemented:
+
+- Alternate 0 (default): all endpoints are available
+- Alternate 1: only the control endpoint and the bulk endpoints (0x01 and 0x82) are available
+
 
 ## Building the firmware
 

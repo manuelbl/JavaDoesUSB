@@ -22,6 +22,11 @@
     /* Interface */\
     9, TUSB_DESC_INTERFACE, _itfnum, 0, _numeps, TUSB_CLASS_VENDOR_SPECIFIC, 0x00, 0x00, 0
 
+// Interface descriptor: interface number, number of endponts
+#define CUSTOM_VENDOR_INTERFACE_ALT(_itfnum, _altnum, _numeps) \
+    /* Interface */\
+    9, TUSB_DESC_INTERFACE, _itfnum, _altnum, _numeps, TUSB_CLASS_VENDOR_SPECIFIC, 0x00, 0x00, 0
+
 // Bulk endpoint descriptor: endpoint address, packet size
 #define CUSTOM_VENDOR_BULK_ENDPOINT(_epaddr, _packetsize) \
     /* Endpoint */\
@@ -108,6 +113,16 @@ TU_ATTR_WEAK void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes);
  * @param intf interface number
  */
 TU_ATTR_WEAK void cust_vendor_intf_open_cb(uint8_t intf);
+
+/**
+ * @brief Invoked when an alternate interface has been selected.
+ * 
+ * This function is called as part of a SET INTERFACE control request.
+ * 
+ * @param intf interface number
+ * @param alt alternate interface number
+ */
+TU_ATTR_WEAK void cust_vendor_alt_intf_selected_cb(uint8_t intf, uint8_t alt);
 
 
 // --- Driver to be registered in usbd_app_driver_get_cb()

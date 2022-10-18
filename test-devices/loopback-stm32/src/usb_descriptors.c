@@ -53,12 +53,12 @@ enum {
     INTF_NUM_TOTAL
 };
 
-#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + 9 + 7 + 7 + 7 + 7)
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + 9 + 4 * 7 + 9 + 2 * 7)
 
 uint8_t const desc_configuration[] = {
     // Config number, interface count, string index, total length, attribute, power in mA
     TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 500),
-    // Loopback interface
+    // Loopback interface (alternate 0)
     CUSTOM_VENDOR_INTERFACE(0, 4),
     // Loopback endpoint OUT
     CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, BULK_MAX_PACKET_SIZE),
@@ -67,7 +67,13 @@ uint8_t const desc_configuration[] = {
     // Echo endpoint OUT
     CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_RX, INTR_MAX_PACKET_SIZE, 16),
     // Echo endpoint IN
-    CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_TX, INTR_MAX_PACKET_SIZE, 16)
+    CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_TX, INTR_MAX_PACKET_SIZE, 16),
+    // Loopback interface (alternate 1)
+    CUSTOM_VENDOR_INTERFACE_ALT(0, 1, 2),
+    // Loopback endpoint OUT
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, BULK_MAX_PACKET_SIZE),
+    // Loopback endpoint IN
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, BULK_MAX_PACKET_SIZE)
 };
 
 // Invoked when a GET CONFIGURATION DESCRIPTOR request is recieved.

@@ -99,6 +99,9 @@ public class TestDeviceBase {
     }
 
     private static void resetDevice() {
+        if (isLoopbackDevice())
+            testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 0);
+
         // reset buffers
         resetBuffers();
 

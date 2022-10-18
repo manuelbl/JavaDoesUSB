@@ -16,7 +16,7 @@ import java.util.List;
 public class USBInterfaceImpl implements USBInterface {
 
     private final int number_;
-    private final USBAlternateInterface alternate_;
+    private USBAlternateInterface alternate_;
     private final List<USBAlternateInterface> alternates_;
 
     private boolean isClaimed_;
@@ -47,11 +47,20 @@ public class USBInterfaceImpl implements USBInterface {
     }
 
     @Override
+    public USBAlternateInterface getAlternate(int alternateNumber) {
+        return alternates_.stream().filter((alt) -> alt.number() == alternateNumber).findFirst().orElse(null);
+    }
+
+    @Override
     public List<USBAlternateInterface> alternates() {
         return Collections.unmodifiableList(alternates_);
     }
 
     void addAlternate(USBAlternateInterface alt) {
         alternates_.add(alt);
+    }
+
+    public void setAlternate(USBAlternateInterface alternate) {
+        alternate_ = alternate;
     }
 }

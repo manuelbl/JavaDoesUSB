@@ -45,6 +45,14 @@ public interface USBInterface {
     USBAlternateInterface alternate();
 
     /**
+     * Gets the alternate interface settings with the specified number.
+     *
+     * @param alternateNumber alternate setting number
+     * @return alternate interface setting
+     */
+    USBAlternateInterface getAlternate(int alternateNumber);
+
+    /**
      * Gets all alternate settings of this interface.
      *
      * @return a list of the alternate settings

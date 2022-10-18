@@ -204,7 +204,7 @@ public class DFUDevice {
         var firstPage = getWritablePage(startAddress);
         getWritablePage(startAddress + length);
 
-        // TODO: select alternate interface settings
+        usbDevice_.selectAlternateSetting(interfaceNumber_, firstPage.segment().altSetting());
         System.out.printf("Target memory segment: %s%n", firstPage.segment().name());
 
         // erase if needed
