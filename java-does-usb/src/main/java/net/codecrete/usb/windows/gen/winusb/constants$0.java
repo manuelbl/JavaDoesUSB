@@ -43,6 +43,14 @@ class constants$0 {
         "WinUsb_GetDescriptor",
         constants$0.WinUsb_GetDescriptor$FUNC
     );
+    static final FunctionDescriptor WinUsb_SetCurrentAlternateSetting$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_CHAR$LAYOUT
+    );
+    static final MethodHandle WinUsb_SetCurrentAlternateSetting$MH = RuntimeHelper.downcallHandle(
+        "WinUsb_SetCurrentAlternateSetting",
+        constants$0.WinUsb_SetCurrentAlternateSetting$FUNC
+    );
     static final FunctionDescriptor WinUsb_SetPipePolicy$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_CHAR$LAYOUT,
@@ -53,18 +61,6 @@ class constants$0 {
     static final MethodHandle WinUsb_SetPipePolicy$MH = RuntimeHelper.downcallHandle(
         "WinUsb_SetPipePolicy",
         constants$0.WinUsb_SetPipePolicy$FUNC
-    );
-    static final FunctionDescriptor WinUsb_ReadPipe$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_CHAR$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle WinUsb_ReadPipe$MH = RuntimeHelper.downcallHandle(
-        "WinUsb_ReadPipe",
-        constants$0.WinUsb_ReadPipe$FUNC
     );
 }
 

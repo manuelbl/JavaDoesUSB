@@ -9,7 +9,6 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
 import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
@@ -147,7 +146,24 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
-        throw new IllegalStateException("not implemented");
+        checkIsOpen();
+
+        var intfHandle = getInterfaceHandle(interfaceNumber);
+        if (intfHandle.interfaceHandle == null)
+            throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
+
+        var intf = getInterface(interfaceNumber);
+
+        // check alternate setting
+        var altSetting = intf.getAlternate(alternateNumber);
+        if (altSetting == null)
+            throw new WindowsUSBException(String.format("Interface %d does not have an alternate interface setting %d",
+                    interfaceNumber, alternateNumber));
+
+        if (WinUSB.WinUsb_SetCurrentAlternateSetting(intfHandle.interfaceHandle, (byte) alternateNumber) == 0)
+            throw new WindowsUSBException("Failed to set alternate interface", Kernel32.GetLastError());
+
+        intf.setAlternate(altSetting);
     }
 
     public void releaseInterface(int interfaceNumber) {

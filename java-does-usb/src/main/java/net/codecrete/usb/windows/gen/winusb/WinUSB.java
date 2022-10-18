@@ -65,6 +65,17 @@ public class WinUSB  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle WinUsb_SetCurrentAlternateSetting$MH() {
+        return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetCurrentAlternateSetting$MH,"WinUsb_SetCurrentAlternateSetting");
+    }
+    public static int WinUsb_SetCurrentAlternateSetting ( Addressable InterfaceHandle,  byte SettingNumber) {
+        var mh$ = WinUsb_SetCurrentAlternateSetting$MH();
+        try {
+            return (int)mh$.invokeExact(InterfaceHandle, SettingNumber);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle WinUsb_SetPipePolicy$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetPipePolicy$MH,"WinUsb_SetPipePolicy");
     }
@@ -77,7 +88,7 @@ public class WinUSB  {
         }
     }
     public static MethodHandle WinUsb_ReadPipe$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_ReadPipe$MH,"WinUsb_ReadPipe");
+        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ReadPipe$MH,"WinUsb_ReadPipe");
     }
     public static int WinUsb_ReadPipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
         var mh$ = WinUsb_ReadPipe$MH();
