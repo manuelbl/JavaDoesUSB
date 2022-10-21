@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Unit test for bulk transfer
+// Unit test for changing alternate interface setting
 //
 
 package net.codecrete.usb;

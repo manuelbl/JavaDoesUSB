@@ -292,6 +292,21 @@ public interface USBDevice {
     InputStream openInputStream(int endpointNumber);
 
     /**
+     * Clears an endpoint's halt condition.
+     * <p>
+     * An endpoint is halted (aka stalled) if an error occurs in the communication. Before the
+     * communication can resume, the halt condition must be cleared. A halt condition can exist
+     * in a single direction only.
+     * </p>
+     * <p>
+     * Control endpoint 0 will never be halted.
+     * </p>
+     * @param direction endpoint direction
+     * @param endpointNumber endpoint number (in the range between 1 and 127)
+     */
+    void clearHalt(USBDirection direction, int endpointNumber);
+
+    /**
      * Gets the configuration descriptor.
      *
      * @return the configuration descriptor (as a byte array)

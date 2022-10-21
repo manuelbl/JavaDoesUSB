@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Unit test for bulk transfer
+// Unit test for device lifecycle (open/close, claim/release)
 //
 
 package net.codecrete.usb;

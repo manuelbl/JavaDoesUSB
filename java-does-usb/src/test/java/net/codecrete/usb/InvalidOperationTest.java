@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Unit test for bulk transfer
+// Unit test for invalid operations (invalid interface number, invalid endpoint number etc.)
 //
 
 package net.codecrete.usb;

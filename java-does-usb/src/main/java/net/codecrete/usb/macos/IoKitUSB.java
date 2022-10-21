@@ -174,4 +174,11 @@ public class IoKitUSB {
             return IOUSBInterfaceInterface.SetAlternateInterface(getVtable(self, session), session).apply(self, alternateSetting);
         }
     }
+
+    // IOReturn (* ClearPipeStall)(void* self, UInt8 pipeRef);
+    public static int ClearPipeStall(MemoryAddress self, byte pipeRef) {
+        try (var session = MemorySession.openConfined()) {
+            return IOUSBInterfaceInterface.ClearPipeStall(getVtable(self, session), session).apply(self, pipeRef);
+        }
+    }
 }

@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Unit tests for USB device enumeration
+// Base class for unit tests using the connected test device
 //
 
 package net.codecrete.usb;

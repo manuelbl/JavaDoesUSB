@@ -419,6 +419,16 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
+    @Override
+    public void clearHalt(USBDirection direction, int endpointNumber) {
+        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
+
+        int ret = IoKitUSB.ClearPipeStall(endpointInfo.interfacAddress(), endpointInfo.pipeIndex);
+        if (ret != 0)
+            throw new MacosUSBException("Clearing halt condition failed", ret);
+    }
+
     synchronized ScheduledExecutorService getScheduledExecutorService() {
         if (scheduledExecutorService == null)
             scheduledExecutorService = Executors.newScheduledThreadPool(1);

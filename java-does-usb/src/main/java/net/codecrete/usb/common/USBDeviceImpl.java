@@ -323,6 +323,11 @@ public abstract class USBDeviceImpl implements USBDevice {
     public abstract byte[] transferIn(int endpointNumber, int maxLength, int timeout);
 
     @Override
+    public void clearHalt(USBDirection direction, int endpointNumber) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
     public OutputStream openOutputStream(int endpointNumber) {
         // check that endpoint number is valid
         var endpointInfo = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
