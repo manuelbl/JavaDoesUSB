@@ -27,6 +27,7 @@ uint8_t loopback_rx_buffer[64];
 
 // buffer for echoed packet
 uint8_t echo_buffer[16];
+int echo_buffer_len;
 int num_echos;
 
 
@@ -43,6 +44,7 @@ static void led_blinking_task(void);
 static void loopback_init(void);
 static void loopback_check_rx(void);
 static void loopback_check_tx(void);
+static void echo_update_state(void);
 static void reset_buffers(void);
 
 
@@ -93,9 +95,18 @@ void loopback_check_tx(void) {
 void loopback_check_rx(void) {
 
     int n = tu_fifo_remaining(&loopback_fifo);
-    if (n >= sizeof(loopback_rx_buffer) && !cust_vendor_is_receiving(EP_LOOPBACK_RX)) {
-
+    if (n >= sizeof(loopback_rx_buffer) && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
         cust_vendor_prepare_recv(EP_LOOPBACK_RX, loopback_rx_buffer, sizeof(loopback_rx_buffer));
+}
+
+
+// --- Echo
+
+void echo_update_state(void) {
+    if (num_echos > 0) {
+        cust_vendor_start_transmit(EP_ECHO_TX, echo_buffer, echo_buffer_len);
+    } else {
+        cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
     }
 }
 
@@ -111,7 +122,8 @@ void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
 
     } else if (ep_addr == EP_ECHO_RX) {
         num_echos = 2;
-        cust_vendor_start_transmit(EP_ECHO_TX, echo_buffer, recv_bytes);
+        echo_buffer_len = recv_bytes;
+        echo_update_state();
     }
 }
 
@@ -132,18 +144,14 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
 
     } else if (ep_addr == EP_ECHO_TX) {
         num_echos--;
-        if (num_echos > 0) {
-            cust_vendor_start_transmit(EP_ECHO_TX, echo_buffer, sent_bytes);
-        } else {
-            cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
-        }
+        echo_update_state();
     }
 }
 
 // Invoked when interface has been opened
 void cust_vendor_intf_open_cb(uint8_t intf) {
     loopback_check_rx();
-    cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
+    echo_update_state();
 }
 
 // Invoked when an alternate interface has been selected
@@ -151,10 +159,29 @@ void cust_vendor_alt_intf_selected_cb(uint8_t intf, uint8_t alt) {
     reset_buffers();
     loopback_check_rx();
     if (alt == 0)
-        cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
+        echo_update_state();
 }
 
-
+void cust_vendor_halt_cleared_cb(uint8_t ep_addr) {
+    switch (ep_addr) {
+        case EP_LOOPBACK_RX:
+            loopback_check_rx();
+            break;
+        case EP_LOOPBACK_TX:
+            loopback_check_tx();
+            break;
+        case EP_ECHO_RX:
+            if (num_echos == 0)
+                echo_update_state();
+            break;
+        case EP_ECHO_TX:
+            if (num_echos > 0)
+                echo_update_state();
+            break;
+        default:
+            break;
+    }
+}
 
 
 // --- Control messages (see README)
@@ -217,6 +244,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     return false;
 }
 
+
 // --- Device callbacks
 
 // Register additional driver
@@ -248,6 +276,7 @@ void tud_suspend_cb(bool remote_wakeup_en) {
 void tud_resume_cb(void) {
     blink_interval_ms = BLINK_MOUNTED;
 }
+
 
 // --- LED blinking ---
 

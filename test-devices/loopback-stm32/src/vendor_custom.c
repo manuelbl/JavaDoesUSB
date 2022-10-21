@@ -142,6 +142,14 @@ bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const
             cust_vendor_alt_intf_selected_cb((uint8_t) request->wIndex, alt_num);
         tud_control_status(rhport, request);
         return true;
+
+    } else if (request->bRequest == TUSB_REQ_CLEAR_FEATURE
+            && request->wValue == TUSB_REQ_FEATURE_EDPT_HALT
+            && request->bmRequestType_bit.recipient == TUSB_REQ_RCPT_ENDPOINT
+            && cust_vendor_halt_cleared_cb != NULL) {
+        uint8_t const ep_addr = tu_u16_low(request->wIndex);
+        cust_vendor_halt_cleared_cb(ep_addr);
+        return true;
     }
 
     return false;

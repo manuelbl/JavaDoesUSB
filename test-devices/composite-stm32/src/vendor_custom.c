@@ -21,13 +21,14 @@
 static void cv_init(void);
 static void cv_reset(uint8_t rhport);
 static uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const* desc_intf, uint16_t max_len);
+static bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request);
 static bool cv_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes);
 
 const usbd_class_driver_t cust_vendor_driver = {
     .init = cv_init,
     .reset = cv_reset,
     .open = cv_open,
-    .control_xfer_cb = NULL,
+    .control_xfer_cb = cv_control_xfer,
     .xfer_cb = cv_xfer_cb,
     .sof = NULL
 };
@@ -66,6 +67,21 @@ uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const * desc_intf, uint16
     cust_vendor_intf_open_cb(desc_intf->bInterfaceNumber);
 
     return processed_bytes;
+}
+
+bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request) {
+    TU_VERIFY(TUSB_REQ_TYPE_STANDARD == request->bmRequestType_bit.type);
+
+    if (request->bRequest == TUSB_REQ_CLEAR_FEATURE
+            && request->wValue == TUSB_REQ_FEATURE_EDPT_HALT
+            && request->bmRequestType_bit.recipient == TUSB_REQ_RCPT_ENDPOINT
+            && cust_vendor_halt_cleared_cb != NULL) {
+        uint8_t const ep_addr = tu_u16_low(request->wIndex);
+        cust_vendor_halt_cleared_cb(ep_addr);
+        return true;
+    }
+
+    return false;
 }
 
 bool cv_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes) {

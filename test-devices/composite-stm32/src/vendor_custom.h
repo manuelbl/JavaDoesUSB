@@ -109,6 +109,15 @@ TU_ATTR_WEAK void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes);
  */
 TU_ATTR_WEAK void cust_vendor_intf_open_cb(uint8_t intf);
 
+/**
+ * @brief Invoked when an endpoint's halt condition has been cleared.
+ * 
+ * This function is called as part of a SET FEATURE control request.
+ * 
+ * @param ep_addr endpoint address
+ */
+TU_ATTR_WEAK void cust_vendor_halt_cleared_cb(uint8_t ep_addr);
+
 
 // --- Driver to be registered in usbd_app_driver_get_cb()
 

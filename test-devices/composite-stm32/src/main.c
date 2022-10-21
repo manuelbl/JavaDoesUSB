@@ -89,10 +89,8 @@ void loopback_check_tx(void) {
 void loopback_check_rx(void) {
 
     int n = tu_fifo_remaining(&loopback_fifo);
-    if (n >= sizeof(loopback_rx_buffer) && !cust_vendor_is_receiving(EP_LOOPBACK_RX)) {
-
+    if (n >= sizeof(loopback_rx_buffer) && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
         cust_vendor_prepare_recv(EP_LOOPBACK_RX, loopback_rx_buffer, sizeof(loopback_rx_buffer));
-    }
 }
 
 // --- CDC class
@@ -138,6 +136,18 @@ void cust_vendor_intf_open_cb(uint8_t intf) {
     loopback_check_rx();
 }
 
+void cust_vendor_halt_cleared_cb(uint8_t ep_addr) {
+    switch (ep_addr) {
+        case EP_LOOPBACK_RX:
+            loopback_check_rx();
+            break;
+        case EP_LOOPBACK_TX:
+            loopback_check_tx();
+            break;
+        default:
+            break;
+    }
+}
 
 
 // --- Control messages (see README)
