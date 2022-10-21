@@ -27,17 +27,16 @@ It has been tested with Azul Zulu 19.0.77 EA 34.
 - Control, bulk and interrupt transfers (optionally with timeout)
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
-- Support fo composite devices and interface association
+- Support for alternate interface settings, composite devices and interface association
 - Published on Maven Central
 
 ### To do
 
-- Alternate interface settings
 - Isochronous transfer
 
 ### Not planned
 
-- Changing configuration: The library selects the first configuration. Changing configurations is rarely used and not supported on Windows.
+- Changing configuration: The library selects the first configuration. Changing configurations is rarely used and not supported on Windows (limitation of WinUSB).
 - USB 3.0 streams: Not supported on Windows (limitation of WinUSB).
 - Providing information about USB buses, controllers and hubs
 
