@@ -9,6 +9,7 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface;
 import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface;
+import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceStruct942;
 
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
@@ -175,10 +176,10 @@ public class IoKitUSB {
         }
     }
 
-    // IOReturn (* ClearPipeStall)(void* self, UInt8 pipeRef);
-    public static int ClearPipeStall(MemoryAddress self, byte pipeRef) {
+    // IOReturn (* ClearPipeStallBothEnds)(void* self, UInt8 pipeRef);
+    public static int ClearPipeStallBothEnds(MemoryAddress self, byte pipeRef) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.ClearPipeStall(getVtable(self, session), session).apply(self, pipeRef);
+            return IOUSBInterfaceStruct942.ClearPipeStallBothEnds(getVtable(self, session), session).apply(self, pipeRef);
         }
     }
 }

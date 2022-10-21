@@ -424,7 +424,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        int ret = IoKitUSB.ClearPipeStall(endpointInfo.interfacAddress(), endpointInfo.pipeIndex);
+        int ret = IoKitUSB.ClearPipeStallBothEnds(endpointInfo.interfacAddress(), endpointInfo.pipeIndex);
         if (ret != 0)
             throw new MacosUSBException("Clearing halt condition failed", ret);
     }
