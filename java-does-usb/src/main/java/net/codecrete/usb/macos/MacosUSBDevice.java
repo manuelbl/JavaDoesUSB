@@ -421,7 +421,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
+        var endpointInfo = getEndpointInfo(endpointNumber, direction,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         int ret = IoKitUSB.ClearPipeStallBothEnds(endpointInfo.interfacAddress(), endpointInfo.pipeIndex);
