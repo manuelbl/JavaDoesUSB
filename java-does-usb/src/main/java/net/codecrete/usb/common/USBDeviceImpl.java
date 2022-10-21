@@ -284,14 +284,14 @@ public abstract class USBDeviceImpl implements USBDevice {
                 direction.name()));
     }
 
-    protected int getInterfaceNumber(int endpointNumber) {
+    protected int getInterfaceNumber(USBDirection direction, int endpointNumber) {
         if (endpointNumber < 1 || endpointNumber > 127)
             return -1;
 
         for (var intf : interfaces_) {
             if (intf.isClaimed()) {
                 for (var ep : intf.alternate().endpoints()) {
-                    if (ep.number() == endpointNumber)
+                    if (ep.number() == endpointNumber && ep.direction() == direction)
                         return intf.number();
                 }
             }

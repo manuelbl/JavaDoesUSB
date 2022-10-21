@@ -131,6 +131,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-function WinUsb_GetAssociatedInterface ^
        --include-function WinUsb_SetPipePolicy ^
        --include-function WinUsb_SetCurrentAlternateSetting ^
+       --include-function WinUsb_ResetPipe ^
        --include-macro PIPE_TRANSFER_TIMEOUT ^
        windows_headers.h
 

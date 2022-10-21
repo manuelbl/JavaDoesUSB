@@ -49,6 +49,14 @@ class constants$1 {
         "WinUsb_ControlTransfer",
         constants$1.WinUsb_ControlTransfer$FUNC
     );
+    static final FunctionDescriptor WinUsb_ResetPipe$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_CHAR$LAYOUT
+    );
+    static final MethodHandle WinUsb_ResetPipe$MH = RuntimeHelper.downcallHandle(
+        "WinUsb_ResetPipe",
+        constants$1.WinUsb_ResetPipe$FUNC
+    );
 }
 
 

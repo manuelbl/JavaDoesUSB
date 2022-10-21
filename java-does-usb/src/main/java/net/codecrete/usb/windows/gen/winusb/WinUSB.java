@@ -120,6 +120,17 @@ public class WinUSB  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle WinUsb_ResetPipe$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ResetPipe$MH,"WinUsb_ResetPipe");
+    }
+    public static int WinUsb_ResetPipe ( Addressable InterfaceHandle,  byte PipeID) {
+        var mh$ = WinUsb_ResetPipe$MH();
+        try {
+            return (int)mh$.invokeExact(InterfaceHandle, PipeID);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
 }
 
 

@@ -307,6 +307,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
+    @Override
+    public void clearHalt(USBDirection direction, int endpointNumber) {
+        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+        if (WinUSB.WinUsb_ResetPipe(intfHandle.interfaceHandle, endpoint.endpointAddress()) == 0)
+            throw new WindowsUSBException("Clearing halt failed", Kernel32.GetLastError());
+    }
+
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {
         for (var intfHandle : interfaceHandles_) {
             if (intfHandle.interfaceNumber == interfaceNumber)
@@ -327,9 +335,10 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         } else if (setup.recipient() == USBRecipient.ENDPOINT) {
 
-            endpointNumber = setup.index() & 0xff;
+            endpointNumber = setup.index() & 0x7f;
+            var direction = (setup.index() & 0x80) != 0 ? USBDirection.IN : USBDirection.OUT;
             if (endpointNumber != 0) {
-                interfaceNumber = getInterfaceNumber(endpointNumber);
+                interfaceNumber = getInterfaceNumber(direction, endpointNumber);
                 if (interfaceNumber == -1)
                     throw new USBException(String.format("Invalid endpoint number %d or interface not claimed", endpointNumber));
             }
