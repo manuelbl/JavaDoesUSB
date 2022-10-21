@@ -16,6 +16,6 @@ public class USBDevFS {
     public static final long BULK = 0xc0185502;
     public static final long CLAIMINTERFACE = 0x8004550F;
     public static final long RELEASEINTERFACE = 0x80045510;
-
     public static final long SETINTERFACE = 0x80085504;
+    public static final long CLEAR_HALT = 0x80045515;
 }

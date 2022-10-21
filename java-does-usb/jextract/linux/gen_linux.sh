@@ -18,6 +18,13 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-macro ETIMEDOUT \
   /usr/include/errno.h
 
+# string.h
+$JEXTRACT --source --output ../../src/main/java \
+  --header-class-name string \
+  --target-package net.codecrete.usb.linux.gen.string \
+  --include-function strerror \
+  /usr/include/string.h
+
 # ioctl.h
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name ioctl \
@@ -54,6 +61,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-macro USBDEVFS_CLAIMINTERFACE \
   --include-macro USBDEVFS_RELEASEINTERFACE \
   --include-macro USBDEVFS_SETINTERFACE \
+  --include-macro USBDEVFS_CLEAR_HALT \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h

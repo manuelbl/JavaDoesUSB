@@ -78,7 +78,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var pathUtf8 = session.allocateUtf8String(id_.toString());
             fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
             if (fd == -1)
-                throw new USBException("Cannot open USB device", IO.getErrno());
+                throw new LinuxUSBException("Cannot open USB device", IO.getErrno());
         }
     }
 
@@ -107,7 +107,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment.address());
             if (ret != 0)
-                throw new USBException("Cannot claim USB interface", IO.getErrno());
+                throw new LinuxUSBException("Cannot claim USB interface", IO.getErrno());
             setClaimed(interfaceNumber, true);
         }
     }
@@ -134,7 +134,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment.address());
             if (ret != 0)
-                throw new USBException("Failed to set alternate interface", IO.getErrno());
+                throw new LinuxUSBException("Failed to set alternate interface", IO.getErrno());
         }
 
         intf.setAlternate(altSetting);
@@ -153,7 +153,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
             if (ret != 0)
-                throw new USBException("Cannot release USB interface", IO.getErrno());
+                throw new LinuxUSBException("Cannot release USB interface", IO.getErrno());
             setClaimed(interfaceNumber, false);
         }
     }
@@ -180,7 +180,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
-                throw new USBException("Control IN transfer failed", IO.getErrno());
+                throw new LinuxUSBException("Control IN transfer failed", IO.getErrno());
 
             return data.asSlice(0, res).toArray(JAVA_BYTE);
         }
@@ -197,7 +197,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
-                throw new USBException("Control OUT transfer failed", IO.getErrno());
+                throw new LinuxUSBException("Control OUT transfer failed", IO.getErrno());
         }
     }
 
@@ -225,7 +225,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 int err = IO.getErrno();
                 if (err == errno.ETIMEDOUT())
                     throw new TimeoutException("Transfer out aborted due to timeout");
-                throw new USBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber), err);
+                throw new LinuxUSBException(String.format("USB OUT transfer on endpoint %d failed", endpointNumber), err);
             }
         }
     }
@@ -245,10 +245,24 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 int err = IO.getErrno();
                 if (err == errno.ETIMEDOUT())
                     throw new TimeoutException("Transfer in aborted due to timeout");
-                throw new USBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber), err);
+                throw new LinuxUSBException(String.format("USB IN transfer on endpoint %d failed", endpointNumber), err);
             }
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
         }
     }
+
+    @Override
+    public void clearHalt(USBDirection direction, int endpointNumber) {
+        var endpointAddress = getEndpointAddress(endpointNumber, direction,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
+
+        try (var session = MemorySession.openConfined()) {
+            var endpointAddrSegment = session.allocate(JAVA_INT, endpointAddress & 0xff);
+            int res = ioctl.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment.address());
+            if (res < 0)
+                throw new LinuxUSBException("Clearing halt failed", IO.getErrno());
+        }
+    }
+
 }

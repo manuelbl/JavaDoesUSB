@@ -7,6 +7,8 @@
 
 package net.codecrete.usb.linux;
 
+import net.codecrete.usb.linux.gen.string.string;
+
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.MemorySession;
@@ -31,6 +33,20 @@ public class Linux {
 
             var ret = MemorySegment.ofAddress(str, 2000, session);
             return ret.getUtf8String(0);
+        }
+    }
+
+    /**
+     * Gets the error message for the specified error code (returned by {@code errno}).
+     *
+     * @param err error code
+     * @return error message
+     */
+    public static String getErrorMessage(int err) {
+        try (var session = MemorySession.openConfined()) {
+            var messageAddr = string.strerror(err);
+            var message = MemorySegment.ofAddress(messageAddr, 4000, session);
+            return message.getUtf8String(0);
         }
     }
 }
