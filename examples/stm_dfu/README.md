@@ -49,7 +49,7 @@ The result will be put in your local Maven repository.
 - Run the command below (adapting the file path depending on your specific board).
 
 ```shell
-$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.3.1.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
+$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.4.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
 DFU device found with serial 36C730037136.
 Target memory segment: Internal Flash
 Erasing page at 0x8000000 (size 0x4000)

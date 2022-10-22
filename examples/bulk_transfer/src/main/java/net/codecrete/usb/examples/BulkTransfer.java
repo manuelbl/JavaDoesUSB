@@ -34,7 +34,7 @@ public class BulkTransfer {
         device.transferOut(ENDPOINT_OUT, data);
         System.out.println(data.length + " bytes sent.");
 
-        data = device.transferIn(ENDPOINT_IN, 64);
+        data = device.transferIn(ENDPOINT_IN);
         System.out.println(data.length + " bytes received.");
 
         device.close();

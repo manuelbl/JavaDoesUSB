@@ -50,7 +50,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------< net.codecrete.usb.examples:bulk-transfer >--------------
-[INFO] Building bulk-transfer 0.3-SNAPSHOT
+[INFO] Building bulk-transfer 0.4.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ bulk-transfer ---
