@@ -7,7 +7,6 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.USBException;
 import net.codecrete.usb.windows.gen.advapi32.Advapi32;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -24,6 +23,8 @@ import java.util.List;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static net.codecrete.usb.windows.WindowsUSBException.throwException;
+import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
 /**
  * Device property GUIDs and functions
@@ -60,10 +61,10 @@ public class DeviceProperty {
             var propertyValueHolder = session.allocate(JAVA_INT);
             if (SetupAPI.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
-                throw new WindowsUSBException("Internal error (SetupDiGetDevicePropertyW)", Kernel32.GetLastError());
+                throwLastError("Internal error (SetupDiGetDevicePropertyW)");
 
             if (propertyTypeHolder.get(JAVA_INT, 0) != SetupAPI.DEVPROP_TYPE_UINT32())
-                throw new USBException("Internal error (expected property type UINT32)");
+                throwException("Internal error (expected property type UINT32)");
 
             return propertyValueHolder.get(JAVA_INT, 0);
         }
@@ -97,19 +98,18 @@ public class DeviceProperty {
             // TODO: Reactivate when proper GetLastError() handling is available
             //                int err = Kernel32.GetLastError();
             //                if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
-            //                    throw new WindowsUSBException("Internal error (SetupDiGetDevicePropertyW)", Kernel32
-            //                    .GetLastError());
+            //                    throwLastError("Internal error (SetupDiGetDevicePropertyW)");
         }
 
         if (propertyTypeHolder.get(JAVA_INT, 0) != propertyType)
-            throw new USBException("Internal error (unexpected property type)");
+            throwException("Internal error (unexpected property type)");
 
         int stringLen = requiredSizeHolder.get(JAVA_INT, 0) / 2 - 1;
 
         var propertyValueHolder = session.allocateArray(JAVA_CHAR, stringLen + 1);
         if (SetupAPI.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
                 propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
-            throw new WindowsUSBException("Internal error (SetupDiGetDevicePropertyW)", Kernel32.GetLastError());
+            throwLastError("Internal error (SetupDiGetDevicePropertyW)");
 
         return propertyValueHolder;
     }
@@ -120,7 +120,7 @@ public class DeviceProperty {
         var regKey = SetupAPI.SetupDiOpenDevRegKey(devInfoSetHandle, devInfo, SetupAPI.DICS_FLAG_GLOBAL(),
                 0, SetupAPI.DIREG_DEV(), Advapi32.KEY_READ());
         if (Win.IsInvalidHandle(regKey))
-            throw new WindowsUSBException("Cannot open device registry key", Kernel32.GetLastError());
+            throwLastError("Cannot open device registry key");
         session.addCloseAction(() -> Advapi32.RegCloseKey(regKey));
 
         // read registry value (without buffer, to query length)
@@ -131,14 +131,14 @@ public class DeviceProperty {
         if (res == Kernel32.ERROR_FILE_NOT_FOUND())
             return List.of(); // no device interface GUIDs
         if (res != 0 && res != Kernel32.ERROR_MORE_DATA())
-            throw new WindowsUSBException("Internal error (RegQueryValueExW)", res);
+            throwException(res, "Internal error (RegQueryValueExW)");
 
         // read registry value (with buffer)
         var valueSize = valueSizeHolder.get(JAVA_INT, 0);
         var value = session.allocate(valueSize);
         res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
         if (res != 0)
-            throw new WindowsUSBException("Internal error (RegQueryValueExW)", res);
+            throwException(res, "Internal error (RegQueryValueExW)");
 
         return Win.createStringListFromSegment(value);
     }
@@ -150,7 +150,7 @@ public class DeviceProperty {
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL,
                     SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
-                throw new USBException("internal error (SetupDiGetClassDevsW)");
+                throwException("internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
             session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
@@ -159,7 +159,7 @@ public class DeviceProperty {
             var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, NULL, interfaceGuid, 0, devIntfData) == 0)
-                throw new USBException("internal error (SetupDiEnumDeviceInterfaces)");
+                throwException("internal error (SetupDiEnumDeviceInterfaces)");
 
             // get device path
             // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
@@ -171,7 +171,7 @@ public class DeviceProperty {
             int intfDetailDataSize = (int) intfDetailData.byteSize();
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, intfDetailData,
                     intfDetailDataSize, NULL, NULL) == 0)
-                throw new WindowsUSBException("Internal error (SetupDiGetDeviceInterfaceDetailW)", Kernel32.GetLastError());
+                throwLastError("Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
             return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
         }

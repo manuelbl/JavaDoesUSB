@@ -8,8 +8,9 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.common.*;
+import net.codecrete.usb.common.ForeignMemory;
+import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.usbstandard.SetupPacket;
@@ -35,6 +36,8 @@ import java.util.regex.Pattern;
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.usbstandard.Constants.*;
+import static net.codecrete.usb.windows.WindowsUSBException.throwException;
+import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
 /**
  * Windows implementation of USB device registry.
@@ -76,7 +79,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hwnd = User32.CreateWindowExW(0, className, windowName, 0, 0, 0, 0, 0, User32.HWND_MESSAGE(), NULL,
                         instance, NULL);
                 if (hwnd == NULL)
-                    throw new WindowsUSBException("internal error (CreateWindowExW)", Kernel32.GetLastError());
+                    throwLastError("internal error (CreateWindowExW)");
 
                 // configure notifications
                 var notificationFilter = session.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
@@ -88,7 +91,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 var notifyHandle = User32.RegisterDeviceNotificationW(hwnd, notificationFilter,
                         User32.DEVICE_NOTIFY_WINDOW_HANDLE());
                 if (notifyHandle == NULL)
-                    throw new WindowsUSBException("internal error (RegisterDeviceNotificationW)", Kernel32.GetLastError());
+                    throwLastError("internal error (RegisterDeviceNotificationW)");
 
                 // initial device enumeration
                 enumeratePresentDevices();
@@ -115,7 +118,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
                     NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
-                throw new USBException("internal error (SetupDiGetClassDevsW)");
+                throwException("internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
             outerSession.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
@@ -135,7 +138,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     // TODO: Remove check for ERROR_SUCCESS if proper GetLastError() handling is available
                     if (err == Kernel32.ERROR_NO_MORE_ITEMS() || err == Kernel32.ERROR_SUCCESS())
                         break;
-                    throw new USBException("Internal error (SetupDiEnumDeviceInfo) ");
+                    throwException("Internal error (SetupDiEnumDeviceInfo) ");
                 }
 
                 var instanceID = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo,
@@ -172,7 +175,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 // create device info set
                 var devInfoSetHandle = SetupAPI.SetupDiCreateDeviceInfoList(NULL, NULL);
                 if (Win.IsInvalidHandle(devInfoSetHandle))
-                    throw new WindowsUSBException("Cannot create device info list", Kernel32.GetLastError());
+                    throwLastError("Cannot create device info list");
                 session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
                 // get device info for child
@@ -180,7 +183,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
                 var instanceIdSegment = Win.createSegmentFromString(instanceId, session);
                 if (SetupAPI.SetupDiOpenDeviceInfoW(devInfoSetHandle, instanceIdSegment, NULL, 0, devInfo) == 0)
-                    throw new WindowsUSBException("Internal error (SetupDiOpenDeviceInfoW)", Kernel32.GetLastError());
+                    throwLastError("Internal error (SetupDiOpenDeviceInfoW)");
 
                 // get hardware IDs (to extract interface number)
                 var hardwareIds = DeviceProperty.getDeviceStringListProperty(devInfoSetHandle, devInfo,
@@ -229,7 +232,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hubHandle = Kernel32.CreateFileW(hubPathSeg, Kernel32.GENERIC_WRITE(), Kernel32.FILE_SHARE_WRITE(),
                         NULL, Kernel32.OPEN_EXISTING(), 0, NULL);
                 if (Win.IsInvalidHandle(hubHandle))
-                    throw new USBException("Cannot open USB hub", Kernel32.GetLastError());
+                    throwLastError("Cannot open USB hub");
                 hubHandles.put(hubPath, hubHandle);
             }
 
@@ -266,7 +269,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var sizeHolder = session.allocate(JAVA_INT);
             if (Kernel32.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX(), connInfo
                     , (int) connInfo.byteSize(), connInfo, (int) connInfo.byteSize(), sizeHolder, NULL) == 0)
-                throw new WindowsUSBException("Internal error (cannot get device descriptor)", Kernel32.GetLastError());
+                throwLastError("Internal error (cannot get device descriptor)");
 
             var descriptorSegment = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
             var deviceDescriptor = new DeviceDescriptor(descriptorSegment);
@@ -311,7 +314,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         var effectiveSizeHolder = session.allocate(JAVA_INT);
         if (Kernel32.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION(),
                 descriptorRequest, size, descriptorRequest, size, effectiveSizeHolder, NULL) == 0)
-            throw new WindowsUSBException(String.format("Cannot retrieve descriptor %d", index), Kernel32.GetLastError());
+            throwLastError("Cannot retrieve descriptor %d", index);
 
         // determine size of descriptor
         int expectedSize;
@@ -327,7 +330,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         var effectiveSize = effectiveSizeHolder.get(JAVA_INT, 0) - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset;
         if (effectiveSize != expectedSize) {
             if (requestSize != 0)
-                throw new USBException("Unexpected descriptor size");
+                throwException("Unexpected descriptor size");
 
             // repeat with correct size
             return getDescriptor(hubHandle, usbPortNumber, descriptorType, index, languageID, expectedSize, session);
@@ -381,7 +384,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
                     NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
-                throw new WindowsUSBException("internal error (SetupDiGetClassDevsW)", Kernel32.GetLastError());
+                throwLastError("internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
             session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
@@ -390,7 +393,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, session);
             if (SetupAPI.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0, devIntfData) == 0)
-                throw new WindowsUSBException("internal error (SetupDiOpenDeviceInterfaceW)", Kernel32.GetLastError());
+                throwLastError("internal error (SetupDiOpenDeviceInterfaceW)");
 
             ForeignMemory.addCloseAction(devIntfData, (segment) -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, segment));
 
@@ -399,7 +402,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             if (SetupAPI.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, NULL, 0, NULL, devInfo) == 0) {
                 int err = Kernel32.GetLastError();
                 if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
-                    throw new USBException("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
+                    throwException(err, "internal error (SetupDiGetDeviceInterfaceDetailW)");
             }
 
             // ensure all hubs are closed later

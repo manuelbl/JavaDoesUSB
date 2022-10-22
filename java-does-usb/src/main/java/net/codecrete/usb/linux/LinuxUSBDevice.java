@@ -8,16 +8,16 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.*;
-import net.codecrete.usb.common.*;
+import net.codecrete.usb.common.USBDeviceImpl;
+import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.errno.errno;
-import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
-import net.codecrete.usb.macos.MacosUSBException;
-import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.ioctl.ioctl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_bulktransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.io.IOException;
 import java.lang.foreign.MemorySegment;
@@ -125,7 +125,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throw new MacosUSBException(String.format("Interface %d does not have an alternate interface setting %d",
+            throw new USBException(String.format("Interface %d does not have an alternate interface setting %d",
                     interfaceNumber, alternateNumber));
 
         try (var session = MemorySession.openConfined()) {

@@ -21,6 +21,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-macro ERROR_INSUFFICIENT_BUFFER ^
   --include-macro ERROR_FILE_NOT_FOUND ^
   --include-macro ERROR_SEM_TIMEOUT ^
+  --include-macro ERROR_GEN_FAILURE ^
   --include-macro GENERIC_READ ^
   --include-macro GENERIC_WRITE ^
   --include-macro FILE_SHARE_READ ^

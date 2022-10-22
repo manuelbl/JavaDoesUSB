@@ -7,12 +7,15 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBControlTransfer;
+import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBTimeoutException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.USBDeviceImpl;
-import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.macos.gen.iokit.IOUSBDevRequest;
 import net.codecrete.usb.macos.gen.iokit.IOUSBFindInterfaceRequest;
+import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;

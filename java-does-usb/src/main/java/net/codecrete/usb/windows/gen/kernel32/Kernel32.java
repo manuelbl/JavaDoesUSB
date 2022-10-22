@@ -131,6 +131,9 @@ public class Kernel32  {
     public static int ERROR_FILE_NOT_FOUND() {
         return (int)2L;
     }
+    public static int ERROR_GEN_FAILURE() {
+        return (int)31L;
+    }
     public static int ERROR_SEM_TIMEOUT() {
         return (int)121L;
     }

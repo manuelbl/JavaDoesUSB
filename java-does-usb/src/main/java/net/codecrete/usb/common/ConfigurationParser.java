@@ -7,7 +7,10 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBAlternateInterface;
+import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.usbstandard.EndpointDescriptor;
 import net.codecrete.usb.usbstandard.InterfaceAssociationDescriptor;

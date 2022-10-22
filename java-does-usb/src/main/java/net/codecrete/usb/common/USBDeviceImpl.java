@@ -13,7 +13,6 @@ import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
