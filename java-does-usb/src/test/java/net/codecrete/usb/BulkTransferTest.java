@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BulkTransferTest extends TestDeviceBase {
 
@@ -35,6 +35,17 @@ public class BulkTransferTest extends TestDeviceBase {
         writeBytes(sampleData);
         byte[] data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
+    }
+
+    @Test
+    void transferWithZLP_succeeds() {
+        byte[] sampleData = generateRandomBytes(64, 97333894);
+        writeBytes(sampleData);
+        byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
+        assertArrayEquals(sampleData, data);
+        data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
+        assertNotNull(data);
+        assertEquals(0, data.length);
     }
 
     @Test

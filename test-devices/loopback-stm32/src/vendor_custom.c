@@ -37,10 +37,14 @@ const usbd_class_driver_t cust_vendor_driver = {
     .sof = NULL
 };
 
-// bit map indicating open endpoints
+// open endpoints
 static uint8_t cv_eps_open[8];
 static int cv_num_eps_open;
+
+// current alternate setting
 static uint8_t cv_alternate_setting;
+
+// interface descriptor (length covers all alternate interfaces and endpoints)
 static tusb_desc_interface_t const * cv_intf_desc;
 static uint16_t cv_intf_desc_len;
 
