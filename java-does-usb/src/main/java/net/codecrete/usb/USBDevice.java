@@ -231,18 +231,20 @@ public interface USBDevice {
      * Receives data from this device.
      * <p>
      * This method blocks until at least a packet has been received or an error has occurred.
-     * {@code maxLength} must be long enough to hold the full data packet transmitted by the device.
-     * To be on the safe side, it should be equal or greater than the endpoint's maximum packet size.
+     * </p>
+     * <p>
+     * The returned data is the payload of a packet. It can have a length of 0 if the USB device
+     * sends zero-length packets to indicate the end of a data unit.
      * </p>
      * <p>
      * This method can receive data from bulk and interrupt endpoints.
      * </p>
      *
      * @param endpointNumber endpoint number (in the range between 1 and 127, i.e. without the direction bit)
-     * @param maxLength      the maximum data length to receive (in number of bytes)
      * @return received data
      */
-    byte[] transferIn(int endpointNumber, int maxLength);
+    byte[] transferIn(int endpointNumber);
+
     /**
      * Receives data from this device.
      * <p>
@@ -250,19 +252,18 @@ public interface USBDevice {
      * or an error has occurred. If the timeout expired, a {@link USBTimeoutException} is thrown.
      * </p>
      * <p>
-     * {@code maxLength} must be long enough to hold the full data packet transmitted by the device.
-     * To be on the safe side, it should be equal or greater than the endpoint's maximum packet size.
+     * The returned data is the payload of a packet. It can have a length of 0 if the USB device
+     * sends zero-length packets to indicate the end of a data unit.
      * </p>
      * <p>
      * This method can receive data from bulk and interrupt endpoints.
      * </p>
      *
      * @param endpointNumber the endpoint number (in the range between 1 and 127, i.e. without the direction bit)
-     * @param maxLength      the maximum data length to receive (in number of bytes)
      * @param timeout        the timeout period, in milliseconds (0 for no timeout)
      * @return received data
      */
-    byte[] transferIn(int endpointNumber, int maxLength, int timeout);
+    byte[] transferIn(int endpointNumber, int timeout);
 
     /**
      * Opens a new output stream to send data to a bulk endpoint.
@@ -283,7 +284,7 @@ public interface USBDevice {
      * All data received from the specified bulk endpoint can be read using this input stream.
      * </p>
      * <p>
-     * If {@link #transferIn(int, int)} and an input stream or multiple input streams
+     * If {@link #transferIn(int)} and an input stream or multiple input streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)

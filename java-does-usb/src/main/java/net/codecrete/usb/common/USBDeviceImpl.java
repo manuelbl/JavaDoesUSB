@@ -237,7 +237,7 @@ public abstract class USBDeviceImpl implements USBDevice {
         }
 
         throwInvalidEndpointException(endpointNumber, direction, transferType1, transferType2);
-        return 0; // will never be reached
+        throw new AssertionError("not reached");
     }
 
     /**
@@ -261,7 +261,8 @@ public abstract class USBDeviceImpl implements USBDevice {
                         if (ep.number() == endpointNumber && ep.direction() == direction
                                 && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
                             return new EndpointInfo(intf.number(), ep.number(),
-                                    (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0)));
+                                    (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0)),
+                                    ep.packetSize());
                     }
                 }
             }
@@ -314,12 +315,12 @@ public abstract class USBDeviceImpl implements USBDevice {
     public abstract void transferOut(int endpointNumber, byte[] data, int timeout);
 
     @Override
-    public byte[] transferIn(int endpointNumber, int maxLength) {
-        return transferIn(endpointNumber, maxLength, 0);
+    public byte[] transferIn(int endpointNumber) {
+        return transferIn(endpointNumber, 0);
     }
 
     @Override
-    public abstract byte[] transferIn(int endpointNumber, int maxLength, int timeout);
+    public abstract byte[] transferIn(int endpointNumber, int timeout);
 
     @Override
     public OutputStream openOutputStream(int endpointNumber) {
@@ -357,6 +358,6 @@ public abstract class USBDeviceImpl implements USBDevice {
         return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " + "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
     }
 
-    public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress) {
+    public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize) {
     }
 }

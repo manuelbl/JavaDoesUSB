@@ -24,7 +24,7 @@ public class TimeoutTest extends TestDeviceBase {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
         assertThrows(USBTimeoutException.class, () -> {
-            testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
+            testDevice.transferIn(LOOPBACK_EP_IN, 200);
         });
     }
 
@@ -34,7 +34,7 @@ public class TimeoutTest extends TestDeviceBase {
         byte[] data = generateRandomBytes(20, 7280277392L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
 
-        byte[] received = testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
+        byte[] received = testDevice.transferIn(LOOPBACK_EP_IN, 200);
         assertArrayEquals(data, received);
 
     }
@@ -57,7 +57,7 @@ public class TimeoutTest extends TestDeviceBase {
         // drain data in loopback loop
         while (true) {
             try {
-                testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
+                testDevice.transferIn(LOOPBACK_EP_IN, 200);
             } catch (USBTimeoutException e) {
                 break;
             }
@@ -71,7 +71,7 @@ public class TimeoutTest extends TestDeviceBase {
                 "Interrupt transfer only supported by loopback test device");
 
         assertThrows(USBTimeoutException.class, () -> {
-            testDevice.transferIn(ECHO_EP_IN, 16, 200);
+            testDevice.transferIn(ECHO_EP_IN, 200);
         });
     }
 
@@ -84,11 +84,11 @@ public class TimeoutTest extends TestDeviceBase {
         testDevice.transferOut(ECHO_EP_OUT, sampleData, 200);
 
         // receive first echo
-        byte[] echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 200);
+        byte[] echo = testDevice.transferIn(ECHO_EP_IN, 200);
         assertArrayEquals(sampleData, echo);
 
         // receive second echo
-        echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 200);
+        echo = testDevice.transferIn(ECHO_EP_IN, 200);
         assertArrayEquals(sampleData, echo);
     }
 }

@@ -256,11 +256,13 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     if (ret != 0)
                         throwException(ret, "Failed to get pipe properties");
 
-                    int endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 255;
-                    int direction = directionHolder.get(JAVA_BYTE, 0) & 255;
+                    int endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 0xff;
+                    int direction = directionHolder.get(JAVA_BYTE, 0) & 0xff;
                     byte endpointAddress = (byte) (endpointNumber | (direction << 7));
                     byte transferType = transferTypeHolder.get(JAVA_BYTE, 0);
-                    var endpointInfo = new EndpointInfo(interfaceInfo.addr, (byte) pipeIndex, getTransferType(transferType));
+                    int maxPacketSize = maxPacketSizeHolder.get(JAVA_SHORT, 0) & 0xffff;
+                    var endpointInfo = new EndpointInfo(interfaceInfo.addr, (byte) pipeIndex,
+                            getTransferType(transferType), maxPacketSize);
                     endpoints.put(endpointAddress, endpointInfo);
                 }
             }
@@ -375,24 +377,24 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
+    public byte[] transferIn(int endpointNumber, int timeout) {
 
-        var endpointInfo = getEndpointInfo(endpointNumber, USBDirection.IN,
+        var endpoint = getEndpointInfo(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
-            var nativeData = session.allocateArray(JAVA_BYTE, maxLength);
-            var sizeHolder = session.allocate(JAVA_INT, maxLength);
+            var nativeData = session.allocateArray(JAVA_BYTE, endpoint.packetSize());
+            var sizeHolder = session.allocate(JAVA_INT, endpoint.packetSize());
             int ret;
 
             if (timeout <= 0) {
                 // transfer without timeout
-                ret = IoKitUSB.ReadPipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+                ret = IoKitUSB.ReadPipe(endpoint.interfaceAddress(), endpoint.pipeIndex, nativeData.address(), sizeHolder.address());
 
-            } else if (endpointInfo.transferType == USBTransferType.BULK) {
+            } else if (endpoint.transferType == USBTransferType.BULK) {
 
                 // bulk transfer with timeout
-                ret = IoKitUSB.ReadPipeTO(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(),
+                ret = IoKitUSB.ReadPipeTO(endpoint.interfaceAddress(), endpoint.pipeIndex, nativeData.address(),
                         sizeHolder.address(), timeout, timeout);
                 if (ret == IOKit.kIOUSBTransactionTimeout())
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
@@ -400,8 +402,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             } else {
 
                 // interrupt transfer with timeout
-                var transferTimeout = new TransferTimeout(endpointInfo, timeout);
-                ret = IoKitUSB.ReadPipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+                var transferTimeout = new TransferTimeout(endpoint, timeout);
+                ret = IoKitUSB.ReadPipe(endpoint.interfaceAddress(), endpoint.pipeIndex, nativeData.address(), sizeHolder.address());
                 if (ret == IOKit.kIOReturnAborted())
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
                 transferTimeout.markCompleted();
@@ -443,7 +445,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
-    record EndpointInfo(long interfaceAddr, byte pipeIndex, USBTransferType transferType) {
+    record EndpointInfo(long interfaceAddr, byte pipeIndex, USBTransferType transferType, int packetSize) {
         MemoryAddress interfaceAddress() {
             return ofLong(interfaceAddr);
         }

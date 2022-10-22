@@ -108,7 +108,7 @@ public class TestDeviceBase {
         // drain loopback data
         while (true) {
             try {
-                testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE, 1);
+                testDevice.transferIn(LOOPBACK_EP_IN, 1);
             } catch (USBTimeoutException e) {
                 break;
             }
@@ -118,7 +118,7 @@ public class TestDeviceBase {
         if (isLoopbackDevice()) {
             while (true) {
                 try {
-                    testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 1);
+                    testDevice.transferIn(ECHO_EP_IN, 1);
                 } catch (USBTimeoutException e) {
                     break;
                 }

@@ -277,7 +277,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
+    public byte[] transferIn(int endpointNumber, int timeout) {
         var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
@@ -289,7 +289,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 throwLastError("Setting timeout failed");
 
             // create native heap buffer for data
-            var buffer = session.allocate(maxLength);
+            var buffer = session.allocate(endpoint.packetSize());
             var lengthHolder = session.allocate(JAVA_INT);
 
             // receive data

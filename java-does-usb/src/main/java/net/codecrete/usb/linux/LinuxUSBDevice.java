@@ -232,14 +232,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public byte[] transferIn(int endpointNumber, int maxLength, int timeout) {
-        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.IN,
+    public byte[] transferIn(int endpointNumber, int timeout) {
+        var endpoint = getEndpoint(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var session = MemorySession.openConfined()) {
-            var buffer = session.allocate(maxLength);
+            var buffer = session.allocate(endpoint.packetSize());
 
-            var transfer = createBulkTransfer(session, endpointAddress, buffer, timeout);
+            var transfer = createBulkTransfer(session, endpoint.endpointAddress(), buffer, timeout);
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0) {
