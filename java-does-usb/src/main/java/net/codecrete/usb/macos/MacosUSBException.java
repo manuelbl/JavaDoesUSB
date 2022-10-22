@@ -7,6 +7,8 @@
 package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBStallException;
+import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.macos.gen.mach.mach;
 
 public class MacosUSBException extends USBException {
@@ -18,12 +20,22 @@ public class MacosUSBException extends USBException {
         super(String.format("%s - %s", message, machErrorMessage(errorCode)), errorCode);
     }
 
-    public MacosUSBException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     private static String machErrorMessage(int errorCode) {
         var msg = mach.mach_error_string(errorCode);
         return msg.getUtf8String(0);
     }
+
+    static void throwException(int errorCode, String message, Object... args) {
+        var formattedMessage = String.format(message, args);
+        if (errorCode == IOKit.kIOUSBPipeStalled()) {
+            throw new USBStallException(formattedMessage);
+        } else {
+            throw new MacosUSBException(formattedMessage, errorCode);
+        }
+    }
+
+    static void throwException(String message, Object... args) {
+        throw new MacosUSBException(String.format(message, args));
+    }
+
 }

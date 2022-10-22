@@ -109,7 +109,7 @@ public class TestDeviceBase {
         while (true) {
             try {
                 testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE, 1);
-            } catch (TimeoutException e) {
+            } catch (USBTimeoutException e) {
                 break;
             }
         }
@@ -119,7 +119,7 @@ public class TestDeviceBase {
             while (true) {
                 try {
                     testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE, 1);
-                } catch (TimeoutException e) {
+                } catch (USBTimeoutException e) {
                     break;
                 }
             }

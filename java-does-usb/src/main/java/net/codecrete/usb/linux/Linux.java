@@ -43,10 +43,6 @@ public class Linux {
      * @return error message
      */
     public static String getErrorMessage(int err) {
-        try (var session = MemorySession.openConfined()) {
-            var messageAddr = string.strerror(err);
-            var message = MemorySegment.ofAddress(messageAddr, 4000, session);
-            return message.getUtf8String(0);
-        }
+        return string.strerror(err).getUtf8String(0);
     }
 }

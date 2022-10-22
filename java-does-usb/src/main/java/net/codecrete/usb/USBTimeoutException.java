@@ -10,14 +10,14 @@ package net.codecrete.usb;
 /**
  * Exception thrown if a USB operation times out.
  */
-public class TimeoutException extends USBException {
+public class USBTimeoutException extends USBException {
 
     /**
      * Creates a new instance with a message.
      *
      * @param message the message
      */
-    public TimeoutException(String message) {
+    public USBTimeoutException(String message) {
         super(message);
     }
 }

@@ -23,7 +23,7 @@ public class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
-        assertThrows(TimeoutException.class, () -> {
+        assertThrows(USBTimeoutException.class, () -> {
             testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
         });
     }
@@ -48,7 +48,7 @@ public class TimeoutTest extends TestDeviceBase {
         byte[] data = generateRandomBytes(100, 9383073929L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
 
-        assertThrows(TimeoutException.class, () -> {
+        assertThrows(USBTimeoutException.class, () -> {
             for (int i = 0; i < 10; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
@@ -58,7 +58,7 @@ public class TimeoutTest extends TestDeviceBase {
         while (true) {
             try {
                 testDevice.transferIn(LOOPBACK_EP_IN, 64, 200);
-            } catch (TimeoutException e) {
+            } catch (USBTimeoutException e) {
                 break;
             }
         }
@@ -70,7 +70,7 @@ public class TimeoutTest extends TestDeviceBase {
         Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
-        assertThrows(TimeoutException.class, () -> {
+        assertThrows(USBTimeoutException.class, () -> {
             testDevice.transferIn(ECHO_EP_IN, 16, 200);
         });
     }

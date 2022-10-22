@@ -21,13 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.foreign.MemoryAddress.ofLong;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 public class MacosUSBDevice extends USBDeviceImpl {
 
@@ -35,8 +32,6 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
     private Map<Byte, EndpointInfo> endpoints;
-
-    private ScheduledExecutorService scheduledExecutorService;
 
     MacosUSBDevice(MemoryAddress device, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
@@ -55,17 +50,17 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public void open() {
         if (isOpen())
-            throw new USBException("the device is already open");
+            throwException("the device is already open");
 
         // open device
         int ret = IoKitUSB.USBDeviceOpen(device);
         if (ret != 0)
-            throw new MacosUSBException("unable to open USB device", ret);
+            throwException(ret, "unable to open USB device");
 
         // set configuration
         ret = IoKitUSB.SetConfiguration(device, (byte) configurationValue);
         if (ret != 0)
-            throw new MacosUSBException("failed to set configuration", ret);
+            throwException(ret, "failed to set configuration");
 
         claimedInterfaces = new ArrayList<>();
         updateEndpointList();
@@ -95,27 +90,23 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private void loadDescription() {
         try (var session = MemorySession.openConfined()) {
 
-            try {
-                // retrieve information of first configuration
-                var descPtrHolder = session.allocate(ADDRESS);
-                int ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder.address());
-                if (ret != 0)
-                    throw new MacosUSBException("failed to query first configuration", ret);
+            configurationValue = 0;
 
-                // get value of first configuration
-                var configDescHeader = new ConfigurationDescriptor(MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
-                        ConfigurationDescriptor.LAYOUT.byteSize(), session));
-                int totalLength = configDescHeader.totalLength();
-                var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
-                        totalLength, session);
+            // retrieve information of first configuration
+            var descPtrHolder = session.allocate(ADDRESS);
+            int ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder.address());
+            if (ret != 0)
+                throwException(ret, "failed to query first configuration");
 
-                var configuration = setConfigurationDescriptor(configDesc);
-                configurationValue = 255 & configuration.configValue();
+            // get value of first configuration
+            var configDescHeader = new ConfigurationDescriptor(MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
+                    ConfigurationDescriptor.LAYOUT.byteSize(), session));
+            int totalLength = configDescHeader.totalLength();
+            var configDesc = MemorySegment.ofAddress(descPtrHolder.get(ADDRESS, 0),
+                    totalLength, session);
 
-            } catch (Throwable e) {
-                configurationValue = 0;
-                throw e;
-            }
+            var configuration = setConfigurationDescriptor(configDesc);
+            configurationValue = 255 & configuration.configValue();
         }
     }
 
@@ -131,7 +122,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var iterHolder = outerSession.allocate(JAVA_INT);
             int ret = IoKitUSB.CreateInterfaceIterator(device, request.address(), iterHolder.address());
             final var iter = iterHolder.get(JAVA_INT, 0);
-            if (ret != 0) throw new RuntimeException("CreateInterfaceIterator failed");
+            if (ret != 0)
+                throwException("CreateInterfaceIterator failed");
             outerSession.addCloseAction(() -> IOKit.IOObjectRelease(iter));
 
             int service;
@@ -157,7 +149,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             }
         }
 
-        throw new MacosUSBException(String.format("Invalid interface number: %d", interfaceNumber));
+        throwException("Invalid interface number: %d", interfaceNumber);
+        throw new AssertionError("not reached");
     }
 
     public void claimInterface(int interfaceNumber) {
@@ -168,7 +161,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         try {
             var ret = IoKitUSB.USBInterfaceOpen(interfaceInfo.asAddress());
             if (ret != 0)
-                throw new MacosUSBException("Failed to claim interface", ret);
+                throwException(ret, "Failed to claim interface");
             setClaimed(interfaceNumber, true);
 
         } catch (Throwable t) {
@@ -185,22 +178,21 @@ public class MacosUSBDevice extends USBDeviceImpl {
         // check interface
         var intf = getInterface(interfaceNumber);
         if (intf == null)
-            throw new MacosUSBException(String.format("Interface %d does not exist", interfaceNumber));
+            throwException("Interface %d does not exist", interfaceNumber);
         if (!intf.isClaimed())
-            throw new MacosUSBException(String.format("Interface %d has not been claimed", interfaceNumber));
+            throwException("Interface %d has not been claimed", interfaceNumber);
 
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throw new MacosUSBException(String.format("Interface %d does not have an alternate interface setting %d",
-                    interfaceNumber, alternateNumber));
+            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber, alternateNumber);
 
         var intfInfo = claimedInterfaces.stream()
                 .filter((interf) -> interf.interfaceNumber() == interfaceNumber).findFirst().get();
 
         int ret = IoKitUSB.SetAlternateInterface(intfInfo.asAddress(), (byte) alternateNumber);
         if (ret != 0)
-            throw new MacosUSBException("Failed to set alternate interface", ret);
+            throwException(ret, "Failed to set alternate interface");
 
         intf.setAlternate(altSetting);
         updateEndpointList();
@@ -212,13 +204,13 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var interfaceInfoOptional =
                 claimedInterfaces.stream().filter(info -> info.interfaceNumber == interfaceNumber).findFirst();
         if (interfaceInfoOptional.isEmpty())
-            throw new MacosUSBException(String.format("Invalid interface number: %d", interfaceNumber));
+            throwException("Invalid interface number: %d", interfaceNumber);
 
         var interfaceInfo = interfaceInfoOptional.get();
 
         int ret = IoKitUSB.USBInterfaceClose(interfaceInfo.asAddress());
         if (ret != 0)
-            throw new MacosUSBException("Failed to release interface", ret);
+            throwException(ret, "Failed to release interface");
 
         claimedInterfaces.remove(interfaceInfo);
         IoKitUSB.Release(interfaceInfo.asAddress());
@@ -244,7 +236,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 var numEndpointsHolder = session.allocate(JAVA_BYTE);
                 int ret = IoKitUSB.GetNumEndpoints(intf, numEndpointsHolder.address());
                 if (ret != 0)
-                    throw new MacosUSBException("Failed to get number of endpoints", ret);
+                    throwException(ret, "Failed to get number of endpoints");
                 int numEndpoints = numEndpointsHolder.get(JAVA_BYTE, 0) & 255;
 
                 for (int pipeIndex = 1; pipeIndex <= numEndpoints; pipeIndex++) {
@@ -258,7 +250,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     ret = IoKitUSB.GetPipeProperties(intf, (byte) pipeIndex, directionHolder.address(),
                             numberHolder.address(), transferTypeHolder.address(), maxPacketSizeHolder.address(),
                             intervalHolder.address());
-                    if (ret != 0) throw new MacosUSBException("Failed to get pipe properties", ret);
+                    if (ret != 0)
+                        throwException(ret, "Failed to get pipe properties");
 
                     int endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 255;
                     int direction = directionHolder.get(JAVA_BYTE, 0) & 255;
@@ -286,9 +279,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
             transferTypeDesc = transferType1.name();
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
-        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " +
-                        "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc,
-                direction.name()));
+
+        throwException(
+                "Endpoint number %d does not exist, is not part of a claimed interface  or is not valid for %s transfer in %s direction",
+                endpointNumber, transferTypeDesc, direction.name());
+        throw new AssertionError("not reached");
     }
 
     private static MemorySegment createDeviceRequest(MemorySession session, USBDirection direction,
@@ -314,7 +309,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(session, USBDirection.IN, setup, data);
 
             int ret = IoKitUSB.DeviceRequest(device, deviceRequest.address());
-            if (ret != 0) throw new MacosUSBException("Control IN transfer failed", ret);
+            if (ret != 0)
+                throwException(ret, "Control IN transfer failed");
 
             int lenDone = IOUSBDevRequest.wLenDone$get(deviceRequest);
             return data.asSlice(0, lenDone).toArray(JAVA_BYTE);
@@ -332,7 +328,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(session, USBDirection.OUT, setup, dataSegment);
 
             int ret = IoKitUSB.DeviceRequest(device, deviceRequest.address());
-            if (ret != 0) throw new MacosUSBException("Control IN transfer failed", ret);
+            if (ret != 0)
+                throwException(ret, "Control IN transfer failed");
         }
     }
 
@@ -349,28 +346,28 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
             if (timeout <= 0) {
                 // transfer without timeout
-                ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
+                ret = IoKitUSB.WritePipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
 
             } else if (endpointInfo.transferType == USBTransferType.BULK) {
 
                 // bulk transfer with timeout
-                ret = IoKitUSB.WritePipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
+                ret = IoKitUSB.WritePipeTO(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(),
                         data.length, timeout, timeout);
                 if (ret == IOKit.kIOUSBTransactionTimeout())
-                    throw new TimeoutException("Transfer out aborted due to timeout");
+                    throw new USBTimeoutException("Transfer out aborted due to timeout");
 
             } else {
 
                 // interrupt transfer with timeout
                 var transferTimeout = new TransferTimeout(endpointInfo, timeout);
-                ret = IoKitUSB.WritePipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
+                ret = IoKitUSB.WritePipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), data.length);
                 if (ret == IOKit.kIOReturnAborted())
-                    throw new TimeoutException("Transfer out aborted due to timeout");
+                    throw new USBTimeoutException("Transfer out aborted due to timeout");
                 transferTimeout.markCompleted();
             }
 
             if (ret != 0)
-                throw new MacosUSBException(String.format("Sending data to endpoint %d failed", endpointNumber), ret);
+                throwException(ret, "Sending data to endpoint %d failed", endpointNumber);
         }
     }
 
@@ -387,28 +384,27 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
             if (timeout <= 0) {
                 // transfer without timeout
-                ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+                ret = IoKitUSB.ReadPipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
 
             } else if (endpointInfo.transferType == USBTransferType.BULK) {
 
                 // bulk transfer with timeout
-                ret = IoKitUSB.ReadPipeTO(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(),
+                ret = IoKitUSB.ReadPipeTO(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(),
                         sizeHolder.address(), timeout, timeout);
                 if (ret == IOKit.kIOUSBTransactionTimeout())
-                    throw new TimeoutException("Transfer in aborted due to timeout");
+                    throw new USBTimeoutException("Transfer in aborted due to timeout");
 
             } else {
 
                 // interrupt transfer with timeout
                 var transferTimeout = new TransferTimeout(endpointInfo, timeout);
-                ret = IoKitUSB.ReadPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
+                ret = IoKitUSB.ReadPipe(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex, nativeData.address(), sizeHolder.address());
                 if (ret == IOKit.kIOReturnAborted())
-                    throw new TimeoutException("Transfer in aborted due to timeout");
+                    throw new USBTimeoutException("Transfer in aborted due to timeout");
                 transferTimeout.markCompleted();
             }
             if (ret != 0)
-                throw new MacosUSBException(String.format("Receiving data from endpoint %d failed", endpointNumber),
-                        ret);
+                throwException(ret, "Receiving data from endpoint %d failed", endpointNumber);
 
             int size = sizeHolder.get(JAVA_INT, 0);
             var result = new byte[size];
@@ -424,15 +420,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
         var endpointInfo = getEndpointInfo(endpointNumber, direction,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        int ret = IoKitUSB.ClearPipeStallBothEnds(endpointInfo.interfacAddress(), endpointInfo.pipeIndex);
+        int ret = IoKitUSB.ClearPipeStallBothEnds(endpointInfo.interfaceAddress(), endpointInfo.pipeIndex);
         if (ret != 0)
-            throw new MacosUSBException("Clearing halt condition failed", ret);
-    }
-
-    synchronized ScheduledExecutorService getScheduledExecutorService() {
-        if (scheduledExecutorService == null)
-            scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        return scheduledExecutorService;
+            throwException(ret, "Clearing halt condition failed");
     }
 
     private static USBTransferType getTransferType(byte macosTransferType) {
@@ -451,51 +441,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     record EndpointInfo(long interfaceAddr, byte pipeIndex, USBTransferType transferType) {
-        MemoryAddress interfacAddress() {
+        MemoryAddress interfaceAddress() {
             return ofLong(interfaceAddr);
         }
-    }
-
-    /**
-     * Manages the timeout for a USB transfer.
-     * <p>
-     * Not used for bulk transfers as IOKit offers suitable functions ({@code WritePipeTO()}, {@code ReadPipeTO()}).
-     * </p>
-     */
-    class TransferTimeout {
-        /**
-         * Schedules a timeout for the specified endpoint.
-         * <p>
-         * If the timeout expires, the transfer is aborted.
-         * </p>
-         * @param endpointInfo endpoint information
-         * @param timeout timeout, in milliseconds
-         */
-        TransferTimeout(EndpointInfo endpointInfo, int timeout) {
-            this.endpointInfo = endpointInfo;
-            future = getScheduledExecutorService().schedule(this::abort, timeout, TimeUnit.MILLISECONDS);
-        }
-
-        private synchronized void abort() {
-            if (completed)
-                return;
-            int ret = IoKitUSB.AbortPipe(endpointInfo.interfacAddress(), endpointInfo.pipeIndex());
-            if (ret != 0)
-                throw new MacosUSBException("Failed to abort USB transfer after timeout", ret);
-        }
-
-        /**
-         * Marks the transfer as completed and cancels the timeout.
-         */
-        synchronized void markCompleted() {
-            if (completed)
-                return;
-            completed = true;
-            future.cancel(false);
-        }
-
-        ScheduledFuture<?> future;
-        EndpointInfo endpointInfo;
-        boolean completed;
     }
 }

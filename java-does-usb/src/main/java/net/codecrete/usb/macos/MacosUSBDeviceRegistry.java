@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryAddress.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 /**
  * MacOS implementation of USB device registry.
@@ -102,7 +103,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 var entryIdHolder = session.allocate(JAVA_LONG);
                 int ret = IOKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
                 if (ret != 0)
-                    throw new MacosUSBException("IORegistryEntryGetRegistryEntryID failed", ret);
+                    throwException(ret, "IORegistryEntryGetRegistryEntryID failed");
                 var entryId = entryIdHolder.get(JAVA_LONG, 0);
 
                 // call consumer to process device
@@ -189,7 +190,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         int ret = IOKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
                 onDeviceCallbackStub, NULL, deviceIterHolder);
         if (ret != 0)
-            throw new MacosUSBException("IOServiceAddMatchingNotification failed", ret);
+            throwException(ret, "IOServiceAddMatchingNotification failed");
 
         return deviceIterHolder.get(JAVA_INT, 0);
     }

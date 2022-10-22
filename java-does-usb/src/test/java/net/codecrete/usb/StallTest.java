@@ -21,7 +21,7 @@ public class StallTest extends TestDeviceBase {
         haltEndpoint(USBDirection.OUT, LOOPBACK_EP_OUT);
 
         byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        assertThrows(USBException.class, () -> {
+        assertThrows(USBStallException.class, () -> {
             testDevice.transferOut(LOOPBACK_EP_OUT, data);
         });
 
@@ -36,7 +36,7 @@ public class StallTest extends TestDeviceBase {
     void stalledBulkTransferIn_recovers() {
         haltEndpoint(USBDirection.IN, LOOPBACK_EP_IN);
 
-        assertThrows(USBException.class, () -> {
+        assertThrows(USBStallException.class, () -> {
             testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
         });
 
@@ -50,7 +50,7 @@ public class StallTest extends TestDeviceBase {
 
     @Test
     void invalidControlTransfer_throws() {
-        assertThrows(USBException.class, () -> {
+        assertThrows(USBStallException.class, () -> {
             testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x08, (short) 0, (short) interfaceNumber), 2);
         });
     }

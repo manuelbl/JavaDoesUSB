@@ -156,6 +156,9 @@ public class IOKit  {
     public static int kIOReturnAborted() {
         return (int)-536870165L;
     }
+    public static int kIOUSBPipeStalled() {
+        return (int)-536854449L;
+    }
     public static int kIOUSBTransactionTimeout() {
         return (int)-536854447L;
     }

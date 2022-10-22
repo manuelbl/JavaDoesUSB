@@ -270,7 +270,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     lengthHolder, NULL) == 0) {
                 int err = Kernel32.GetLastError();
                 if (err == Kernel32.ERROR_SEM_TIMEOUT())
-                    throw new TimeoutException("Transfer out aborted due to timeout");
+                    throw new USBTimeoutException("Transfer out aborted due to timeout");
                 throw new WindowsUSBException("Bulk/interrupt transfer OUT failed", err);
             }
         }
@@ -297,7 +297,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     lengthHolder, NULL) == 0) {
                 int err = Kernel32.GetLastError();
                 if (err == Kernel32.ERROR_SEM_TIMEOUT())
-                    throw new TimeoutException("Transfer in aborted due to timeout");
+                    throw new USBTimeoutException("Transfer in aborted due to timeout");
                 throw new WindowsUSBException("Bulk/interrupt transfer IN failed", err);
             }
 

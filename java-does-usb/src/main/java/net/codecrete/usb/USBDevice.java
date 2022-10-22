@@ -215,7 +215,7 @@ public interface USBDevice {
      * Sends data to this device.
      * <p>
      * This method blocks until the data has been sent, the timeout period has expired
-     * or an error has occurred. If the timeout expires, a {@link TimeoutException} is thrown.
+     * or an error has occurred. If the timeout expires, a {@link USBTimeoutException} is thrown.
      * </p>
      * <p>
      * This method can send data to bulk and interrupt endpoints.
@@ -247,7 +247,7 @@ public interface USBDevice {
      * Receives data from this device.
      * <p>
      * This method blocks until at least a packet has been received, the timeout period has expired
-     * or an error has occurred. If the timeout expired, a {@link TimeoutException} is thrown.
+     * or an error has occurred. If the timeout expired, a {@link USBTimeoutException} is thrown.
      * </p>
      * <p>
      * {@code maxLength} must be long enough to hold the full data packet transmitted by the device.
