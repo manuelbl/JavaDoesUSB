@@ -70,7 +70,10 @@ public class EndpointInputStream extends InputStream {
             throw new IOException("Bulk endpoint input stream has been closed");
 
         readOffset_ = 0;
-        packet_ = device_.transferIn(endpointNumber_, packetSize_);
+        // skip zero-length packets
+        do {
+            packet_ = device_.transferIn(endpointNumber_, packetSize_);
+        } while (packet_.length == 0);
     }
 
     @Override

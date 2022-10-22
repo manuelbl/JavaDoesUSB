@@ -12,9 +12,11 @@ package net.codecrete.usb;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StreamTest extends TestDeviceBase {
 
@@ -37,14 +39,29 @@ public class StreamTest extends TestDeviceBase {
     }
 
     @Test
-    void largeTransferSmallChunks_succeeds() throws Throwable {
-        final int numBytes = 230763;
+    void transferWithZLP_succeeds() throws Throwable {
+        final byte[] sampleData = generateRandomBytes(2 * LOOPBACK_MAX_PACKET_SIZE, 197007894);
+        var writer = CompletableFuture.runAsync(() -> {
+            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, 0, LOOPBACK_MAX_PACKET_SIZE));
+            sleep(200);
+            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, LOOPBACK_MAX_PACKET_SIZE, 2 * LOOPBACK_MAX_PACKET_SIZE));
+        });
+
+        var reader = CompletableFuture.supplyAsync(() -> readBytes(sampleData.length));
+
+        CompletableFuture.allOf(writer, reader).join();
+
+        assertArrayEquals(sampleData, reader.resultNow());
+    }
+
+    @Test
+    void largeTransferSmallChunks_succeeds() {
+        final int numBytes = 23076;
         byte[] sampleData = generateRandomBytes(numBytes, 3829007493L);
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData, 20));
         var reader = CompletableFuture.supplyAsync(() -> readBytes(numBytes));
-        CompletableFuture.allOf(writer, reader).join();
-        if (reader.isCompletedExceptionally())
-            throw reader.exceptionNow();
+        var allFutures = CompletableFuture.allOf(writer, reader);
+        allFutures.join();
         assertArrayEquals(sampleData, reader.resultNow());
     }
 
@@ -55,8 +72,6 @@ public class StreamTest extends TestDeviceBase {
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData, 150));
         var reader = CompletableFuture.supplyAsync(() -> readBytes(numBytes));
         CompletableFuture.allOf(writer, reader).join();
-        if (reader.isCompletedExceptionally())
-            throw reader.exceptionNow();
         assertArrayEquals(sampleData, reader.resultNow());
     }
 
@@ -78,12 +93,22 @@ public class StreamTest extends TestDeviceBase {
         try (var is = testDevice.openInputStream(LOOPBACK_EP_IN)) {
             int bytesRead = 0;
             while (bytesRead < numBytes) {
-                bytesRead += is.read(buffer, bytesRead, numBytes - bytesRead);
+                int n = is.read(buffer, bytesRead, numBytes - bytesRead);
+                assertTrue(n > 0);
+                bytesRead += n;
             }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return buffer;
+    }
+
+    private static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
