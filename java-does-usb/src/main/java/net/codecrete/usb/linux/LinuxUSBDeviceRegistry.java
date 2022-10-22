@@ -8,7 +8,6 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.linux.gen.poll.poll;
 import net.codecrete.usb.linux.gen.poll.pollfd;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.foreign.MemoryAddress.NULL;
+import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 
 /**
  * Linux implementation of USB device registry.
@@ -42,21 +42,21 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             // setup udev monitor
             var udevInstance = udev.udev_new();
             if (udevInstance == NULL)
-                throw new USBException("internal error (udev_new)");
+                throwException("internal error (udev_new)");
 
             monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
             if (monitor == NULL)
-                throw new USBException("internal error (udev_monitor_new_from_netlink)");
+                throwException("internal error (udev_monitor_new_from_netlink)");
 
             if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
-                throw new USBException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
+                throwException("internal error (udev_monitor_filter_add_match_subsystem_devtype)");
 
             if (udev.udev_monitor_enable_receiving(monitor) < 0)
-                throw new USBException("internal error (udev_monitor_enable_receiving)");
+                throwException("internal error (udev_monitor_enable_receiving)");
 
             fd = udev.udev_monitor_get_fd(monitor);
             if (fd < 0)
-                throw new USBException("internal error (udev_monitor_get_fd)");
+                throwException("internal error (udev_monitor_get_fd)");
 
             // create initial list of devices
             var deviceList = enumeratePresentDevices(udevInstance);
@@ -101,15 +101,15 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             // create device enumerator
             var enumerate = udev.udev_enumerate_new(udevInstance);
             if (enumerate == NULL)
-                throw new USBException("internal error (udev_enumerate_new)");
+                throwException("internal error (udev_enumerate_new)");
 
             outerSession.addCloseAction(() -> udev.udev_enumerate_unref(enumerate));
 
             if (udev.udev_enumerate_add_match_subsystem(enumerate, SUBSYSTEM_USB) < 0)
-                throw new USBException("internal error (udev_enumerate_add_match_subsystem)");
+                throwException("internal error (udev_enumerate_add_match_subsystem)");
 
             if (udev.udev_enumerate_scan_devices(enumerate) < 0)
-                throw new USBException("internal error (udev_enumerate_scan_devices)");
+                throwException("internal error (udev_enumerate_scan_devices)");
 
             // enumerate devices
             for (var entry = udev.udev_enumerate_get_list_entry(enumerate); entry != NULL; entry =
@@ -237,6 +237,6 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         pollfd.events$set(fds, (short) poll.POLLIN());
         int res = poll.poll(fds, 1, -1);
         if (res < 0)
-            throw new USBException("internal error (poll)");
+            throwException("internal error (poll)");
     }
 }

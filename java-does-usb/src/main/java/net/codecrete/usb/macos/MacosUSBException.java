@@ -25,7 +25,7 @@ public class MacosUSBException extends USBException {
      * @param errorCode macOS error code (usually returned by macOS functions)
      */
     public MacosUSBException(String message, int errorCode) {
-        super(String.format("%s - %s", message, machErrorMessage(errorCode)), errorCode);
+        super(String.format("%s. %s", message, machErrorMessage(errorCode)), errorCode);
     }
 
     private static String machErrorMessage(int errorCode) {

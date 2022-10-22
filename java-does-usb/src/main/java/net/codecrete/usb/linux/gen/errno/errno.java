@@ -17,6 +17,9 @@ public class errno  {
     public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static int EPIPE() {
+        return (int)32L;
+    }
     public static int ETIMEDOUT() {
         return (int)110L;
     }
