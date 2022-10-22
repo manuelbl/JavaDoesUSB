@@ -49,7 +49,7 @@ public class AlternateInterfaceTest extends TestDeviceBase {
 
         byte[] sampleData = generateRandomBytes(12, 293872394);
         testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
-        var received = testDevice.transferIn(LOOPBACK_EP_IN, 64);
+        var received = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(sampleData, received);
     }
 
@@ -59,6 +59,6 @@ public class AlternateInterfaceTest extends TestDeviceBase {
 
         assertThrows(USBException.class, () -> testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 }));
 
-        assertThrows(USBException.class, () -> testDevice.transferIn(ECHO_EP_IN, 16));
+        assertThrows(USBException.class, () -> testDevice.transferIn(ECHO_EP_IN));
     }
 }

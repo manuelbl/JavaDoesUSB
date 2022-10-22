@@ -40,10 +40,10 @@ public class InvalidOperationTest extends TestDeviceBase {
 
         Assertions.assertThrows(USBException.class, () -> testDevice.transferOut(4, data));
 
-        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(1, 64));
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(1));
 
-        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(0, 64));
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(0));
 
-        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(5, 64));
+        Assertions.assertThrows(USBException.class, () -> testDevice.transferIn(5));
     }
 }

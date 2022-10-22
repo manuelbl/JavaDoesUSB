@@ -333,9 +333,8 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public InputStream openInputStream(int endpointNumber) {
         // check that endpoint number is valid
-        var endpointInfo = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
-        var endpoint = getInterface(endpointInfo.interfaceNumber).alternate().getEndpoint(endpointNumber, USBDirection.IN);
-        return new EndpointInputStream(this, endpointNumber, endpoint.packetSize());
+        getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        return new EndpointInputStream(this, endpointNumber);
     }
 
     @Override

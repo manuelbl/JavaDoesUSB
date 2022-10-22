@@ -26,7 +26,7 @@ public class StallTest extends TestDeviceBase {
         testDevice.clearHalt(USBDirection.OUT, LOOPBACK_EP_OUT);
 
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
-        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN, 20);
+        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(data, receivedData);
     }
 
@@ -34,13 +34,13 @@ public class StallTest extends TestDeviceBase {
     void stalledBulkTransferIn_recovers() {
         haltEndpoint(USBDirection.IN, LOOPBACK_EP_IN);
 
-        assertThrows(USBStallException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE));
+        assertThrows(USBStallException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN));
 
         testDevice.clearHalt(USBDirection.IN, LOOPBACK_EP_IN);
 
         byte[] data = new byte[] { 9, 8, 7, 6, 5, 4, 3, 2 };
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
-        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN, 20);
+        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(data, receivedData);
     }
 

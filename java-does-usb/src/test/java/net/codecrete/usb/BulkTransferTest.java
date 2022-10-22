@@ -41,9 +41,9 @@ public class BulkTransferTest extends TestDeviceBase {
     void transferWithZLP_succeeds() {
         byte[] sampleData = generateRandomBytes(64, 97333894);
         writeBytes(sampleData);
-        byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
+        byte[] data = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(sampleData, data);
-        data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
+        data = testDevice.transferIn(LOOPBACK_EP_IN);
         assertNotNull(data);
         assertEquals(0, data.length);
     }
@@ -73,7 +73,7 @@ public class BulkTransferTest extends TestDeviceBase {
         var buffer = new ByteArrayOutputStream();
         int bytesRead = 0;
         while (bytesRead < numBytes) {
-            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN, LOOPBACK_MAX_PACKET_SIZE);
+            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN);
             buffer.writeBytes(data);
             bytesRead += data.length;
         }

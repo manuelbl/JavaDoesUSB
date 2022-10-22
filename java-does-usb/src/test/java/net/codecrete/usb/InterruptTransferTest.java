@@ -25,11 +25,11 @@ public class InterruptTransferTest extends TestDeviceBase {
         testDevice.transferOut(ECHO_EP_OUT, sampleData);
 
         // receive first echo
-        byte[] echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE);
+        byte[] echo = testDevice.transferIn(ECHO_EP_IN);
         assertArrayEquals(sampleData, echo);
 
         // receive second echo
-        echo = testDevice.transferIn(ECHO_EP_IN, ECHO_MAX_PACKET_SIZE);
+        echo = testDevice.transferIn(ECHO_EP_IN);
         assertArrayEquals(sampleData, echo);
     }
 }

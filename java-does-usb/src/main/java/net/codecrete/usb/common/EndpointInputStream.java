@@ -22,14 +22,12 @@ public class EndpointInputStream extends InputStream {
 
     private USBDevice device_;
     private final int endpointNumber_;
-    private final int packetSize_;
     private byte[] packet_;
     private int readOffset_;
 
-    EndpointInputStream(USBDevice device, int endpointNumber, int packetSize) {
+    EndpointInputStream(USBDevice device, int endpointNumber) {
         device_ = device;
         endpointNumber_ = endpointNumber;
-        packetSize_ = packetSize;
     }
 
     @Override
@@ -72,7 +70,7 @@ public class EndpointInputStream extends InputStream {
         readOffset_ = 0;
         // skip zero-length packets
         do {
-            packet_ = device_.transferIn(endpointNumber_, packetSize_);
+            packet_ = device_.transferIn(endpointNumber_);
         } while (packet_.length == 0);
     }
 
