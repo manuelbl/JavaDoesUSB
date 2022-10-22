@@ -39,7 +39,7 @@ public class StreamTest extends TestDeviceBase {
     }
 
     @Test
-    void transferWithZLP_succeeds() throws Throwable {
+    void transferWithZLP_succeeds() {
         final byte[] sampleData = generateRandomBytes(2 * LOOPBACK_MAX_PACKET_SIZE, 197007894);
         var writer = CompletableFuture.runAsync(() -> {
             testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, 0, LOOPBACK_MAX_PACKET_SIZE));
@@ -66,7 +66,7 @@ public class StreamTest extends TestDeviceBase {
     }
 
     @Test
-    void largeTransferBigChunks_succeeds() throws Throwable {
+    void largeTransferBigChunks_succeeds() {
         final int numBytes = 230763;
         byte[] sampleData = generateRandomBytes(numBytes, 3829007493L);
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData, 150));

@@ -59,9 +59,9 @@ class TransferTimeout {
         return scheduledExecutorService;
     }
 
-    ScheduledFuture<?> future;
-    MacosUSBDevice.EndpointInfo endpointInfo;
-    boolean completed;
+    private final ScheduledFuture<?> future;
+    private final MacosUSBDevice.EndpointInfo endpointInfo;
+    private boolean completed;
 
     private static ScheduledExecutorService scheduledExecutorService;
 }

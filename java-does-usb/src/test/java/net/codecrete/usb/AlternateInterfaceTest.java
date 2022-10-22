@@ -38,13 +38,9 @@ public class AlternateInterfaceTest extends TestDeviceBase {
 
     @Test
     void selectInvalidAlternateIntf_fails() {
-        assertThrows(USBException.class, () -> {
-            testDevice.selectAlternateSetting(1, 0);
-        });
+        assertThrows(USBException.class, () -> testDevice.selectAlternateSetting(1, 0));
 
-        assertThrows(USBException.class, () -> {
-            testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 2);
-        });
+        assertThrows(USBException.class, () -> testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 2));
     }
 
     @Test
@@ -61,12 +57,8 @@ public class AlternateInterfaceTest extends TestDeviceBase {
     void transferOnInvalidEndpoint_fails() {
         testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
 
-        assertThrows(USBException.class, () -> {
-            testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 });
-        });
+        assertThrows(USBException.class, () -> testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 }));
 
-        assertThrows(USBException.class, () -> {
-            testDevice.transferIn(ECHO_EP_IN, 16);
-        });
+        assertThrows(USBException.class, () -> testDevice.transferIn(ECHO_EP_IN, 16));
     }
 }
