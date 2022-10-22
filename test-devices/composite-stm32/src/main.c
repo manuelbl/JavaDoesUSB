@@ -129,6 +129,11 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
 
     loopback_check_tx();
     loopback_check_rx();
+
+    // check ZLP
+    if ((sent_bytes & (BULK_MAX_PACKET_SIZE - 1)) == 0
+            && !cust_vendor_is_transmitting(ep_addr))
+        cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
 }
 
 // Invoked when interface has been opened
