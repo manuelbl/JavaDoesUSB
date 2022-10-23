@@ -34,19 +34,27 @@ If it is not present, install it, typically using package manager like *Homebrew
 
 ### Build the application
 
-Since the *java-does-usb* library is not yet available on Maven Central, it must be built locally:
-
 ```shell
 $ mvn clean package
 ```
 
-The result will be put in your local Maven repository.
-
-### Run the application
+### Put the STM32 development board in DFU mode
 
 - Connect an STM32 development board (like a BlackPill board) to your computer while pressing the *Boot* button.
 - Ensure that it is DFU mode by checking macOS *System Information* or Windows *Device Manager*. The device should appear as "STM32 BOOTLOADER".
-- Run the command below (adapting the file path depending on your specific board).
+
+On Windows, the *WinUSB* driver must be installed. See https://github.com/manuelbl/JavaDoesUSB/wiki/DFU-on-Windows for additional information.
+
+On many Linux distributions, the default permissions of USB devices do not allow access. To change it, create a file `/etc/udev/rules.d/50-stm-dfu.rules` with the below content:
+
+```text
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0666"
+```
+
+
+### Run the application
+
+Run the command below (adapting the file path depending on your specific board):
 
 ```shell
 $ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.4.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin

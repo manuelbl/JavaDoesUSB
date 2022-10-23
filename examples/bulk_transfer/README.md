@@ -31,17 +31,6 @@ $ mvn -version
 
 If it is not present, install it, typically using package manager like *Homebrew* on macOS, *Chocolately* on Windows and *apt* on Linux.
 
-### Create the *java-does-usb* library
-
-Since the *java-does-usb* library is not yet available on Maven Central, it must be built locally:
-
-```shell
-$ cd JavaDoesUSB/java-does-usb
-$ mvn install
-```
-
-The result will be put in your local Maven repository.
-
 ### Run the sample
 
 ```shell
