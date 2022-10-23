@@ -226,6 +226,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 int err = IO.getErrno();
                 if (err == errno.ETIMEDOUT())
                     throw new USBTimeoutException("Transfer out aborted due to timeout");
+                // TODO: remove below code if 'errno' is no longer overwritten by JVM
+                if (err == 2)
+                    throw new USBTimeoutException("Transfer in aborted due to timeout");
                 throwException(err, "USB OUT transfer on endpoint %d failed", endpointNumber);
             }
         }
@@ -245,6 +248,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             if (res < 0) {
                 int err = IO.getErrno();
                 if (err == errno.ETIMEDOUT())
+                    throw new USBTimeoutException("Transfer in aborted due to timeout");
+                // TODO: remove below code if 'errno' is no longer overwritten by JVM
+                if (err == 2)
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
                 throwException(err, "USB IN transfer on endpoint %d failed", endpointNumber);
             }
