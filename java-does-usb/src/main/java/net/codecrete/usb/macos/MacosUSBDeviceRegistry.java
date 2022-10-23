@@ -169,7 +169,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         Integer usbVersion = IoKitHelper.getPropertyInt(service, "bcdUSB");
         Integer deviceVersion = IoKitHelper.getPropertyInt(service, "bcdDevice");
         //noinspection ConstantConditions
-        device.setVersions(usbVersion, deviceVersion);
+        device.setVersions(usbVersion, deviceVersion != null ? deviceVersion : 0);
 
         return device;
     }
