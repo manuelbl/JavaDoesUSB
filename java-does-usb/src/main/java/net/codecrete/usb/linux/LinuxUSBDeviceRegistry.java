@@ -218,11 +218,11 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     private static String getDeviceName(Addressable udevDevice) {
-        return Linux.createStringFromAddress(udev.udev_device_get_devnode(udevDevice));
+        return udev.udev_device_get_devnode(udevDevice).getUtf8String(0);
     }
 
     private static String getDeviceAction(Addressable udevDevice) {
-        return Linux.createStringFromAddress(udev.udev_device_get_action(udevDevice));
+        return udev.udev_device_get_action(udevDevice).getUtf8String(0);
     }
 
     /**
