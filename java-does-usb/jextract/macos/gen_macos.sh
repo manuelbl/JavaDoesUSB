@@ -50,13 +50,13 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function IORegistryEntryGetRegistryEntryID \
   --include-function IOServiceAddMatchingNotification \
   --include-function IOServiceMatching \
-  --include-struct IOUSBDeviceStruct942 \
-  --include-typedef IOUSBDeviceInterface \
+  --include-struct IOUSBDeviceStruct100 \
+  --include-typedef IOUSBDeviceInterface100 \
   --include-macro kIOUSBFindInterfaceDontCare \
   --include-typedef IOUSBFindInterfaceRequest \
   --include-typedef IOUSBDevRequest \
-  --include-struct IOUSBInterfaceStruct942 \
-  --include-typedef IOUSBInterfaceInterface \
+  --include-struct IOUSBInterfaceStruct190 \
+  --include-typedef IOUSBInterfaceInterface190 \
   --include-macro kIOUSBTransactionTimeout \
   --include-macro kIOReturnAborted \
   --include-macro kIOUSBPipeStalled \

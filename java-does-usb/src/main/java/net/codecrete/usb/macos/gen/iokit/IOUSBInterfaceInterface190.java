@@ -2,7 +2,7 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-public class IOUSBDeviceInterface extends IOUSBDeviceStruct942 {
+public class IOUSBInterfaceInterface190 extends IOUSBInterfaceStruct190 {
 
 }
 

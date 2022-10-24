@@ -7,9 +7,8 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface;
-import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface;
-import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceStruct942;
+import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface100;
+import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface190;
 
 import java.lang.foreign.MemoryAddress;
 import java.lang.foreign.MemorySegment;
@@ -32,35 +31,35 @@ public class IoKitUSB {
     // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
     public static int QueryInterface(MemoryAddress self, MemorySegment iid, MemoryAddress ppv) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.QueryInterface(getVtable(self, session), session).apply(self, iid, ppv);
+            return IOUSBDeviceInterface100.QueryInterface(getVtable(self, session), session).apply(self, iid, ppv);
         }
     }
 
     // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
     public static int AddRef(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.AddRef(getVtable(self, session), session).apply(self);
+            return IOUSBDeviceInterface100.AddRef(getVtable(self, session), session).apply(self);
         }
     }
 
     // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer)
     public static int Release(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.Release(getVtable(self, session), session).apply(self);
+            return IOUSBDeviceInterface100.Release(getVtable(self, session), session).apply(self);
         }
     }
 
     // IOReturn (*USBDeviceOpen)(void *self);
     public static int USBDeviceOpen(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.USBDeviceOpen(getVtable(self, session), session).apply(self);
+            return IOUSBDeviceInterface100.USBDeviceOpen(getVtable(self, session), session).apply(self);
         }
     }
 
     // IOReturn (*USBDeviceClose)(void *self);
     public static int USBDeviceClose(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.USBDeviceClose(getVtable(self, session), session).apply(self);
+            return IOUSBDeviceInterface100.USBDeviceClose(getVtable(self, session), session).apply(self);
         }
     }
 
@@ -68,56 +67,56 @@ public class IoKitUSB {
     public static int GetConfigurationDescriptorPtr(MemoryAddress self, byte configIndex,
                                                     MemoryAddress descHolder) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.GetConfigurationDescriptorPtr(getVtable(self, session), session).apply(self, configIndex, descHolder);
+            return IOUSBDeviceInterface100.GetConfigurationDescriptorPtr(getVtable(self, session), session).apply(self, configIndex, descHolder);
         }
     }
 
     // IOReturn (*SetConfiguration)(void *self, UInt8 configNum);
     public static int SetConfiguration(MemoryAddress self, byte configValue) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.SetConfiguration(getVtable(self, session), session).apply(self, configValue);
+            return IOUSBDeviceInterface100.SetConfiguration(getVtable(self, session), session).apply(self, configValue);
         }
     }
 
     // IOReturn (*CreateInterfaceIterator)(void *self, IOUSBFindInterfaceRequest *req, io_iterator_t *iter);
     public static int CreateInterfaceIterator(MemoryAddress self, MemoryAddress req, MemoryAddress iter) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.CreateInterfaceIterator(getVtable(self, session), session).apply(self, req, iter);
+            return IOUSBDeviceInterface100.CreateInterfaceIterator(getVtable(self, session), session).apply(self, req, iter);
         }
     }
 
     // IOReturn (*DeviceRequest)(void *self, IOUSBDevRequest *req);
     public static int DeviceRequest(MemoryAddress self, MemoryAddress deviceRequest) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBDeviceInterface.DeviceRequest(getVtable(self, session), session).apply(self, deviceRequest);
+            return IOUSBDeviceInterface100.DeviceRequest(getVtable(self, session), session).apply(self, deviceRequest);
         }
     }
 
     // IOReturn (*USBInterfaceOpen)(void *self);;
     public static int USBInterfaceOpen(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.USBInterfaceOpen(getVtable(self, session), session).apply(self);
+            return IOUSBInterfaceInterface190.USBInterfaceOpen(getVtable(self, session), session).apply(self);
         }
     }
 
     // IOReturn (*USBInterfaceClose)(void *self);;
     public static int USBInterfaceClose(MemoryAddress self) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.USBInterfaceClose(getVtable(self, session), session).apply(self);
+            return IOUSBInterfaceInterface190.USBInterfaceClose(getVtable(self, session), session).apply(self);
         }
     }
 
     // IOReturn (*GetInterfaceNumber)(void *self, UInt8 *intfNumber);
     public static int GetInterfaceNumber(MemoryAddress self, MemoryAddress intfNumberHolder) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.GetInterfaceNumber(getVtable(self, session), session).apply(self, intfNumberHolder);
+            return IOUSBInterfaceInterface190.GetInterfaceNumber(getVtable(self, session), session).apply(self, intfNumberHolder);
         }
     }
 
     // IOReturn (*GetNumEndpoints)(void *self, UInt8 *intfNumEndpoints);
     public static int GetNumEndpoints(MemoryAddress self, MemoryAddress intfNumEndpointsHolder) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.GetNumEndpoints(getVtable(self, session), session).apply(self, intfNumEndpointsHolder);
+            return IOUSBInterfaceInterface190.GetNumEndpoints(getVtable(self, session), session).apply(self, intfNumEndpointsHolder);
         }
     }
 
@@ -127,7 +126,7 @@ public class IoKitUSB {
                                         MemoryAddress numberHolder, MemoryAddress transferTypeHolder,
                                         MemoryAddress maxPacketSizeHolder, MemoryAddress intervalHolder) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.GetPipeProperties(getVtable(self, session), session).apply(self, pipeRef,
+            return IOUSBInterfaceInterface190.GetPipeProperties(getVtable(self, session), session).apply(self, pipeRef,
                     directionHolder, numberHolder, transferTypeHolder, maxPacketSizeHolder, intervalHolder);
         }
     }
@@ -135,7 +134,7 @@ public class IoKitUSB {
     // IOReturn (*ReadPipe)(void *self, UInt8 pipeRef, void *buf, UInt32 *size);
     public static int ReadPipe(MemoryAddress self, byte pipeRef, MemoryAddress buf, MemoryAddress sizeHolder) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.ReadPipe(getVtable(self, session), session)
+            return IOUSBInterfaceInterface190.ReadPipe(getVtable(self, session), session)
                     .apply(self, pipeRef, buf, sizeHolder);
         }
     }
@@ -143,7 +142,7 @@ public class IoKitUSB {
     // IOReturn (* ReadPipeTO)(void* self, UInt8 pipeRef, void* buf, UInt32* size, UInt32 noDataTimeout, UInt32 completionTimeout);
     public static int ReadPipeTO(MemoryAddress self, byte pipeRef, MemoryAddress buf, MemoryAddress sizeHolder, int noDataTimeout, int completionTimeout) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.ReadPipeTO(getVtable(self, session), session)
+            return IOUSBInterfaceInterface190.ReadPipeTO(getVtable(self, session), session)
                     .apply(self, pipeRef, buf, sizeHolder, noDataTimeout, completionTimeout);
         }
     }
@@ -151,35 +150,35 @@ public class IoKitUSB {
     // IOReturn (*WritePipe)(void *self, UInt8 pipeRef, void *buf, UInt32 size);
     public static int WritePipe(MemoryAddress self, byte pipeRef, MemoryAddress buf, int size) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.WritePipe(getVtable(self, session), session).apply(self, pipeRef, buf, size);
+            return IOUSBInterfaceInterface190.WritePipe(getVtable(self, session), session).apply(self, pipeRef, buf, size);
         }
     }
 
     // IOReturn (* WritePipeTO)(void* self, UInt8 pipeRef, void* buf, UInt32 size, UInt32 noDataTimeout, UInt32 completionTimeout);
     public static int WritePipeTO(MemoryAddress self, byte pipeRef, MemoryAddress buf, int size, int noDataTimeout, int completionTimeout) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.WritePipeTO(getVtable(self, session), session).apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout);
+            return IOUSBInterfaceInterface190.WritePipeTO(getVtable(self, session), session).apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout);
         }
     }
 
     // IOReturn (* AbortPipe)(void* self, UInt8 pipeRef);
     public static int AbortPipe(MemoryAddress self, byte pipeRef) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.AbortPipe(getVtable(self, session), session).apply(self, pipeRef);
+            return IOUSBInterfaceInterface190.AbortPipe(getVtable(self, session), session).apply(self, pipeRef);
         }
     }
 
     // IOReturn (*SetAlternateInterface)(void *self, UInt8 alternateSetting);
     public static int SetAlternateInterface(MemoryAddress self, byte alternateSetting) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceInterface.SetAlternateInterface(getVtable(self, session), session).apply(self, alternateSetting);
+            return IOUSBInterfaceInterface190.SetAlternateInterface(getVtable(self, session), session).apply(self, alternateSetting);
         }
     }
 
     // IOReturn (* ClearPipeStallBothEnds)(void* self, UInt8 pipeRef);
     public static int ClearPipeStallBothEnds(MemoryAddress self, byte pipeRef) {
         try (var session = MemorySession.openConfined()) {
-            return IOUSBInterfaceStruct942.ClearPipeStallBothEnds(getVtable(self, session), session).apply(self, pipeRef);
+            return IOUSBInterfaceInterface190.ClearPipeStallBothEnds(getVtable(self, session), session).apply(self, pipeRef);
         }
     }
 }
