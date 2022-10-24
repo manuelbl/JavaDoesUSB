@@ -4,7 +4,7 @@
 
 *Java Does USB* is a library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
-The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is in preview and will be introduced in a future Java version. Currently, it can be tested with Java 19 (with preview features enabled).
+The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is in preview and will be introduced in a future Java version. Currently, it can be used with Java 19 (with preview features enabled).
 
 
 ## Features

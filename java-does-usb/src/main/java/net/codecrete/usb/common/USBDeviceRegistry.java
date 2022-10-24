@@ -82,13 +82,29 @@ public abstract class USBDeviceRegistry {
     }
 
     protected void emitOnDeviceConnected(USBDevice device) {
-        if (onDeviceConnectedHandler != null)
+        if (onDeviceConnectedHandler == null)
+            return;
+
+        try {
             onDeviceConnectedHandler.accept(device);
+
+        } catch (Throwable e) {
+            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceConnected' handler - ignoring");
+            e.printStackTrace(System.err);
+        }
     }
 
     protected void emitOnDeviceDisconnected(USBDevice device) {
-        if (onDeviceDisconnectedHandler != null)
+        if (onDeviceDisconnectedHandler == null)
+            return;
+
+        try {
             onDeviceDisconnectedHandler.accept(device);
+
+        } catch (Throwable e) {
+            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - ignoring");
+            e.printStackTrace(System.err);
+        }
     }
 
     /**

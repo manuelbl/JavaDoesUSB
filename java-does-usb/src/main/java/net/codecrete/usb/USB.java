@@ -117,6 +117,11 @@ public class USB {
 
     /**
      * Sets the handler to be called when a USB device is disconnected.
+     * <p>
+     * When the handler is called, the {@link USBDevice} instance has already been closed.
+     * Descriptive information (such as vendor and product ID, serial number, interfaces, endpoints)
+     * can still be accessed.
+     * </p>
      *
      * @param handler handler function, or {@code null} to remove a previous handler
      */
