@@ -192,6 +192,7 @@ public:
 
 private:
     usb_device(const std::wstring& device_path, int vendor_id, int product_id);
+    void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
     const wchar_t* device_path() { return device_path_.c_str(); }
 

@@ -174,6 +174,11 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hd
 
     // Create new device
     std::shared_ptr<usb_device> device(new usb_device(path, conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct));
+    device->set_product_names(
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iSerialNumber)
+    );
     return device;
 }
 
@@ -355,4 +360,63 @@ std::wstring usb_registry::get_device_path(const std::wstring& instance_id, cons
         throw usb_error("Internal error (SetupDiGetDeviceInterfaceDetailA)", GetLastError());
 
     return intf_detail_data->DevicePath;
+}
+
+std::vector<uint8_t> usb_registry::get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size) {
+    int size = sizeof(USB_DESCRIPTOR_REQUEST) + (request_size != 0 ? request_size : 256);
+    uint8_t* descriptor_request_buffer = new uint8_t[size];
+    auto dev_info_set_guard = make_scope_exit([descriptor_request_buffer]() {
+        delete [] descriptor_request_buffer;
+    });
+
+    // setup request data structure
+    USB_DESCRIPTOR_REQUEST* descriptor_request = reinterpret_cast<USB_DESCRIPTOR_REQUEST*>(descriptor_request_buffer);
+    descriptor_request->ConnectionIndex = usb_port_num;
+    descriptor_request->SetupPacket.bmRequest = 0x80; // device-to-host / type standard / recipient device
+    descriptor_request->SetupPacket.bRequest = 0x06; // GET_DESCRIPTOR
+    descriptor_request->SetupPacket.wValue = (descriptor_type << 8) | index;
+    descriptor_request->SetupPacket.wIndex = language_id;
+    descriptor_request->SetupPacket.wLength = static_cast<USHORT>(size - sizeof(USB_DESCRIPTOR_REQUEST));
+
+    // get descriptor
+    DWORD bytesReturned = 0;
+    if (!DeviceIoControl(hub_handle, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, descriptor_request, size, descriptor_request, size, &bytesReturned, nullptr))
+        throw usb_error("Cannot retrieve descriptor (DeviceIoControl)", GetLastError());
+
+    // determine expected size of descriptor
+    int expected_size;
+    if (descriptor_type != USB_CONFIGURATION_DESCRIPTOR_TYPE) {
+        expected_size = descriptor_request->Data[0];
+    } else {
+        expected_size = *reinterpret_cast<uint16_t*>(descriptor_request->Data);
+    }
+
+    // check against effective size
+    int effective_size = bytesReturned - sizeof(USB_DESCRIPTOR_REQUEST);
+    if (effective_size != expected_size) {
+        if (request_size != 0)
+            throw usb_error("Unexpected descriptor size");
+
+        // repeat with correct size
+        return get_descriptor(hub_handle, usb_port_num, descriptor_type, index, language_id, expected_size);
+    }
+
+    return std::vector<uint8_t>(descriptor_request->Data, descriptor_request->Data + effective_size);
+}
+
+std::string usb_registry::get_string(HANDLE hub_handle, ULONG usb_port_num, int index) {
+    if (index == 0)
+        return "";
+
+    std::vector<uint8_t> str_desc_raw = get_descriptor(hub_handle, usb_port_num, USB_STRING_DESCRIPTOR_TYPE, index, 0x0409);
+    USB_STRING_DESCRIPTOR* str_desc = reinterpret_cast<USB_STRING_DESCRIPTOR*>(str_desc_raw.data());
+
+    // required length of UTF-8 string
+    int len = WideCharToMultiByte(CP_UTF8, 0, str_desc->bString, str_desc->bLength / 2 - 1, nullptr, 0, nullptr, nullptr);
+
+    // conver to UTF-8
+    std::string result;
+    result.resize(len, 'x');
+    WideCharToMultiByte(CP_UTF8, 0, str_desc->bString, str_desc->bLength / 2 - 1, &result[0], len, nullptr, nullptr);
+    return result;
 }

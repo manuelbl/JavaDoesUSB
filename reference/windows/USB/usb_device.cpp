@@ -22,6 +22,13 @@ usb_device::usb_device(const std::wstring& device_path, int vendor_id, int produ
     //serial_number_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBSerialNumberString));
 }
 
+void usb_device::set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number) {
+    manufacturer_ = manufacturer;
+    product_ = product;
+    serial_number_ = serial_number;
+}
+
+
 usb_device::~usb_device() {
     close();
 }

@@ -61,6 +61,9 @@ private:
     static std::wstring get_device_property_string(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
     static std::wstring get_device_path(const std::wstring& instance_id, const GUID* interface_guid);
 
+    static std::vector<uint8_t> get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size = 0);
+    static std::string get_string(HANDLE hub_handle, ULONG usb_port_num, int index);
+
     std::vector<usb_device_ptr> devices;
 
     std::function<void(usb_device_ptr device)> on_connected_callback;
