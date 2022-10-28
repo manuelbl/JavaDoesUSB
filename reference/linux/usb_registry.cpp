@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Linux
 //
 
 #include "usb_registry.hpp"
@@ -224,5 +224,11 @@ std::shared_ptr<usb_device> usb_registry::create_device(udev_device* udev_dev) {
     if (vendor_id == 0 || product_id == 0)
         return nullptr;
     
-    return std::shared_ptr<usb_device>(new usb_device(path, vendor_id, product_id));
+    std::shared_ptr<usb_device> device(new usb_device(path, vendor_id, product_id));
+    device->set_product_strings(
+        udev_device_get_sysattr_value(udev_dev, "manufacturer"),
+        udev_device_get_sysattr_value(udev_dev, "product"),
+        udev_device_get_sysattr_value(udev_dev, "serial")
+    );
+    return device;
 }

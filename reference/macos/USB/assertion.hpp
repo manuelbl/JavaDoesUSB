@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <cinttypes>
 #include <exception>
 #include <vector>
 

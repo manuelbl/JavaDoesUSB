@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Linux
 //
 
 #pragma once
@@ -18,8 +18,8 @@ public:
     /**
      * Creates a new instance.
      *
-     *@param message error message
-     *@param code a Mach error code, or 0 if no Mach code is available
+     * @param message error message
+     * @param code a Mach error code, or 0 if no Mach code is available
      */
     usb_error(const char* message, int code = 0) noexcept;
     

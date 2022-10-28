@@ -9,6 +9,8 @@ find_package(Threads REQUIRED)
 
 set(SOURCES
     assertion.cpp assertion.hpp
+    config_parser.cpp config_parser.hpp
+    configuration.cpp configuration.hpp
     main.cpp
     scope.hpp
     tests.cpp tests.hpp

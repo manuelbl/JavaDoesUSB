@@ -4,15 +4,18 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Linux
 //
 
 #pragma once
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 #include <stdint.h>
+
+#include "configuration.hpp"
 
 
 /**
@@ -87,6 +90,8 @@ public:
     std::string serial_number() const { return serial_number_; }
     /// Descriptive string including VID, PID, manufacturer, product name and serial number
     std::string description() const;
+    /// List of interfaces
+    const std::vector<usb_interface>& interfaces() const;
     
     /// Opens the device for communication
     void open();
@@ -100,16 +105,16 @@ public:
     /**
      * Claims an interface
      *
-     * A single interface can be claimed.
-     *
      * @param interface_number interface number
      */
     void claim_interface(int interface_number);
     
     /**
-     * Releases the claimed interface.
+     * Releases a claimed interface.
+     *
+     * @param interface_number interface number
      */
-    void release_interface();
+    void release_interface(int interface_number);
     
     /**
      * Receives data from a bulk or interrupt endpoint.
@@ -186,12 +191,17 @@ public:
 
 private:
     usb_device(const char* path, int vendor_id, int product_id);
+    void set_product_strings(const char* manufacturer, const char* product, const char* serial_number);
     const char* path() const { return path_.c_str(); }
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
+    void read_descriptor();
+    usb_interface* get_interface(int number);
+    const usb_endpoint* check_endpoint(usb_direction direction, int endpoint_number);
 
     std::string path_;
     int fd_;
-    int claimed_interface_;
+    std::set<int> claimed_interfaces_;
+    std::vector<usb_interface> interfaces_;
 
     int product_id_;
     int vendor_id_;

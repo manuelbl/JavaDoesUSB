@@ -4,12 +4,13 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Linux
 //
 
 #include "usb_device.hpp"
 #include "usb_error.hpp"
 #include "scope.hpp"
+#include "config_parser.hpp"
 
 #include <fcntl.h>
 #include <linux/usbdevice_fs.h>
@@ -17,14 +18,43 @@
 #include <unistd.h>
 
 #include <cstdio>
+#include <fstream>
+
 
 usb_device::usb_device(const char* path, int vendor_id, int product_id)
-: path_(path), fd_(-1), claimed_interface_(-1), vendor_id_(vendor_id), product_id_(product_id) {
+: path_(path), fd_(-1), vendor_id_(vendor_id), product_id_(product_id) {
+    read_descriptor();
 }
 
 usb_device::~usb_device() {
     if (is_open())
         close();
+}
+
+void usb_device::set_product_strings(const char* manufacturer, const char* product, const char* serial_number) {
+    manufacturer_ = manufacturer != nullptr ? manufacturer : "";
+    product_ = product != nullptr ? product : "";
+    serial_number_ = serial_number != nullptr ? serial_number : "";
+}
+
+void usb_device::read_descriptor() {
+    // read device and configuration descriptor
+    std::vector<uint8_t> descriptors{};
+    {
+        std::ifstream file(path(), std::ios::binary);
+        uint8_t buf[256];
+        while (!file.eof()) {
+            file.read(reinterpret_cast<char*>(buf), sizeof(buf));
+            if (file.bad())
+                throw usb_error("failed to read device and configuration descriptor");
+            descriptors.insert(descriptors.end(), buf, buf + file.gcount());
+        }
+    }
+
+    int config_desc_offset = descriptors[0];
+    config_parser parser{};
+    parser.parse(descriptors.data() + config_desc_offset, descriptors.size() - config_desc_offset);
+    interfaces_ = std::move(parser.interfaces);
 }
 
 std::string usb_device::description() const {
@@ -39,6 +69,10 @@ std::string usb_device::description() const {
              vendor_id_, product_id_, manufacturer_.c_str(), product_.c_str(), serial_number_.c_str());
 
     return desc;
+}
+
+const std::vector<usb_interface>& usb_device::interfaces() const {
+    return interfaces_;
 }
 
 bool usb_device::is_open() const {
@@ -57,10 +91,12 @@ void usb_device::open() {
 void usb_device::close() {
     if (!is_open())
         return;
+    
+    for (auto& intf : interfaces_)
+        intf.set_claimed(false);
 
-    if (claimed_interface_ >= 0)
-        release_interface();
-
+    claimed_interfaces_.clear();
+    
     int ret = ::close(fd_);
     fd_ = -1;
     if (ret != 0)
@@ -68,31 +104,48 @@ void usb_device::close() {
 }
 
 void usb_device::claim_interface(int interface_number) {
-    
-    if (claimed_interface_ >= 0)
-        throw usb_error("an interface has already been claimed");
+
+    if (!is_open())
+        throw usb_error("device is not open");
+
+    usb_interface* intf = get_interface(interface_number);
+    if (intf == nullptr)
+        throw usb_error("no such interface");
+
+    if (intf->is_claimed())
+        throw usb_error("interface has already been claimed");
     
     int result = ioctl(fd_, USBDEVFS_CLAIMINTERFACE, &interface_number);
     if (result < 0)
-        usb_error::throw_error("Failed to claim interface 0");
+        usb_error::throw_error("Failed to claim interface");
 
-    claimed_interface_ = interface_number;
+    claimed_interfaces_.insert(interface_number);
+    intf->set_claimed(true);
 }
 
-void usb_device::release_interface() {
-    if (claimed_interface_ < 0)
-        throw usb_error("no interface has been claimed");
-    
-    int result = ioctl(fd_, USBDEVFS_RELEASEINTERFACE, &claimed_interface_);
+void usb_device::release_interface(int interface_number) {
+
+    if (!is_open())
+        throw usb_error("device is not open");
+
+    usb_interface* intf = get_interface(interface_number);
+    if (intf == nullptr)
+        throw usb_error("no such interface");
+
+    if (!intf->is_claimed())
+        throw usb_error("interface has not been claimed");
+
+    int result = ioctl(fd_, USBDEVFS_RELEASEINTERFACE, &interface_number);
     if (result < 0)
         usb_error::throw_error("Failed to release interface");
 
-    claimed_interface_ = -1;
+    intf->set_claimed(false);
+    claimed_interfaces_.erase(interface_number);
 }
 
 std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
-    if (claimed_interface_ < 0)
-        throw usb_error("no interface has been claimed");
+    
+    check_endpoint(usb_direction::in, endpoint_number);
 
     std::vector<uint8_t> data(data_len);
 
@@ -111,8 +164,8 @@ std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, 
 }
 
 void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int timeout) {
-    if (claimed_interface_ < 0)
-        throw usb_error("no interface has been claimed");
+
+    check_endpoint(usb_direction::out, endpoint_number);
 
     struct usbdevfs_bulktransfer transfer = {0};
     transfer.ep = endpoint_number;
@@ -168,4 +221,31 @@ std::vector<uint8_t> usb_device::control_transfer_in(const usb_control_request& 
     control_transfer_core(request, data.data(), timeout);
     data.resize(request.wLength);
     return data;
+}
+
+usb_interface* usb_device::get_interface(int number) {
+    for (auto& intf : interfaces_)
+        if (intf.number() == number)
+            return &intf;
+    return nullptr;
+}
+
+const usb_endpoint* usb_device::check_endpoint(usb_direction direction, int endpoint_number) {
+
+    if (!is_open())
+        throw usb_error("device is not open");
+
+    for (auto& intf : interfaces_) {
+        for (auto& ep : intf.alternate().endpoints()) {
+            if (ep.direction() == direction && ep.number() == endpoint_number) {
+                if (!intf.is_claimed())
+                    throw usb_error("interface has not been claimed");
+                if (ep.transfer_type() != usb_transfer_type::bulk && ep.transfer_type() != usb_transfer_type::interrupt)
+                    throw usb_error("invalid endpoint transfer type for operation");
+                return &ep;
+            }
+        }
+    }
+
+    throw usb_error("no such endpoint");
 }
