@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		64835E60290BCA9F00113E4E /* config_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64835E5D290BCA9F00113E4E /* config_parser.cpp */; };
+		64835E61290BCA9F00113E4E /* configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64835E5F290BCA9F00113E4E /* configuration.cpp */; };
 		64937C6428D5EBF1009BD0C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C6328D5EBF1009BD0C2 /* main.cpp */; };
 		64937C7228D5ED1F009BD0C2 /* usb_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */; };
 		64937C7328D5ED1F009BD0C2 /* iokit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C6C28D5ED1F009BD0C2 /* iokit_helper.cpp */; };
@@ -31,6 +33,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		64835E5C290BCA9F00113E4E /* configuration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = configuration.hpp; sourceTree = "<group>"; };
+		64835E5D290BCA9F00113E4E /* config_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = config_parser.cpp; sourceTree = "<group>"; };
+		64835E5E290BCA9F00113E4E /* config_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config_parser.hpp; sourceTree = "<group>"; };
+		64835E5F290BCA9F00113E4E /* configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = configuration.cpp; sourceTree = "<group>"; };
 		64937C6028D5EBF1009BD0C2 /* USB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = USB; sourceTree = BUILT_PRODUCTS_DIR; };
 		64937C6328D5EBF1009BD0C2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = usb_registry.cpp; sourceTree = "<group>"; };
@@ -83,6 +89,10 @@
 		64937C6228D5EBF1009BD0C2 /* USB */ = {
 			isa = PBXGroup;
 			children = (
+				64835E5D290BCA9F00113E4E /* config_parser.cpp */,
+				64835E5E290BCA9F00113E4E /* config_parser.hpp */,
+				64835E5F290BCA9F00113E4E /* configuration.cpp */,
+				64835E5C290BCA9F00113E4E /* configuration.hpp */,
 				64937C8328D71D31009BD0C2 /* assertion.hpp */,
 				64937C8228D71D31009BD0C2 /* assertion.cpp */,
 				64937C6D28D5ED1F009BD0C2 /* iokit_helper.hpp */,
@@ -169,8 +179,10 @@
 			files = (
 				64937C7328D5ED1F009BD0C2 /* iokit_helper.cpp in Sources */,
 				64937C8428D71D31009BD0C2 /* assertion.cpp in Sources */,
+				64835E61290BCA9F00113E4E /* configuration.cpp in Sources */,
 				64937C7928D5FE6D009BD0C2 /* usb_device.cpp in Sources */,
 				64937C7228D5ED1F009BD0C2 /* usb_registry.cpp in Sources */,
+				64835E60290BCA9F00113E4E /* config_parser.cpp in Sources */,
 				64937C6428D5EBF1009BD0C2 /* main.cpp in Sources */,
 				64937C7628D5ED8D009BD0C2 /* usb_error.cpp in Sources */,
 				64937C8128D6F9DE009BD0C2 /* tests.cpp in Sources */,

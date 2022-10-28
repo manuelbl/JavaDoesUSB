@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for Windows
+// Reference C++ code common for Linux / macOS / Windows
 //
 
 #include "tests.hpp"
@@ -18,7 +18,7 @@
 
 
 using random_ushort_engine = std::independent_bits_engine<
-    std::default_random_engine, CHAR_BIT, unsigned short>;
+    std::default_random_engine, 16, unsigned short>;
 
 
 void tests::run() {

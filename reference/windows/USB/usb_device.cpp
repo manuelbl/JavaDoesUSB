@@ -18,7 +18,7 @@ usb_device::usb_device(std::wstring&& device_path, int vendor_id, int product_id
 : vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
 
     config_parser parser{};
-    parser.parse(config_desc);
+    parser.parse(config_desc.data(), config_desc.size());
     interfaces_ = std::move(parser.interfaces);
     functions_ = std::move(parser.functions);
 
@@ -65,6 +65,10 @@ std::string usb_device::description() const {
              vendor_id_, product_id_, manufacturer_.c_str(), product_.c_str(), serial_number_.c_str());
 
     return desc;
+}
+
+const std::vector<usb_interface>& usb_device::interfaces() const {
+    return interfaces_;
 }
 
 bool usb_device::is_open() const {

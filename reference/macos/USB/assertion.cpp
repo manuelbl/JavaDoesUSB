@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code common for Linux / macOS / Windows
 //
 
 #include "assertion.hpp"
@@ -40,7 +40,7 @@ void assert_equals(unsigned long expected, unsigned long actual, const char* mes
         char buf[50];
         snprintf(buf, sizeof(buf), "expected: %lud, actual: %lud", expected, actual);
         failed(buf, message);
-   }
+    }
 }
 
 void assert_equals(const std::vector<uint8_t>& expected, const std::vector<uint8_t>& actual, const char* message) {

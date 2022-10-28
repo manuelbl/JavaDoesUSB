@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code common for Linux / macOS / Windows
 //
 
 #include "tests.hpp"
@@ -13,6 +13,10 @@
 #include <iostream>
 #include <random>
 
+#undef min
+#undef max
+
+
 using random_ushort_engine = std::independent_bits_engine<
     std::default_random_engine, 16, unsigned short>;
 
@@ -20,14 +24,14 @@ using random_ushort_engine = std::independent_bits_engine<
 void tests::run() {
     registry.start();
     
-    for (auto device : registry.get_devices()) {
+    for (auto& device : registry.get_devices()) {
         std::cout << "Present:      " << device->description() << std::endl;
     }
 
     registry.set_on_device_connected([this](auto device) { on_device_connected(device); });
     registry.set_on_device_disconnected([this](auto device) { on_device_disconnected(device); });
 
-    for (auto device : registry.get_devices())
+    for (auto& device : registry.get_devices())
         on_device(device);
     
     std::cout << "Press RETURN to quit" << std::endl;
@@ -36,53 +40,52 @@ void tests::run() {
 }
 
 void tests::test_current_device() {
-    std::cout << "Found test device" << std::endl;
-    test_device->open();
-    test_device->claim_interface(0);
-    
-    test_control_transfers();
-    test_bulk_transfers();
-    
-    test_device->release_interface();
-    test_device->close();
-    std::cout << "Test completed" << std::endl;
+    try {
+        std::cout << "Found test device" << std::endl;
+        test_device->open();
+        test_device->claim_interface(0);
+
+        test_control_transfers();
+        test_bulk_transfers();
+
+        test_device->release_interface(0);
+        test_device->close();
+        std::cout << "Test completed" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Test failed: " << e.what() << std::endl;
+    }
 }
 
 void tests::test_control_transfers() {
-    usb_control_request request_set_value_no_data = {
-        .bmRequestType = usb_control_request::request_type(usb_request_type::direction_out,
-                                                           usb_request_type::type_vendor,
-                                                           usb_request_type::recipient_interface),
-        .bRequest = 0x01,
-        .wValue = 0x9a41,
-        .wIndex = 0, // interface number
-        .wLength = 0
-    };
+    usb_control_request request_set_value_no_data = { 0 };
+    request_set_value_no_data.bmRequestType = usb_control_request::request_type(usb_request_type::direction_out,
+        usb_request_type::type_vendor, usb_request_type::recipient_interface);
+    request_set_value_no_data.bRequest = 0x01;
+    request_set_value_no_data.wValue = 0x9a41;
+    request_set_value_no_data.wIndex = 0; // interface number
+    request_set_value_no_data.wLength = 0;
     test_device->control_transfer(request_set_value_no_data);
     
-    usb_control_request request_get_data = {
-        .bmRequestType = usb_control_request::request_type(usb_request_type::direction_in,
-                                                           usb_request_type::type_vendor,
-                                                           usb_request_type::recipient_interface),
-        .bRequest = 0x03,
-        .wValue = 0,
-        .wIndex = 0, // interface number
-        .wLength = 4
-    };
+    usb_control_request request_get_data = { 0 };
+    request_get_data.bmRequestType = usb_control_request::request_type(usb_request_type::direction_in,
+        usb_request_type::type_vendor, usb_request_type::recipient_interface);
+    request_get_data.bRequest = 0x03;
+    request_get_data.wValue = 0;
+    request_get_data.wIndex = 0; // interface number
+    request_get_data.wLength = 4;
     auto data = test_device->control_transfer_in(request_get_data);
     std::vector<uint8_t> expected_data{ 0x41, 0x9a, 0x00, 0x00 };
     assert_equals(expected_data, data);
 
     std::vector<uint8_t> sent_value{ 0x83, 0x03, 0xda, 0x3d };
-    usb_control_request request_set_value_data = {
-        .bmRequestType = usb_control_request::request_type(usb_request_type::direction_out,
-                                                           usb_request_type::type_vendor,
-                                                           usb_request_type::recipient_interface),
-        .bRequest = 0x02,
-        .wValue = 0,
-        .wIndex = 0, // interface number
-        .wLength = static_cast<uint16_t>(sent_value.size())
-    };
+    usb_control_request request_set_value_data = { 0 };
+    request_set_value_data.bmRequestType = usb_control_request::request_type(usb_request_type::direction_out,
+        usb_request_type::type_vendor, usb_request_type::recipient_interface);
+    request_set_value_data.bRequest = 0x02;
+    request_set_value_data.wValue = 0;
+    request_set_value_data.wIndex = 0; // interface number
+    request_set_value_data.wLength = static_cast<uint16_t>(sent_value.size());
     test_device->control_transfer_out(request_set_value_data, sent_value);
 
     data = test_device->control_transfer_in(request_get_data);
@@ -106,7 +109,7 @@ void tests::test_loopback(int num_bytes) {
     
     // read in separate thread
     std::thread reader([this, &rx_data, num_bytes]() {
-        int bytes_read = 0;
+        size_t bytes_read = 0;
         while (bytes_read < num_bytes) {
             auto data = test_device->transfer_in(2, 64);
             rx_data.insert(rx_data.end(), data.begin(), data.end());
@@ -155,7 +158,6 @@ std::vector<uint8_t> tests::random_bytes(int num) {
     const uint8_t* p = reinterpret_cast<const uint8_t*>(data.data());
     return std::vector<uint8_t>(p, p + num);
 }
-
 
 bool tests::is_test_device(usb_device_ptr device) {
     return device->vendor_id() == 0xcafe && device->product_id() == 0xceaf;

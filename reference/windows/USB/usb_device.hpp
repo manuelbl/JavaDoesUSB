@@ -96,7 +96,9 @@ public:
     std::string serial_number() const { return serial_number_; }
     /// Descriptive string including VID, PID, manufacturer, product name and serial number
     std::string description() const;
-    
+    /// List of interfaces
+    const std::vector<usb_interface>& interfaces() const;
+
     /// Opens the device for communication
     void open();
     
@@ -108,8 +110,6 @@ public:
     
     /**
      * Claims an interface
-     *
-     * A single interface can be claimed.
      *
      * @param interface_number interface number
      */
@@ -194,11 +194,6 @@ public:
      * @return received data
      */
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
-
-    /**
-     * Get the list of USB interfaces.
-     */
-    const std::vector<usb_interface>& interfaces() const { return interfaces_; }
 
 private:
     struct interface_handle {

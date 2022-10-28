@@ -12,10 +12,13 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/usb/IOUSBLib.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 #include <stdint.h>
+
+#include "configuration.hpp"
 
 
 /**
@@ -68,12 +71,6 @@ struct usb_control_request {
     }
 };
 
-struct pipe_info {
-    UInt8 pipe_index;
-    uint8_t endpoint_address;
-    uint8_t transfer_type;
-};
-
 
 /**
  * USB device.
@@ -96,7 +93,9 @@ public:
     std::string serial_number() const { return serial_number_; }
     /// Descriptive string including VID, PID, manufacturer, product name and serial number
     std::string description() const;
-    
+    /// List of interfaces
+    const std::vector<usb_interface>& interfaces() const;
+
     /// Opens the device for communication
     void open();
     
@@ -109,25 +108,26 @@ public:
     /**
      * Claims an interface
      *
-     * A single interface can be claimed.
-     *
      * @param interface_number interface number
      */
     void claim_interface(int interface_number);
     
     /**
-     * Releases the claimed interface.
+     * Releases a claimed interface.
+     *
+     * @param interface_number interface number
      */
-    void release_interface();
+    void release_interface(int interface_number);
     
     /**
      * Select an alternate interface setting.
      *
-     * The affected interface must have been claimed.
+     * The interface must have been claimed.
      *
-     *@param alternate_setting alternate setting number
+     * @param interface_number interface number
+     * @param alternate_setting alternate setting number
      */
-    void select_alternate_interface(int alternate_setting);
+    void select_alternate_interface(int interface_number, int alternate_setting);
     
     /**
      * Receives data from a bulk or interrupt endpoint.
@@ -203,20 +203,31 @@ public:
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
 
 private:
+    struct pipe_info {
+        uint8_t pipe_index;
+        uint8_t endpoint_address;
+        usb_transfer_type transfer_type;
+        int interface_number;
+    };
+
     usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id);
     uint64_t entry_id() const { return entry_id_; }
-    void build_pipe_info(IOUSBInterfaceInterface** intf);
+    void build_pipe_info();
     const pipe_info* get_pipe(int endpoint_address);
     const pipe_info* ep_in_pipe(int endpoint_address);
     const pipe_info* ep_out_pipe(int endpoint_address);
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
-
+    void load_configuration(IOUSBDeviceInterface** device);
+    usb_interface* get_interface(int interface_number);
+    int get_alternate_index(int interface_number, int alternate_setting);
+    
     uint64_t entry_id_;
     IOUSBDeviceInterface** device_;
     bool is_open_;
-    IOUSBInterfaceInterface** interface_;
     std::vector<pipe_info> pipes_;
-
+    std::map<int, IOUSBInterfaceInterface**> claimed_interfaces_;
+    std::vector<usb_interface> interfaces_;
+    
     int product_id_;
     int vendor_id_;
     std::string manufacturer_;
