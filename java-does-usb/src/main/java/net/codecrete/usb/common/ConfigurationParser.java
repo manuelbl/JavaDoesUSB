@@ -54,7 +54,6 @@ public class ConfigurationParser {
         parseHeader();
 
         USBAlternateInterfaceImpl lastAlternate = null;
-        USBEndpointImpl lastEndpoint;
         int offset = peekDescLength(0);
 
         while (offset < descriptor.byteSize()) {
@@ -81,9 +80,9 @@ public class ConfigurationParser {
                 }
 
             } else if (descType == ENDPOINT_DESCRIPTOR_TYPE) {
-                lastEndpoint = parseEndpoint(offset);
+                var endpoint = parseEndpoint(offset);
                 if (lastAlternate != null)
-                    lastAlternate.addEndpoint(lastEndpoint);
+                    lastAlternate.addEndpoint(endpoint);
 
             } else if (descType == INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE) {
                 parseIAD(offset);

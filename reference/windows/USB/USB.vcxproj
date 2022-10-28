@@ -20,17 +20,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assertion.cpp" />
+    <ClCompile Include="configuration.cpp" />
+    <ClCompile Include="config_parser.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tests.cpp" />
     <ClCompile Include="usb_device.cpp" />
+    <ClCompile Include="usb_device_info.cpp" />
     <ClCompile Include="usb_error.cpp" />
     <ClCompile Include="usb_registry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assertion.hpp" />
+    <ClInclude Include="configuration.hpp" />
+    <ClInclude Include="config_parser.hpp" />
     <ClInclude Include="scope.hpp" />
     <ClInclude Include="tests.hpp" />
     <ClInclude Include="usb_device.hpp" />
+    <ClInclude Include="usb_device_info.hpp" />
     <ClInclude Include="usb_error.hpp" />
     <ClInclude Include="usb_registry.hpp" />
   </ItemGroup>
@@ -60,6 +66,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -120,6 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

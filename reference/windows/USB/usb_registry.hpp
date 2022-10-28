@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Windows
 //
 
 #pragma once
@@ -13,6 +13,7 @@
 
 #include <condition_variable>
 #include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -49,6 +50,7 @@ private:
     void monitor();
 
     void detect_present_devices();
+    std::map<int, std::wstring> enumerate_child_devices(const std::vector<std::wstring> child_ids);
     
     void on_device_connected(const WCHAR* path);
     void on_device_disconnected(const WCHAR* path);
@@ -56,13 +58,6 @@ private:
     bool handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set_hdl, SP_DEVINFO_DATA* dev_info);
-
-    static uint32_t get_device_property_int(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
-    static std::wstring get_device_property_string(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
-    static std::wstring get_device_path(const std::wstring& instance_id, const GUID* interface_guid);
-
-    static std::vector<uint8_t> get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size = 0);
-    static std::string get_string(HANDLE hub_handle, ULONG usb_port_num, int index);
 
     std::vector<usb_device_ptr> devices;
 

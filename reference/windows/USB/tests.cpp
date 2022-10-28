@@ -4,7 +4,7 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Windows
 //
 
 #include "tests.hpp"
@@ -48,7 +48,7 @@ void tests::test_current_device() {
         test_control_transfers();
         test_bulk_transfers();
 
-        test_device->release_interface();
+        test_device->release_interface(0);
         test_device->close();
         std::cout << "Test completed" << std::endl;
     }

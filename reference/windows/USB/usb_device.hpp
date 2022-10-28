@@ -4,11 +4,12 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Reference C++ code for macOS
+// Reference C++ code for Windows
 //
 
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@
 #undef max
 #undef LowSpeed
 #include <winusb.h>
+
+#include "configuration.hpp"
 
 
 /**
@@ -113,9 +116,11 @@ public:
     void claim_interface(int interface_number);
     
     /**
-     * Releases the claimed interface.
+     * Releases a claimed interface.
+     *
+     * @param interface_number interface number
      */
-    void release_interface();
+    void release_interface(int interface_number);
     
     /**
      * Receives data from a bulk or interrupt endpoint.
@@ -190,23 +195,52 @@ public:
      */
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
 
-private:
-    usb_device(const std::wstring& device_path, int vendor_id, int product_id);
-    void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
-    int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
-    const wchar_t* device_path() { return device_path_.c_str(); }
+    /**
+     * Get the list of USB interfaces.
+     */
+    const std::vector<usb_interface>& interfaces() const { return interfaces_; }
 
-    std::wstring device_path_;
-    HANDLE device_handle_;
-    WINUSB_INTERFACE_HANDLE interface_handle_;
+private:
+    struct interface_handle {
+        int interface_num;
+        int first_interface_num;
+        std::wstring device_path;
+        HANDLE device_handle;
+        WINUSB_INTERFACE_HANDLE intf_handle;
+        int device_open_count;
+
+        interface_handle(int intf_num, int first_num, std::wstring&& path);
+    };
+
+    usb_device(std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children);
+    void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
+    void build_handles(const std::wstring& device_path, std::map<int, std::wstring>&& children);
+
+    int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
+    usb_composite_function* get_function(int intf_number);
+
+    interface_handle* get_interface_handle(int intf_number);
+    usb_interface* get_interface(int intf_number);
+    usb_interface* get_endpoint_interface(usb_direction direction, int endpoint_number);
+    const usb_endpoint* get_endpoint(usb_direction direction, int endpoint_number);
+    interface_handle* get_control_transfer_interface_handle(const usb_control_request& request);
+    interface_handle* check_valid_endpoint(usb_direction direction, int endpoint_number);
+    static uint8_t ep_address(usb_direction direction, int endpoint_number) {
+        return static_cast<uint8_t>(direction) | static_cast<uint8_t>(endpoint_number);
+    }
+
     bool is_open_;
 
     int product_id_;
     int vendor_id_;
+    std::wstring device_path_;
     std::string manufacturer_;
     std::string product_;
     std::string serial_number_;
-    
+
+    std::vector<usb_interface> interfaces_;
+    std::vector<usb_composite_function> functions_;
+    std::vector<interface_handle> interface_handles_;
     friend class usb_registry;
 };
 

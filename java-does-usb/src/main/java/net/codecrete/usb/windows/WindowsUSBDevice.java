@@ -49,21 +49,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
             var intfHandle = new InterfaceHandle();
             intfHandle.interfaceNumber = interfaceNumber;
-            if (function == null) {
-                intfHandle.firstInterfaceNumber = interfaceNumber;
-                intfHandle.devicePath = devicePath;
-                devicePath = null;
-            } else if (function.firstInterfaceNumber() == interfaceNumber) {
-                intfHandle.firstInterfaceNumber = interfaceNumber;
-                if (children != null) {
-                    intfHandle.devicePath = children.get(interfaceNumber);
-                } else {
+            if (function.firstInterfaceNumber() == interfaceNumber) {
+                if (children == null) {
                     intfHandle.devicePath = devicePath;
-                    devicePath = null;
+                } else {
+                    intfHandle.devicePath = children.get(interfaceNumber);
                 }
-            } else {
-                intfHandle.firstInterfaceNumber = function.firstInterfaceNumber();
             }
+            intfHandle.firstInterfaceNumber = function.firstInterfaceNumber();
             interfaceHandles_.add(intfHandle);
         }
     }
