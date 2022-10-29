@@ -65,6 +65,8 @@ std::vector<uint8_t> usb_device_info::get_device_property_variable_length(HDEVIN
     DEVPROPTYPE property_type;
     if (!SetupDiGetDevicePropertyW(dev_info, dev_info_data, prop_key, &property_type, nullptr, 0, &required_size, 0)) {
         DWORD err = GetLastError();
+        if (err == ERROR_NOT_FOUND)
+            return {};
         if (err != ERROR_INSUFFICIENT_BUFFER)
             throw usb_error("internal error (SetupDiGetDevicePropertyW)", err);
     }
@@ -85,11 +87,15 @@ std::vector<uint8_t> usb_device_info::get_device_property_variable_length(HDEVIN
 std::wstring usb_device_info::get_device_property_string(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
 
     auto property_value = get_device_property_variable_length(dev_info, dev_info_data, prop_key, DEVPROP_TYPE_STRING);
+    if (property_value.size() == 0)
+        return L"";
     return std::wstring(reinterpret_cast<const WCHAR*>(&property_value[0]));
 }
 
 std::vector<std::wstring> usb_device_info::get_device_property_string_list(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
     auto property_value = get_device_property_variable_length(dev_info, dev_info_data, prop_key, DEVPROP_TYPE_STRING | DEVPROP_TYPEMOD_LIST);
+    if (property_value.size() == 0)
+        return {};
     return split_string_list(reinterpret_cast<const WCHAR*>(&property_value[0]));
 }
 
@@ -105,7 +111,7 @@ std::vector<std::wstring> usb_device_info::split_string_list(const wchar_t* str_
 }
 
 std::vector<uint8_t> usb_device_info::get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size) {
-    int size = sizeof(USB_DESCRIPTOR_REQUEST) + (request_size != 0 ? request_size : 256);
+    int size = sizeof(USB_DESCRIPTOR_REQUEST) + (request_size != 0 ? request_size : 255);
     uint8_t* descriptor_request_buffer = new uint8_t[size];
     auto dev_info_set_guard = make_scope_exit([descriptor_request_buffer]() {
         delete[] descriptor_request_buffer;
@@ -124,6 +130,10 @@ std::vector<uint8_t> usb_device_info::get_descriptor(HANDLE hub_handle, ULONG us
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hub_handle, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, descriptor_request, size, descriptor_request, size, &bytesReturned, nullptr))
         throw usb_error("Cannot retrieve descriptor (DeviceIoControl)", GetLastError());
+    int data_size = bytesReturned - sizeof(USB_DESCRIPTOR_REQUEST);
+
+    if (data_size <= 2)
+        throw usb_error("invalid descriptor");
 
     // determine expected size of descriptor
     int expected_size;
@@ -136,8 +146,7 @@ std::vector<uint8_t> usb_device_info::get_descriptor(HANDLE hub_handle, ULONG us
     }
 
     // check against effective size
-    int effective_size = bytesReturned - sizeof(USB_DESCRIPTOR_REQUEST);
-    if (effective_size < expected_size) {
+    if (data_size < expected_size) {
         if (request_size != 0)
             throw usb_error("Unexpected descriptor size");
 
@@ -145,7 +154,7 @@ std::vector<uint8_t> usb_device_info::get_descriptor(HANDLE hub_handle, ULONG us
         return get_descriptor(hub_handle, usb_port_num, descriptor_type, index, language_id, expected_size);
     }
 
-    return std::vector<uint8_t>(descriptor_request->Data, descriptor_request->Data + effective_size);
+    return std::vector<uint8_t>(descriptor_request->Data, descriptor_request->Data + data_size);
 }
 
 std::string usb_device_info::get_string(HANDLE hub_handle, ULONG usb_port_num, int index) {

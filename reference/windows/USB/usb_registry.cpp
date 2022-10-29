@@ -277,42 +277,50 @@ bool usb_registry::handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
     DEV_BROADCAST_DEVICEINTERFACE_W* broadcast = reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE_W*>(lParam);
     if (wParam == DBT_DEVICEARRIVAL) {
         on_device_connected(broadcast->dbcc_name);
-    }
-    else {
+    } else {
         on_device_disconnected(broadcast->dbcc_name);
     }
     return true;
 }
 
 void usb_registry::on_device_connected(const WCHAR* path) {
-    // get as set of all USB devices present
-    HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
-        usb_error::throw_error("internal error (SetupDiGetClassDevsW)");
 
-    // ensure the result is destroyed when the scope is left
-    auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-        SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
-    });
+    usb_device_ptr device;
+    try {
+        // get as set of all USB devices present
+        HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+        if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+            usb_error::throw_error("internal error (SetupDiGetClassDevsW)");
 
-    SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
-    if (!SetupDiOpenDeviceInterfaceW(dev_info_set_hdl, path, 0, &dev_intf_data))
-        usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
+        // ensure the result is destroyed when the scope is left
+        auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
+            SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+        });
 
-    auto dev_intf_data_guard = make_scope_exit([dev_info_set_hdl, &dev_intf_data]() {
-        SetupDiDeleteDeviceInterfaceData(dev_info_set_hdl, &dev_intf_data);
-    });
+        SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
+        if (!SetupDiOpenDeviceInterfaceW(dev_info_set_hdl, path, 0, &dev_intf_data))
+            usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
 
-    SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
-    if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, nullptr, 0, nullptr, &dev_info)) {
-        DWORD err = GetLastError();
-        if (err != ERROR_INSUFFICIENT_BUFFER)
-            throw usb_error("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
+        auto dev_intf_data_guard = make_scope_exit([dev_info_set_hdl, &dev_intf_data]() {
+            SetupDiDeleteDeviceInterfaceData(dev_info_set_hdl, &dev_intf_data);
+        });
+
+        SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
+        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, nullptr, 0, nullptr, &dev_info)) {
+            DWORD err = GetLastError();
+            if (err != ERROR_INSUFFICIENT_BUFFER)
+                throw usb_error("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
+        }
+
+        // create new device
+        device = create_device(dev_info_set_hdl, &dev_info);
+        devices.push_back(device);
     }
-
-    // create new device
-    auto device = create_device(dev_info_set_hdl, &dev_info);
-    devices.push_back(device);
+    catch (const std::exception& e) {
+        std::cerr << "Exception while connecting device: " << e.what() << std::endl;
+        std::cerr << "Ignoring." << std::endl;
+        return;
+    }
 
     // Call callback function
     if (on_connected_callback != nullptr) {
@@ -320,24 +328,32 @@ void usb_registry::on_device_connected(const WCHAR* path) {
             on_connected_callback(device);
         }
         catch (const std::exception& e) {
-            std::cerr << "Unhandled exception: " << e.what() << std::endl;
+            std::cerr << "Unhandled exception in callback: " << e.what() << std::endl;
         }
         catch (...) {
-            std::cerr << "Unhandled exception (not derived from std::exception)" << std::endl;
+            std::cerr << "Unhandled exception in callback (not derived from std::exception)" << std::endl;
         }
     }
 }
 
 void usb_registry::on_device_disconnected(const WCHAR* path) {
 
-    // find device in device list
-    auto it = std::find_if(devices.cbegin(), devices.cend(), [path](auto device) { return lstrcmpiW(path, device->device_path_.c_str()) == 0; });
-    if (it == devices.cend())
-        return; // not part of the device list
+    usb_device_ptr device;
+    try {
+        // find device in device list
+        auto it = std::find_if(devices.cbegin(), devices.cend(), [path](auto device) { return lstrcmpiW(path, device->device_path_.c_str()) == 0; });
+        if (it == devices.cend())
+            return; // not part of the device list
 
-    // remove from device list
-    usb_device_ptr device = *it;
-    devices.erase(it);
+        // remove from device list
+        device = *it;
+        devices.erase(it);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Exception while disconnecting device: " << e.what() << std::endl;
+        std::cerr << "Ignoring." << std::endl;
+        return;
+    }
         
     // call callback function
     if (on_disconnected_callback != nullptr) {

@@ -18,7 +18,7 @@ usb_device::usb_device(std::wstring&& device_path, int vendor_id, int product_id
 : vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
 
     config_parser parser{};
-    parser.parse(config_desc.data(), config_desc.size());
+    parser.parse(config_desc.data(), static_cast<int>(config_desc.size()));
     interfaces_ = std::move(parser.interfaces);
     functions_ = std::move(parser.functions);
 
