@@ -136,16 +136,20 @@ bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const
     TU_VERIFY(TUSB_REQ_TYPE_STANDARD == request->bmRequestType_bit.type);
 
     if (request->bRequest == TUSB_REQ_GET_INTERFACE) {
-        tud_control_xfer(rhport, request, &cv_alternate_setting, 1);
-        return true;
+        if (stage == CONTROL_STAGE_SETUP) {
+            tud_control_xfer(rhport, request, &cv_alternate_setting, 1);
+        }
+        return true; // indicate that request has been handled
 
     } else if (request->bRequest == TUSB_REQ_SET_INTERFACE) {
-        uint8_t alt_num = request->wValue;
-        setup_endpoints(0, cv_intf_desc, cv_intf_desc_len, alt_num);
-        if (cust_vendor_alt_intf_selected_cb != NULL)
-            cust_vendor_alt_intf_selected_cb((uint8_t) request->wIndex, alt_num);
-        tud_control_status(rhport, request);
-        return true;
+        if (stage == CONTROL_STAGE_SETUP) {
+            uint8_t alt_num = request->wValue;
+            setup_endpoints(0, cv_intf_desc, cv_intf_desc_len, alt_num);
+            if (cust_vendor_alt_intf_selected_cb != NULL)
+                cust_vendor_alt_intf_selected_cb((uint8_t) request->wIndex, alt_num);
+            tud_control_status(rhport, request);
+        }
+        return true; // indicate that request has been handled
 
     } else if (request->bRequest == TUSB_REQ_CLEAR_FEATURE
             && request->wValue == TUSB_REQ_FEATURE_EDPT_HALT
@@ -153,7 +157,7 @@ bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const
             && cust_vendor_halt_cleared_cb != NULL) {
         uint8_t const ep_addr = tu_u16_low(request->wIndex);
         cust_vendor_halt_cleared_cb(ep_addr);
-        return true;
+        return true; // ignored by caller
     }
 
     return false;
