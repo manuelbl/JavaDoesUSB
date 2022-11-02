@@ -47,7 +47,7 @@ public class TimeoutTest extends TestDeviceBase {
         testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
 
         assertThrows(USBTimeoutException.class, () -> {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 50; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
         });

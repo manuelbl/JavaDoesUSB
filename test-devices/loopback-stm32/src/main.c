@@ -20,10 +20,10 @@
 
 // FIFO buffer for loopback data
 tu_fifo_t loopback_fifo;
-uint8_t loopback_buffer[512];
+uint8_t loopback_buffer[2048];
 
 // RX buffer for loopback
-uint8_t loopback_rx_buffer[64];
+uint8_t loopback_rx_buffer[512];
 
 // buffer for echoed packet
 uint8_t echo_buffer[16];
@@ -84,8 +84,9 @@ void loopback_check_tx(void) {
 
     if (info.len_lin > 0 && !cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
         int n = info.len_lin;
-        if (n > 128)
-            n = 128;
+        int max_size = 2 * cust_vendor_packet_size(EP_LOOPBACK_RX);
+        if (n > max_size)
+            n = max_size;
         
         cust_vendor_start_transmit(EP_LOOPBACK_TX, info.ptr_lin, n);
     }
@@ -95,8 +96,9 @@ void loopback_check_tx(void) {
 void loopback_check_rx(void) {
 
     int n = tu_fifo_remaining(&loopback_fifo);
-    if (n >= sizeof(loopback_rx_buffer) && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
-        cust_vendor_prepare_recv(EP_LOOPBACK_RX, loopback_rx_buffer, sizeof(loopback_rx_buffer));
+    uint16_t packet_size = cust_vendor_packet_size(EP_LOOPBACK_RX); 
+    if (n >= packet_size && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
+        cust_vendor_prepare_recv(EP_LOOPBACK_RX, loopback_rx_buffer, packet_size);
 }
 
 
@@ -143,7 +145,8 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
         loopback_check_rx();
 
         // check ZLP
-        if ((sent_bytes & (BULK_MAX_PACKET_SIZE - 1)) == 0
+        uint16_t packet_size = cust_vendor_packet_size(EP_LOOPBACK_TX);
+        if ((sent_bytes & (packet_size - 1)) == 0
                 && !cust_vendor_is_transmitting(ep_addr))
             cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
 

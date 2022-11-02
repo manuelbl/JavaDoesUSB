@@ -125,10 +125,20 @@ public interface USBDevice {
 
     /**
      * Gets the interface with the specified number.
+     *
      * @param interfaceNumber the interface number
      * @return the interface, or {@code null} if no interface with the given number exists
      */
     USBInterface getInterface(int interfaceNumber);
+
+    /**
+     * Gets the endpoint with the specified number.
+     *
+     * @param direction the endpoint direction
+     * @param endpointNumber the endpoint number (between 1 and 127)
+     * @return the endpoint, or {@code null} if no endpoint with the given direction and number exists
+     */
+    USBEndpoint getEndpoint(USBDirection direction, int endpointNumber);
 
     /**
      * Claims the specified interface for exclusive use.

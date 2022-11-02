@@ -6,13 +6,13 @@
 // Licensed under MIT License
 // https://opensource.org/licenses/MIT
 //
-// Board specific code for STM32F4 family
+// Board specific code for STM32F7 family
 //
 
-#if defined(STM32F4xx)
+#if defined(STM32F723xx)
 
 #include <stdbool.h>
-#include "stm32f4xx.h"
+#include "stm32f7xx.h"
 #include "device/usbd.h"
 
 extern uint32_t SystemCoreClock;
@@ -30,9 +30,9 @@ static inline void set_reg(__IO uint32_t* reg, uint32_t value, uint32_t mask) {
 
 // --- additional PWR constants
 
-#define PWR_CR_VOS_SCALE3 (1 << PWR_CR_VOS_Pos)
-#define PWR_CR_VOS_SCALE2 (2 << PWR_CR_VOS_Pos)
-#define PWR_CR_VOS_SCALE1 (3 << PWR_CR_VOS_Pos)
+#define PWR_CR1_VOS_SCALE3 (1 << PWR_CR1_VOS_Pos)
+#define PWR_CR1_VOS_SCALE2 (2 << PWR_CR1_VOS_Pos)
+#define PWR_CR1_VOS_SCALE1 (3 << PWR_CR1_VOS_Pos)
 
 
 // --- additional RCC constants
@@ -42,25 +42,25 @@ typedef struct rcc_clock_setup {
 	uint16_t plln;
 	uint8_t pllp;
 	uint8_t pllq;
-	uint32_t pll_source;
-	uint32_t flash_config;
 	uint32_t hpre;
 	uint32_t ppre1;
 	uint32_t ppre2;
 	uint32_t voltage_scale;
+    uint8_t overdrive;
+    uint8_t flash_wait_states;
 } rcc_clock_setup_t;
 
-const rcc_clock_setup_t clock_setup_hse_value_out_84mhz_3v3 = {
+const rcc_clock_setup_t clock_setup_hse_216mhz_3v3 = {
 	.pllm = HSE_VALUE / 1000000,
-	.plln = 336,
-	.pllp = 4,
-	.pllq = 7,
-	.pll_source = RCC_PLLCFGR_PLLSRC_HSE,
+	.plln = 432,
+	.pllp = 2,
+	.pllq = 9,
 	.hpre = RCC_CFGR_HPRE_DIV1,
-	.ppre1 = RCC_CFGR_PPRE1_DIV2,
-	.ppre2 = RCC_CFGR_PPRE2_DIV1,
-	.voltage_scale = PWR_CR_VOS_SCALE1,
-	.flash_config = FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_LATENCY_2WS
+	.ppre1 = RCC_CFGR_PPRE1_DIV4,
+	.ppre2 = RCC_CFGR_PPRE2_DIV2,
+	.voltage_scale = PWR_CR1_VOS_SCALE1,
+    .overdrive = 1,
+	.flash_wait_states = 7
 };
 
 // --- additional SysTick constants
@@ -125,7 +125,7 @@ static inline void gpio_clear(GPIO_TypeDef* gpioport, int gpio) {
 }
 
 
-static void rcc_clock_setup_pll(const rcc_clock_setup_t* setup) {
+static void rcc_clock_setup_hse(const rcc_clock_setup_t* setup) {
 
 	// Enable internal high-speed oscillator (HSI)
 	set_reg(&RCC->CR, RCC_CR_HSION, RCC_CR_HSION_Msk);
@@ -135,14 +135,20 @@ static void rcc_clock_setup_pll(const rcc_clock_setup_t* setup) {
 	set_reg(&RCC->CFGR, RCC_CFGR_SW_HSI, RCC_CFGR_SW_Msk);
 
 	// Enable external high-speed oscillator (HSE)
-	if (setup->pll_source == RCC_PLLCFGR_PLLSRC_HSE) {
-		set_reg(&RCC->CR, RCC_CR_HSEON, RCC_CR_HSEON_Msk);
-		rcc_wait_for_osc_ready(RCC_CR_HSERDY);
-	}
+    set_reg(&RCC->CR, RCC_CR_HSEON, RCC_CR_HSEON_Msk);
+    rcc_wait_for_osc_ready(RCC_CR_HSERDY);
 
-	// Set the VOS scale mode
+	// Set voltage scaling
 	set_reg(&RCC->APB1ENR, RCC_APB1ENR_PWREN, RCC_APB1ENR_PWREN_Msk);
-	set_reg(&PWR->CR, setup->voltage_scale, PWR_CR_VOS_Msk);
+	set_reg(&PWR->CR1, setup->voltage_scale, PWR_CR1_VOS_Msk);
+
+    // Overdrive
+    if (setup->overdrive) {
+        set_reg(&PWR->CR1, PWR_CR1_ODEN, PWR_CR1_ODEN_Msk);
+        while (get_reg(&PWR->CSR1, PWR_CSR1_ODRDY_Msk) == 0);
+        set_reg(&PWR->CR1, PWR_CR1_ODSWEN, PWR_CR1_ODSWEN_Msk);
+        while (get_reg(&PWR->CSR1, PWR_CSR1_ODSWRDY_Msk) == 0);
+    }
 
 	// Set prescalers for AHB, APB1, APB2
 	set_reg(&RCC->CFGR, setup->hpre | setup->ppre1 | setup->ppre2,
@@ -153,7 +159,7 @@ static void rcc_clock_setup_pll(const rcc_clock_setup_t* setup) {
 
 	// Configure the PLL oscillator
 	int pllp_val = (setup->pllp >> 1) - 1;
-	RCC->PLLCFGR = setup->pll_source
+	RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE
 		| (setup->pllm << RCC_PLLCFGR_PLLM_Pos)
 		| (setup->plln << RCC_PLLCFGR_PLLN_Pos)
 		| (pllp_val << RCC_PLLCFGR_PLLP_Pos)
@@ -164,7 +170,8 @@ static void rcc_clock_setup_pll(const rcc_clock_setup_t* setup) {
 	rcc_wait_for_osc_ready(RCC_CR_PLLRDY);
 
 	// Configure flash settings
-	set_reg(&FLASH->ACR, setup->flash_config, FLASH_ACR_DCEN_Msk | FLASH_ACR_ICEN_Msk | FLASH_ACR_LATENCY_Msk);
+	set_reg(&FLASH->ACR, (setup->flash_wait_states << FLASH_ACR_LATENCY_Pos) | FLASH_ACR_ARTEN | FLASH_ACR_PRFTEN,
+        FLASH_ACR_ARTEN_Msk | FLASH_ACR_PRFTEN_Msk | FLASH_ACR_LATENCY_Msk);
 
 	// Select PLL as SYSCLK source
 	set_reg(&RCC->CFGR, RCC_CFGR_SW_PLL, RCC_CFGR_SW_Msk);
@@ -174,8 +181,7 @@ static void rcc_clock_setup_pll(const rcc_clock_setup_t* setup) {
 		;
 
 	// Disable internal high-speed oscillator
-	if (setup->pll_source == RCC_PLLCFGR_PLLSRC_HSE)
-		set_reg(&RCC->CR, 0, RCC_CR_HSION_Msk);
+    set_reg(&RCC->CR, 0, RCC_CR_HSION_Msk);
 
 	// Update the SystemCoreClock variable used by TinyUSB
 	SystemCoreClockUpdate();
@@ -226,32 +232,47 @@ static void usb_init_serial_num() {
 
 void board_init(void) {
 
-	rcc_clock_setup_pll(&clock_setup_hse_value_out_84mhz_3v3);
+	rcc_clock_setup_hse(&clock_setup_hse_216mhz_3v3);
     systick_init();
 
-	// clock for GPIOA (USB pins)
-	set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN, RCC_AHB1ENR_GPIOAEN_Msk);
+	// clock for GPIOB (USB pins)
+	set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN, RCC_AHB1ENR_GPIOBEN_Msk);
 
 	// Configure USB D+/D- pins
-    gpio_mode_setup(GPIOA, 11, GPIO_MODE_ALT, GPIO_PUPD_NO_PULL);
-    gpio_set_af(GPIOA, 11, 10);
-	gpio_set_ospeed(GPIOA, 11, GPIO_OSPEED_HIGH);
-    gpio_mode_setup(GPIOA, 12, GPIO_MODE_ALT, GPIO_PUPD_NO_PULL);
-    gpio_set_af(GPIOA, 12, 10);
-	gpio_set_ospeed(GPIOA, 12, GPIO_OSPEED_HIGH);
+    gpio_mode_setup(GPIOB, 14, GPIO_MODE_ALT, GPIO_PUPD_NO_PULL);
+    gpio_set_af(GPIOB, 14, 10);
+	gpio_set_ospeed(GPIOB, 14, GPIO_OSPEED_HIGH);
+    gpio_mode_setup(GPIOB, 15, GPIO_MODE_ALT, GPIO_PUPD_NO_PULL);
+    gpio_set_af(GPIOB, 15, 10);
+	gpio_set_ospeed(GPIOB, 15, GPIO_OSPEED_HIGH);
 
-	// clock for USB
-    set_reg(&RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN, RCC_AHB2ENR_OTGFSEN_Msk);
+    // Configure VBUS sense
+    set_reg(&USB_OTG_HS->GCCFG, USB_OTG_GCCFG_VBDEN, USB_OTG_GCCFG_VBDEN_Msk);
 
-	// Disable VBUS sense
-	set_reg(&USB_OTG_FS->GCCFG, USB_OTG_GCCFG_NOVBUSSENS,
-		USB_OTG_GCCFG_NOVBUSSENS_Msk | USB_OTG_GCCFG_VBUSASEN_Msk | USB_OTG_GCCFG_VBUSBSEN_Msk);
+    gpio_mode_setup(GPIOB, 14, GPIO_MODE_ALT, GPIO_PUPD_PULL_UP);
+    gpio_set_af(GPIOB, 14, 10);
+	gpio_set_ospeed(GPIOB, 14, GPIO_OSPEED_HIGH);
 
-	// clock for GPIOC (LED)
-    set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN, RCC_AHB1ENR_GPIOCEN_Msk);
+    set_reg(&RCC->APB2ENR, RCC_APB2ENR_OTGPHYCEN, RCC_APB2ENR_OTGPHYCEN_Msk);
+    set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_OTGHSULPIEN, RCC_AHB1ENR_OTGHSULPIEN_Msk);
+    set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_OTGHSEN, RCC_AHB1ENR_OTGHSEN_Msk);
+
+    // No VBUS sense
+    set_reg(&USB_OTG_HS->GCCFG, 0, USB_OTG_GCCFG_VBDEN_Msk);
+
+    // B-peripheral session valid override enable
+    set_reg(&USB_OTG_HS->GOTGCTL, USB_OTG_GOTGCTL_BVALOEN, USB_OTG_GOTGCTL_BVALOEN_Msk);
+    set_reg(&USB_OTG_HS->GOTGCTL, USB_OTG_GOTGCTL_BVALOVAL, USB_OTG_GOTGCTL_BVALOVAL_Msk);
+
+    // Force device mode
+    set_reg(&USB_OTG_HS->GUSBCFG, 0, USB_OTG_GUSBCFG_FHMOD_Msk);
+    set_reg(&USB_OTG_HS->GUSBCFG, USB_OTG_GUSBCFG_FDMOD, USB_OTG_GUSBCFG_FDMOD_Msk);
+
+	// clock for GPIOB (LED)
+    set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN, RCC_AHB1ENR_GPIOBEN_Msk);
 
 	// LED pin
-	gpio_mode_setup(GPIOC, 13, GPIO_MODE_OUTPUT, GPIO_PUPD_NO_PULL);
+	gpio_mode_setup(GPIOB, 1, GPIO_MODE_OUTPUT, GPIO_PUPD_NO_PULL);
 
 	usb_init_serial_num();
 }
@@ -262,9 +283,9 @@ uint32_t board_millis(void) {
 
 void board_led_write(bool on) {
     if (on)
-        gpio_set(GPIOC, 13);
+        gpio_set(GPIOB, 1);
     else
-        gpio_clear(GPIOC, 13);
+        gpio_clear(GPIOB, 1);
 }
 
 
@@ -274,8 +295,8 @@ void SysTick_Handler (void) {
 	millis_count++;
 }
 
-void OTG_FS_IRQHandler(void) {
-    tud_int_handler(0);
+void OTG_HS_IRQHandler(void) {
+    tud_int_handler(1);
 }
 
 #endif

@@ -39,6 +39,7 @@ const usbd_class_driver_t cust_vendor_driver = {
 
 // open endpoints
 static uint8_t cv_eps_open[8];
+static uint16_t cv_eps_packet_size[8];
 static int cv_num_eps_open;
 
 // current alternate setting
@@ -106,6 +107,7 @@ uint16_t setup_endpoints(uint8_t rhport, tusb_desc_interface_t const* desc_intf,
 
                 // remember open endpoints
                 cv_eps_open[cv_num_eps_open] = desc_ep->bEndpointAddress;
+                cv_eps_packet_size[cv_num_eps_open] = desc_ep->wMaxPacketSize;
                 cv_num_eps_open += 1;
             }
             
@@ -125,10 +127,13 @@ uint16_t setup_endpoints(uint8_t rhport, tusb_desc_interface_t const* desc_intf,
 }
 
 void close_endpoints() {
+
+    uint8_t const rhport = BOARD_TUD_RHPORT;
+
     // close in reverse order
     while (cv_num_eps_open > 0) {
         cv_num_eps_open -= 1;
-        usbd_edpt_close(0, cv_eps_open[cv_num_eps_open]);
+        usbd_edpt_close(rhport, cv_eps_open[cv_num_eps_open]);
     }
 }
 
@@ -144,7 +149,7 @@ bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const
     } else if (request->bRequest == TUSB_REQ_SET_INTERFACE) {
         if (stage == CONTROL_STAGE_SETUP) {
             uint8_t alt_num = request->wValue;
-            setup_endpoints(0, cv_intf_desc, cv_intf_desc_len, alt_num);
+            setup_endpoints(rhport, cv_intf_desc, cv_intf_desc_len, alt_num);
             if (cust_vendor_alt_intf_selected_cb != NULL)
                 cust_vendor_alt_intf_selected_cb((uint8_t) request->wIndex, alt_num);
             tud_control_status(rhport, request);
@@ -177,7 +182,7 @@ bool cv_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t 
 
 void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len) {
 
-    uint8_t const rhport = 0;
+    uint8_t const rhport = BOARD_TUD_RHPORT;
 
     if (usbd_edpt_busy(rhport, ep_addr))
         return;
@@ -187,7 +192,7 @@ void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len) {
 
 void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t data_len) {
 
-    uint8_t const rhport = 0;
+    uint8_t const rhport = BOARD_TUD_RHPORT;
 
     if (usbd_edpt_busy(rhport, ep_addr))
         return;
@@ -196,11 +201,24 @@ void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t dat
 }
 
 bool cust_vendor_is_receiving(uint8_t ep_addr) {
-    return usbd_edpt_busy(0, ep_addr);
+
+    uint8_t const rhport = BOARD_TUD_RHPORT;
+
+    return usbd_edpt_busy(rhport, ep_addr);
 }
 
 bool cust_vendor_is_transmitting(uint8_t ep_addr) {
-    return usbd_edpt_busy(0, ep_addr);
+
+    uint8_t const rhport = BOARD_TUD_RHPORT;
+
+    return usbd_edpt_busy(rhport, ep_addr);
+}
+
+uint16_t cust_vendor_packet_size(uint8_t ep_addr) {
+    for (int i = 0; i < cv_num_eps_open; i++)
+        if (cv_eps_open[i] == ep_addr)
+            return cv_eps_packet_size[i];
+    return 1;
 }
 
 #endif

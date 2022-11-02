@@ -44,7 +44,7 @@ public class DescriptionTest extends TestDeviceBase {
 
         assertEquals(0, testDevice.deviceVersion().major());
         assertEquals(isComposite ? 3 : 7, testDevice.deviceVersion().minor());
-        assertEquals(isComposite ? 6 : 3, testDevice.deviceVersion().subminor());
+        assertEquals(isComposite ? 6 : 4, testDevice.deviceVersion().subminor());
     }
 
     @Test
@@ -91,13 +91,13 @@ public class DescriptionTest extends TestDeviceBase {
         assertEquals(1, endpoint.number());
         assertEquals(USBDirection.OUT, endpoint.direction());
         assertEquals(USBTransferType.BULK, endpoint.transferType());
-        assertEquals(64, endpoint.packetSize());
+        assertTrue(endpoint.packetSize() == 64 || endpoint.packetSize() == 512);
 
         endpoint = altIntf.endpoints().get(1);
         assertEquals(2, endpoint.number());
         assertEquals(USBDirection.IN, endpoint.direction());
         assertEquals(USBTransferType.BULK, endpoint.transferType());
-        assertEquals(64, endpoint.packetSize());
+        assertTrue(endpoint.packetSize() == 64 || endpoint.packetSize() == 512);
 
         if (isLoopbackDevice()) {
             endpoint = altIntf.endpoints().get(2);
@@ -120,13 +120,13 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(1, endpoint.number());
             assertEquals(USBDirection.OUT, endpoint.direction());
             assertEquals(USBTransferType.BULK, endpoint.transferType());
-            assertEquals(64, endpoint.packetSize());
+            assertTrue(endpoint.packetSize() == 64 || endpoint.packetSize() == 512);
 
             endpoint = altIntf.endpoints().get(1);
             assertEquals(2, endpoint.number());
             assertEquals(USBDirection.IN, endpoint.direction());
             assertEquals(USBTransferType.BULK, endpoint.transferType());
-            assertEquals(64, endpoint.packetSize());
+            assertTrue(endpoint.packetSize() == 64 || endpoint.packetSize() == 512);
         }
     }
 

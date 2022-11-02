@@ -210,6 +210,17 @@ public abstract class USBDeviceImpl implements USBDevice {
         return (USBInterfaceImpl) interfaces_.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
     }
 
+    @Override
+    public USBEndpoint getEndpoint(USBDirection direction, int endpointNumber) {
+        for (var intf : interfaces_) {
+            for (var endpoint : intf.alternate().endpoints()) {
+                if (endpoint.direction() == direction && endpoint.number() == endpointNumber)
+                    return endpoint;
+            }
+        }
+        return null;
+    }
+
     /**
      * Checks if the specified endpoint is valid for communication and returns the endpoint address.
      *

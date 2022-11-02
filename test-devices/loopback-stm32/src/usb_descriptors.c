@@ -30,7 +30,7 @@ tusb_desc_device_t const desc_device = {
 
     .idVendor = 0xCAFE,
     .idProduct = 0xCEAF,
-    .bcdDevice = 0x0073,  // version 0.7.3
+    .bcdDevice = 0x0074,  // version 0.7.4
 
     .iManufacturer = 0x01,
     .iProduct = 0x02,
@@ -55,15 +55,15 @@ enum {
 
 #define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + 9 + 4 * 7 + 9 + 2 * 7)
 
-uint8_t const desc_configuration[] = {
+uint8_t const desc_fs_configuration[] = {
     // Config number, interface count, string index, total length, attribute, power in mA
     TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 500),
     // Loopback interface (alternate 0)
     CUSTOM_VENDOR_INTERFACE(0, 4),
     // Loopback endpoint OUT
-    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, BULK_MAX_PACKET_SIZE),
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, 64),
     // Loopback endpoint IN
-    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, BULK_MAX_PACKET_SIZE),
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, 64),
     // Echo endpoint OUT
     CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_RX, INTR_MAX_PACKET_SIZE, 16),
     // Echo endpoint IN
@@ -71,17 +71,85 @@ uint8_t const desc_configuration[] = {
     // Loopback interface (alternate 1)
     CUSTOM_VENDOR_INTERFACE_ALT(0, 1, 2),
     // Loopback endpoint OUT
-    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, BULK_MAX_PACKET_SIZE),
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, 64),
     // Loopback endpoint IN
-    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, BULK_MAX_PACKET_SIZE)
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, 64)
 };
+
+#if TUD_OPT_HIGH_SPEED
+
+uint8_t const desc_hs_configuration[] = {
+    // Config number, interface count, string index, total length, attribute, power in mA
+    TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 500),
+    // Loopback interface (alternate 0)
+    CUSTOM_VENDOR_INTERFACE(0, 4),
+    // Loopback endpoint OUT
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, 512),
+    // Loopback endpoint IN
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, 512),
+    // Echo endpoint OUT
+    CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_RX, INTR_MAX_PACKET_SIZE, 8),
+    // Echo endpoint IN
+    CUSTOM_VENDOR_INTERRUPT_ENDPOINT(EP_ECHO_TX, INTR_MAX_PACKET_SIZE, 8),
+    // Loopback interface (alternate 1)
+    CUSTOM_VENDOR_INTERFACE_ALT(0, 1, 2),
+    // Loopback endpoint OUT
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_RX, 512),
+    // Loopback endpoint IN
+    CUSTOM_VENDOR_BULK_ENDPOINT(EP_LOOPBACK_TX, 512)
+};
+
+// device qualifier (same values as device descriptor where possible)
+tusb_desc_device_qualifier_t const desc_device_qualifier =
+{
+    .bLength = sizeof(tusb_desc_device_qualifier_t),
+    .bDescriptorType = TUSB_DESC_DEVICE,
+    .bcdUSB = 0x0200,
+
+    .bDeviceClass = TUSB_CLASS_VENDOR_SPECIFIC,
+    .bDeviceSubClass = 0,
+    .bDeviceProtocol = 0,
+
+    .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+    .bNumConfigurations = 0x01,
+    .bReserved  = 0x00
+};
+
+// Invoked when received GET DEVICE QUALIFIER DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete.
+// device_qualifier descriptor describes information about a high-speed capable device that would
+// change if the device were operating at the other speed. If not highspeed capable stall this request.
+uint8_t const* tud_descriptor_device_qualifier_cb(void)
+{
+    return (uint8_t const*) &desc_device_qualifier;
+}
+
+// Invoked when received GET OTHER SPEED CONFIGURATION DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+// Configuration descriptor in the other speed e.g if high speed then this is for full speed and vice versa
+uint8_t const* tud_descriptor_other_speed_configuration_cb(uint8_t index)
+{
+    (void) index; // for multiple configurations
+
+    // if link speed is high return fullspeed config, and vice versa
+    return (tud_speed_get() == TUSB_SPEED_HIGH) ?  desc_fs_configuration : desc_hs_configuration;
+}
+
+#endif
+
 
 // Invoked when a GET CONFIGURATION DESCRIPTOR request is recieved.
 // Return a pointer to descriptor.
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const* tud_descriptor_configuration_cb(uint8_t configuration_index) {
     (void)configuration_index;
-    return desc_configuration;
+
+#if TUD_OPT_HIGH_SPEED
+    // Although we are highspeed, host may be fullspeed.
+    return (tud_speed_get() == TUSB_SPEED_HIGH) ?  desc_hs_configuration : desc_fs_configuration;
+#else
+    return desc_fs_configuration;
+#endif
 }
 
 

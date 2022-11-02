@@ -197,7 +197,7 @@ void board_led_write(bool on) {
 // --- Interrupt handlers ---
 
 void SysTick_Handler (void) {
-  millis_count++;
+	millis_count++;
 }
 
 void USBWakeUp_IRQHandler(void) {

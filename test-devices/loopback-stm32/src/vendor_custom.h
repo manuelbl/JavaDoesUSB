@@ -86,6 +86,15 @@ void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t dat
  */
 bool cust_vendor_is_transmitting(uint8_t ep_addr);
 
+/**
+ * @brief Gets the endpoint packet size.
+ * 
+ * @param ep_addr endpoint address (1 to 255)
+ * @return int  packet size, in bytes
+ */
+uint16_t cust_vendor_packet_size(uint8_t ep_addr);
+
+
 
 // --- Application Callback API
 

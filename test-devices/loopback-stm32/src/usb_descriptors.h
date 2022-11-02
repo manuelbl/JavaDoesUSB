@@ -14,7 +14,6 @@
 #include <stdint.h>
 
 #define INTR_MAX_PACKET_SIZE 16
-#define BULK_MAX_PACKET_SIZE 64
 
 // Endpoints
 #define EP_LOOPBACK_RX 0x01

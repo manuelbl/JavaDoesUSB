@@ -39,8 +39,9 @@ public class BulkTransferTest extends TestDeviceBase {
 
     @Test
     void transferWithZLP_succeeds() {
-        byte[] sampleData = generateRandomBytes(64, 97333894);
-        writeBytes(sampleData);
+        var inEndpoint = testDevice.getEndpoint(USBDirection.IN, LOOPBACK_EP_IN);
+        byte[] sampleData = generateRandomBytes(inEndpoint.packetSize(), 97333894);
+        testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
         byte[] data = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(sampleData, data);
         data = testDevice.transferIn(LOOPBACK_EP_IN);
