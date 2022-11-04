@@ -55,6 +55,20 @@
 void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len);
 
 /**
+ * @brief Prepares to recieve data on an OUT endpoint using a FIFO buffer.
+ * 
+ * The FIFO buffer must have sufficient space to receive the data.
+ * It's write pointer will updated before the `cust_vendor_rx_cb()` callback is called.
+ * 
+ * If the OUT endpoint is already receiving data, this function does nothing.
+ * 
+ * @param ep_addr endpoint address (1 to 127)
+ * @param fifo pointer to FIFO buffer
+ * @param buf_len length of buffer
+ */
+void cust_vendor_prepare_recv_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t buf_len);
+
+/**
  * @brief Gets if the endpoint is busy receiving data.
  * 
  * @param ep_addr endpoint address (1 to 127)
@@ -76,6 +90,20 @@ bool cust_vendor_is_receiving(uint8_t ep_addr);
  * @param data_len number of bytes to transmit
  */
 void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t data_len);
+
+/**
+ * @brief Transmits data on an IN endpoint using a FIFO buffer.
+ * 
+ * The data in the FIFO buffer must stay valid until the `cust_vendor_tx_cb()` callback.
+ * Before the callback, FIFO read pointer is updated.
+ * 
+ * If the IN endpoint is already transmitting data, this function does nothing.
+ * 
+ * @param ep_addr endpoint address (129 to 255)
+ * @param fifo pointer to FIFO buffer
+ * @param data_len number of bytes to transmit
+ */
+void cust_vendor_start_transmit_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t data_len);
 
 /**
  * @brief Gets if the endpoint is busy transmitting data.

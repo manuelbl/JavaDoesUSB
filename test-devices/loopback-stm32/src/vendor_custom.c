@@ -190,6 +190,16 @@ void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len) {
     usbd_edpt_xfer(rhport, ep_addr, buf, buf_len);
 }
 
+void cust_vendor_prepare_recv_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t buf_len) {
+    uint8_t const rhport = BOARD_TUD_RHPORT;
+
+    if (usbd_edpt_busy(rhport, ep_addr))
+        return;
+
+    usbd_edpt_xfer_fifo(rhport, ep_addr, fifo, buf_len);
+}
+
+
 void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t data_len) {
 
     uint8_t const rhport = BOARD_TUD_RHPORT;
@@ -199,6 +209,17 @@ void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t dat
 
     usbd_edpt_xfer(rhport, ep_addr, (void*) data, data_len);
 }
+
+void cust_vendor_start_transmit_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t data_len) {
+
+    uint8_t const rhport = BOARD_TUD_RHPORT;
+
+    if (usbd_edpt_busy(rhport, ep_addr))
+        return;
+
+    usbd_edpt_xfer_fifo(rhport, ep_addr, (void*) fifo, data_len);
+}
+
 
 bool cust_vendor_is_receiving(uint8_t ep_addr) {
 

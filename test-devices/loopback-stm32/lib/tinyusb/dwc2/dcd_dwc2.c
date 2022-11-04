@@ -931,8 +931,8 @@ static void read_fifo_packet(uint8_t rhport, uint8_t * dst, uint16_t len)
   volatile const uint32_t * rx_fifo = dwc2->fifo[0];
 
   // Reading full available 32 bit words from fifo
-  uint16_t full_words = len >> 2;
-  while(full_words--)
+  uint8_t * dst_end = dst + (len & 0xfffc);
+  while(dst < dst_end)
   {
     tu_unaligned_write32(dst, *rx_fifo);
     dst += 4;
@@ -958,8 +958,8 @@ static void write_fifo_packet(uint8_t rhport, uint8_t fifo_num, uint8_t const * 
   volatile uint32_t * tx_fifo = dwc2->fifo[fifo_num];
 
   // Pushing full available 32 bit words to fifo
-  uint16_t full_words = len >> 2;
-  while(full_words--)
+  const uint8_t * src_end = src + (len & 0xfffc);
+  while(src < src_end)
   {
     *tx_fifo = tu_unaligned_read32(src);
     src += 4;

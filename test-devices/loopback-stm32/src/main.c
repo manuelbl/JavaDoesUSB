@@ -20,10 +20,9 @@
 
 // FIFO buffer for loopback data
 tu_fifo_t loopback_fifo;
-uint8_t loopback_buffer[2048];
+uint8_t loopback_buffer[2048] __attribute__ ((aligned(4)));
 
-// RX buffer for loopback
-uint8_t loopback_rx_buffer[512];
+uint16_t bulk_packet_size = 64;
 
 // buffer for echoed packet
 uint8_t echo_buffer[16];
@@ -79,26 +78,23 @@ void loopback_init(void) {
 // Check if the next transmission should be started
 void loopback_check_tx(void) {
 
-    tu_fifo_buffer_info_t info;
-    tu_fifo_get_read_info(&loopback_fifo, &info);
+    uint16_t n = tu_fifo_count(&loopback_fifo);
 
-    if (info.len_lin > 0 && !cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
-        int n = info.len_lin;
-        int max_size = 2 * cust_vendor_packet_size(EP_LOOPBACK_RX);
+    if (n > 0 && !cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
+        uint16_t max_size = 2 * bulk_packet_size;
         if (n > max_size)
             n = max_size;
         
-        cust_vendor_start_transmit(EP_LOOPBACK_TX, info.ptr_lin, n);
+        cust_vendor_start_transmit_fifo(EP_LOOPBACK_TX, &loopback_fifo, n);
     }
 }
 
 // Check if receiving should be started again
 void loopback_check_rx(void) {
 
-    int n = tu_fifo_remaining(&loopback_fifo);
-    uint16_t packet_size = cust_vendor_packet_size(EP_LOOPBACK_RX); 
-    if (n >= packet_size && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
-        cust_vendor_prepare_recv(EP_LOOPBACK_RX, loopback_rx_buffer, packet_size);
+    uint16_t n = tu_fifo_remaining(&loopback_fifo);
+    if (n >= bulk_packet_size && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
+        cust_vendor_prepare_recv_fifo(EP_LOOPBACK_RX, &loopback_fifo, bulk_packet_size);
 }
 
 
@@ -118,7 +114,6 @@ void echo_update_state(void) {
 // Invoked when new data has been received
 void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
     if (ep_addr == EP_LOOPBACK_RX) {
-        tu_fifo_write_n(&loopback_fifo, loopback_rx_buffer, recv_bytes);
         loopback_check_rx();
         loopback_check_tx();
 
@@ -132,21 +127,11 @@ void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
 // Invoked when last tx transfer finished
 void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
     if (ep_addr == EP_LOOPBACK_TX) {
-
-        // If buffer has been reset in the mean time,
-        // we might not be able to advance it fully or at all.
-        int max_advance = tu_fifo_count(&loopback_fifo);
-        if (sent_bytes > max_advance)
-            sent_bytes = max_advance;
-        if (sent_bytes > 0)
-            tu_fifo_advance_read_pointer(&loopback_fifo, sent_bytes);
-
         loopback_check_tx();
         loopback_check_rx();
 
         // check ZLP
-        uint16_t packet_size = cust_vendor_packet_size(EP_LOOPBACK_TX);
-        if ((sent_bytes & (packet_size - 1)) == 0
+        if ((sent_bytes & (bulk_packet_size - 1)) == 0
                 && !cust_vendor_is_transmitting(ep_addr))
             cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
 
@@ -158,6 +143,7 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
 
 // Invoked when interface has been opened
 void cust_vendor_intf_open_cb(uint8_t intf) {
+    bulk_packet_size = cust_vendor_packet_size(EP_LOOPBACK_RX);
     loopback_check_rx();
     echo_update_state();
 }
@@ -165,6 +151,7 @@ void cust_vendor_intf_open_cb(uint8_t intf) {
 // Invoked when an alternate interface has been selected
 void cust_vendor_alt_intf_selected_cb(uint8_t intf, uint8_t alt) {
     reset_buffers();
+    bulk_packet_size = cust_vendor_packet_size(EP_LOOPBACK_RX);
     loopback_check_rx();
     if (alt == 0)
         echo_update_state();

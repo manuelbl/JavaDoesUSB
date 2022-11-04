@@ -105,8 +105,8 @@ static void _ff_push_const_addr(uint8_t * ff_buf, const void * app_buf, uint16_t
   volatile const uint32_t * rx_fifo = (volatile const uint32_t *) app_buf;
 
   // Reading full available 32 bit words from const app address
-  uint16_t full_words = len >> 2;
-  while(full_words--)
+  uint8_t * ff_buf_end = ff_buf + (len & 0xfffc);
+  while(ff_buf < ff_buf_end)
   {
     tu_unaligned_write32(ff_buf, *rx_fifo);
     ff_buf += 4;
@@ -128,8 +128,8 @@ static void _ff_pull_const_addr(void * app_buf, const uint8_t * ff_buf, uint16_t
   volatile uint32_t * tx_fifo = (volatile uint32_t *) app_buf;
 
   // Pushing full available 32 bit words to const app address
-  uint16_t full_words = len >> 2;
-  while(full_words--)
+  const uint8_t * ff_buf_end = ff_buf + (len & 0xfffc);
+  while(ff_buf < ff_buf_end)
   {
     *tx_fifo = tu_unaligned_read32(ff_buf);
     ff_buf += 4;
