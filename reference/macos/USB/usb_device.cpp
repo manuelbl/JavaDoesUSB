@@ -60,6 +60,27 @@ const std::vector<usb_interface>& usb_device::interfaces() const {
     return interfaces_;
 }
 
+const usb_interface* usb_device::get_interface(int interface_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        if (intf.number() == interface_number)
+            return &intf;
+    }
+    
+    return nullptr;
+}
+
+const usb_endpoint* usb_device::get_endpoint(usb_direction direction, int endpoint_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        for (const usb_endpoint& ep : intf.alternate().endpoints()) {
+            if (ep.direction() == direction && ep.number() == endpoint_number)
+                return &ep;
+        }
+    }
+    
+    return nullptr;
+}
+
+
 bool usb_device::is_open() const {
     return is_open_;
 }
@@ -93,7 +114,7 @@ void usb_device::claim_interface(int interface_number) {
     if (claimed_interfaces_.find(interface_number) != claimed_interfaces_.end())
         throw usb_error("interface has already been claimed");
     
-    usb_interface* uintf = get_interface(interface_number);
+    usb_interface* uintf = get_intf_ptr(interface_number);
     if (uintf == nullptr)
         throw usb_error("no such interface");
     
@@ -148,7 +169,7 @@ void usb_device::claim_interface(int interface_number) {
 
 void usb_device::release_interface(int interface_number) {
     
-    usb_interface* uintf = get_interface(interface_number);
+    usb_interface* uintf = get_intf_ptr(interface_number);
     if (uintf == nullptr)
         throw usb_error("no such interface");
     
@@ -168,7 +189,7 @@ void usb_device::release_interface(int interface_number) {
 
 void usb_device::select_alternate_interface(int interface_number, int alternate_setting) {
 
-    usb_interface* uintf = get_interface(interface_number);
+    usb_interface* uintf = get_intf_ptr(interface_number);
     if (uintf == nullptr)
         throw usb_error("no such interface");
     
@@ -201,26 +222,26 @@ void usb_device::build_pipe_info() {
             UInt8 direction = 0;
             UInt8 number = 0;
             UInt8 transfer_type = 0;
+            UInt16 packet_size = 0;
             UInt8 ignore = 0;
-            UInt16 ignore2 = 0;
-            ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &transfer_type, &ignore2, &ignore);
+            ret = (*interface)->GetPipeProperties(interface, i, &direction, &number, &transfer_type, &packet_size, &ignore);
             usb_error::check(ret, "internal error (GetPipeProperties)");
             
             uint8_t addr = static_cast<uint8_t>((direction << 7) | number);
             usb_transfer_type type = static_cast<usb_transfer_type>(transfer_type); // both enumeration use the same value as the USB standard
-            pipe_info pipe{static_cast<uint8_t>(i), addr, type, intf.first};
+            pipe_info pipe{static_cast<uint8_t>(i), addr, packet_size, type, intf.first};
             pipes_.push_back(std::move(pipe));
         }
     }
 }
 
 
-std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
+std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {
     auto pipe = ep_in_pipe(endpoint_number);
     IOUSBInterfaceInterface** interface = claimed_interfaces_[pipe->interface_number];
 
-    UInt32 size = data_len;
-    std::vector<uint8_t> data(data_len);
+    UInt32 size = pipe->packet_size;
+    std::vector<uint8_t> data(size);
     IOReturn ret;
     if (timeout != 0) {
         ret = (*interface)->ReadPipeTO(interface, pipe->pipe_index, data.data(), &size, timeout, timeout);
@@ -239,15 +260,18 @@ std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, 
     return data;
 }
 
-void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int timeout) {
+void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int len, int timeout) {
+    if (len < 0 || len > data.size())
+        len = static_cast<int>(data.size());
+    
     auto pipe = ep_out_pipe(endpoint_number);
     IOUSBInterfaceInterface** interface = claimed_interfaces_[pipe->interface_number];
 
     IOReturn ret;
     if (timeout != 0)
-        ret = (*interface)->WritePipeTO(interface, pipe->pipe_index, const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()), timeout, timeout);
+        ret = (*interface)->WritePipeTO(interface, pipe->pipe_index, const_cast<uint8_t*>(data.data()), len, timeout, timeout);
     else
-        ret = (*interface)->WritePipe(interface, pipe->pipe_index, const_cast<uint8_t*>(data.data()), static_cast<UInt32>(data.size()));
+        ret = (*interface)->WritePipe(interface, pipe->pipe_index, const_cast<uint8_t*>(data.data()), len);
 
     if (ret != kIOReturnSuccess) {
         if (ret == kIOUSBTransactionTimeout)
@@ -346,7 +370,7 @@ const usb_device::pipe_info* usb_device::get_pipe(int endpoint_address) {
     return get_pipe(endpoint_number + 128);
 }
 
-usb_interface* usb_device::get_interface(int interface_number) {
+usb_interface* usb_device::get_intf_ptr(int interface_number) {
     for (usb_interface& intf : interfaces_)
         if (intf.number() == interface_number)
             return &intf;

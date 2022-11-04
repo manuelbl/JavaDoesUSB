@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		64292E7329144D6C004F6169 /* prng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64292E7129144D6C004F6169 /* prng.cpp */; };
+		64292E7629144DE1004F6169 /* speed_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64292E7429144DE1004F6169 /* speed_test.cpp */; };
 		64835E60290BCA9F00113E4E /* config_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64835E5D290BCA9F00113E4E /* config_parser.cpp */; };
 		64835E61290BCA9F00113E4E /* configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64835E5F290BCA9F00113E4E /* configuration.cpp */; };
 		64937C6428D5EBF1009BD0C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C6328D5EBF1009BD0C2 /* main.cpp */; };
@@ -33,6 +35,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		64292E7129144D6C004F6169 /* prng.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = prng.cpp; sourceTree = "<group>"; };
+		64292E7229144D6C004F6169 /* prng.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = prng.hpp; sourceTree = "<group>"; };
+		64292E7429144DE1004F6169 /* speed_test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = speed_test.cpp; sourceTree = "<group>"; };
+		64292E7529144DE1004F6169 /* speed_test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = speed_test.hpp; sourceTree = "<group>"; };
 		64835E5C290BCA9F00113E4E /* configuration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = configuration.hpp; sourceTree = "<group>"; };
 		64835E5D290BCA9F00113E4E /* config_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = config_parser.cpp; sourceTree = "<group>"; };
 		64835E5E290BCA9F00113E4E /* config_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config_parser.hpp; sourceTree = "<group>"; };
@@ -107,6 +113,10 @@
 				64937C7728D5FE6D009BD0C2 /* usb_device.cpp */,
 				64937C6E28D5ED1F009BD0C2 /* usb_registry.hpp */,
 				64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */,
+				64292E7129144D6C004F6169 /* prng.cpp */,
+				64292E7229144D6C004F6169 /* prng.hpp */,
+				64292E7429144DE1004F6169 /* speed_test.cpp */,
+				64292E7529144DE1004F6169 /* speed_test.hpp */,
 			);
 			path = USB;
 			sourceTree = "<group>";
@@ -147,7 +157,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1400;
+				LastUpgradeCheck = 1410;
 				TargetAttributes = {
 					64937C5F28D5EBF1009BD0C2 = {
 						CreatedOnToolsVersion = 14.0;
@@ -185,6 +195,8 @@
 				64835E60290BCA9F00113E4E /* config_parser.cpp in Sources */,
 				64937C6428D5EBF1009BD0C2 /* main.cpp in Sources */,
 				64937C7628D5ED8D009BD0C2 /* usb_error.cpp in Sources */,
+				64292E7329144D6C004F6169 /* prng.cpp in Sources */,
+				64292E7629144DE1004F6169 /* speed_test.cpp in Sources */,
 				64937C8128D6F9DE009BD0C2 /* tests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,6 +237,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -283,6 +296,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -305,7 +319,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 4H9ZA7X4C4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -316,7 +332,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 4H9ZA7X4C4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

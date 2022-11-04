@@ -20,6 +20,7 @@ private:
     void test_current_device();
     void test_control_transfers();
     void test_bulk_transfers();
+    void test_speed();
     
     void test_loopback(int num_bytes);
 

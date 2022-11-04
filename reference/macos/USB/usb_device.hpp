@@ -95,6 +95,23 @@ public:
     std::string description() const;
     /// List of interfaces
     const std::vector<usb_interface>& interfaces() const;
+    
+    /**
+     * Get the USB interface.
+     *
+     * @param interface_number interface number
+     * @return interface or `nullptr` if no such interface exists
+     */
+    const usb_interface* get_interface(int interface_number) const;
+    
+    /**
+     * Get a USB endpoint.
+     *
+     * @param direction endpoint direction
+     * @param endpoint_number endpoint number (between 1 and 127)
+     * @return endpoint or `nullptr` if endpoint does not exist
+     */
+    const usb_endpoint* get_endpoint(usb_direction direction, int endpoint_number) const;
 
     /// Opens the device for communication
     void open();
@@ -133,10 +150,7 @@ public:
      * Receives data from a bulk or interrupt endpoint.
      *
      * The amount of bytes read will be influced by the underlying USB packets.
-     * If a short packet is sent, the function will return after having read fewer bytes
-     * than specified. The function will fail if a bigger packet has been received than
-     * will fit into the given buffer. So the specified data length should be big enough for
-     * the maximum packet size (64 bytes for full-speed USB).
+     * It can be 0 (if the device sends a ZLP) up to the maximum packet size.
      *
      * The timeout specifies the maximum time it may take to complete the operation.
      * If the operation does not complete within that time, the function returns after reading
@@ -145,11 +159,10 @@ public:
      * Interrupt endpoints do not support timeouts. Thus, 0 has to be specified.
      *
      * @param endpoint_number endpoint number (between 1 and 127)
-     * @param data_len maximum length to read (in bytes)
      * @param timeout timeout (in ms, 0 for no timeout)
      * @return received data
      */
-    std::vector<uint8_t> transfer_in(int endpoint_number, int data_len, int timeout = 0);
+    std::vector<uint8_t> transfer_in(int endpoint_number, int timeout = 0);
 
     /**
      * Transmits data to a bulk or interrupt endpoint.
@@ -162,9 +175,10 @@ public:
      *
      * @param endpoint_number endpoint number (between 1 and 127)
      * @param data data to transmit
+     * @param len data length, in bytes (-1 for entire data vector)
      * @param timeout timeout (in ms, 0 for no timeout)
      */
-    void transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int timeout = 0);
+    void transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int len = -1, int timeout = 0);
     
     /**
      * Send a control request with no Data phase.
@@ -206,6 +220,7 @@ private:
     struct pipe_info {
         uint8_t pipe_index;
         uint8_t endpoint_address;
+        uint16_t packet_size;
         usb_transfer_type transfer_type;
         int interface_number;
     };
@@ -218,7 +233,7 @@ private:
     const pipe_info* ep_out_pipe(int endpoint_address);
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
     void load_configuration(IOUSBDeviceInterface** device);
-    usb_interface* get_interface(int interface_number);
+    usb_interface* get_intf_ptr(int interface_number);
     int get_alternate_index(int interface_number, int alternate_setting);
     
     uint64_t entry_id_;
