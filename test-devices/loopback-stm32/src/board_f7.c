@@ -246,23 +246,21 @@ void board_init(void) {
     gpio_set_af(GPIOB, 15, 10);
 	gpio_set_ospeed(GPIOB, 15, GPIO_OSPEED_HIGH);
 
-    // Configure VBUS sense
-    set_reg(&USB_OTG_HS->GCCFG, USB_OTG_GCCFG_VBDEN, USB_OTG_GCCFG_VBDEN_Msk);
-
-    gpio_mode_setup(GPIOB, 14, GPIO_MODE_ALT, GPIO_PUPD_PULL_UP);
-    gpio_set_af(GPIOB, 14, 10);
-	gpio_set_ospeed(GPIOB, 14, GPIO_OSPEED_HIGH);
-
     set_reg(&RCC->APB2ENR, RCC_APB2ENR_OTGPHYCEN, RCC_APB2ENR_OTGPHYCEN_Msk);
     set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_OTGHSULPIEN, RCC_AHB1ENR_OTGHSULPIEN_Msk);
     set_reg(&RCC->AHB1ENR, RCC_AHB1ENR_OTGHSEN, RCC_AHB1ENR_OTGHSEN_Msk);
 
-    // No VBUS sense
-    set_reg(&USB_OTG_HS->GCCFG, 0, USB_OTG_GCCFG_VBDEN_Msk);
+#if 0
+    // Configure hardware VBUS sense (using PB13)
+    set_reg(&USB_OTG_HS->GCCFG, USB_OTG_GCCFG_VBDEN, USB_OTG_GCCFG_VBDEN_Msk);
+    gpio_mode_setup(GPIOB, 13, GPIO_MODE_INPUT, GPIO_PUPD_NO_PULL);
 
-    // B-peripheral session valid override enable
+#else
+    // Configure no VBUS sense
+    set_reg(&USB_OTG_HS->GCCFG, 0, USB_OTG_GCCFG_VBDEN_Msk);
     set_reg(&USB_OTG_HS->GOTGCTL, USB_OTG_GOTGCTL_BVALOEN, USB_OTG_GOTGCTL_BVALOEN_Msk);
     set_reg(&USB_OTG_HS->GOTGCTL, USB_OTG_GOTGCTL_BVALOVAL, USB_OTG_GOTGCTL_BVALOVAL_Msk);
+#endif
 
     // Force device mode
     set_reg(&USB_OTG_HS->GUSBCFG, 0, USB_OTG_GUSBCFG_FHMOD_Msk);

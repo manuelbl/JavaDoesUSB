@@ -15,7 +15,9 @@
 
 #include <IOKit/usb/IOUSBLib.h>
 
+#include <chrono>
 #include <cstdio>
+#include <thread>
 
 usb_device::usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id)
 : entry_id_(entry_id), device_(device), vendor_id_(vendor_id), product_id_(product_id), is_open_(false) {
@@ -89,7 +91,18 @@ void usb_device::open() {
     if (is_open())
         throw new usb_error("USB device is already open", 0);
     
-    IOReturn ret = (*device_)->USBDeviceOpen(device_);
+    // try multiple times to fight race conditions
+    int tries = 0;
+    IOReturn ret = 0;
+    while (tries < 3) {
+        ret = (*device_)->USBDeviceOpen(device_);
+        if (ret != kIOReturnExclusiveAccess)
+            break;
+        
+        // sleep and try again
+        tries += 1;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
     usb_error::check(ret, "unable to open USB device");
     
     ret = (*device_)->SetConfiguration(device_, 1);

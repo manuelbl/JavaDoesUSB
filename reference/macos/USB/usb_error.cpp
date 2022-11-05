@@ -37,6 +37,8 @@ std::string usb_error::full_message(const char* message, int code) {
     std::string msg(message);
     msg += " (";
     msg += mach_error_string(code);
+    msg += " - code ";
+    msg += std::to_string(code);
     msg += ")";
     
     return msg;

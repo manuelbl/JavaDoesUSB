@@ -14,7 +14,7 @@
 
 #include "tusb_option.h"
 
-#if (CFG_TUD_ENABLED && CFG_VENDOR_ADVANCED)
+#if (CFG_TUD_ENABLED && CFG_VENDOR_CUSTOM)
 
 #include "device/usbd.h"
 #include "vendor_custom.h"
@@ -61,6 +61,7 @@ void cv_reset(uint8_t rhport) {
 // Open interface is the descriptor matches this class
 uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const * desc_intf, uint16_t max_len) {
 
+    cv_num_eps_open = 0;
     int ret = setup_endpoints(rhport, desc_intf, max_len, 0);
 
     if (ret != 0)
