@@ -62,24 +62,24 @@ const std::vector<usb_interface>& usb_device::interfaces() const {
     return interfaces_;
 }
 
-const usb_interface* usb_device::get_interface(int interface_number) const {
+const usb_interface& usb_device::get_interface(int interface_number) const {
     for (const usb_interface& intf : interfaces_) {
         if (intf.number() == interface_number)
-            return &intf;
+            return intf;
     }
     
-    return nullptr;
+    return usb_interface::invalid;
 }
 
-const usb_endpoint* usb_device::get_endpoint(usb_direction direction, int endpoint_number) const {
+const usb_endpoint& usb_device::get_endpoint(usb_direction direction, int endpoint_number) const {
     for (const usb_interface& intf : interfaces_) {
         for (const usb_endpoint& ep : intf.alternate().endpoints()) {
             if (ep.direction() == direction && ep.number() == endpoint_number)
-                return &ep;
+                return ep;
         }
     }
     
-    return nullptr;
+    return usb_endpoint::invalid;
 }
 
 

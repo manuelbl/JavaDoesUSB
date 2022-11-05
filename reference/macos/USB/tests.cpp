@@ -137,7 +137,7 @@ void tests::test_loopback(int num_bytes) {
 }
 
 void tests::test_speed() {
-    int packet_size = test_device->get_endpoint(usb_direction::out, 1)->packet_size();
+    int packet_size = test_device->get_endpoint(usb_direction::out, 1).packet_size();
     
     speed_test test(test_device, 1, 2);
     test.run(packet_size == 512 ? 20000000 : 2000000);

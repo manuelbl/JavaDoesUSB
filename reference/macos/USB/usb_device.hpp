@@ -102,7 +102,7 @@ public:
      * @param interface_number interface number
      * @return interface or `nullptr` if no such interface exists
      */
-    const usb_interface* get_interface(int interface_number) const;
+    const usb_interface& get_interface(int interface_number) const;
     
     /**
      * Get a USB endpoint.
@@ -111,7 +111,7 @@ public:
      * @param endpoint_number endpoint number (between 1 and 127)
      * @return endpoint or `nullptr` if endpoint does not exist
      */
-    const usb_endpoint* get_endpoint(usb_direction direction, int endpoint_number) const;
+    const usb_endpoint& get_endpoint(usb_direction direction, int endpoint_number) const;
 
     /// Opens the device for communication
     void open();

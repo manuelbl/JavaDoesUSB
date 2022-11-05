@@ -45,6 +45,8 @@ public:
 	usb_transfer_type transfer_type() const { return transfer_type_;  }
 	/// Maximum packet size
 	int packet_size() const { return packet_size_;  }
+    /// Indicates if this endpoint is valid (or a return value indicating an error)
+    bool is_valid() const { return number_ >= 0; }
 
 private:
 	usb_endpoint(int number, usb_direction direction, usb_transfer_type transfer_type, int packet_size);
@@ -53,8 +55,11 @@ private:
 	usb_direction direction_;
 	usb_transfer_type transfer_type_;
 	int packet_size_;
+    
+    static usb_endpoint invalid;
 
 	friend class config_parser;
+    friend class usb_device;
 };
 
 /// <summary>
@@ -97,6 +102,8 @@ public:
 	bool is_claimed() const { return is_claimed_; }
 	/// Currently selected alternate interface
 	const usb_alternate_interface& alternate() const { return alternates_[alternate_index_]; }
+    /// Indicates if this interface is valid (or a return value indicating an error)
+    bool is_valid() const { return number_ >= 0; }
 	/// List of all alternate interfaces of this interfaces
 	const std::vector<usb_alternate_interface>& alternates() const { return alternates_; }
 
@@ -105,11 +112,13 @@ private:
 	void set_claimed(bool claimed);
 	usb_alternate_interface* add_alternate(usb_alternate_interface&& alternate);
 	void set_alternate(int index);
-
+    
 	int number_;
 	bool is_claimed_;
 	int alternate_index_;
 	std::vector<usb_alternate_interface> alternates_;
+    
+    static usb_interface invalid;
 
 	friend class config_parser;
 	friend class usb_device;

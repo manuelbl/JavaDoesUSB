@@ -14,6 +14,8 @@
 usb_endpoint::usb_endpoint(int number, usb_direction direction, usb_transfer_type transfer_type, int packet_size)
 	: number_(number), direction_(direction), transfer_type_(transfer_type), packet_size_(packet_size) { }
 
+usb_endpoint usb_endpoint::invalid(-1, usb_direction::out, usb_transfer_type::bulk, 0);
+
 
 // --- usb_alternate_interface
 
@@ -42,6 +44,8 @@ usb_alternate_interface* usb_interface::add_alternate(usb_alternate_interface&& 
 void usb_interface::set_alternate(int index) {
 	alternate_index_ = index;
 }
+
+usb_interface usb_interface::invalid(-1);
 
 
 // --- usb_composite_function
