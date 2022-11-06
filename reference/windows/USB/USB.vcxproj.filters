@@ -42,6 +42,12 @@
     <ClCompile Include="configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="prng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="speed_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assertion.hpp">
@@ -69,6 +75,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="configuration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="prng.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="speed_test.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

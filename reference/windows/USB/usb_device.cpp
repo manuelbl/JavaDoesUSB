@@ -71,6 +71,27 @@ const std::vector<usb_interface>& usb_device::interfaces() const {
     return interfaces_;
 }
 
+const usb_interface& usb_device::get_interface(int interface_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        if (intf.number() == interface_number)
+            return intf;
+    }
+    
+    return usb_interface::invalid;
+}
+
+const usb_endpoint& usb_device::get_endpoint(usb_direction direction, int endpoint_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        for (const usb_endpoint& ep : intf.alternate().endpoints()) {
+            if (ep.direction() == direction && ep.number() == endpoint_number)
+                return ep;
+        }
+    }
+    
+    return usb_endpoint::invalid;
+}
+
+
 bool usb_device::is_open() const {
     return is_open_;
 }
@@ -98,7 +119,7 @@ void usb_device::claim_interface(int interface_number) {
     if (!is_open())
         throw usb_error("USB device is not open");
 
-    usb_interface* intf = get_interface(interface_number);
+    usb_interface* intf = get_intf_ptr(interface_number);
     if (intf == nullptr)
         throw usb_error("no such interface");
     if (intf->is_claimed())
@@ -139,7 +160,7 @@ void usb_device::release_interface(int interface_number) {
     if (!is_open())
         throw usb_error("USB device is not open");
 
-    usb_interface* intf = get_interface(interface_number);
+    usb_interface* intf = get_intf_ptr(interface_number);
     if (intf == nullptr)
         throw usb_error("no such interface");
     if (!intf->is_claimed())
@@ -161,26 +182,29 @@ void usb_device::release_interface(int interface_number) {
     }
 }
 
-std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
+std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {
 
     auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
     UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
+    auto endpoint = get_endpoint_ptr(usb_direction::in, endpoint_number);
 
     ULONG value = timeout;
     if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
         usb_error::throw_error("Failed to set endpoint timeout");
 
-    std::vector<uint8_t> data(data_len);
+    std::vector<uint8_t> data(endpoint->packet_size());
 
     DWORD len = 0;
-    if (!WinUsb_ReadPipe(intf_handle, endpoint_address, static_cast<PUCHAR>(data.data()), data_len, &len, nullptr))
+    if (!WinUsb_ReadPipe(intf_handle, endpoint_address, static_cast<PUCHAR>(data.data()), endpoint->packet_size(), &len, nullptr))
         usb_error::throw_error("Cannot receive from USB endpoint");
 
     data.resize(len);
     return data;
 }
 
-void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int timeout) {
+void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int len, int timeout) {
+    if (len < 0 || len > data.size())
+        len = static_cast<int>(data.size());
 
     auto intf_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->intf_handle;
     UCHAR endpoint_address = ep_address(usb_direction::out, endpoint_number);
@@ -189,8 +213,8 @@ void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& d
     if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
         usb_error::throw_error("Failed to set endpoint timeout");
 
-    DWORD len = 0;
-    if (!WinUsb_WritePipe(intf_handle, endpoint_address, const_cast<PUCHAR>(data.data()), static_cast<ULONG>(data.size()), &len, nullptr))
+    DWORD tlen = 0;
+    if (!WinUsb_WritePipe(intf_handle, endpoint_address, const_cast<PUCHAR>(data.data()), len, &tlen, nullptr))
         usb_error::throw_error("Failed to transmit to USB endpoint");
 }
 
@@ -252,7 +276,7 @@ usb_device::interface_handle* usb_device::get_control_transfer_interface_handle(
     }
 
     if (intf_num >= 0) {
-        usb_interface* intf = get_interface(intf_num);
+        usb_interface* intf = get_intf_ptr(intf_num);
         if (intf == nullptr)
             throw usb_error("invalid interface number for control request");
         if (!intf->is_claimed())
@@ -306,7 +330,7 @@ usb_device::interface_handle* usb_device::get_interface_handle(int intf_number) 
     return nullptr;
 }
 
-usb_interface* usb_device::get_interface(int intf_number) {
+usb_interface* usb_device::get_intf_ptr(int intf_number) {
     for (auto& intf : interfaces_)
         if (intf.number() == intf_number)
             return &intf;
@@ -323,7 +347,7 @@ usb_interface* usb_device::get_endpoint_interface(usb_direction direction, int e
     return nullptr;
 }
 
-const usb_endpoint* usb_device::get_endpoint(usb_direction direction, int endpoint_number) {
+const usb_endpoint* usb_device::get_endpoint_ptr(usb_direction direction, int endpoint_number) {
     for (auto& intf : interfaces_)
         for (auto& ep : intf.alternate().endpoints())
             if (ep.number() == endpoint_number && ep.direction() == direction)
@@ -337,7 +361,7 @@ usb_device::interface_handle* usb_device::check_valid_endpoint(usb_direction dir
     if (!is_open())
         throw usb_error("USB device is not open");
 
-    const usb_endpoint* ep = get_endpoint(direction, endpoint_number);
+    const usb_endpoint* ep = get_endpoint_ptr(direction, endpoint_number);
     if (ep == nullptr)
         throw usb_error("no such endpoint");
     if (ep->transfer_type() != usb_transfer_type::bulk && ep->transfer_type() != usb_transfer_type::interrupt)

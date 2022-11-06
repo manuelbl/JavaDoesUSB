@@ -23,6 +23,8 @@
     <ClCompile Include="configuration.cpp" />
     <ClCompile Include="config_parser.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="prng.cpp" />
+    <ClCompile Include="speed_test.cpp" />
     <ClCompile Include="tests.cpp" />
     <ClCompile Include="usb_device.cpp" />
     <ClCompile Include="usb_device_info.cpp" />
@@ -33,7 +35,9 @@
     <ClInclude Include="assertion.hpp" />
     <ClInclude Include="configuration.hpp" />
     <ClInclude Include="config_parser.hpp" />
+    <ClInclude Include="prng.hpp" />
     <ClInclude Include="scope.hpp" />
+    <ClInclude Include="speed_test.hpp" />
     <ClInclude Include="tests.hpp" />
     <ClInclude Include="usb_device.hpp" />
     <ClInclude Include="usb_device_info.hpp" />

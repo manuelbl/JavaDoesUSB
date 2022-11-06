@@ -9,6 +9,7 @@
 
 #include "tests.hpp"
 #include "assertion.hpp"
+#include "speed_test.hpp"
 
 #include <iostream>
 #include <random>
@@ -47,6 +48,7 @@ void tests::test_current_device() {
 
         test_control_transfers();
         test_bulk_transfers();
+        test_speed();
 
         test_device->release_interface(0);
         test_device->close();
@@ -111,7 +113,7 @@ void tests::test_loopback(int num_bytes) {
     std::thread reader([this, &rx_data, num_bytes]() {
         size_t bytes_read = 0;
         while (bytes_read < num_bytes) {
-            auto data = test_device->transfer_in(2, 64);
+            auto data = test_device->transfer_in(2);
             rx_data.insert(rx_data.end(), data.begin(), data.end());
             bytes_read += data.size();
         }
@@ -132,6 +134,13 @@ void tests::test_loopback(int num_bytes) {
 
     // check result
     assert_equals(random_data, rx_data);
+}
+
+void tests::test_speed() {
+    int packet_size = test_device->get_endpoint(usb_direction::out, 1).packet_size();
+    
+    speed_test test(test_device, 1, 2);
+    test.run(packet_size == 512 ? 20000000 : 2000000);
 }
 
 void tests::on_device(usb_device_ptr device) {
