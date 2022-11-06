@@ -12,7 +12,9 @@ set(SOURCES
     config_parser.cpp config_parser.hpp
     configuration.cpp configuration.hpp
     main.cpp
+    prng.cpp prng.hpp
     scope.hpp
+    speed_test.cpp speed_test.hpp
     tests.cpp tests.hpp
     usb_device.cpp usb_device.hpp
     usb_error.cpp usb_error.hpp

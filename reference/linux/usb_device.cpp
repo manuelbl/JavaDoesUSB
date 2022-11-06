@@ -75,6 +75,27 @@ const std::vector<usb_interface>& usb_device::interfaces() const {
     return interfaces_;
 }
 
+const usb_interface& usb_device::get_interface(int interface_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        if (intf.number() == interface_number)
+            return intf;
+    }
+    
+    return usb_interface::invalid;
+}
+
+const usb_endpoint& usb_device::get_endpoint(usb_direction direction, int endpoint_number) const {
+    for (const usb_interface& intf : interfaces_) {
+        for (const usb_endpoint& ep : intf.alternate().endpoints()) {
+            if (ep.direction() == direction && ep.number() == endpoint_number)
+                return ep;
+        }
+    }
+    
+    return usb_endpoint::invalid;
+}
+
+
 bool usb_device::is_open() const {
     return fd_ >= 0;
 }
@@ -108,7 +129,7 @@ void usb_device::claim_interface(int interface_number) {
     if (!is_open())
         throw usb_error("device is not open");
 
-    usb_interface* intf = get_interface(interface_number);
+    usb_interface* intf = get_intf_ptr(interface_number);
     if (intf == nullptr)
         throw usb_error("no such interface");
 
@@ -128,7 +149,7 @@ void usb_device::release_interface(int interface_number) {
     if (!is_open())
         throw usb_error("device is not open");
 
-    usb_interface* intf = get_interface(interface_number);
+    usb_interface* intf = get_intf_ptr(interface_number);
     if (intf == nullptr)
         throw usb_error("no such interface");
 
@@ -143,15 +164,15 @@ void usb_device::release_interface(int interface_number) {
     claimed_interfaces_.erase(interface_number);
 }
 
-std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, int timeout) {
+std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {
     
-    check_endpoint(usb_direction::in, endpoint_number);
+    auto ep = check_endpoint(usb_direction::in, endpoint_number);
 
-    std::vector<uint8_t> data(data_len);
+    std::vector<uint8_t> data(ep->packet_size());
 
     struct usbdevfs_bulktransfer transfer = {0};
     transfer.ep = endpoint_number + 128;
-    transfer.len = data_len;
+    transfer.len = ep->packet_size();
     transfer.timeout = timeout;
     transfer.data = data.data();
 
@@ -163,7 +184,9 @@ std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int data_len, 
     return data;
 }
 
-void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int timeout) {
+void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& data, int len, int timeout) {
+    if (len < 0 || len > data.size())
+        len = static_cast<int>(data.size());
 
     check_endpoint(usb_direction::out, endpoint_number);
 
@@ -223,7 +246,7 @@ std::vector<uint8_t> usb_device::control_transfer_in(const usb_control_request& 
     return data;
 }
 
-usb_interface* usb_device::get_interface(int number) {
+usb_interface* usb_device::get_intf_ptr(int number) {
     for (auto& intf : interfaces_)
         if (intf.number() == number)
             return &intf;
