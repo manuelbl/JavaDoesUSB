@@ -95,7 +95,7 @@ public:
     std::string description() const;
     /// List of interfaces
     const std::vector<usb_interface>& interfaces() const;
-    
+
     /**
      * Get the USB interface.
      *

@@ -27,14 +27,24 @@ void usb_alternate_interface::add_endpoint(usb_endpoint&& endpoint) {
 }
 
 
+usb_alternate_interface usb_alternate_interface::invalid(-1, 0, 0, 0);
+
+
 // --- usb_interface
 
 usb_interface::usb_interface(int number)
 	: number_(number), is_claimed_(false), alternate_index_(0) { }
 
+const usb_alternate_interface& usb_interface::alternate() const {
+	if (alternate_index_ < 0 || alternate_index_ >= alternates_.size())
+		return usb_alternate_interface::invalid;
+	return alternates_[alternate_index_];
+}
+
 void usb_interface::set_claimed(bool claimed) {
 	is_claimed_ = claimed;
 }
+
 
 usb_alternate_interface* usb_interface::add_alternate(usb_alternate_interface&& alternate) {
 	alternates_.push_back(std::move(alternate));
