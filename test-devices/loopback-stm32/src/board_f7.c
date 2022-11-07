@@ -232,6 +232,15 @@ static void usb_init_serial_num() {
 
 void board_init(void) {
 
+	// Enable CPU instruction cache
+	SCB_EnableICache();
+	// Enable CPU data cache
+	SCB_EnableDCache();
+	// Enable ART accelerator
+	//set_reg(&FLASH->ACR, FLASH_ACR_ARTEN, FLASH_ACR_ARTEN_Msk);
+	// Enable instruction prefetch
+	//set_reg(&FLASH->ACR, FLASH_ACR_PRFTEN, FLASH_ACR_PRFTEN_Msk);
+
 	rcc_clock_setup_hse(&clock_setup_hse_216mhz_3v3);
     systick_init();
 
