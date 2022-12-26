@@ -4,8 +4,10 @@ package net.codecrete.usb.linux.gen.udev;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$3 {
+final class constants$3 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$3() {}
     static final FunctionDescriptor udev_enumerate_get_list_entry$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );

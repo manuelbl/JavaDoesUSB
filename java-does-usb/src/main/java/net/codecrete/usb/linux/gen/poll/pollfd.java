@@ -4,9 +4,18 @@ package net.codecrete.usb.linux.gen.poll;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct pollfd {
+ *     int fd;
+ *     short events;
+ *     short revents;
+ * };
+ * }
+ */
 public class pollfd {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_INT$LAYOUT.withName("fd"),
         Constants$root.C_SHORT$LAYOUT.withName("events"),
         Constants$root.C_SHORT$LAYOUT.withName("revents")
@@ -18,10 +27,22 @@ public class pollfd {
     public static VarHandle fd$VH() {
         return pollfd.fd$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * int fd;
+     * }
+     */
     public static int fd$get(MemorySegment seg) {
         return (int)pollfd.fd$VH.get(seg);
     }
-    public static void fd$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * int fd;
+     * }
+     */
+    public static void fd$set(MemorySegment seg, int x) {
         pollfd.fd$VH.set(seg, x);
     }
     public static int fd$get(MemorySegment seg, long index) {
@@ -34,10 +55,22 @@ public class pollfd {
     public static VarHandle events$VH() {
         return pollfd.events$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * short events;
+     * }
+     */
     public static short events$get(MemorySegment seg) {
         return (short)pollfd.events$VH.get(seg);
     }
-    public static void events$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * short events;
+     * }
+     */
+    public static void events$set(MemorySegment seg, short x) {
         pollfd.events$VH.set(seg, x);
     }
     public static short events$get(MemorySegment seg, long index) {
@@ -50,10 +83,22 @@ public class pollfd {
     public static VarHandle revents$VH() {
         return pollfd.revents$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * short revents;
+     * }
+     */
     public static short revents$get(MemorySegment seg) {
         return (short)pollfd.revents$VH.get(seg);
     }
-    public static void revents$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * short revents;
+     * }
+     */
+    public static void revents$set(MemorySegment seg, short x) {
         pollfd.revents$VH.set(seg, x);
     }
     public static short revents$get(MemorySegment seg, long index) {
@@ -64,10 +109,10 @@ public class pollfd {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

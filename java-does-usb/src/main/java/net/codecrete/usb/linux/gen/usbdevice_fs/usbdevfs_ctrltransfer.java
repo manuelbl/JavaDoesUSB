@@ -4,9 +4,22 @@ package net.codecrete.usb.linux.gen.usbdevice_fs;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct usbdevfs_ctrltransfer {
+ *     __u8 bRequestType;
+ *     __u8 bRequest;
+ *     __u16 wValue;
+ *     __u16 wIndex;
+ *     __u16 wLength;
+ *     __u32 timeout;
+ *     void* data;
+ * };
+ * }
+ */
 public class usbdevfs_ctrltransfer {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_CHAR$LAYOUT.withName("bRequestType"),
         Constants$root.C_CHAR$LAYOUT.withName("bRequest"),
         Constants$root.C_SHORT$LAYOUT.withName("wValue"),
@@ -23,10 +36,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle bRequestType$VH() {
         return usbdevfs_ctrltransfer.bRequestType$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u8 bRequestType;
+     * }
+     */
     public static byte bRequestType$get(MemorySegment seg) {
         return (byte)usbdevfs_ctrltransfer.bRequestType$VH.get(seg);
     }
-    public static void bRequestType$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u8 bRequestType;
+     * }
+     */
+    public static void bRequestType$set(MemorySegment seg, byte x) {
         usbdevfs_ctrltransfer.bRequestType$VH.set(seg, x);
     }
     public static byte bRequestType$get(MemorySegment seg, long index) {
@@ -39,10 +64,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle bRequest$VH() {
         return usbdevfs_ctrltransfer.bRequest$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u8 bRequest;
+     * }
+     */
     public static byte bRequest$get(MemorySegment seg) {
         return (byte)usbdevfs_ctrltransfer.bRequest$VH.get(seg);
     }
-    public static void bRequest$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u8 bRequest;
+     * }
+     */
+    public static void bRequest$set(MemorySegment seg, byte x) {
         usbdevfs_ctrltransfer.bRequest$VH.set(seg, x);
     }
     public static byte bRequest$get(MemorySegment seg, long index) {
@@ -55,10 +92,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle wValue$VH() {
         return usbdevfs_ctrltransfer.wValue$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u16 wValue;
+     * }
+     */
     public static short wValue$get(MemorySegment seg) {
         return (short)usbdevfs_ctrltransfer.wValue$VH.get(seg);
     }
-    public static void wValue$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u16 wValue;
+     * }
+     */
+    public static void wValue$set(MemorySegment seg, short x) {
         usbdevfs_ctrltransfer.wValue$VH.set(seg, x);
     }
     public static short wValue$get(MemorySegment seg, long index) {
@@ -71,10 +120,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle wIndex$VH() {
         return usbdevfs_ctrltransfer.wIndex$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u16 wIndex;
+     * }
+     */
     public static short wIndex$get(MemorySegment seg) {
         return (short)usbdevfs_ctrltransfer.wIndex$VH.get(seg);
     }
-    public static void wIndex$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u16 wIndex;
+     * }
+     */
+    public static void wIndex$set(MemorySegment seg, short x) {
         usbdevfs_ctrltransfer.wIndex$VH.set(seg, x);
     }
     public static short wIndex$get(MemorySegment seg, long index) {
@@ -87,10 +148,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle wLength$VH() {
         return usbdevfs_ctrltransfer.wLength$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u16 wLength;
+     * }
+     */
     public static short wLength$get(MemorySegment seg) {
         return (short)usbdevfs_ctrltransfer.wLength$VH.get(seg);
     }
-    public static void wLength$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u16 wLength;
+     * }
+     */
+    public static void wLength$set(MemorySegment seg, short x) {
         usbdevfs_ctrltransfer.wLength$VH.set(seg, x);
     }
     public static short wLength$get(MemorySegment seg, long index) {
@@ -103,10 +176,22 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle timeout$VH() {
         return usbdevfs_ctrltransfer.timeout$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * __u32 timeout;
+     * }
+     */
     public static int timeout$get(MemorySegment seg) {
         return (int)usbdevfs_ctrltransfer.timeout$VH.get(seg);
     }
-    public static void timeout$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * __u32 timeout;
+     * }
+     */
+    public static void timeout$set(MemorySegment seg, int x) {
         usbdevfs_ctrltransfer.timeout$VH.set(seg, x);
     }
     public static int timeout$get(MemorySegment seg, long index) {
@@ -119,24 +204,36 @@ public class usbdevfs_ctrltransfer {
     public static VarHandle data$VH() {
         return usbdevfs_ctrltransfer.data$VH;
     }
-    public static MemoryAddress data$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)usbdevfs_ctrltransfer.data$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * void* data;
+     * }
+     */
+    public static MemorySegment data$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)usbdevfs_ctrltransfer.data$VH.get(seg);
     }
-    public static void data$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * void* data;
+     * }
+     */
+    public static void data$set(MemorySegment seg, MemorySegment x) {
         usbdevfs_ctrltransfer.data$VH.set(seg, x);
     }
-    public static MemoryAddress data$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)usbdevfs_ctrltransfer.data$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment data$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)usbdevfs_ctrltransfer.data$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void data$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void data$set(MemorySegment seg, long index, MemorySegment x) {
         usbdevfs_ctrltransfer.data$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

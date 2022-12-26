@@ -7,19 +7,23 @@ import java.lang.invoke.MethodHandle;
 import static java.lang.foreign.ValueLayout.*;
 public class unistd  {
 
-    /* package-private */ unistd() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
+    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     public static MethodHandle close$MH() {
         return RuntimeHelper.requireNonNull(constants$0.close$MH,"close");
     }
-    public static int close ( int __fd) {
+    /**
+     * {@snippet :
+     * int close(int __fd);
+     * }
+     */
+    public static int close(int __fd) {
         var mh$ = close$MH();
         try {
             return (int)mh$.invokeExact(__fd);

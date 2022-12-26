@@ -4,9 +4,17 @@ package net.codecrete.usb.linux.gen.usbdevice_fs;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct usbdevfs_setinterface {
+ *     unsigned int interface;
+ *     unsigned int altsetting;
+ * };
+ * }
+ */
 public class usbdevfs_setinterface {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_INT$LAYOUT.withName("interface"),
         Constants$root.C_INT$LAYOUT.withName("altsetting")
     ).withName("usbdevfs_setinterface");
@@ -17,10 +25,22 @@ public class usbdevfs_setinterface {
     public static VarHandle interface_$VH() {
         return usbdevfs_setinterface.interface_$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned int interface;
+     * }
+     */
     public static int interface_$get(MemorySegment seg) {
         return (int)usbdevfs_setinterface.interface_$VH.get(seg);
     }
-    public static void interface_$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned int interface;
+     * }
+     */
+    public static void interface_$set(MemorySegment seg, int x) {
         usbdevfs_setinterface.interface_$VH.set(seg, x);
     }
     public static int interface_$get(MemorySegment seg, long index) {
@@ -33,10 +53,22 @@ public class usbdevfs_setinterface {
     public static VarHandle altsetting$VH() {
         return usbdevfs_setinterface.altsetting$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned int altsetting;
+     * }
+     */
     public static int altsetting$get(MemorySegment seg) {
         return (int)usbdevfs_setinterface.altsetting$VH.get(seg);
     }
-    public static void altsetting$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned int altsetting;
+     * }
+     */
+    public static void altsetting$set(MemorySegment seg, int x) {
         usbdevfs_setinterface.altsetting$VH.set(seg, x);
     }
     public static int altsetting$get(MemorySegment seg, long index) {
@@ -47,10 +79,10 @@ public class usbdevfs_setinterface {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

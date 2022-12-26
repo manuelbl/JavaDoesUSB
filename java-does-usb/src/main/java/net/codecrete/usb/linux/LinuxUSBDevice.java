@@ -20,8 +20,8 @@ import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.io.IOException;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -50,17 +50,17 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         // `descriptors` contains the device descriptor followed by the configuration descriptor
         // (including the interface descriptors, endpoint descriptors etc.)
 
-        try (var session = MemorySession.openConfined()) {
+        try (var arena = Arena.openConfined()) {
             var descriptorsSegment = MemorySegment.ofArray(descriptors);
 
             // split off device descriptor (and copy it to fix alignment issues)
-            var deviceDesc = session.allocate(DeviceDescriptor.LAYOUT);
+            var deviceDesc = arena.allocate(DeviceDescriptor.LAYOUT);
             deviceDesc.copyFrom(descriptorsSegment.asSlice(0, DeviceDescriptor.LAYOUT.byteSize()));
 
             setFromDeviceDescriptor(deviceDesc);
 
             // skip to configuration descriptor
-            var configDesc = session.allocateArray(JAVA_BYTE, descriptors.length - 18);
+            var configDesc = arena.allocateArray(JAVA_BYTE, descriptors.length - 18);
             configDesc.copyFrom(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
             setConfigurationDescriptor(configDesc);
         }
@@ -76,8 +76,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (isOpen())
             throwException("the device is already open");
 
-        try (var session = MemorySession.openConfined()) {
-            var pathUtf8 = session.allocateUtf8String(id_.toString());
+        try (var arena = Arena.openConfined()) {
+            var pathUtf8 = arena.allocateUtf8String(id_.toString());
             fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
             if (fd == -1)
                 throwLastError("Cannot open USB device");
@@ -105,8 +105,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (intf.isClaimed())
             throwException("Interface %d has already been claimed", interfaceNumber);
 
-        try (var session = MemorySession.openConfined()) {
-            var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
+        try (var arena = Arena.openConfined()) {
+            var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment.address());
             if (ret != 0)
                 throwLastError("Cannot claim USB interface");
@@ -129,8 +129,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (altSetting == null)
             throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber, alternateNumber);
 
-        try (var session = MemorySession.openConfined()) {
-            var setIntfSegment = session.allocate(usbdevfs_setinterface.$LAYOUT());
+        try (var arena = Arena.openConfined()) {
+            var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment.address());
@@ -150,8 +150,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (!intf.isClaimed())
             throwException("Interface %d has not been claimed", interfaceNumber);
 
-        try (var session = MemorySession.openConfined()) {
-            var intfNumSegment = session.allocate(JAVA_INT, interfaceNumber);
+        try (var arena = Arena.openConfined()) {
+            var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
             int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
             if (ret != 0)
                 throwLastError("Cannot release USB interface");
@@ -159,9 +159,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private MemorySegment createCtrlTransfer(MemorySession session, USBDirection direction, USBControlTransfer setup,
+    private MemorySegment createCtrlTransfer(Arena arena, USBDirection direction, USBControlTransfer setup,
                                              MemorySegment data) {
-        var ctrlTransfer = session.allocate(usbdevfs_ctrltransfer.$LAYOUT());
+        var ctrlTransfer = arena.allocate(usbdevfs_ctrltransfer.$LAYOUT());
         var bmRequest =
                 (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
         usbdevfs_ctrltransfer.bRequestType$set(ctrlTransfer, (byte) bmRequest);
@@ -169,15 +169,15 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         usbdevfs_ctrltransfer.wValue$set(ctrlTransfer, (short) setup.value());
         usbdevfs_ctrltransfer.wIndex$set(ctrlTransfer, (short) setup.index());
         usbdevfs_ctrltransfer.wLength$set(ctrlTransfer, (short) data.byteSize());
-        usbdevfs_ctrltransfer.data$set(ctrlTransfer, data.address());
+        usbdevfs_ctrltransfer.data$set(ctrlTransfer, data);
         return ctrlTransfer;
     }
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
-        try (var session = MemorySession.openConfined()) {
-            var data = session.allocate(length);
-            var ctrlTransfer = createCtrlTransfer(session, USBDirection.IN, setup, data);
+        try (var arena = Arena.openConfined()) {
+            var data = arena.allocate(length);
+            var ctrlTransfer = createCtrlTransfer(arena, USBDirection.IN, setup, data);
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
@@ -189,12 +189,12 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        try (var session = MemorySession.openConfined()) {
+        try (var arena = Arena.openConfined()) {
             int dataLength = data != null ? data.length : 0;
-            var buffer = session.allocate(dataLength);
+            var buffer = arena.allocate(dataLength);
             if (dataLength != 0)
                 buffer.copyFrom(MemorySegment.ofArray(data));
-            var ctrlTransfer = createCtrlTransfer(session, USBDirection.OUT, setup, buffer);
+            var ctrlTransfer = createCtrlTransfer(arena, USBDirection.OUT, setup, buffer);
 
             int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
             if (res < 0)
@@ -202,11 +202,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private MemorySegment createBulkTransfer(MemorySession session, byte endpointAddress, MemorySegment data, int timeout) {
-        var transfer = session.allocate(usbdevfs_bulktransfer.$LAYOUT());
+    private MemorySegment createBulkTransfer(Arena arena, byte endpointAddress, MemorySegment data, int timeout) {
+        var transfer = arena.allocate(usbdevfs_bulktransfer.$LAYOUT());
         usbdevfs_bulktransfer.ep$set(transfer, 255 & endpointAddress);
         usbdevfs_bulktransfer.len$set(transfer, (int) data.byteSize());
-        usbdevfs_bulktransfer.data$set(transfer, data.address());
+        usbdevfs_bulktransfer.data$set(transfer, data);
         usbdevfs_bulktransfer.timeout$set(transfer, timeout);
         return transfer;
     }
@@ -216,10 +216,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        try (var session = MemorySession.openConfined()) {
-            var buffer = session.allocate(data.length);
+        try (var arena = Arena.openConfined()) {
+            var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
-            var transfer = createBulkTransfer(session, endpointAddress, buffer, timeout);
+            var transfer = createBulkTransfer(arena, endpointAddress, buffer, timeout);
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0) {
@@ -239,10 +239,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         var endpoint = getEndpoint(endpointNumber, USBDirection.IN,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        try (var session = MemorySession.openConfined()) {
-            var buffer = session.allocate(endpoint.packetSize());
+        try (var arena = Arena.openConfined()) {
+            var buffer = arena.allocate(endpoint.packetSize());
 
-            var transfer = createBulkTransfer(session, endpoint.endpointAddress(), buffer, timeout);
+            var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
 
             int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
             if (res < 0) {
@@ -264,8 +264,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         var endpointAddress = getEndpointAddress(endpointNumber, direction,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        try (var session = MemorySession.openConfined()) {
-            var endpointAddrSegment = session.allocate(JAVA_INT, endpointAddress & 0xff);
+        try (var arena = Arena.openConfined()) {
+            var endpointAddrSegment = arena.allocate(JAVA_INT, endpointAddress & 0xff);
             int res = ioctl.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment.address());
             if (res < 0)
                 throwLastError("Clearing halt failed");

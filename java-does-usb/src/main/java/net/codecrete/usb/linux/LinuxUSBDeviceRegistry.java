@@ -8,19 +8,19 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.linux.gen.poll.poll;
 import net.codecrete.usb.linux.gen.poll.pollfd;
 import net.codecrete.usb.linux.gen.udev.udev;
 
-import java.lang.foreign.Addressable;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
+import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.foreign.MemoryAddress.NULL;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 
 /**
@@ -28,24 +28,25 @@ import static net.codecrete.usb.linux.LinuxUSBException.throwException;
  */
 public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private static final MemorySegment SUBSYSTEM_USB = MemorySession.global().allocateUtf8String("usb");
-    private static final MemorySegment MONITOR_NAME = MemorySession.global().allocateUtf8String("udev");
-    private static final MemorySegment DEVTYPE_USB_DEVICE = MemorySession.global().allocateUtf8String("usb_device");
+    private static final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
+    private static final MemorySegment SUBSYSTEM_USB = GLOBAL_ALLOCATOR.allocateUtf8String("usb");
+    private static final MemorySegment MONITOR_NAME = GLOBAL_ALLOCATOR.allocateUtf8String("udev");
+    private static final MemorySegment DEVTYPE_USB_DEVICE = GLOBAL_ALLOCATOR.allocateUtf8String("usb_device");
 
     @Override
     protected void monitorDevices() {
 
         int fd;
-        MemoryAddress monitor;
+        MemorySegment monitor;
 
         try {
             // setup udev monitor
             var udevInstance = udev.udev_new();
-            if (udevInstance == NULL)
+            if (udevInstance.address() == 0)
                 throwException("internal error (udev_new)");
 
             monitor = udev.udev_monitor_new_from_netlink(udevInstance, MONITOR_NAME);
-            if (monitor == NULL)
+            if (monitor.address() == 0)
                 throwException("internal error (udev_monitor_new_from_netlink)");
 
             if (udev.udev_monitor_filter_add_match_subsystem_devtype(monitor, SUBSYSTEM_USB, DEVTYPE_USB_DEVICE) < 0)
@@ -70,17 +71,17 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         // monitor device changes
         //noinspection InfiniteLoopStatement
         while (true) {
-            try (var session = MemorySession.openConfined()) {
+            try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
 
                 // wait for next change
-                waitForFileDescriptor(fd, session);
+                waitForFileDescriptor(fd, arena);
 
                 // retrieve change
                 var udevDevice = udev.udev_monitor_receive_device(monitor);
                 if (udevDevice == null)
                     continue; // shouldn't happen
 
-                session.addCloseAction(() -> udev.udev_device_unref(udevDevice));
+                cleanup.add(() -> udev.udev_device_unref(udevDevice));
 
                 // get details
                 var action = getDeviceAction(udevDevice);
@@ -94,16 +95,16 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private List<USBDevice> enumeratePresentDevices(Addressable udevInstance) {
+    private List<USBDevice> enumeratePresentDevices(MemorySegment udevInstance) {
         List<USBDevice> result = new ArrayList<>();
-        try (var outerSession = MemorySession.openConfined()) {
+        try (var outerCleanup = new ScopeCleanup()) {
 
             // create device enumerator
             var enumerate = udev.udev_enumerate_new(udevInstance);
-            if (enumerate == NULL)
+            if (enumerate.address() == 0)
                 throwException("internal error (udev_enumerate_new)");
 
-            outerSession.addCloseAction(() -> udev.udev_enumerate_unref(enumerate));
+            outerCleanup.add(() -> udev.udev_enumerate_unref(enumerate));
 
             if (udev.udev_enumerate_add_match_subsystem(enumerate, SUBSYSTEM_USB) < 0)
                 throwException("internal error (udev_enumerate_add_match_subsystem)");
@@ -112,22 +113,22 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
                 throwException("internal error (udev_enumerate_scan_devices)");
 
             // enumerate devices
-            for (var entry = udev.udev_enumerate_get_list_entry(enumerate); entry != NULL; entry =
+            for (var entry = udev.udev_enumerate_get_list_entry(enumerate); entry.address() != 0; entry =
                     udev.udev_list_entry_get_next(entry)) {
 
-                try (var session = MemorySession.openConfined()) {
+                try (var cleanup = new ScopeCleanup()) {
 
                     var path = udev.udev_list_entry_get_name(entry);
-                    if (path == NULL)
+                    if (path.address() == 0)
                         continue;
 
                     // get device handle
                     var dev = udev.udev_device_new_from_syspath(udevInstance, path);
-                    if (dev == NULL)
+                    if (dev.address() == 0)
                         continue;
 
                     // ensure the device is released
-                    session.addCloseAction(() -> udev.udev_device_unref(dev));
+                    cleanup.add(() -> udev.udev_device_unref(dev));
 
                     // get device details
                     var device = getDeviceDetails(dev);
@@ -140,14 +141,14 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         return result;
     }
 
-    private void onDeviceConnected(MemoryAddress udevDevice) {
+    private void onDeviceConnected(MemorySegment udevDevice) {
 
         var device = getDeviceDetails(udevDevice);
         if (device != null)
             addDevice(device);
     }
 
-    private void onDeviceDisconnected(MemoryAddress udevDevice) {
+    private void onDeviceDisconnected(MemorySegment udevDevice) {
 
         var devPath = getDeviceName(udevDevice);
         if (devPath == null)
@@ -166,7 +167,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param udevDevice the device (udev_device*)
      * @return the device instance
      */
-    private static USBDevice getDeviceDetails(MemoryAddress udevDevice) {
+    private static USBDevice getDeviceDetails(MemorySegment udevDevice) {
 
         int vendorId = 0;
         int productId = 0;
@@ -205,23 +206,22 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private static String getDeviceAttribute(Addressable udevDevice, String attribute) {
-        try (var session = MemorySession.openConfined()) {
-            var sysattr = session.allocateUtf8String(attribute);
-            var valueAddr = udev.udev_device_get_sysattr_value(udevDevice, sysattr);
-            if (valueAddr == NULL)
+    private static String getDeviceAttribute(MemorySegment udevDevice, String attribute) {
+        try (var arena = Arena.openConfined()) {
+            var sysattr = arena.allocateUtf8String(attribute);
+            var value = udev.udev_device_get_sysattr_value(udevDevice, sysattr);
+            if (value.address() == 0)
                 return null;
 
-            var value = MemorySegment.ofAddress(valueAddr, 2000, session);
             return value.getUtf8String(0);
         }
     }
 
-    private static String getDeviceName(Addressable udevDevice) {
+    private static String getDeviceName(MemorySegment udevDevice) {
         return udev.udev_device_get_devnode(udevDevice).getUtf8String(0);
     }
 
-    private static String getDeviceAction(Addressable udevDevice) {
+    private static String getDeviceAction(MemorySegment udevDevice) {
         return udev.udev_device_get_action(udevDevice).getUtf8String(0);
     }
 
@@ -229,10 +229,10 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * Waits until the specified file descriptor becomes ready for reading.
      *
      * @param fd      the file descriptor
-     * @param session a memory session for allocating memory
+     * @param arena an arena for allocating memory
      */
-    private static void waitForFileDescriptor(int fd, MemorySession session) {
-        var fds = session.allocate(pollfd.$LAYOUT());
+    private static void waitForFileDescriptor(int fd, Arena arena) {
+        var fds = arena.allocate(pollfd.$LAYOUT());
         pollfd.fd$set(fds, fd);
         pollfd.events$set(fds, (short) poll.POLLIN());
         int res = poll.poll(fds, 1, -1);

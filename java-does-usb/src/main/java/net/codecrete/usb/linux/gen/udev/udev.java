@@ -2,29 +2,32 @@
 
 package net.codecrete.usb.linux.gen.udev;
 
-import java.lang.foreign.Addressable;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class udev  {
 
-    /* package-private */ udev() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
+    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     public static MethodHandle udev_new$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_new$MH,"udev_new");
     }
-    public static MemoryAddress udev_new () {
+    /**
+     * {@snippet :
+     * struct udev* udev_new();
+     * }
+     */
+    public static MemorySegment udev_new() {
         var mh$ = udev_new$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact();
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact();
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -32,10 +35,15 @@ public class udev  {
     public static MethodHandle udev_list_entry_get_next$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_list_entry_get_next$MH,"udev_list_entry_get_next");
     }
-    public static MemoryAddress udev_list_entry_get_next ( Addressable list_entry) {
+    /**
+     * {@snippet :
+     * struct udev_list_entry* udev_list_entry_get_next(struct udev_list_entry* list_entry);
+     * }
+     */
+    public static MemorySegment udev_list_entry_get_next(MemorySegment list_entry) {
         var mh$ = udev_list_entry_get_next$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(list_entry);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(list_entry);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -43,10 +51,15 @@ public class udev  {
     public static MethodHandle udev_list_entry_get_name$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_list_entry_get_name$MH,"udev_list_entry_get_name");
     }
-    public static MemoryAddress udev_list_entry_get_name ( Addressable list_entry) {
+    /**
+     * {@snippet :
+     * char* udev_list_entry_get_name(struct udev_list_entry* list_entry);
+     * }
+     */
+    public static MemorySegment udev_list_entry_get_name(MemorySegment list_entry) {
         var mh$ = udev_list_entry_get_name$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(list_entry);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(list_entry);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -54,10 +67,15 @@ public class udev  {
     public static MethodHandle udev_device_unref$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_device_unref$MH,"udev_device_unref");
     }
-    public static MemoryAddress udev_device_unref ( Addressable udev_device) {
+    /**
+     * {@snippet :
+     * struct udev_device* udev_device_unref(struct udev_device* udev_device);
+     * }
+     */
+    public static MemorySegment udev_device_unref(MemorySegment udev_device) {
         var mh$ = udev_device_unref$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_device);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -65,10 +83,15 @@ public class udev  {
     public static MethodHandle udev_device_new_from_syspath$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_device_new_from_syspath$MH,"udev_device_new_from_syspath");
     }
-    public static MemoryAddress udev_device_new_from_syspath ( Addressable udev,  Addressable syspath) {
+    /**
+     * {@snippet :
+     * struct udev_device* udev_device_new_from_syspath(struct udev* udev, char* syspath);
+     * }
+     */
+    public static MemorySegment udev_device_new_from_syspath(MemorySegment udev, MemorySegment syspath) {
         var mh$ = udev_device_new_from_syspath$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev, syspath);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev, syspath);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -76,10 +99,15 @@ public class udev  {
     public static MethodHandle udev_device_get_devtype$MH() {
         return RuntimeHelper.requireNonNull(constants$0.udev_device_get_devtype$MH,"udev_device_get_devtype");
     }
-    public static MemoryAddress udev_device_get_devtype ( Addressable udev_device) {
+    /**
+     * {@snippet :
+     * char* udev_device_get_devtype(struct udev_device* udev_device);
+     * }
+     */
+    public static MemorySegment udev_device_get_devtype(MemorySegment udev_device) {
         var mh$ = udev_device_get_devtype$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_device);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -87,10 +115,15 @@ public class udev  {
     public static MethodHandle udev_device_get_devnode$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_device_get_devnode$MH,"udev_device_get_devnode");
     }
-    public static MemoryAddress udev_device_get_devnode ( Addressable udev_device) {
+    /**
+     * {@snippet :
+     * char* udev_device_get_devnode(struct udev_device* udev_device);
+     * }
+     */
+    public static MemorySegment udev_device_get_devnode(MemorySegment udev_device) {
         var mh$ = udev_device_get_devnode$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_device);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -98,10 +131,15 @@ public class udev  {
     public static MethodHandle udev_device_get_action$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_device_get_action$MH,"udev_device_get_action");
     }
-    public static MemoryAddress udev_device_get_action ( Addressable udev_device) {
+    /**
+     * {@snippet :
+     * char* udev_device_get_action(struct udev_device* udev_device);
+     * }
+     */
+    public static MemorySegment udev_device_get_action(MemorySegment udev_device) {
         var mh$ = udev_device_get_action$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_device);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -109,10 +147,15 @@ public class udev  {
     public static MethodHandle udev_device_get_sysattr_value$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_device_get_sysattr_value$MH,"udev_device_get_sysattr_value");
     }
-    public static MemoryAddress udev_device_get_sysattr_value ( Addressable udev_device,  Addressable sysattr) {
+    /**
+     * {@snippet :
+     * char* udev_device_get_sysattr_value(struct udev_device* udev_device, char* sysattr);
+     * }
+     */
+    public static MemorySegment udev_device_get_sysattr_value(MemorySegment udev_device, MemorySegment sysattr) {
         var mh$ = udev_device_get_sysattr_value$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_device, sysattr);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_device, sysattr);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -120,10 +163,15 @@ public class udev  {
     public static MethodHandle udev_monitor_new_from_netlink$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_monitor_new_from_netlink$MH,"udev_monitor_new_from_netlink");
     }
-    public static MemoryAddress udev_monitor_new_from_netlink ( Addressable udev,  Addressable name) {
+    /**
+     * {@snippet :
+     * struct udev_monitor* udev_monitor_new_from_netlink(struct udev* udev, char* name);
+     * }
+     */
+    public static MemorySegment udev_monitor_new_from_netlink(MemorySegment udev, MemorySegment name) {
         var mh$ = udev_monitor_new_from_netlink$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev, name);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev, name);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -131,7 +179,12 @@ public class udev  {
     public static MethodHandle udev_monitor_enable_receiving$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_monitor_enable_receiving$MH,"udev_monitor_enable_receiving");
     }
-    public static int udev_monitor_enable_receiving ( Addressable udev_monitor) {
+    /**
+     * {@snippet :
+     * int udev_monitor_enable_receiving(struct udev_monitor* udev_monitor);
+     * }
+     */
+    public static int udev_monitor_enable_receiving(MemorySegment udev_monitor) {
         var mh$ = udev_monitor_enable_receiving$MH();
         try {
             return (int)mh$.invokeExact(udev_monitor);
@@ -142,7 +195,12 @@ public class udev  {
     public static MethodHandle udev_monitor_get_fd$MH() {
         return RuntimeHelper.requireNonNull(constants$1.udev_monitor_get_fd$MH,"udev_monitor_get_fd");
     }
-    public static int udev_monitor_get_fd ( Addressable udev_monitor) {
+    /**
+     * {@snippet :
+     * int udev_monitor_get_fd(struct udev_monitor* udev_monitor);
+     * }
+     */
+    public static int udev_monitor_get_fd(MemorySegment udev_monitor) {
         var mh$ = udev_monitor_get_fd$MH();
         try {
             return (int)mh$.invokeExact(udev_monitor);
@@ -153,10 +211,15 @@ public class udev  {
     public static MethodHandle udev_monitor_receive_device$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_monitor_receive_device$MH,"udev_monitor_receive_device");
     }
-    public static MemoryAddress udev_monitor_receive_device ( Addressable udev_monitor) {
+    /**
+     * {@snippet :
+     * struct udev_device* udev_monitor_receive_device(struct udev_monitor* udev_monitor);
+     * }
+     */
+    public static MemorySegment udev_monitor_receive_device(MemorySegment udev_monitor) {
         var mh$ = udev_monitor_receive_device$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_monitor);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_monitor);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -164,7 +227,12 @@ public class udev  {
     public static MethodHandle udev_monitor_filter_add_match_subsystem_devtype$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_monitor_filter_add_match_subsystem_devtype$MH,"udev_monitor_filter_add_match_subsystem_devtype");
     }
-    public static int udev_monitor_filter_add_match_subsystem_devtype ( Addressable udev_monitor,  Addressable subsystem,  Addressable devtype) {
+    /**
+     * {@snippet :
+     * int udev_monitor_filter_add_match_subsystem_devtype(struct udev_monitor* udev_monitor, char* subsystem, char* devtype);
+     * }
+     */
+    public static int udev_monitor_filter_add_match_subsystem_devtype(MemorySegment udev_monitor, MemorySegment subsystem, MemorySegment devtype) {
         var mh$ = udev_monitor_filter_add_match_subsystem_devtype$MH();
         try {
             return (int)mh$.invokeExact(udev_monitor, subsystem, devtype);
@@ -175,10 +243,15 @@ public class udev  {
     public static MethodHandle udev_enumerate_unref$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_unref$MH,"udev_enumerate_unref");
     }
-    public static MemoryAddress udev_enumerate_unref ( Addressable udev_enumerate) {
+    /**
+     * {@snippet :
+     * struct udev_enumerate* udev_enumerate_unref(struct udev_enumerate* udev_enumerate);
+     * }
+     */
+    public static MemorySegment udev_enumerate_unref(MemorySegment udev_enumerate) {
         var mh$ = udev_enumerate_unref$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_enumerate);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_enumerate);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -186,10 +259,15 @@ public class udev  {
     public static MethodHandle udev_enumerate_new$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_new$MH,"udev_enumerate_new");
     }
-    public static MemoryAddress udev_enumerate_new ( Addressable udev) {
+    /**
+     * {@snippet :
+     * struct udev_enumerate* udev_enumerate_new(struct udev* udev);
+     * }
+     */
+    public static MemorySegment udev_enumerate_new(MemorySegment udev) {
         var mh$ = udev_enumerate_new$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -197,7 +275,12 @@ public class udev  {
     public static MethodHandle udev_enumerate_add_match_subsystem$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_add_match_subsystem$MH,"udev_enumerate_add_match_subsystem");
     }
-    public static int udev_enumerate_add_match_subsystem ( Addressable udev_enumerate,  Addressable subsystem) {
+    /**
+     * {@snippet :
+     * int udev_enumerate_add_match_subsystem(struct udev_enumerate* udev_enumerate, char* subsystem);
+     * }
+     */
+    public static int udev_enumerate_add_match_subsystem(MemorySegment udev_enumerate, MemorySegment subsystem) {
         var mh$ = udev_enumerate_add_match_subsystem$MH();
         try {
             return (int)mh$.invokeExact(udev_enumerate, subsystem);
@@ -208,7 +291,12 @@ public class udev  {
     public static MethodHandle udev_enumerate_scan_devices$MH() {
         return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_scan_devices$MH,"udev_enumerate_scan_devices");
     }
-    public static int udev_enumerate_scan_devices ( Addressable udev_enumerate) {
+    /**
+     * {@snippet :
+     * int udev_enumerate_scan_devices(struct udev_enumerate* udev_enumerate);
+     * }
+     */
+    public static int udev_enumerate_scan_devices(MemorySegment udev_enumerate) {
         var mh$ = udev_enumerate_scan_devices$MH();
         try {
             return (int)mh$.invokeExact(udev_enumerate);
@@ -219,10 +307,15 @@ public class udev  {
     public static MethodHandle udev_enumerate_get_list_entry$MH() {
         return RuntimeHelper.requireNonNull(constants$3.udev_enumerate_get_list_entry$MH,"udev_enumerate_get_list_entry");
     }
-    public static MemoryAddress udev_enumerate_get_list_entry ( Addressable udev_enumerate) {
+    /**
+     * {@snippet :
+     * struct udev_list_entry* udev_enumerate_get_list_entry(struct udev_enumerate* udev_enumerate);
+     * }
+     */
+    public static MemorySegment udev_enumerate_get_list_entry(MemorySegment udev_enumerate) {
         var mh$ = udev_enumerate_get_list_entry$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(udev_enumerate);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(udev_enumerate);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

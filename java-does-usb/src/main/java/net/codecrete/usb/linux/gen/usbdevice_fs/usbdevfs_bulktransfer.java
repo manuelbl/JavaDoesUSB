@@ -4,9 +4,19 @@ package net.codecrete.usb.linux.gen.usbdevice_fs;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct usbdevfs_bulktransfer {
+ *     unsigned int ep;
+ *     unsigned int len;
+ *     unsigned int timeout;
+ *     void* data;
+ * };
+ * }
+ */
 public class usbdevfs_bulktransfer {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_INT$LAYOUT.withName("ep"),
         Constants$root.C_INT$LAYOUT.withName("len"),
         Constants$root.C_INT$LAYOUT.withName("timeout"),
@@ -20,10 +30,22 @@ public class usbdevfs_bulktransfer {
     public static VarHandle ep$VH() {
         return usbdevfs_bulktransfer.ep$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned int ep;
+     * }
+     */
     public static int ep$get(MemorySegment seg) {
         return (int)usbdevfs_bulktransfer.ep$VH.get(seg);
     }
-    public static void ep$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned int ep;
+     * }
+     */
+    public static void ep$set(MemorySegment seg, int x) {
         usbdevfs_bulktransfer.ep$VH.set(seg, x);
     }
     public static int ep$get(MemorySegment seg, long index) {
@@ -36,10 +58,22 @@ public class usbdevfs_bulktransfer {
     public static VarHandle len$VH() {
         return usbdevfs_bulktransfer.len$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned int len;
+     * }
+     */
     public static int len$get(MemorySegment seg) {
         return (int)usbdevfs_bulktransfer.len$VH.get(seg);
     }
-    public static void len$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned int len;
+     * }
+     */
+    public static void len$set(MemorySegment seg, int x) {
         usbdevfs_bulktransfer.len$VH.set(seg, x);
     }
     public static int len$get(MemorySegment seg, long index) {
@@ -52,10 +86,22 @@ public class usbdevfs_bulktransfer {
     public static VarHandle timeout$VH() {
         return usbdevfs_bulktransfer.timeout$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned int timeout;
+     * }
+     */
     public static int timeout$get(MemorySegment seg) {
         return (int)usbdevfs_bulktransfer.timeout$VH.get(seg);
     }
-    public static void timeout$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned int timeout;
+     * }
+     */
+    public static void timeout$set(MemorySegment seg, int x) {
         usbdevfs_bulktransfer.timeout$VH.set(seg, x);
     }
     public static int timeout$get(MemorySegment seg, long index) {
@@ -68,24 +114,36 @@ public class usbdevfs_bulktransfer {
     public static VarHandle data$VH() {
         return usbdevfs_bulktransfer.data$VH;
     }
-    public static MemoryAddress data$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)usbdevfs_bulktransfer.data$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * void* data;
+     * }
+     */
+    public static MemorySegment data$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)usbdevfs_bulktransfer.data$VH.get(seg);
     }
-    public static void data$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * void* data;
+     * }
+     */
+    public static void data$set(MemorySegment seg, MemorySegment x) {
         usbdevfs_bulktransfer.data$VH.set(seg, x);
     }
-    public static MemoryAddress data$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)usbdevfs_bulktransfer.data$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment data$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)usbdevfs_bulktransfer.data$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void data$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void data$set(MemorySegment seg, long index, MemorySegment x) {
         usbdevfs_bulktransfer.data$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

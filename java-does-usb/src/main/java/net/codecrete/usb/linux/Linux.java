@@ -9,12 +9,6 @@ package net.codecrete.usb.linux;
 
 import net.codecrete.usb.linux.gen.string.string;
 
-import java.lang.foreign.MemoryAddress;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
-
-import static java.lang.foreign.MemoryAddress.NULL;
-
 /**
  * Helper functions for Linux
  */
