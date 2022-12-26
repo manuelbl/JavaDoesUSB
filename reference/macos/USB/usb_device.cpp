@@ -89,7 +89,7 @@ bool usb_device::is_open() const {
 
 void usb_device::open() {
     if (is_open())
-        throw new usb_error("USB device is already open", 0);
+        throw usb_error("USB device is already open", 0);
     
     // try multiple times to fight race conditions
     int tries = 0;

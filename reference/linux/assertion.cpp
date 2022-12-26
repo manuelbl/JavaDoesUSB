@@ -16,7 +16,7 @@ static void failed(const char* check, const char* message) {
     if (message == nullptr)
         message = "Check failed";
     std::cerr << message << ": " << check << std::endl;
-    throw new check_failed_error();
+    throw check_failed_error();
 }
 
 void assert_equals(int expected, int actual, const char* message) {
