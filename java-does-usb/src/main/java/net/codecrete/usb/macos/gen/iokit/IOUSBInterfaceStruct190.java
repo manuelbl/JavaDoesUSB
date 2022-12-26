@@ -5,9 +5,64 @@ package net.codecrete.usb.macos.gen.iokit;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct IOUSBInterfaceStruct190 {
+ *     void* _reserved;
+ *     HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
+ *     ULONG (*AddRef)(void*);
+ *     ULONG (*Release)(void*);
+ *     IOReturn (*CreateInterfaceAsyncEventSource)(void*,CFRunLoopSourceRef*);
+ *     CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void*);
+ *     IOReturn (*CreateInterfaceAsyncPort)(void*,mach_port_t*);
+ *     mach_port_t (*GetInterfaceAsyncPort)(void*);
+ *     IOReturn (*USBInterfaceOpen)(void*);
+ *     IOReturn (*USBInterfaceClose)(void*);
+ *     IOReturn (*GetInterfaceClass)(void*,UInt8*);
+ *     IOReturn (*GetInterfaceSubClass)(void*,UInt8*);
+ *     IOReturn (*GetInterfaceProtocol)(void*,UInt8*);
+ *     IOReturn (*GetDeviceVendor)(void*,UInt16*);
+ *     IOReturn (*GetDeviceProduct)(void*,UInt16*);
+ *     IOReturn (*GetDeviceReleaseNumber)(void*,UInt16*);
+ *     IOReturn (*GetConfigurationValue)(void*,UInt8*);
+ *     IOReturn (*GetInterfaceNumber)(void*,UInt8*);
+ *     IOReturn (*GetAlternateSetting)(void*,UInt8*);
+ *     IOReturn (*GetNumEndpoints)(void*,UInt8*);
+ *     IOReturn (*GetLocationID)(void*,UInt32*);
+ *     IOReturn (*GetDevice)(void*,io_service_t*);
+ *     IOReturn (*SetAlternateInterface)(void*,UInt8);
+ *     IOReturn (*GetBusFrameNumber)(void*,UInt64*,AbsoluteTime*);
+ *     IOReturn (*ControlRequest)(void*,UInt8,IOUSBDevRequest*);
+ *     IOReturn (*ControlRequestAsync)(void*,UInt8,IOUSBDevRequest*,IOAsyncCallback1,void*);
+ *     IOReturn (*GetPipeProperties)(void*,UInt8,UInt8*,UInt8*,UInt8*,UInt16*,UInt8*);
+ *     IOReturn (*GetPipeStatus)(void*,UInt8);
+ *     IOReturn (*AbortPipe)(void*,UInt8);
+ *     IOReturn (*ResetPipe)(void*,UInt8);
+ *     IOReturn (*ClearPipeStall)(void*,UInt8);
+ *     IOReturn (*ReadPipe)(void*,UInt8,void*,UInt32*);
+ *     IOReturn (*WritePipe)(void*,UInt8,void*,UInt32);
+ *     IOReturn (*ReadPipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+ *     IOReturn (*WritePipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+ *     IOReturn (*ReadIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+ *     IOReturn (*WriteIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+ *     IOReturn (*ControlRequestTO)(void*,UInt8,IOUSBDevRequestTO*);
+ *     IOReturn (*ControlRequestAsyncTO)(void*,UInt8,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+ *     IOReturn (*ReadPipeTO)(void*,UInt8,void*,UInt32*,UInt32,UInt32);
+ *     IOReturn (*WritePipeTO)(void*,UInt8,void*,UInt32,UInt32,UInt32);
+ *     IOReturn (*ReadPipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+ *     IOReturn (*WritePipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+ *     IOReturn (*USBInterfaceGetStringIndex)(void*,UInt8*);
+ *     IOReturn (*USBInterfaceOpenSeize)(void*);
+ *     IOReturn (*ClearPipeStallBothEnds)(void*,UInt8);
+ *     IOReturn (*SetPipePolicy)(void*,UInt8,UInt16,UInt8);
+ *     IOReturn (*GetBandwidthAvailable)(void*,UInt32*);
+ *     IOReturn (*GetEndpointProperties)(void*,UInt8,UInt8,UInt8,UInt8*,UInt16*,UInt8*);
+ * };
+ * }
+ */
 public class IOUSBInterfaceStruct190 {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_POINTER$LAYOUT.withName("_reserved"),
         Constants$root.C_POINTER$LAYOUT.withName("QueryInterface"),
         Constants$root.C_POINTER$LAYOUT.withName("AddRef"),
@@ -65,16 +120,28 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle _reserved$VH() {
         return IOUSBInterfaceStruct190._reserved$VH;
     }
-    public static MemoryAddress _reserved$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190._reserved$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * void* _reserved;
+     * }
+     */
+    public static MemorySegment _reserved$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190._reserved$VH.get(seg);
     }
-    public static void _reserved$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * void* _reserved;
+     * }
+     */
+    public static void _reserved$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190._reserved$VH.set(seg, x);
     }
-    public static MemoryAddress _reserved$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190._reserved$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment _reserved$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190._reserved$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void _reserved$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void _reserved$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190._reserved$VH.set(seg.asSlice(index*sizeof()), x);
     }
     static final FunctionDescriptor QueryInterface$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
@@ -102,17 +169,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle QueryInterface$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.QueryInterface$FUNC
     );
+    /**
+     * {@snippet :
+ * HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
+     * }
+     */
     public interface QueryInterface {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemoryAddress _x2);
-        static MemorySegment allocate(QueryInterface fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(QueryInterface.class, fi, IOUSBInterfaceStruct190.QueryInterface$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
+        static MemorySegment allocate(QueryInterface fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(QueryInterface.class, fi, IOUSBInterfaceStruct190.QueryInterface$FUNC, scope);
         }
-        static QueryInterface ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemoryAddress __x2) -> {
+        static QueryInterface ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.QueryInterface$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2);
+                    return (int)IOUSBInterfaceStruct190.QueryInterface$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -124,20 +196,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle QueryInterface$VH() {
         return IOUSBInterfaceStruct190.QueryInterface$VH;
     }
-    public static MemoryAddress QueryInterface$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.QueryInterface$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
+     * }
+     */
+    public static MemorySegment QueryInterface$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.QueryInterface$VH.get(seg);
     }
-    public static void QueryInterface$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
+     * }
+     */
+    public static void QueryInterface$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.QueryInterface$VH.set(seg, x);
     }
-    public static MemoryAddress QueryInterface$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.QueryInterface$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment QueryInterface$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.QueryInterface$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void QueryInterface$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void QueryInterface$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.QueryInterface$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static QueryInterface QueryInterface (MemorySegment segment, MemorySession session) {
-        return QueryInterface.ofAddress(QueryInterface$get(segment), session);
+    public static QueryInterface QueryInterface(MemorySegment segment, SegmentScope scope) {
+        return QueryInterface.ofAddress(QueryInterface$get(segment), scope);
     }
     static final FunctionDescriptor AddRef$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -145,17 +229,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle AddRef$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.AddRef$FUNC
     );
+    /**
+     * {@snippet :
+ * ULONG (*AddRef)(void*);
+     * }
+     */
     public interface AddRef {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(AddRef fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(AddRef.class, fi, IOUSBInterfaceStruct190.AddRef$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(AddRef fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(AddRef.class, fi, IOUSBInterfaceStruct190.AddRef$FUNC, scope);
         }
-        static AddRef ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static AddRef ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.AddRef$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.AddRef$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -167,20 +256,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle AddRef$VH() {
         return IOUSBInterfaceStruct190.AddRef$VH;
     }
-    public static MemoryAddress AddRef$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.AddRef$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * ULONG (*AddRef)(void*);
+     * }
+     */
+    public static MemorySegment AddRef$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.AddRef$VH.get(seg);
     }
-    public static void AddRef$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * ULONG (*AddRef)(void*);
+     * }
+     */
+    public static void AddRef$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.AddRef$VH.set(seg, x);
     }
-    public static MemoryAddress AddRef$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.AddRef$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment AddRef$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.AddRef$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void AddRef$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void AddRef$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.AddRef$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static AddRef AddRef (MemorySegment segment, MemorySession session) {
-        return AddRef.ofAddress(AddRef$get(segment), session);
+    public static AddRef AddRef(MemorySegment segment, SegmentScope scope) {
+        return AddRef.ofAddress(AddRef$get(segment), scope);
     }
     static final FunctionDescriptor Release$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -188,17 +289,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle Release$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.Release$FUNC
     );
+    /**
+     * {@snippet :
+ * ULONG (*Release)(void*);
+     * }
+     */
     public interface Release {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(Release fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(Release.class, fi, IOUSBInterfaceStruct190.Release$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(Release fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(Release.class, fi, IOUSBInterfaceStruct190.Release$FUNC, scope);
         }
-        static Release ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static Release ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.Release$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.Release$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -210,20 +316,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle Release$VH() {
         return IOUSBInterfaceStruct190.Release$VH;
     }
-    public static MemoryAddress Release$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.Release$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * ULONG (*Release)(void*);
+     * }
+     */
+    public static MemorySegment Release$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.Release$VH.get(seg);
     }
-    public static void Release$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * ULONG (*Release)(void*);
+     * }
+     */
+    public static void Release$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.Release$VH.set(seg, x);
     }
-    public static MemoryAddress Release$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.Release$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment Release$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.Release$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void Release$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void Release$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.Release$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static Release Release (MemorySegment segment, MemorySession session) {
-        return Release.ofAddress(Release$get(segment), session);
+    public static Release Release(MemorySegment segment, SegmentScope scope) {
+        return Release.ofAddress(Release$get(segment), scope);
     }
     static final FunctionDescriptor CreateInterfaceAsyncEventSource$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -232,17 +350,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle CreateInterfaceAsyncEventSource$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*CreateInterfaceAsyncEventSource)(void*,CFRunLoopSourceRef*);
+     * }
+     */
     public interface CreateInterfaceAsyncEventSource {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(CreateInterfaceAsyncEventSource fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(CreateInterfaceAsyncEventSource.class, fi, IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(CreateInterfaceAsyncEventSource fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(CreateInterfaceAsyncEventSource.class, fi, IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$FUNC, scope);
         }
-        static CreateInterfaceAsyncEventSource ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static CreateInterfaceAsyncEventSource ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -254,20 +377,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle CreateInterfaceAsyncEventSource$VH() {
         return IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH;
     }
-    public static MemoryAddress CreateInterfaceAsyncEventSource$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*CreateInterfaceAsyncEventSource)(void*,CFRunLoopSourceRef*);
+     * }
+     */
+    public static MemorySegment CreateInterfaceAsyncEventSource$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.get(seg);
     }
-    public static void CreateInterfaceAsyncEventSource$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*CreateInterfaceAsyncEventSource)(void*,CFRunLoopSourceRef*);
+     * }
+     */
+    public static void CreateInterfaceAsyncEventSource$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.set(seg, x);
     }
-    public static MemoryAddress CreateInterfaceAsyncEventSource$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment CreateInterfaceAsyncEventSource$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void CreateInterfaceAsyncEventSource$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void CreateInterfaceAsyncEventSource$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.CreateInterfaceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static CreateInterfaceAsyncEventSource CreateInterfaceAsyncEventSource (MemorySegment segment, MemorySession session) {
-        return CreateInterfaceAsyncEventSource.ofAddress(CreateInterfaceAsyncEventSource$get(segment), session);
+    public static CreateInterfaceAsyncEventSource CreateInterfaceAsyncEventSource(MemorySegment segment, SegmentScope scope) {
+        return CreateInterfaceAsyncEventSource.ofAddress(CreateInterfaceAsyncEventSource$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceAsyncEventSource$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -275,17 +410,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceAsyncEventSource$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$FUNC
     );
+    /**
+     * {@snippet :
+ * CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void*);
+     * }
+     */
     public interface GetInterfaceAsyncEventSource {
 
-        java.lang.foreign.Addressable apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(GetInterfaceAsyncEventSource fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceAsyncEventSource.class, fi, IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$FUNC, session);
+        java.lang.foreign.MemorySegment apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(GetInterfaceAsyncEventSource fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceAsyncEventSource.class, fi, IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$FUNC, scope);
         }
-        static GetInterfaceAsyncEventSource ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static GetInterfaceAsyncEventSource ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (java.lang.foreign.Addressable)(java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -297,20 +437,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceAsyncEventSource$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH;
     }
-    public static MemoryAddress GetInterfaceAsyncEventSource$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void*);
+     * }
+     */
+    public static MemorySegment GetInterfaceAsyncEventSource$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.get(seg);
     }
-    public static void GetInterfaceAsyncEventSource$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void*);
+     * }
+     */
+    public static void GetInterfaceAsyncEventSource$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceAsyncEventSource$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceAsyncEventSource$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceAsyncEventSource$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceAsyncEventSource$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceAsyncEventSource GetInterfaceAsyncEventSource (MemorySegment segment, MemorySession session) {
-        return GetInterfaceAsyncEventSource.ofAddress(GetInterfaceAsyncEventSource$get(segment), session);
+    public static GetInterfaceAsyncEventSource GetInterfaceAsyncEventSource(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceAsyncEventSource.ofAddress(GetInterfaceAsyncEventSource$get(segment), scope);
     }
     static final FunctionDescriptor CreateInterfaceAsyncPort$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -319,17 +471,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle CreateInterfaceAsyncPort$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*CreateInterfaceAsyncPort)(void*,mach_port_t*);
+     * }
+     */
     public interface CreateInterfaceAsyncPort {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(CreateInterfaceAsyncPort fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(CreateInterfaceAsyncPort.class, fi, IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(CreateInterfaceAsyncPort fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(CreateInterfaceAsyncPort.class, fi, IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$FUNC, scope);
         }
-        static CreateInterfaceAsyncPort ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static CreateInterfaceAsyncPort ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -341,20 +498,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle CreateInterfaceAsyncPort$VH() {
         return IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH;
     }
-    public static MemoryAddress CreateInterfaceAsyncPort$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*CreateInterfaceAsyncPort)(void*,mach_port_t*);
+     * }
+     */
+    public static MemorySegment CreateInterfaceAsyncPort$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.get(seg);
     }
-    public static void CreateInterfaceAsyncPort$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*CreateInterfaceAsyncPort)(void*,mach_port_t*);
+     * }
+     */
+    public static void CreateInterfaceAsyncPort$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.set(seg, x);
     }
-    public static MemoryAddress CreateInterfaceAsyncPort$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment CreateInterfaceAsyncPort$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void CreateInterfaceAsyncPort$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void CreateInterfaceAsyncPort$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.CreateInterfaceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static CreateInterfaceAsyncPort CreateInterfaceAsyncPort (MemorySegment segment, MemorySession session) {
-        return CreateInterfaceAsyncPort.ofAddress(CreateInterfaceAsyncPort$get(segment), session);
+    public static CreateInterfaceAsyncPort CreateInterfaceAsyncPort(MemorySegment segment, SegmentScope scope) {
+        return CreateInterfaceAsyncPort.ofAddress(CreateInterfaceAsyncPort$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceAsyncPort$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -362,17 +531,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceAsyncPort$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceAsyncPort$FUNC
     );
+    /**
+     * {@snippet :
+ * mach_port_t (*GetInterfaceAsyncPort)(void*);
+     * }
+     */
     public interface GetInterfaceAsyncPort {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(GetInterfaceAsyncPort fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceAsyncPort.class, fi, IOUSBInterfaceStruct190.GetInterfaceAsyncPort$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(GetInterfaceAsyncPort fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceAsyncPort.class, fi, IOUSBInterfaceStruct190.GetInterfaceAsyncPort$FUNC, scope);
         }
-        static GetInterfaceAsyncPort ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static GetInterfaceAsyncPort ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -384,20 +558,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceAsyncPort$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH;
     }
-    public static MemoryAddress GetInterfaceAsyncPort$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * mach_port_t (*GetInterfaceAsyncPort)(void*);
+     * }
+     */
+    public static MemorySegment GetInterfaceAsyncPort$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.get(seg);
     }
-    public static void GetInterfaceAsyncPort$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * mach_port_t (*GetInterfaceAsyncPort)(void*);
+     * }
+     */
+    public static void GetInterfaceAsyncPort$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceAsyncPort$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceAsyncPort$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceAsyncPort$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceAsyncPort$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceAsyncPort GetInterfaceAsyncPort (MemorySegment segment, MemorySession session) {
-        return GetInterfaceAsyncPort.ofAddress(GetInterfaceAsyncPort$get(segment), session);
+    public static GetInterfaceAsyncPort GetInterfaceAsyncPort(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceAsyncPort.ofAddress(GetInterfaceAsyncPort$get(segment), scope);
     }
     static final FunctionDescriptor USBInterfaceOpen$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -405,17 +591,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle USBInterfaceOpen$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.USBInterfaceOpen$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*USBInterfaceOpen)(void*);
+     * }
+     */
     public interface USBInterfaceOpen {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(USBInterfaceOpen fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(USBInterfaceOpen.class, fi, IOUSBInterfaceStruct190.USBInterfaceOpen$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(USBInterfaceOpen fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBInterfaceOpen.class, fi, IOUSBInterfaceStruct190.USBInterfaceOpen$FUNC, scope);
         }
-        static USBInterfaceOpen ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static USBInterfaceOpen ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.USBInterfaceOpen$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.USBInterfaceOpen$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -427,20 +618,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle USBInterfaceOpen$VH() {
         return IOUSBInterfaceStruct190.USBInterfaceOpen$VH;
     }
-    public static MemoryAddress USBInterfaceOpen$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceOpen$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceOpen)(void*);
+     * }
+     */
+    public static MemorySegment USBInterfaceOpen$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceOpen$VH.get(seg);
     }
-    public static void USBInterfaceOpen$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceOpen)(void*);
+     * }
+     */
+    public static void USBInterfaceOpen$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceOpen$VH.set(seg, x);
     }
-    public static MemoryAddress USBInterfaceOpen$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceOpen$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment USBInterfaceOpen$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceOpen$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void USBInterfaceOpen$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void USBInterfaceOpen$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceOpen$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static USBInterfaceOpen USBInterfaceOpen (MemorySegment segment, MemorySession session) {
-        return USBInterfaceOpen.ofAddress(USBInterfaceOpen$get(segment), session);
+    public static USBInterfaceOpen USBInterfaceOpen(MemorySegment segment, SegmentScope scope) {
+        return USBInterfaceOpen.ofAddress(USBInterfaceOpen$get(segment), scope);
     }
     static final FunctionDescriptor USBInterfaceClose$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -448,17 +651,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle USBInterfaceClose$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.USBInterfaceClose$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*USBInterfaceClose)(void*);
+     * }
+     */
     public interface USBInterfaceClose {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(USBInterfaceClose fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(USBInterfaceClose.class, fi, IOUSBInterfaceStruct190.USBInterfaceClose$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(USBInterfaceClose fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBInterfaceClose.class, fi, IOUSBInterfaceStruct190.USBInterfaceClose$FUNC, scope);
         }
-        static USBInterfaceClose ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static USBInterfaceClose ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.USBInterfaceClose$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.USBInterfaceClose$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -470,20 +678,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle USBInterfaceClose$VH() {
         return IOUSBInterfaceStruct190.USBInterfaceClose$VH;
     }
-    public static MemoryAddress USBInterfaceClose$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceClose$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceClose)(void*);
+     * }
+     */
+    public static MemorySegment USBInterfaceClose$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceClose$VH.get(seg);
     }
-    public static void USBInterfaceClose$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceClose)(void*);
+     * }
+     */
+    public static void USBInterfaceClose$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceClose$VH.set(seg, x);
     }
-    public static MemoryAddress USBInterfaceClose$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceClose$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment USBInterfaceClose$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceClose$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void USBInterfaceClose$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void USBInterfaceClose$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceClose$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static USBInterfaceClose USBInterfaceClose (MemorySegment segment, MemorySession session) {
-        return USBInterfaceClose.ofAddress(USBInterfaceClose$get(segment), session);
+    public static USBInterfaceClose USBInterfaceClose(MemorySegment segment, SegmentScope scope) {
+        return USBInterfaceClose.ofAddress(USBInterfaceClose$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceClass$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -492,17 +712,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceClass$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceClass$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetInterfaceClass)(void*,UInt8*);
+     * }
+     */
     public interface GetInterfaceClass {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetInterfaceClass fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceClass.class, fi, IOUSBInterfaceStruct190.GetInterfaceClass$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetInterfaceClass fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceClass.class, fi, IOUSBInterfaceStruct190.GetInterfaceClass$FUNC, scope);
         }
-        static GetInterfaceClass ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetInterfaceClass ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetInterfaceClass$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetInterfaceClass$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -514,20 +739,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceClass$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceClass$VH;
     }
-    public static MemoryAddress GetInterfaceClass$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceClass$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceClass)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetInterfaceClass$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceClass$VH.get(seg);
     }
-    public static void GetInterfaceClass$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceClass)(void*,UInt8*);
+     * }
+     */
+    public static void GetInterfaceClass$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceClass$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceClass$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceClass$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceClass$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceClass$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceClass$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceClass$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceClass$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceClass GetInterfaceClass (MemorySegment segment, MemorySession session) {
-        return GetInterfaceClass.ofAddress(GetInterfaceClass$get(segment), session);
+    public static GetInterfaceClass GetInterfaceClass(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceClass.ofAddress(GetInterfaceClass$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceSubClass$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -536,17 +773,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceSubClass$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceSubClass$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetInterfaceSubClass)(void*,UInt8*);
+     * }
+     */
     public interface GetInterfaceSubClass {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetInterfaceSubClass fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceSubClass.class, fi, IOUSBInterfaceStruct190.GetInterfaceSubClass$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetInterfaceSubClass fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceSubClass.class, fi, IOUSBInterfaceStruct190.GetInterfaceSubClass$FUNC, scope);
         }
-        static GetInterfaceSubClass ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetInterfaceSubClass ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetInterfaceSubClass$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetInterfaceSubClass$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -558,20 +800,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceSubClass$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceSubClass$VH;
     }
-    public static MemoryAddress GetInterfaceSubClass$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceSubClass)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetInterfaceSubClass$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.get(seg);
     }
-    public static void GetInterfaceSubClass$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceSubClass)(void*,UInt8*);
+     * }
+     */
+    public static void GetInterfaceSubClass$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceSubClass$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceSubClass$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceSubClass$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceSubClass$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceSubClass$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceSubClass GetInterfaceSubClass (MemorySegment segment, MemorySession session) {
-        return GetInterfaceSubClass.ofAddress(GetInterfaceSubClass$get(segment), session);
+    public static GetInterfaceSubClass GetInterfaceSubClass(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceSubClass.ofAddress(GetInterfaceSubClass$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceProtocol$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -580,17 +834,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceProtocol$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceProtocol$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetInterfaceProtocol)(void*,UInt8*);
+     * }
+     */
     public interface GetInterfaceProtocol {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetInterfaceProtocol fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceProtocol.class, fi, IOUSBInterfaceStruct190.GetInterfaceProtocol$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetInterfaceProtocol fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceProtocol.class, fi, IOUSBInterfaceStruct190.GetInterfaceProtocol$FUNC, scope);
         }
-        static GetInterfaceProtocol ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetInterfaceProtocol ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetInterfaceProtocol$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetInterfaceProtocol$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -602,20 +861,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceProtocol$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceProtocol$VH;
     }
-    public static MemoryAddress GetInterfaceProtocol$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceProtocol)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetInterfaceProtocol$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.get(seg);
     }
-    public static void GetInterfaceProtocol$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceProtocol)(void*,UInt8*);
+     * }
+     */
+    public static void GetInterfaceProtocol$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceProtocol$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceProtocol$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceProtocol$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceProtocol$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceProtocol$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceProtocol GetInterfaceProtocol (MemorySegment segment, MemorySession session) {
-        return GetInterfaceProtocol.ofAddress(GetInterfaceProtocol$get(segment), session);
+    public static GetInterfaceProtocol GetInterfaceProtocol(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceProtocol.ofAddress(GetInterfaceProtocol$get(segment), scope);
     }
     static final FunctionDescriptor GetDeviceVendor$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -624,17 +895,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetDeviceVendor$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetDeviceVendor$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetDeviceVendor)(void*,UInt16*);
+     * }
+     */
     public interface GetDeviceVendor {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetDeviceVendor fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetDeviceVendor.class, fi, IOUSBInterfaceStruct190.GetDeviceVendor$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetDeviceVendor fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetDeviceVendor.class, fi, IOUSBInterfaceStruct190.GetDeviceVendor$FUNC, scope);
         }
-        static GetDeviceVendor ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetDeviceVendor ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetDeviceVendor$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetDeviceVendor$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -646,20 +922,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetDeviceVendor$VH() {
         return IOUSBInterfaceStruct190.GetDeviceVendor$VH;
     }
-    public static MemoryAddress GetDeviceVendor$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceVendor$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceVendor)(void*,UInt16*);
+     * }
+     */
+    public static MemorySegment GetDeviceVendor$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceVendor$VH.get(seg);
     }
-    public static void GetDeviceVendor$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceVendor)(void*,UInt16*);
+     * }
+     */
+    public static void GetDeviceVendor$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceVendor$VH.set(seg, x);
     }
-    public static MemoryAddress GetDeviceVendor$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceVendor$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetDeviceVendor$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceVendor$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetDeviceVendor$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetDeviceVendor$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceVendor$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetDeviceVendor GetDeviceVendor (MemorySegment segment, MemorySession session) {
-        return GetDeviceVendor.ofAddress(GetDeviceVendor$get(segment), session);
+    public static GetDeviceVendor GetDeviceVendor(MemorySegment segment, SegmentScope scope) {
+        return GetDeviceVendor.ofAddress(GetDeviceVendor$get(segment), scope);
     }
     static final FunctionDescriptor GetDeviceProduct$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -668,17 +956,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetDeviceProduct$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetDeviceProduct$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetDeviceProduct)(void*,UInt16*);
+     * }
+     */
     public interface GetDeviceProduct {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetDeviceProduct fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetDeviceProduct.class, fi, IOUSBInterfaceStruct190.GetDeviceProduct$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetDeviceProduct fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetDeviceProduct.class, fi, IOUSBInterfaceStruct190.GetDeviceProduct$FUNC, scope);
         }
-        static GetDeviceProduct ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetDeviceProduct ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetDeviceProduct$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetDeviceProduct$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -690,20 +983,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetDeviceProduct$VH() {
         return IOUSBInterfaceStruct190.GetDeviceProduct$VH;
     }
-    public static MemoryAddress GetDeviceProduct$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceProduct$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceProduct)(void*,UInt16*);
+     * }
+     */
+    public static MemorySegment GetDeviceProduct$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceProduct$VH.get(seg);
     }
-    public static void GetDeviceProduct$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceProduct)(void*,UInt16*);
+     * }
+     */
+    public static void GetDeviceProduct$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceProduct$VH.set(seg, x);
     }
-    public static MemoryAddress GetDeviceProduct$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceProduct$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetDeviceProduct$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceProduct$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetDeviceProduct$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetDeviceProduct$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceProduct$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetDeviceProduct GetDeviceProduct (MemorySegment segment, MemorySession session) {
-        return GetDeviceProduct.ofAddress(GetDeviceProduct$get(segment), session);
+    public static GetDeviceProduct GetDeviceProduct(MemorySegment segment, SegmentScope scope) {
+        return GetDeviceProduct.ofAddress(GetDeviceProduct$get(segment), scope);
     }
     static final FunctionDescriptor GetDeviceReleaseNumber$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -712,17 +1017,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetDeviceReleaseNumber$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetDeviceReleaseNumber$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetDeviceReleaseNumber)(void*,UInt16*);
+     * }
+     */
     public interface GetDeviceReleaseNumber {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetDeviceReleaseNumber fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetDeviceReleaseNumber.class, fi, IOUSBInterfaceStruct190.GetDeviceReleaseNumber$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetDeviceReleaseNumber fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetDeviceReleaseNumber.class, fi, IOUSBInterfaceStruct190.GetDeviceReleaseNumber$FUNC, scope);
         }
-        static GetDeviceReleaseNumber ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetDeviceReleaseNumber ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -734,20 +1044,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetDeviceReleaseNumber$VH() {
         return IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH;
     }
-    public static MemoryAddress GetDeviceReleaseNumber$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceReleaseNumber)(void*,UInt16*);
+     * }
+     */
+    public static MemorySegment GetDeviceReleaseNumber$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.get(seg);
     }
-    public static void GetDeviceReleaseNumber$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetDeviceReleaseNumber)(void*,UInt16*);
+     * }
+     */
+    public static void GetDeviceReleaseNumber$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.set(seg, x);
     }
-    public static MemoryAddress GetDeviceReleaseNumber$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetDeviceReleaseNumber$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetDeviceReleaseNumber$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetDeviceReleaseNumber$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDeviceReleaseNumber$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetDeviceReleaseNumber GetDeviceReleaseNumber (MemorySegment segment, MemorySession session) {
-        return GetDeviceReleaseNumber.ofAddress(GetDeviceReleaseNumber$get(segment), session);
+    public static GetDeviceReleaseNumber GetDeviceReleaseNumber(MemorySegment segment, SegmentScope scope) {
+        return GetDeviceReleaseNumber.ofAddress(GetDeviceReleaseNumber$get(segment), scope);
     }
     static final FunctionDescriptor GetConfigurationValue$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -756,17 +1078,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetConfigurationValue$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetConfigurationValue$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetConfigurationValue)(void*,UInt8*);
+     * }
+     */
     public interface GetConfigurationValue {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetConfigurationValue fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetConfigurationValue.class, fi, IOUSBInterfaceStruct190.GetConfigurationValue$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetConfigurationValue fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetConfigurationValue.class, fi, IOUSBInterfaceStruct190.GetConfigurationValue$FUNC, scope);
         }
-        static GetConfigurationValue ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetConfigurationValue ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetConfigurationValue$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetConfigurationValue$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -778,20 +1105,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetConfigurationValue$VH() {
         return IOUSBInterfaceStruct190.GetConfigurationValue$VH;
     }
-    public static MemoryAddress GetConfigurationValue$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetConfigurationValue$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetConfigurationValue)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetConfigurationValue$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetConfigurationValue$VH.get(seg);
     }
-    public static void GetConfigurationValue$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetConfigurationValue)(void*,UInt8*);
+     * }
+     */
+    public static void GetConfigurationValue$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetConfigurationValue$VH.set(seg, x);
     }
-    public static MemoryAddress GetConfigurationValue$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetConfigurationValue$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetConfigurationValue$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetConfigurationValue$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetConfigurationValue$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetConfigurationValue$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetConfigurationValue$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetConfigurationValue GetConfigurationValue (MemorySegment segment, MemorySession session) {
-        return GetConfigurationValue.ofAddress(GetConfigurationValue$get(segment), session);
+    public static GetConfigurationValue GetConfigurationValue(MemorySegment segment, SegmentScope scope) {
+        return GetConfigurationValue.ofAddress(GetConfigurationValue$get(segment), scope);
     }
     static final FunctionDescriptor GetInterfaceNumber$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -800,17 +1139,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetInterfaceNumber$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetInterfaceNumber$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetInterfaceNumber)(void*,UInt8*);
+     * }
+     */
     public interface GetInterfaceNumber {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetInterfaceNumber fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetInterfaceNumber.class, fi, IOUSBInterfaceStruct190.GetInterfaceNumber$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetInterfaceNumber fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetInterfaceNumber.class, fi, IOUSBInterfaceStruct190.GetInterfaceNumber$FUNC, scope);
         }
-        static GetInterfaceNumber ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetInterfaceNumber ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetInterfaceNumber$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetInterfaceNumber$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -822,20 +1166,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetInterfaceNumber$VH() {
         return IOUSBInterfaceStruct190.GetInterfaceNumber$VH;
     }
-    public static MemoryAddress GetInterfaceNumber$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceNumber$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceNumber)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetInterfaceNumber$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceNumber$VH.get(seg);
     }
-    public static void GetInterfaceNumber$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetInterfaceNumber)(void*,UInt8*);
+     * }
+     */
+    public static void GetInterfaceNumber$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceNumber$VH.set(seg, x);
     }
-    public static MemoryAddress GetInterfaceNumber$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetInterfaceNumber$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetInterfaceNumber$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetInterfaceNumber$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetInterfaceNumber$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetInterfaceNumber$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetInterfaceNumber$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetInterfaceNumber GetInterfaceNumber (MemorySegment segment, MemorySession session) {
-        return GetInterfaceNumber.ofAddress(GetInterfaceNumber$get(segment), session);
+    public static GetInterfaceNumber GetInterfaceNumber(MemorySegment segment, SegmentScope scope) {
+        return GetInterfaceNumber.ofAddress(GetInterfaceNumber$get(segment), scope);
     }
     static final FunctionDescriptor GetAlternateSetting$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -844,17 +1200,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetAlternateSetting$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetAlternateSetting$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetAlternateSetting)(void*,UInt8*);
+     * }
+     */
     public interface GetAlternateSetting {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetAlternateSetting fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetAlternateSetting.class, fi, IOUSBInterfaceStruct190.GetAlternateSetting$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetAlternateSetting fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetAlternateSetting.class, fi, IOUSBInterfaceStruct190.GetAlternateSetting$FUNC, scope);
         }
-        static GetAlternateSetting ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetAlternateSetting ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetAlternateSetting$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetAlternateSetting$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -866,20 +1227,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetAlternateSetting$VH() {
         return IOUSBInterfaceStruct190.GetAlternateSetting$VH;
     }
-    public static MemoryAddress GetAlternateSetting$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetAlternateSetting$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetAlternateSetting)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetAlternateSetting$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetAlternateSetting$VH.get(seg);
     }
-    public static void GetAlternateSetting$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetAlternateSetting)(void*,UInt8*);
+     * }
+     */
+    public static void GetAlternateSetting$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetAlternateSetting$VH.set(seg, x);
     }
-    public static MemoryAddress GetAlternateSetting$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetAlternateSetting$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetAlternateSetting$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetAlternateSetting$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetAlternateSetting$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetAlternateSetting$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetAlternateSetting$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetAlternateSetting GetAlternateSetting (MemorySegment segment, MemorySession session) {
-        return GetAlternateSetting.ofAddress(GetAlternateSetting$get(segment), session);
+    public static GetAlternateSetting GetAlternateSetting(MemorySegment segment, SegmentScope scope) {
+        return GetAlternateSetting.ofAddress(GetAlternateSetting$get(segment), scope);
     }
     static final FunctionDescriptor GetNumEndpoints$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -888,17 +1261,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetNumEndpoints$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetNumEndpoints$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetNumEndpoints)(void*,UInt8*);
+     * }
+     */
     public interface GetNumEndpoints {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetNumEndpoints fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetNumEndpoints.class, fi, IOUSBInterfaceStruct190.GetNumEndpoints$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetNumEndpoints fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetNumEndpoints.class, fi, IOUSBInterfaceStruct190.GetNumEndpoints$FUNC, scope);
         }
-        static GetNumEndpoints ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetNumEndpoints ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetNumEndpoints$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetNumEndpoints$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -910,20 +1288,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetNumEndpoints$VH() {
         return IOUSBInterfaceStruct190.GetNumEndpoints$VH;
     }
-    public static MemoryAddress GetNumEndpoints$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetNumEndpoints$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetNumEndpoints)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetNumEndpoints$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetNumEndpoints$VH.get(seg);
     }
-    public static void GetNumEndpoints$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetNumEndpoints)(void*,UInt8*);
+     * }
+     */
+    public static void GetNumEndpoints$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetNumEndpoints$VH.set(seg, x);
     }
-    public static MemoryAddress GetNumEndpoints$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetNumEndpoints$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetNumEndpoints$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetNumEndpoints$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetNumEndpoints$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetNumEndpoints$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetNumEndpoints$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetNumEndpoints GetNumEndpoints (MemorySegment segment, MemorySession session) {
-        return GetNumEndpoints.ofAddress(GetNumEndpoints$get(segment), session);
+    public static GetNumEndpoints GetNumEndpoints(MemorySegment segment, SegmentScope scope) {
+        return GetNumEndpoints.ofAddress(GetNumEndpoints$get(segment), scope);
     }
     static final FunctionDescriptor GetLocationID$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -932,17 +1322,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetLocationID$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetLocationID$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetLocationID)(void*,UInt32*);
+     * }
+     */
     public interface GetLocationID {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetLocationID fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetLocationID.class, fi, IOUSBInterfaceStruct190.GetLocationID$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetLocationID fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetLocationID.class, fi, IOUSBInterfaceStruct190.GetLocationID$FUNC, scope);
         }
-        static GetLocationID ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetLocationID ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetLocationID$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetLocationID$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -954,20 +1349,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetLocationID$VH() {
         return IOUSBInterfaceStruct190.GetLocationID$VH;
     }
-    public static MemoryAddress GetLocationID$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetLocationID$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetLocationID)(void*,UInt32*);
+     * }
+     */
+    public static MemorySegment GetLocationID$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetLocationID$VH.get(seg);
     }
-    public static void GetLocationID$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetLocationID)(void*,UInt32*);
+     * }
+     */
+    public static void GetLocationID$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetLocationID$VH.set(seg, x);
     }
-    public static MemoryAddress GetLocationID$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetLocationID$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetLocationID$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetLocationID$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetLocationID$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetLocationID$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetLocationID$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetLocationID GetLocationID (MemorySegment segment, MemorySession session) {
-        return GetLocationID.ofAddress(GetLocationID$get(segment), session);
+    public static GetLocationID GetLocationID(MemorySegment segment, SegmentScope scope) {
+        return GetLocationID.ofAddress(GetLocationID$get(segment), scope);
     }
     static final FunctionDescriptor GetDevice$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -976,17 +1383,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetDevice$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetDevice$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetDevice)(void*,io_service_t*);
+     * }
+     */
     public interface GetDevice {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetDevice fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetDevice.class, fi, IOUSBInterfaceStruct190.GetDevice$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetDevice fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetDevice.class, fi, IOUSBInterfaceStruct190.GetDevice$FUNC, scope);
         }
-        static GetDevice ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetDevice ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetDevice$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetDevice$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -998,20 +1410,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetDevice$VH() {
         return IOUSBInterfaceStruct190.GetDevice$VH;
     }
-    public static MemoryAddress GetDevice$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDevice$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetDevice)(void*,io_service_t*);
+     * }
+     */
+    public static MemorySegment GetDevice$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDevice$VH.get(seg);
     }
-    public static void GetDevice$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetDevice)(void*,io_service_t*);
+     * }
+     */
+    public static void GetDevice$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDevice$VH.set(seg, x);
     }
-    public static MemoryAddress GetDevice$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetDevice$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetDevice$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetDevice$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetDevice$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetDevice$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetDevice$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetDevice GetDevice (MemorySegment segment, MemorySession session) {
-        return GetDevice.ofAddress(GetDevice$get(segment), session);
+    public static GetDevice GetDevice(MemorySegment segment, SegmentScope scope) {
+        return GetDevice.ofAddress(GetDevice$get(segment), scope);
     }
     static final FunctionDescriptor SetAlternateInterface$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1020,17 +1444,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle SetAlternateInterface$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.SetAlternateInterface$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*SetAlternateInterface)(void*,UInt8);
+     * }
+     */
     public interface SetAlternateInterface {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(SetAlternateInterface fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(SetAlternateInterface.class, fi, IOUSBInterfaceStruct190.SetAlternateInterface$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(SetAlternateInterface fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(SetAlternateInterface.class, fi, IOUSBInterfaceStruct190.SetAlternateInterface$FUNC, scope);
         }
-        static SetAlternateInterface ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static SetAlternateInterface ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.SetAlternateInterface$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.SetAlternateInterface$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1042,20 +1471,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle SetAlternateInterface$VH() {
         return IOUSBInterfaceStruct190.SetAlternateInterface$VH;
     }
-    public static MemoryAddress SetAlternateInterface$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.SetAlternateInterface$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*SetAlternateInterface)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment SetAlternateInterface$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.SetAlternateInterface$VH.get(seg);
     }
-    public static void SetAlternateInterface$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*SetAlternateInterface)(void*,UInt8);
+     * }
+     */
+    public static void SetAlternateInterface$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.SetAlternateInterface$VH.set(seg, x);
     }
-    public static MemoryAddress SetAlternateInterface$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.SetAlternateInterface$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment SetAlternateInterface$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.SetAlternateInterface$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void SetAlternateInterface$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void SetAlternateInterface$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.SetAlternateInterface$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static SetAlternateInterface SetAlternateInterface (MemorySegment segment, MemorySession session) {
-        return SetAlternateInterface.ofAddress(SetAlternateInterface$get(segment), session);
+    public static SetAlternateInterface SetAlternateInterface(MemorySegment segment, SegmentScope scope) {
+        return SetAlternateInterface.ofAddress(SetAlternateInterface$get(segment), scope);
     }
     static final FunctionDescriptor GetBusFrameNumber$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1065,17 +1506,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetBusFrameNumber$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetBusFrameNumber$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetBusFrameNumber)(void*,UInt64*,AbsoluteTime*);
+     * }
+     */
     public interface GetBusFrameNumber {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1, java.lang.foreign.MemoryAddress _x2);
-        static MemorySegment allocate(GetBusFrameNumber fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetBusFrameNumber.class, fi, IOUSBInterfaceStruct190.GetBusFrameNumber$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
+        static MemorySegment allocate(GetBusFrameNumber fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetBusFrameNumber.class, fi, IOUSBInterfaceStruct190.GetBusFrameNumber$FUNC, scope);
         }
-        static GetBusFrameNumber ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1, java.lang.foreign.MemoryAddress __x2) -> {
+        static GetBusFrameNumber ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetBusFrameNumber$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1, (java.lang.foreign.Addressable)__x2);
+                    return (int)IOUSBInterfaceStruct190.GetBusFrameNumber$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1087,20 +1533,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetBusFrameNumber$VH() {
         return IOUSBInterfaceStruct190.GetBusFrameNumber$VH;
     }
-    public static MemoryAddress GetBusFrameNumber$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetBusFrameNumber$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetBusFrameNumber)(void*,UInt64*,AbsoluteTime*);
+     * }
+     */
+    public static MemorySegment GetBusFrameNumber$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetBusFrameNumber$VH.get(seg);
     }
-    public static void GetBusFrameNumber$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetBusFrameNumber)(void*,UInt64*,AbsoluteTime*);
+     * }
+     */
+    public static void GetBusFrameNumber$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetBusFrameNumber$VH.set(seg, x);
     }
-    public static MemoryAddress GetBusFrameNumber$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetBusFrameNumber$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetBusFrameNumber$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetBusFrameNumber$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetBusFrameNumber$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetBusFrameNumber$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetBusFrameNumber$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetBusFrameNumber GetBusFrameNumber (MemorySegment segment, MemorySession session) {
-        return GetBusFrameNumber.ofAddress(GetBusFrameNumber$get(segment), session);
+    public static GetBusFrameNumber GetBusFrameNumber(MemorySegment segment, SegmentScope scope) {
+        return GetBusFrameNumber.ofAddress(GetBusFrameNumber$get(segment), scope);
     }
     static final FunctionDescriptor ControlRequest$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1110,17 +1568,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ControlRequest$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ControlRequest$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ControlRequest)(void*,UInt8,IOUSBDevRequest*);
+     * }
+     */
     public interface ControlRequest {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2);
-        static MemorySegment allocate(ControlRequest fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ControlRequest.class, fi, IOUSBInterfaceStruct190.ControlRequest$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2);
+        static MemorySegment allocate(ControlRequest fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ControlRequest.class, fi, IOUSBInterfaceStruct190.ControlRequest$FUNC, scope);
         }
-        static ControlRequest ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2) -> {
+        static ControlRequest ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ControlRequest$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2);
+                    return (int)IOUSBInterfaceStruct190.ControlRequest$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1132,20 +1595,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ControlRequest$VH() {
         return IOUSBInterfaceStruct190.ControlRequest$VH;
     }
-    public static MemoryAddress ControlRequest$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequest$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequest)(void*,UInt8,IOUSBDevRequest*);
+     * }
+     */
+    public static MemorySegment ControlRequest$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequest$VH.get(seg);
     }
-    public static void ControlRequest$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequest)(void*,UInt8,IOUSBDevRequest*);
+     * }
+     */
+    public static void ControlRequest$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequest$VH.set(seg, x);
     }
-    public static MemoryAddress ControlRequest$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequest$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ControlRequest$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequest$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ControlRequest$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ControlRequest$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequest$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ControlRequest ControlRequest (MemorySegment segment, MemorySession session) {
-        return ControlRequest.ofAddress(ControlRequest$get(segment), session);
+    public static ControlRequest ControlRequest(MemorySegment segment, SegmentScope scope) {
+        return ControlRequest.ofAddress(ControlRequest$get(segment), scope);
     }
     static final FunctionDescriptor ControlRequestAsync$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1157,17 +1632,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ControlRequestAsync$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ControlRequestAsync$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ControlRequestAsync)(void*,UInt8,IOUSBDevRequest*,IOAsyncCallback1,void*);
+     * }
+     */
     public interface ControlRequestAsync {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, java.lang.foreign.MemoryAddress _x3, java.lang.foreign.MemoryAddress _x4);
-        static MemorySegment allocate(ControlRequestAsync fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ControlRequestAsync.class, fi, IOUSBInterfaceStruct190.ControlRequestAsync$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3, java.lang.foreign.MemorySegment _x4);
+        static MemorySegment allocate(ControlRequestAsync fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ControlRequestAsync.class, fi, IOUSBInterfaceStruct190.ControlRequestAsync$FUNC, scope);
         }
-        static ControlRequestAsync ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, java.lang.foreign.MemoryAddress __x3, java.lang.foreign.MemoryAddress __x4) -> {
+        static ControlRequestAsync ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3, java.lang.foreign.MemorySegment __x4) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ControlRequestAsync$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, (java.lang.foreign.Addressable)__x3, (java.lang.foreign.Addressable)__x4);
+                    return (int)IOUSBInterfaceStruct190.ControlRequestAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1179,20 +1659,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ControlRequestAsync$VH() {
         return IOUSBInterfaceStruct190.ControlRequestAsync$VH;
     }
-    public static MemoryAddress ControlRequestAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestAsync$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestAsync)(void*,UInt8,IOUSBDevRequest*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment ControlRequestAsync$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestAsync$VH.get(seg);
     }
-    public static void ControlRequestAsync$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestAsync)(void*,UInt8,IOUSBDevRequest*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void ControlRequestAsync$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestAsync$VH.set(seg, x);
     }
-    public static MemoryAddress ControlRequestAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestAsync$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ControlRequestAsync$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestAsync$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ControlRequestAsync$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ControlRequestAsync$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ControlRequestAsync ControlRequestAsync (MemorySegment segment, MemorySession session) {
-        return ControlRequestAsync.ofAddress(ControlRequestAsync$get(segment), session);
+    public static ControlRequestAsync ControlRequestAsync(MemorySegment segment, SegmentScope scope) {
+        return ControlRequestAsync.ofAddress(ControlRequestAsync$get(segment), scope);
     }
     static final FunctionDescriptor GetPipeProperties$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1206,17 +1698,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetPipeProperties$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetPipeProperties$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetPipeProperties)(void*,UInt8,UInt8*,UInt8*,UInt8*,UInt16*,UInt8*);
+     * }
+     */
     public interface GetPipeProperties {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, java.lang.foreign.MemoryAddress _x3, java.lang.foreign.MemoryAddress _x4, java.lang.foreign.MemoryAddress _x5, java.lang.foreign.MemoryAddress _x6);
-        static MemorySegment allocate(GetPipeProperties fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetPipeProperties.class, fi, IOUSBInterfaceStruct190.GetPipeProperties$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3, java.lang.foreign.MemorySegment _x4, java.lang.foreign.MemorySegment _x5, java.lang.foreign.MemorySegment _x6);
+        static MemorySegment allocate(GetPipeProperties fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetPipeProperties.class, fi, IOUSBInterfaceStruct190.GetPipeProperties$FUNC, scope);
         }
-        static GetPipeProperties ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, java.lang.foreign.MemoryAddress __x3, java.lang.foreign.MemoryAddress __x4, java.lang.foreign.MemoryAddress __x5, java.lang.foreign.MemoryAddress __x6) -> {
+        static GetPipeProperties ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3, java.lang.foreign.MemorySegment __x4, java.lang.foreign.MemorySegment __x5, java.lang.foreign.MemorySegment __x6) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetPipeProperties$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, (java.lang.foreign.Addressable)__x3, (java.lang.foreign.Addressable)__x4, (java.lang.foreign.Addressable)__x5, (java.lang.foreign.Addressable)__x6);
+                    return (int)IOUSBInterfaceStruct190.GetPipeProperties$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1228,20 +1725,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetPipeProperties$VH() {
         return IOUSBInterfaceStruct190.GetPipeProperties$VH;
     }
-    public static MemoryAddress GetPipeProperties$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetPipeProperties$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetPipeProperties)(void*,UInt8,UInt8*,UInt8*,UInt8*,UInt16*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetPipeProperties$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetPipeProperties$VH.get(seg);
     }
-    public static void GetPipeProperties$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetPipeProperties)(void*,UInt8,UInt8*,UInt8*,UInt8*,UInt16*,UInt8*);
+     * }
+     */
+    public static void GetPipeProperties$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetPipeProperties$VH.set(seg, x);
     }
-    public static MemoryAddress GetPipeProperties$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetPipeProperties$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetPipeProperties$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetPipeProperties$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetPipeProperties$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetPipeProperties$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetPipeProperties$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetPipeProperties GetPipeProperties (MemorySegment segment, MemorySession session) {
-        return GetPipeProperties.ofAddress(GetPipeProperties$get(segment), session);
+    public static GetPipeProperties GetPipeProperties(MemorySegment segment, SegmentScope scope) {
+        return GetPipeProperties.ofAddress(GetPipeProperties$get(segment), scope);
     }
     static final FunctionDescriptor GetPipeStatus$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1250,17 +1759,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetPipeStatus$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetPipeStatus$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetPipeStatus)(void*,UInt8);
+     * }
+     */
     public interface GetPipeStatus {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(GetPipeStatus fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetPipeStatus.class, fi, IOUSBInterfaceStruct190.GetPipeStatus$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(GetPipeStatus fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetPipeStatus.class, fi, IOUSBInterfaceStruct190.GetPipeStatus$FUNC, scope);
         }
-        static GetPipeStatus ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static GetPipeStatus ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetPipeStatus$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.GetPipeStatus$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1272,20 +1786,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetPipeStatus$VH() {
         return IOUSBInterfaceStruct190.GetPipeStatus$VH;
     }
-    public static MemoryAddress GetPipeStatus$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetPipeStatus$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetPipeStatus)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment GetPipeStatus$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetPipeStatus$VH.get(seg);
     }
-    public static void GetPipeStatus$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetPipeStatus)(void*,UInt8);
+     * }
+     */
+    public static void GetPipeStatus$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetPipeStatus$VH.set(seg, x);
     }
-    public static MemoryAddress GetPipeStatus$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetPipeStatus$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetPipeStatus$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetPipeStatus$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetPipeStatus$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetPipeStatus$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetPipeStatus$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetPipeStatus GetPipeStatus (MemorySegment segment, MemorySession session) {
-        return GetPipeStatus.ofAddress(GetPipeStatus$get(segment), session);
+    public static GetPipeStatus GetPipeStatus(MemorySegment segment, SegmentScope scope) {
+        return GetPipeStatus.ofAddress(GetPipeStatus$get(segment), scope);
     }
     static final FunctionDescriptor AbortPipe$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1294,17 +1820,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle AbortPipe$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.AbortPipe$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*AbortPipe)(void*,UInt8);
+     * }
+     */
     public interface AbortPipe {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(AbortPipe fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(AbortPipe.class, fi, IOUSBInterfaceStruct190.AbortPipe$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(AbortPipe fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(AbortPipe.class, fi, IOUSBInterfaceStruct190.AbortPipe$FUNC, scope);
         }
-        static AbortPipe ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static AbortPipe ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.AbortPipe$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.AbortPipe$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1316,20 +1847,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle AbortPipe$VH() {
         return IOUSBInterfaceStruct190.AbortPipe$VH;
     }
-    public static MemoryAddress AbortPipe$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.AbortPipe$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*AbortPipe)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment AbortPipe$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.AbortPipe$VH.get(seg);
     }
-    public static void AbortPipe$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*AbortPipe)(void*,UInt8);
+     * }
+     */
+    public static void AbortPipe$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.AbortPipe$VH.set(seg, x);
     }
-    public static MemoryAddress AbortPipe$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.AbortPipe$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment AbortPipe$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.AbortPipe$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void AbortPipe$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void AbortPipe$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.AbortPipe$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static AbortPipe AbortPipe (MemorySegment segment, MemorySession session) {
-        return AbortPipe.ofAddress(AbortPipe$get(segment), session);
+    public static AbortPipe AbortPipe(MemorySegment segment, SegmentScope scope) {
+        return AbortPipe.ofAddress(AbortPipe$get(segment), scope);
     }
     static final FunctionDescriptor ResetPipe$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1338,17 +1881,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ResetPipe$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ResetPipe$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ResetPipe)(void*,UInt8);
+     * }
+     */
     public interface ResetPipe {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(ResetPipe fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ResetPipe.class, fi, IOUSBInterfaceStruct190.ResetPipe$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(ResetPipe fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ResetPipe.class, fi, IOUSBInterfaceStruct190.ResetPipe$FUNC, scope);
         }
-        static ResetPipe ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static ResetPipe ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ResetPipe$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.ResetPipe$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1360,20 +1908,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ResetPipe$VH() {
         return IOUSBInterfaceStruct190.ResetPipe$VH;
     }
-    public static MemoryAddress ResetPipe$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ResetPipe$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ResetPipe)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment ResetPipe$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ResetPipe$VH.get(seg);
     }
-    public static void ResetPipe$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ResetPipe)(void*,UInt8);
+     * }
+     */
+    public static void ResetPipe$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ResetPipe$VH.set(seg, x);
     }
-    public static MemoryAddress ResetPipe$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ResetPipe$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ResetPipe$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ResetPipe$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ResetPipe$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ResetPipe$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ResetPipe$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ResetPipe ResetPipe (MemorySegment segment, MemorySession session) {
-        return ResetPipe.ofAddress(ResetPipe$get(segment), session);
+    public static ResetPipe ResetPipe(MemorySegment segment, SegmentScope scope) {
+        return ResetPipe.ofAddress(ResetPipe$get(segment), scope);
     }
     static final FunctionDescriptor ClearPipeStall$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1382,17 +1942,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ClearPipeStall$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ClearPipeStall$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ClearPipeStall)(void*,UInt8);
+     * }
+     */
     public interface ClearPipeStall {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(ClearPipeStall fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ClearPipeStall.class, fi, IOUSBInterfaceStruct190.ClearPipeStall$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(ClearPipeStall fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ClearPipeStall.class, fi, IOUSBInterfaceStruct190.ClearPipeStall$FUNC, scope);
         }
-        static ClearPipeStall ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static ClearPipeStall ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ClearPipeStall$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.ClearPipeStall$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1404,20 +1969,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ClearPipeStall$VH() {
         return IOUSBInterfaceStruct190.ClearPipeStall$VH;
     }
-    public static MemoryAddress ClearPipeStall$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ClearPipeStall$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ClearPipeStall)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment ClearPipeStall$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ClearPipeStall$VH.get(seg);
     }
-    public static void ClearPipeStall$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ClearPipeStall)(void*,UInt8);
+     * }
+     */
+    public static void ClearPipeStall$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ClearPipeStall$VH.set(seg, x);
     }
-    public static MemoryAddress ClearPipeStall$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ClearPipeStall$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ClearPipeStall$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ClearPipeStall$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ClearPipeStall$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ClearPipeStall$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ClearPipeStall$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ClearPipeStall ClearPipeStall (MemorySegment segment, MemorySession session) {
-        return ClearPipeStall.ofAddress(ClearPipeStall$get(segment), session);
+    public static ClearPipeStall ClearPipeStall(MemorySegment segment, SegmentScope scope) {
+        return ClearPipeStall.ofAddress(ClearPipeStall$get(segment), scope);
     }
     static final FunctionDescriptor ReadPipe$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1428,17 +2005,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ReadPipe$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ReadPipe$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ReadPipe)(void*,UInt8,void*,UInt32*);
+     * }
+     */
     public interface ReadPipe {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, java.lang.foreign.MemoryAddress _x3);
-        static MemorySegment allocate(ReadPipe fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ReadPipe.class, fi, IOUSBInterfaceStruct190.ReadPipe$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3);
+        static MemorySegment allocate(ReadPipe fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ReadPipe.class, fi, IOUSBInterfaceStruct190.ReadPipe$FUNC, scope);
         }
-        static ReadPipe ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, java.lang.foreign.MemoryAddress __x3) -> {
+        static ReadPipe ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ReadPipe$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, (java.lang.foreign.Addressable)__x3);
+                    return (int)IOUSBInterfaceStruct190.ReadPipe$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1450,20 +2032,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ReadPipe$VH() {
         return IOUSBInterfaceStruct190.ReadPipe$VH;
     }
-    public static MemoryAddress ReadPipe$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipe$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipe)(void*,UInt8,void*,UInt32*);
+     * }
+     */
+    public static MemorySegment ReadPipe$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipe$VH.get(seg);
     }
-    public static void ReadPipe$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipe)(void*,UInt8,void*,UInt32*);
+     * }
+     */
+    public static void ReadPipe$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipe$VH.set(seg, x);
     }
-    public static MemoryAddress ReadPipe$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipe$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ReadPipe$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipe$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ReadPipe$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ReadPipe$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipe$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ReadPipe ReadPipe (MemorySegment segment, MemorySession session) {
-        return ReadPipe.ofAddress(ReadPipe$get(segment), session);
+    public static ReadPipe ReadPipe(MemorySegment segment, SegmentScope scope) {
+        return ReadPipe.ofAddress(ReadPipe$get(segment), scope);
     }
     static final FunctionDescriptor WritePipe$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1474,17 +2068,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle WritePipe$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.WritePipe$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*WritePipe)(void*,UInt8,void*,UInt32);
+     * }
+     */
     public interface WritePipe {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3);
-        static MemorySegment allocate(WritePipe fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(WritePipe.class, fi, IOUSBInterfaceStruct190.WritePipe$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3);
+        static MemorySegment allocate(WritePipe fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(WritePipe.class, fi, IOUSBInterfaceStruct190.WritePipe$FUNC, scope);
         }
-        static WritePipe ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3) -> {
+        static WritePipe ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.WritePipe$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3);
+                    return (int)IOUSBInterfaceStruct190.WritePipe$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1496,20 +2095,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle WritePipe$VH() {
         return IOUSBInterfaceStruct190.WritePipe$VH;
     }
-    public static MemoryAddress WritePipe$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipe$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*WritePipe)(void*,UInt8,void*,UInt32);
+     * }
+     */
+    public static MemorySegment WritePipe$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipe$VH.get(seg);
     }
-    public static void WritePipe$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*WritePipe)(void*,UInt8,void*,UInt32);
+     * }
+     */
+    public static void WritePipe$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipe$VH.set(seg, x);
     }
-    public static MemoryAddress WritePipe$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipe$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment WritePipe$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipe$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void WritePipe$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void WritePipe$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipe$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static WritePipe WritePipe (MemorySegment segment, MemorySession session) {
-        return WritePipe.ofAddress(WritePipe$get(segment), session);
+    public static WritePipe WritePipe(MemorySegment segment, SegmentScope scope) {
+        return WritePipe.ofAddress(WritePipe$get(segment), scope);
     }
     static final FunctionDescriptor ReadPipeAsync$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1522,17 +2133,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ReadPipeAsync$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ReadPipeAsync$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ReadPipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
     public interface ReadPipeAsync {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3, java.lang.foreign.MemoryAddress _x4, java.lang.foreign.MemoryAddress _x5);
-        static MemorySegment allocate(ReadPipeAsync fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ReadPipeAsync.class, fi, IOUSBInterfaceStruct190.ReadPipeAsync$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3, java.lang.foreign.MemorySegment _x4, java.lang.foreign.MemorySegment _x5);
+        static MemorySegment allocate(ReadPipeAsync fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ReadPipeAsync.class, fi, IOUSBInterfaceStruct190.ReadPipeAsync$FUNC, scope);
         }
-        static ReadPipeAsync ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3, java.lang.foreign.MemoryAddress __x4, java.lang.foreign.MemoryAddress __x5) -> {
+        static ReadPipeAsync ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3, java.lang.foreign.MemorySegment __x4, java.lang.foreign.MemorySegment __x5) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ReadPipeAsync$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, (java.lang.foreign.Addressable)__x4, (java.lang.foreign.Addressable)__x5);
+                    return (int)IOUSBInterfaceStruct190.ReadPipeAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1544,20 +2160,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ReadPipeAsync$VH() {
         return IOUSBInterfaceStruct190.ReadPipeAsync$VH;
     }
-    public static MemoryAddress ReadPipeAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeAsync$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment ReadPipeAsync$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeAsync$VH.get(seg);
     }
-    public static void ReadPipeAsync$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void ReadPipeAsync$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeAsync$VH.set(seg, x);
     }
-    public static MemoryAddress ReadPipeAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeAsync$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ReadPipeAsync$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeAsync$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ReadPipeAsync$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ReadPipeAsync$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ReadPipeAsync ReadPipeAsync (MemorySegment segment, MemorySession session) {
-        return ReadPipeAsync.ofAddress(ReadPipeAsync$get(segment), session);
+    public static ReadPipeAsync ReadPipeAsync(MemorySegment segment, SegmentScope scope) {
+        return ReadPipeAsync.ofAddress(ReadPipeAsync$get(segment), scope);
     }
     static final FunctionDescriptor WritePipeAsync$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1570,17 +2198,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle WritePipeAsync$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.WritePipeAsync$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*WritePipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
     public interface WritePipeAsync {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3, java.lang.foreign.MemoryAddress _x4, java.lang.foreign.MemoryAddress _x5);
-        static MemorySegment allocate(WritePipeAsync fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(WritePipeAsync.class, fi, IOUSBInterfaceStruct190.WritePipeAsync$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3, java.lang.foreign.MemorySegment _x4, java.lang.foreign.MemorySegment _x5);
+        static MemorySegment allocate(WritePipeAsync fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(WritePipeAsync.class, fi, IOUSBInterfaceStruct190.WritePipeAsync$FUNC, scope);
         }
-        static WritePipeAsync ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3, java.lang.foreign.MemoryAddress __x4, java.lang.foreign.MemoryAddress __x5) -> {
+        static WritePipeAsync ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3, java.lang.foreign.MemorySegment __x4, java.lang.foreign.MemorySegment __x5) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.WritePipeAsync$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, (java.lang.foreign.Addressable)__x4, (java.lang.foreign.Addressable)__x5);
+                    return (int)IOUSBInterfaceStruct190.WritePipeAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1592,20 +2225,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle WritePipeAsync$VH() {
         return IOUSBInterfaceStruct190.WritePipeAsync$VH;
     }
-    public static MemoryAddress WritePipeAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeAsync$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment WritePipeAsync$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeAsync$VH.get(seg);
     }
-    public static void WritePipeAsync$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeAsync)(void*,UInt8,void*,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void WritePipeAsync$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeAsync$VH.set(seg, x);
     }
-    public static MemoryAddress WritePipeAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeAsync$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment WritePipeAsync$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeAsync$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void WritePipeAsync$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void WritePipeAsync$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static WritePipeAsync WritePipeAsync (MemorySegment segment, MemorySession session) {
-        return WritePipeAsync.ofAddress(WritePipeAsync$get(segment), session);
+    public static WritePipeAsync WritePipeAsync(MemorySegment segment, SegmentScope scope) {
+        return WritePipeAsync.ofAddress(WritePipeAsync$get(segment), scope);
     }
     static final FunctionDescriptor ReadIsochPipeAsync$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1620,17 +2265,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ReadIsochPipeAsync$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ReadIsochPipeAsync$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ReadIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
     public interface ReadIsochPipeAsync {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, long _x3, int _x4, java.lang.foreign.MemoryAddress _x5, java.lang.foreign.MemoryAddress _x6, java.lang.foreign.MemoryAddress _x7);
-        static MemorySegment allocate(ReadIsochPipeAsync fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ReadIsochPipeAsync.class, fi, IOUSBInterfaceStruct190.ReadIsochPipeAsync$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, long _x3, int _x4, java.lang.foreign.MemorySegment _x5, java.lang.foreign.MemorySegment _x6, java.lang.foreign.MemorySegment _x7);
+        static MemorySegment allocate(ReadIsochPipeAsync fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ReadIsochPipeAsync.class, fi, IOUSBInterfaceStruct190.ReadIsochPipeAsync$FUNC, scope);
         }
-        static ReadIsochPipeAsync ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, long __x3, int __x4, java.lang.foreign.MemoryAddress __x5, java.lang.foreign.MemoryAddress __x6, java.lang.foreign.MemoryAddress __x7) -> {
+        static ReadIsochPipeAsync ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, long __x3, int __x4, java.lang.foreign.MemorySegment __x5, java.lang.foreign.MemorySegment __x6, java.lang.foreign.MemorySegment __x7) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ReadIsochPipeAsync$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, __x4, (java.lang.foreign.Addressable)__x5, (java.lang.foreign.Addressable)__x6, (java.lang.foreign.Addressable)__x7);
+                    return (int)IOUSBInterfaceStruct190.ReadIsochPipeAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6, __x7);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1642,20 +2292,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ReadIsochPipeAsync$VH() {
         return IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH;
     }
-    public static MemoryAddress ReadIsochPipeAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ReadIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment ReadIsochPipeAsync$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.get(seg);
     }
-    public static void ReadIsochPipeAsync$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ReadIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void ReadIsochPipeAsync$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.set(seg, x);
     }
-    public static MemoryAddress ReadIsochPipeAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ReadIsochPipeAsync$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ReadIsochPipeAsync$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ReadIsochPipeAsync$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadIsochPipeAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ReadIsochPipeAsync ReadIsochPipeAsync (MemorySegment segment, MemorySession session) {
-        return ReadIsochPipeAsync.ofAddress(ReadIsochPipeAsync$get(segment), session);
+    public static ReadIsochPipeAsync ReadIsochPipeAsync(MemorySegment segment, SegmentScope scope) {
+        return ReadIsochPipeAsync.ofAddress(ReadIsochPipeAsync$get(segment), scope);
     }
     static final FunctionDescriptor WriteIsochPipeAsync$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1670,17 +2332,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle WriteIsochPipeAsync$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.WriteIsochPipeAsync$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*WriteIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
     public interface WriteIsochPipeAsync {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, long _x3, int _x4, java.lang.foreign.MemoryAddress _x5, java.lang.foreign.MemoryAddress _x6, java.lang.foreign.MemoryAddress _x7);
-        static MemorySegment allocate(WriteIsochPipeAsync fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(WriteIsochPipeAsync.class, fi, IOUSBInterfaceStruct190.WriteIsochPipeAsync$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, long _x3, int _x4, java.lang.foreign.MemorySegment _x5, java.lang.foreign.MemorySegment _x6, java.lang.foreign.MemorySegment _x7);
+        static MemorySegment allocate(WriteIsochPipeAsync fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(WriteIsochPipeAsync.class, fi, IOUSBInterfaceStruct190.WriteIsochPipeAsync$FUNC, scope);
         }
-        static WriteIsochPipeAsync ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, long __x3, int __x4, java.lang.foreign.MemoryAddress __x5, java.lang.foreign.MemoryAddress __x6, java.lang.foreign.MemoryAddress __x7) -> {
+        static WriteIsochPipeAsync ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, long __x3, int __x4, java.lang.foreign.MemorySegment __x5, java.lang.foreign.MemorySegment __x6, java.lang.foreign.MemorySegment __x7) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.WriteIsochPipeAsync$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, __x4, (java.lang.foreign.Addressable)__x5, (java.lang.foreign.Addressable)__x6, (java.lang.foreign.Addressable)__x7);
+                    return (int)IOUSBInterfaceStruct190.WriteIsochPipeAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6, __x7);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1692,20 +2359,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle WriteIsochPipeAsync$VH() {
         return IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH;
     }
-    public static MemoryAddress WriteIsochPipeAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*WriteIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment WriteIsochPipeAsync$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.get(seg);
     }
-    public static void WriteIsochPipeAsync$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*WriteIsochPipeAsync)(void*,UInt8,void*,UInt64,UInt32,IOUSBIsocFrame*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void WriteIsochPipeAsync$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.set(seg, x);
     }
-    public static MemoryAddress WriteIsochPipeAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment WriteIsochPipeAsync$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void WriteIsochPipeAsync$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void WriteIsochPipeAsync$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.WriteIsochPipeAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static WriteIsochPipeAsync WriteIsochPipeAsync (MemorySegment segment, MemorySession session) {
-        return WriteIsochPipeAsync.ofAddress(WriteIsochPipeAsync$get(segment), session);
+    public static WriteIsochPipeAsync WriteIsochPipeAsync(MemorySegment segment, SegmentScope scope) {
+        return WriteIsochPipeAsync.ofAddress(WriteIsochPipeAsync$get(segment), scope);
     }
     static final FunctionDescriptor ControlRequestTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1715,17 +2394,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ControlRequestTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ControlRequestTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ControlRequestTO)(void*,UInt8,IOUSBDevRequestTO*);
+     * }
+     */
     public interface ControlRequestTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2);
-        static MemorySegment allocate(ControlRequestTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ControlRequestTO.class, fi, IOUSBInterfaceStruct190.ControlRequestTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2);
+        static MemorySegment allocate(ControlRequestTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ControlRequestTO.class, fi, IOUSBInterfaceStruct190.ControlRequestTO$FUNC, scope);
         }
-        static ControlRequestTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2) -> {
+        static ControlRequestTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ControlRequestTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2);
+                    return (int)IOUSBInterfaceStruct190.ControlRequestTO$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1737,20 +2421,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ControlRequestTO$VH() {
         return IOUSBInterfaceStruct190.ControlRequestTO$VH;
     }
-    public static MemoryAddress ControlRequestTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestTO)(void*,UInt8,IOUSBDevRequestTO*);
+     * }
+     */
+    public static MemorySegment ControlRequestTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestTO$VH.get(seg);
     }
-    public static void ControlRequestTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestTO)(void*,UInt8,IOUSBDevRequestTO*);
+     * }
+     */
+    public static void ControlRequestTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestTO$VH.set(seg, x);
     }
-    public static MemoryAddress ControlRequestTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ControlRequestTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ControlRequestTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ControlRequestTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ControlRequestTO ControlRequestTO (MemorySegment segment, MemorySession session) {
-        return ControlRequestTO.ofAddress(ControlRequestTO$get(segment), session);
+    public static ControlRequestTO ControlRequestTO(MemorySegment segment, SegmentScope scope) {
+        return ControlRequestTO.ofAddress(ControlRequestTO$get(segment), scope);
     }
     static final FunctionDescriptor ControlRequestAsyncTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1762,17 +2458,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ControlRequestAsyncTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ControlRequestAsyncTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ControlRequestAsyncTO)(void*,UInt8,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
     public interface ControlRequestAsyncTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, java.lang.foreign.MemoryAddress _x3, java.lang.foreign.MemoryAddress _x4);
-        static MemorySegment allocate(ControlRequestAsyncTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ControlRequestAsyncTO.class, fi, IOUSBInterfaceStruct190.ControlRequestAsyncTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3, java.lang.foreign.MemorySegment _x4);
+        static MemorySegment allocate(ControlRequestAsyncTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ControlRequestAsyncTO.class, fi, IOUSBInterfaceStruct190.ControlRequestAsyncTO$FUNC, scope);
         }
-        static ControlRequestAsyncTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, java.lang.foreign.MemoryAddress __x3, java.lang.foreign.MemoryAddress __x4) -> {
+        static ControlRequestAsyncTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3, java.lang.foreign.MemorySegment __x4) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ControlRequestAsyncTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, (java.lang.foreign.Addressable)__x3, (java.lang.foreign.Addressable)__x4);
+                    return (int)IOUSBInterfaceStruct190.ControlRequestAsyncTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1784,20 +2485,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ControlRequestAsyncTO$VH() {
         return IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH;
     }
-    public static MemoryAddress ControlRequestAsyncTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestAsyncTO)(void*,UInt8,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment ControlRequestAsyncTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.get(seg);
     }
-    public static void ControlRequestAsyncTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ControlRequestAsyncTO)(void*,UInt8,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void ControlRequestAsyncTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.set(seg, x);
     }
-    public static MemoryAddress ControlRequestAsyncTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ControlRequestAsyncTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ControlRequestAsyncTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ControlRequestAsyncTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ControlRequestAsyncTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ControlRequestAsyncTO ControlRequestAsyncTO (MemorySegment segment, MemorySession session) {
-        return ControlRequestAsyncTO.ofAddress(ControlRequestAsyncTO$get(segment), session);
+    public static ControlRequestAsyncTO ControlRequestAsyncTO(MemorySegment segment, SegmentScope scope) {
+        return ControlRequestAsyncTO.ofAddress(ControlRequestAsyncTO$get(segment), scope);
     }
     static final FunctionDescriptor ReadPipeTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1810,17 +2523,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ReadPipeTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ReadPipeTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ReadPipeTO)(void*,UInt8,void*,UInt32*,UInt32,UInt32);
+     * }
+     */
     public interface ReadPipeTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, java.lang.foreign.MemoryAddress _x3, int _x4, int _x5);
-        static MemorySegment allocate(ReadPipeTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ReadPipeTO.class, fi, IOUSBInterfaceStruct190.ReadPipeTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3, int _x4, int _x5);
+        static MemorySegment allocate(ReadPipeTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ReadPipeTO.class, fi, IOUSBInterfaceStruct190.ReadPipeTO$FUNC, scope);
         }
-        static ReadPipeTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, java.lang.foreign.MemoryAddress __x3, int __x4, int __x5) -> {
+        static ReadPipeTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3, int __x4, int __x5) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ReadPipeTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, (java.lang.foreign.Addressable)__x3, __x4, __x5);
+                    return (int)IOUSBInterfaceStruct190.ReadPipeTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1832,20 +2550,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ReadPipeTO$VH() {
         return IOUSBInterfaceStruct190.ReadPipeTO$VH;
     }
-    public static MemoryAddress ReadPipeTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeTO)(void*,UInt8,void*,UInt32*,UInt32,UInt32);
+     * }
+     */
+    public static MemorySegment ReadPipeTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeTO$VH.get(seg);
     }
-    public static void ReadPipeTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeTO)(void*,UInt8,void*,UInt32*,UInt32,UInt32);
+     * }
+     */
+    public static void ReadPipeTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeTO$VH.set(seg, x);
     }
-    public static MemoryAddress ReadPipeTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ReadPipeTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ReadPipeTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ReadPipeTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ReadPipeTO ReadPipeTO (MemorySegment segment, MemorySession session) {
-        return ReadPipeTO.ofAddress(ReadPipeTO$get(segment), session);
+    public static ReadPipeTO ReadPipeTO(MemorySegment segment, SegmentScope scope) {
+        return ReadPipeTO.ofAddress(ReadPipeTO$get(segment), scope);
     }
     static final FunctionDescriptor WritePipeTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1858,17 +2588,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle WritePipeTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.WritePipeTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*WritePipeTO)(void*,UInt8,void*,UInt32,UInt32,UInt32);
+     * }
+     */
     public interface WritePipeTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3, int _x4, int _x5);
-        static MemorySegment allocate(WritePipeTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(WritePipeTO.class, fi, IOUSBInterfaceStruct190.WritePipeTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3, int _x4, int _x5);
+        static MemorySegment allocate(WritePipeTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(WritePipeTO.class, fi, IOUSBInterfaceStruct190.WritePipeTO$FUNC, scope);
         }
-        static WritePipeTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3, int __x4, int __x5) -> {
+        static WritePipeTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3, int __x4, int __x5) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.WritePipeTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, __x4, __x5);
+                    return (int)IOUSBInterfaceStruct190.WritePipeTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1880,20 +2615,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle WritePipeTO$VH() {
         return IOUSBInterfaceStruct190.WritePipeTO$VH;
     }
-    public static MemoryAddress WritePipeTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeTO)(void*,UInt8,void*,UInt32,UInt32,UInt32);
+     * }
+     */
+    public static MemorySegment WritePipeTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeTO$VH.get(seg);
     }
-    public static void WritePipeTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeTO)(void*,UInt8,void*,UInt32,UInt32,UInt32);
+     * }
+     */
+    public static void WritePipeTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeTO$VH.set(seg, x);
     }
-    public static MemoryAddress WritePipeTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment WritePipeTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void WritePipeTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void WritePipeTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static WritePipeTO WritePipeTO (MemorySegment segment, MemorySession session) {
-        return WritePipeTO.ofAddress(WritePipeTO$get(segment), session);
+    public static WritePipeTO WritePipeTO(MemorySegment segment, SegmentScope scope) {
+        return WritePipeTO.ofAddress(WritePipeTO$get(segment), scope);
     }
     static final FunctionDescriptor ReadPipeAsyncTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1908,17 +2655,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ReadPipeAsyncTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ReadPipeAsyncTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ReadPipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
     public interface ReadPipeAsyncTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3, int _x4, int _x5, java.lang.foreign.MemoryAddress _x6, java.lang.foreign.MemoryAddress _x7);
-        static MemorySegment allocate(ReadPipeAsyncTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ReadPipeAsyncTO.class, fi, IOUSBInterfaceStruct190.ReadPipeAsyncTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3, int _x4, int _x5, java.lang.foreign.MemorySegment _x6, java.lang.foreign.MemorySegment _x7);
+        static MemorySegment allocate(ReadPipeAsyncTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ReadPipeAsyncTO.class, fi, IOUSBInterfaceStruct190.ReadPipeAsyncTO$FUNC, scope);
         }
-        static ReadPipeAsyncTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3, int __x4, int __x5, java.lang.foreign.MemoryAddress __x6, java.lang.foreign.MemoryAddress __x7) -> {
+        static ReadPipeAsyncTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3, int __x4, int __x5, java.lang.foreign.MemorySegment __x6, java.lang.foreign.MemorySegment __x7) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ReadPipeAsyncTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, __x4, __x5, (java.lang.foreign.Addressable)__x6, (java.lang.foreign.Addressable)__x7);
+                    return (int)IOUSBInterfaceStruct190.ReadPipeAsyncTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6, __x7);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1930,20 +2682,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ReadPipeAsyncTO$VH() {
         return IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH;
     }
-    public static MemoryAddress ReadPipeAsyncTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment ReadPipeAsyncTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.get(seg);
     }
-    public static void ReadPipeAsyncTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ReadPipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void ReadPipeAsyncTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.set(seg, x);
     }
-    public static MemoryAddress ReadPipeAsyncTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ReadPipeAsyncTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ReadPipeAsyncTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ReadPipeAsyncTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ReadPipeAsyncTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ReadPipeAsyncTO ReadPipeAsyncTO (MemorySegment segment, MemorySession session) {
-        return ReadPipeAsyncTO.ofAddress(ReadPipeAsyncTO$get(segment), session);
+    public static ReadPipeAsyncTO ReadPipeAsyncTO(MemorySegment segment, SegmentScope scope) {
+        return ReadPipeAsyncTO.ofAddress(ReadPipeAsyncTO$get(segment), scope);
     }
     static final FunctionDescriptor WritePipeAsyncTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -1958,17 +2722,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle WritePipeAsyncTO$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.WritePipeAsyncTO$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*WritePipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
     public interface WritePipeAsyncTO {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, java.lang.foreign.MemoryAddress _x2, int _x3, int _x4, int _x5, java.lang.foreign.MemoryAddress _x6, java.lang.foreign.MemoryAddress _x7);
-        static MemorySegment allocate(WritePipeAsyncTO fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(WritePipeAsyncTO.class, fi, IOUSBInterfaceStruct190.WritePipeAsyncTO$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2, int _x3, int _x4, int _x5, java.lang.foreign.MemorySegment _x6, java.lang.foreign.MemorySegment _x7);
+        static MemorySegment allocate(WritePipeAsyncTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(WritePipeAsyncTO.class, fi, IOUSBInterfaceStruct190.WritePipeAsyncTO$FUNC, scope);
         }
-        static WritePipeAsyncTO ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, java.lang.foreign.MemoryAddress __x2, int __x3, int __x4, int __x5, java.lang.foreign.MemoryAddress __x6, java.lang.foreign.MemoryAddress __x7) -> {
+        static WritePipeAsyncTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2, int __x3, int __x4, int __x5, java.lang.foreign.MemorySegment __x6, java.lang.foreign.MemorySegment __x7) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.WritePipeAsyncTO$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, (java.lang.foreign.Addressable)__x2, __x3, __x4, __x5, (java.lang.foreign.Addressable)__x6, (java.lang.foreign.Addressable)__x7);
+                    return (int)IOUSBInterfaceStruct190.WritePipeAsyncTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6, __x7);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1980,20 +2749,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle WritePipeAsyncTO$VH() {
         return IOUSBInterfaceStruct190.WritePipeAsyncTO$VH;
     }
-    public static MemoryAddress WritePipeAsyncTO$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment WritePipeAsyncTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.get(seg);
     }
-    public static void WritePipeAsyncTO$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*WritePipeAsyncTO)(void*,UInt8,void*,UInt32,UInt32,UInt32,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void WritePipeAsyncTO$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.set(seg, x);
     }
-    public static MemoryAddress WritePipeAsyncTO$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment WritePipeAsyncTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void WritePipeAsyncTO$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void WritePipeAsyncTO$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.WritePipeAsyncTO$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static WritePipeAsyncTO WritePipeAsyncTO (MemorySegment segment, MemorySession session) {
-        return WritePipeAsyncTO.ofAddress(WritePipeAsyncTO$get(segment), session);
+    public static WritePipeAsyncTO WritePipeAsyncTO(MemorySegment segment, SegmentScope scope) {
+        return WritePipeAsyncTO.ofAddress(WritePipeAsyncTO$get(segment), scope);
     }
     static final FunctionDescriptor USBInterfaceGetStringIndex$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -2002,17 +2783,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle USBInterfaceGetStringIndex$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*USBInterfaceGetStringIndex)(void*,UInt8*);
+     * }
+     */
     public interface USBInterfaceGetStringIndex {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(USBInterfaceGetStringIndex fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(USBInterfaceGetStringIndex.class, fi, IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(USBInterfaceGetStringIndex fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBInterfaceGetStringIndex.class, fi, IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$FUNC, scope);
         }
-        static USBInterfaceGetStringIndex ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static USBInterfaceGetStringIndex ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2024,20 +2810,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle USBInterfaceGetStringIndex$VH() {
         return IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH;
     }
-    public static MemoryAddress USBInterfaceGetStringIndex$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceGetStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment USBInterfaceGetStringIndex$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.get(seg);
     }
-    public static void USBInterfaceGetStringIndex$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceGetStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static void USBInterfaceGetStringIndex$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.set(seg, x);
     }
-    public static MemoryAddress USBInterfaceGetStringIndex$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment USBInterfaceGetStringIndex$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void USBInterfaceGetStringIndex$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void USBInterfaceGetStringIndex$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceGetStringIndex$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static USBInterfaceGetStringIndex USBInterfaceGetStringIndex (MemorySegment segment, MemorySession session) {
-        return USBInterfaceGetStringIndex.ofAddress(USBInterfaceGetStringIndex$get(segment), session);
+    public static USBInterfaceGetStringIndex USBInterfaceGetStringIndex(MemorySegment segment, SegmentScope scope) {
+        return USBInterfaceGetStringIndex.ofAddress(USBInterfaceGetStringIndex$get(segment), scope);
     }
     static final FunctionDescriptor USBInterfaceOpenSeize$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -2045,17 +2843,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle USBInterfaceOpenSeize$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.USBInterfaceOpenSeize$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*USBInterfaceOpenSeize)(void*);
+     * }
+     */
     public interface USBInterfaceOpenSeize {
 
-        int apply(java.lang.foreign.MemoryAddress _x0);
-        static MemorySegment allocate(USBInterfaceOpenSeize fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(USBInterfaceOpenSeize.class, fi, IOUSBInterfaceStruct190.USBInterfaceOpenSeize$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(USBInterfaceOpenSeize fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBInterfaceOpenSeize.class, fi, IOUSBInterfaceStruct190.USBInterfaceOpenSeize$FUNC, scope);
         }
-        static USBInterfaceOpenSeize ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0) -> {
+        static USBInterfaceOpenSeize ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0);
+                    return (int)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2067,20 +2870,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle USBInterfaceOpenSeize$VH() {
         return IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH;
     }
-    public static MemoryAddress USBInterfaceOpenSeize$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceOpenSeize)(void*);
+     * }
+     */
+    public static MemorySegment USBInterfaceOpenSeize$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.get(seg);
     }
-    public static void USBInterfaceOpenSeize$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBInterfaceOpenSeize)(void*);
+     * }
+     */
+    public static void USBInterfaceOpenSeize$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.set(seg, x);
     }
-    public static MemoryAddress USBInterfaceOpenSeize$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment USBInterfaceOpenSeize$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void USBInterfaceOpenSeize$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void USBInterfaceOpenSeize$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.USBInterfaceOpenSeize$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static USBInterfaceOpenSeize USBInterfaceOpenSeize (MemorySegment segment, MemorySession session) {
-        return USBInterfaceOpenSeize.ofAddress(USBInterfaceOpenSeize$get(segment), session);
+    public static USBInterfaceOpenSeize USBInterfaceOpenSeize(MemorySegment segment, SegmentScope scope) {
+        return USBInterfaceOpenSeize.ofAddress(USBInterfaceOpenSeize$get(segment), scope);
     }
     static final FunctionDescriptor ClearPipeStallBothEnds$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -2089,17 +2904,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle ClearPipeStallBothEnds$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.ClearPipeStallBothEnds$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*ClearPipeStallBothEnds)(void*,UInt8);
+     * }
+     */
     public interface ClearPipeStallBothEnds {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1);
-        static MemorySegment allocate(ClearPipeStallBothEnds fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(ClearPipeStallBothEnds.class, fi, IOUSBInterfaceStruct190.ClearPipeStallBothEnds$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(ClearPipeStallBothEnds fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(ClearPipeStallBothEnds.class, fi, IOUSBInterfaceStruct190.ClearPipeStallBothEnds$FUNC, scope);
         }
-        static ClearPipeStallBothEnds ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1) -> {
+        static ClearPipeStallBothEnds ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1);
+                    return (int)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2111,20 +2931,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle ClearPipeStallBothEnds$VH() {
         return IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH;
     }
-    public static MemoryAddress ClearPipeStallBothEnds$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*ClearPipeStallBothEnds)(void*,UInt8);
+     * }
+     */
+    public static MemorySegment ClearPipeStallBothEnds$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.get(seg);
     }
-    public static void ClearPipeStallBothEnds$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*ClearPipeStallBothEnds)(void*,UInt8);
+     * }
+     */
+    public static void ClearPipeStallBothEnds$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.set(seg, x);
     }
-    public static MemoryAddress ClearPipeStallBothEnds$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment ClearPipeStallBothEnds$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void ClearPipeStallBothEnds$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void ClearPipeStallBothEnds$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.ClearPipeStallBothEnds$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static ClearPipeStallBothEnds ClearPipeStallBothEnds (MemorySegment segment, MemorySession session) {
-        return ClearPipeStallBothEnds.ofAddress(ClearPipeStallBothEnds$get(segment), session);
+    public static ClearPipeStallBothEnds ClearPipeStallBothEnds(MemorySegment segment, SegmentScope scope) {
+        return ClearPipeStallBothEnds.ofAddress(ClearPipeStallBothEnds$get(segment), scope);
     }
     static final FunctionDescriptor SetPipePolicy$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -2135,17 +2967,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle SetPipePolicy$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.SetPipePolicy$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*SetPipePolicy)(void*,UInt8,UInt16,UInt8);
+     * }
+     */
     public interface SetPipePolicy {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, short _x2, byte _x3);
-        static MemorySegment allocate(SetPipePolicy fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(SetPipePolicy.class, fi, IOUSBInterfaceStruct190.SetPipePolicy$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, short _x2, byte _x3);
+        static MemorySegment allocate(SetPipePolicy fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(SetPipePolicy.class, fi, IOUSBInterfaceStruct190.SetPipePolicy$FUNC, scope);
         }
-        static SetPipePolicy ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, short __x2, byte __x3) -> {
+        static SetPipePolicy ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, short __x2, byte __x3) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.SetPipePolicy$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, __x2, __x3);
+                    return (int)IOUSBInterfaceStruct190.SetPipePolicy$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2157,20 +2994,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle SetPipePolicy$VH() {
         return IOUSBInterfaceStruct190.SetPipePolicy$VH;
     }
-    public static MemoryAddress SetPipePolicy$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.SetPipePolicy$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*SetPipePolicy)(void*,UInt8,UInt16,UInt8);
+     * }
+     */
+    public static MemorySegment SetPipePolicy$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.SetPipePolicy$VH.get(seg);
     }
-    public static void SetPipePolicy$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*SetPipePolicy)(void*,UInt8,UInt16,UInt8);
+     * }
+     */
+    public static void SetPipePolicy$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.SetPipePolicy$VH.set(seg, x);
     }
-    public static MemoryAddress SetPipePolicy$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.SetPipePolicy$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment SetPipePolicy$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.SetPipePolicy$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void SetPipePolicy$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void SetPipePolicy$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.SetPipePolicy$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static SetPipePolicy SetPipePolicy (MemorySegment segment, MemorySession session) {
-        return SetPipePolicy.ofAddress(SetPipePolicy$get(segment), session);
+    public static SetPipePolicy SetPipePolicy(MemorySegment segment, SegmentScope scope) {
+        return SetPipePolicy.ofAddress(SetPipePolicy$get(segment), scope);
     }
     static final FunctionDescriptor GetBandwidthAvailable$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -2179,17 +3028,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetBandwidthAvailable$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetBandwidthAvailable$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetBandwidthAvailable)(void*,UInt32*);
+     * }
+     */
     public interface GetBandwidthAvailable {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, java.lang.foreign.MemoryAddress _x1);
-        static MemorySegment allocate(GetBandwidthAvailable fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetBandwidthAvailable.class, fi, IOUSBInterfaceStruct190.GetBandwidthAvailable$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(GetBandwidthAvailable fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetBandwidthAvailable.class, fi, IOUSBInterfaceStruct190.GetBandwidthAvailable$FUNC, scope);
         }
-        static GetBandwidthAvailable ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, java.lang.foreign.MemoryAddress __x1) -> {
+        static GetBandwidthAvailable ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetBandwidthAvailable$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, (java.lang.foreign.Addressable)__x1);
+                    return (int)IOUSBInterfaceStruct190.GetBandwidthAvailable$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2201,20 +3055,32 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetBandwidthAvailable$VH() {
         return IOUSBInterfaceStruct190.GetBandwidthAvailable$VH;
     }
-    public static MemoryAddress GetBandwidthAvailable$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetBandwidthAvailable)(void*,UInt32*);
+     * }
+     */
+    public static MemorySegment GetBandwidthAvailable$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.get(seg);
     }
-    public static void GetBandwidthAvailable$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetBandwidthAvailable)(void*,UInt32*);
+     * }
+     */
+    public static void GetBandwidthAvailable$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.set(seg, x);
     }
-    public static MemoryAddress GetBandwidthAvailable$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetBandwidthAvailable$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetBandwidthAvailable$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetBandwidthAvailable$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetBandwidthAvailable$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetBandwidthAvailable GetBandwidthAvailable (MemorySegment segment, MemorySession session) {
-        return GetBandwidthAvailable.ofAddress(GetBandwidthAvailable$get(segment), session);
+    public static GetBandwidthAvailable GetBandwidthAvailable(MemorySegment segment, SegmentScope scope) {
+        return GetBandwidthAvailable.ofAddress(GetBandwidthAvailable$get(segment), scope);
     }
     static final FunctionDescriptor GetEndpointProperties$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -2228,17 +3094,22 @@ public class IOUSBInterfaceStruct190 {
     static final MethodHandle GetEndpointProperties$MH = RuntimeHelper.downcallHandle(
         IOUSBInterfaceStruct190.GetEndpointProperties$FUNC
     );
+    /**
+     * {@snippet :
+ * IOReturn (*GetEndpointProperties)(void*,UInt8,UInt8,UInt8,UInt8*,UInt16*,UInt8*);
+     * }
+     */
     public interface GetEndpointProperties {
 
-        int apply(java.lang.foreign.MemoryAddress _x0, byte _x1, byte _x2, byte _x3, java.lang.foreign.MemoryAddress _x4, java.lang.foreign.MemoryAddress _x5, java.lang.foreign.MemoryAddress _x6);
-        static MemorySegment allocate(GetEndpointProperties fi, MemorySession session) {
-            return RuntimeHelper.upcallStub(GetEndpointProperties.class, fi, IOUSBInterfaceStruct190.GetEndpointProperties$FUNC, session);
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1, byte _x2, byte _x3, java.lang.foreign.MemorySegment _x4, java.lang.foreign.MemorySegment _x5, java.lang.foreign.MemorySegment _x6);
+        static MemorySegment allocate(GetEndpointProperties fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(GetEndpointProperties.class, fi, IOUSBInterfaceStruct190.GetEndpointProperties$FUNC, scope);
         }
-        static GetEndpointProperties ofAddress(MemoryAddress addr, MemorySession session) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr, 0, session);
-            return (java.lang.foreign.MemoryAddress __x0, byte __x1, byte __x2, byte __x3, java.lang.foreign.MemoryAddress __x4, java.lang.foreign.MemoryAddress __x5, java.lang.foreign.MemoryAddress __x6) -> {
+        static GetEndpointProperties ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1, byte __x2, byte __x3, java.lang.foreign.MemorySegment __x4, java.lang.foreign.MemorySegment __x5, java.lang.foreign.MemorySegment __x6) -> {
                 try {
-                    return (int)IOUSBInterfaceStruct190.GetEndpointProperties$MH.invokeExact((Addressable)symbol, (java.lang.foreign.Addressable)__x0, __x1, __x2, __x3, (java.lang.foreign.Addressable)__x4, (java.lang.foreign.Addressable)__x5, (java.lang.foreign.Addressable)__x6);
+                    return (int)IOUSBInterfaceStruct190.GetEndpointProperties$MH.invokeExact(symbol, __x0, __x1, __x2, __x3, __x4, __x5, __x6);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -2250,27 +3121,39 @@ public class IOUSBInterfaceStruct190 {
     public static VarHandle GetEndpointProperties$VH() {
         return IOUSBInterfaceStruct190.GetEndpointProperties$VH;
     }
-    public static MemoryAddress GetEndpointProperties$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetEndpointProperties$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*GetEndpointProperties)(void*,UInt8,UInt8,UInt8,UInt8*,UInt16*,UInt8*);
+     * }
+     */
+    public static MemorySegment GetEndpointProperties$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetEndpointProperties$VH.get(seg);
     }
-    public static void GetEndpointProperties$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*GetEndpointProperties)(void*,UInt8,UInt8,UInt8,UInt8*,UInt16*,UInt8*);
+     * }
+     */
+    public static void GetEndpointProperties$set(MemorySegment seg, MemorySegment x) {
         IOUSBInterfaceStruct190.GetEndpointProperties$VH.set(seg, x);
     }
-    public static MemoryAddress GetEndpointProperties$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBInterfaceStruct190.GetEndpointProperties$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment GetEndpointProperties$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBInterfaceStruct190.GetEndpointProperties$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void GetEndpointProperties$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void GetEndpointProperties$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBInterfaceStruct190.GetEndpointProperties$VH.set(seg.asSlice(index*sizeof()), x);
     }
-    public static GetEndpointProperties GetEndpointProperties (MemorySegment segment, MemorySession session) {
-        return GetEndpointProperties.ofAddress(GetEndpointProperties$get(segment), session);
+    public static GetEndpointProperties GetEndpointProperties(MemorySegment segment, SegmentScope scope) {
+        return GetEndpointProperties.ofAddress(GetEndpointProperties$get(segment), scope);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

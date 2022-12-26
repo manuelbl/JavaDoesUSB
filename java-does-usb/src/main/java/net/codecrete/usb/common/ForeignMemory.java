@@ -7,36 +7,15 @@
 
 package net.codecrete.usb.common;
 
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
-import java.util.function.Consumer;
+import java.lang.foreign.ValueLayout;
 
-/**
- * Helper functions for the foreign memory API.
- */
 public class ForeignMemory {
-
     /**
-     * Adds a custom cleanup action which will be execution when the session of the
-     * specified memory segment ends.
+     * A value layout constant whose size is the same as that of a machine address.
      * <p>
-     * Note that the {@code segment}'s session will already be closed. The {@code segment}
-     * can no longer be used for function call. For that reason, the cleanup
-     * action is passed a copy of the segment (separate Java instance pointing to the
-     * same native memory).
+     * {@code MemorySegment} instances created by dereferencing an address of this type
+     * will have length {@code Long.MAX_VALUE}/
      * </p>
-     * @param segment the segment to be accessed during the cleanup
-     * @param action the cleanup action
      */
-    public static void addCloseAction(MemorySegment segment, Consumer<MemorySegment> action) {
-        var size = segment.byteSize();
-        var address = segment.address();
-        Runnable closeAction = () -> {
-            try (MemorySession closingSession = MemorySession.openConfined()) {
-                var dup = MemorySegment.ofAddress(address, size, closingSession);
-                action.accept(dup);
-            }
-        };
-        segment.session().addCloseAction(closeAction);
-    }
+    public static ValueLayout.OfAddress UNBOUNDED_ADDRESS = ValueLayout.ADDRESS.asUnbounded();
 }

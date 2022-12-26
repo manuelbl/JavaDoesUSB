@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-public class IOUSBDeviceInterface100 extends IOUSBDeviceStruct100 {
+/**
+ * {@snippet :
+ * typedef struct IOUSBDeviceStruct100 IOUSBDeviceInterface100;
+ * }
+ */
+public final class IOUSBDeviceInterface100 extends IOUSBDeviceStruct100 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private IOUSBDeviceInterface100() {}
 }
 
 

@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-public class IOUSBInterfaceInterface190 extends IOUSBInterfaceStruct190 {
+/**
+ * {@snippet :
+ * typedef struct IOUSBInterfaceStruct190 IOUSBInterfaceInterface190;
+ * }
+ */
+public final class IOUSBInterfaceInterface190 extends IOUSBInterfaceStruct190 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private IOUSBInterfaceInterface190() {}
 }
 
 

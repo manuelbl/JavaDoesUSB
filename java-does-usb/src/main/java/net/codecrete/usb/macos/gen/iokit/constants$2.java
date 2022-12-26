@@ -3,8 +3,10 @@
 package net.codecrete.usb.macos.gen.iokit;
 
 import java.lang.foreign.MemorySegment;
-class constants$2 {
+final class constants$2 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$2() {}
     static final MemorySegment kIOTerminatedNotification$SEGMENT = RuntimeHelper.CONSTANT_ALLOCATOR.allocateUtf8String("IOServiceTerminate");
     static final MemorySegment kIOUSBDeviceClassName$SEGMENT = RuntimeHelper.CONSTANT_ALLOCATOR.allocateUtf8String("IOUSBDevice");
 }

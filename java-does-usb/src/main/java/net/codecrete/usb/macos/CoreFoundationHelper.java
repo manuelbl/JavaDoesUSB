@@ -10,11 +10,10 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.macos.gen.corefoundation.CFRange;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
 
-import static java.lang.foreign.MemoryAddress.NULL;
+import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 
 /**
@@ -28,13 +27,13 @@ public class CoreFoundationHelper {
      * @param string the string to copy ({@code CFStringRef})
      * @return copied string
      */
-    public static String stringFromCFStringRef(MemoryAddress string) {
+    public static String stringFromCFStringRef(MemorySegment string) {
 
-        try (var session = MemorySession.openConfined()) {
+        try (var arena = Arena.openConfined()) {
 
             long strLen = CoreFoundation.CFStringGetLength(string);
-            var buffer = session.allocateArray(JAVA_CHAR, strLen);
-            var range = session.allocate(CFRange.$LAYOUT());
+            var buffer = arena.allocateArray(JAVA_CHAR, strLen);
+            var range = arena.allocate(CFRange.$LAYOUT());
             CFRange.location$set(range, 0);
             CFRange.length$set(range, strLen);
             CoreFoundation.CFStringGetCharacters(string, range, buffer);
@@ -55,10 +54,10 @@ public class CoreFoundationHelper {
      * @param string the string
      * @return {@code CFStringRef}
      */
-    public static MemoryAddress createCFStringRef(String string) {
-        try (var session = MemorySession.openConfined()) {
+    public static MemorySegment createCFStringRef(String string) {
+        try (var arena = Arena.openConfined()) {
             char[] charArray = string.toCharArray();
-            var chars = session.allocateArray(JAVA_CHAR, charArray.length);
+            var chars = arena.allocateArray(JAVA_CHAR, charArray.length);
             chars.copyFrom(MemorySegment.ofArray(charArray));
             return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
         }

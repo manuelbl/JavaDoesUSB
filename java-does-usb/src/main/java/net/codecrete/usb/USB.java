@@ -8,9 +8,7 @@
 package net.codecrete.usb;
 
 import net.codecrete.usb.common.USBDeviceRegistry;
-import net.codecrete.usb.linux.LinuxUSBDeviceRegistry;
 import net.codecrete.usb.macos.MacosUSBDeviceRegistry;
-import net.codecrete.usb.windows.WindowsUSBDeviceRegistry;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -28,10 +26,10 @@ public class USB {
         USBDeviceRegistry impl;
         if (osName.equals("Mac OS X") && (osArch.equals("x86_64") || osArch.equals("aarch64"))) {
             impl = new MacosUSBDeviceRegistry();
-        } else if (osName.startsWith("Windows") && osArch.equals("amd64")) {
-            impl = new WindowsUSBDeviceRegistry();
-        } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
-            impl = new LinuxUSBDeviceRegistry();
+//        } else if (osName.startsWith("Windows") && osArch.equals("amd64")) {
+//            impl = new WindowsUSBDeviceRegistry();
+//        } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
+//            impl = new LinuxUSBDeviceRegistry();
         } else {
             throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " + "%s/%s", osName, osArch));
         }

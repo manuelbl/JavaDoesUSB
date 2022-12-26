@@ -5,8 +5,10 @@ package net.codecrete.usb.macos.gen.corefoundation;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemoryLayout;
 import java.lang.invoke.MethodHandle;
-class constants$1 {
+final class constants$1 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$1() {}
     static final FunctionDescriptor CFNumberGetTypeID$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT);
     static final MethodHandle CFNumberGetTypeID$MH = RuntimeHelper.downcallHandle(
         "CFNumberGetTypeID",

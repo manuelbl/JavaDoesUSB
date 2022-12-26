@@ -4,9 +4,22 @@ package net.codecrete.usb.macos.gen.iokit;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct {
+ *     UInt8 bmRequestType;
+ *     UInt8 bRequest;
+ *     UInt16 wValue;
+ *     UInt16 wIndex;
+ *     UInt16 wLength;
+ *     void* pData;
+ *     UInt32 wLenDone;
+ * };
+ * }
+ */
 public class IOUSBDevRequest {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_CHAR$LAYOUT.withName("bmRequestType"),
         Constants$root.C_CHAR$LAYOUT.withName("bRequest"),
         Constants$root.C_SHORT$LAYOUT.withName("wValue"),
@@ -23,10 +36,22 @@ public class IOUSBDevRequest {
     public static VarHandle bmRequestType$VH() {
         return IOUSBDevRequest.bmRequestType$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 bmRequestType;
+     * }
+     */
     public static byte bmRequestType$get(MemorySegment seg) {
         return (byte)IOUSBDevRequest.bmRequestType$VH.get(seg);
     }
-    public static void bmRequestType$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 bmRequestType;
+     * }
+     */
+    public static void bmRequestType$set(MemorySegment seg, byte x) {
         IOUSBDevRequest.bmRequestType$VH.set(seg, x);
     }
     public static byte bmRequestType$get(MemorySegment seg, long index) {
@@ -39,10 +64,22 @@ public class IOUSBDevRequest {
     public static VarHandle bRequest$VH() {
         return IOUSBDevRequest.bRequest$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 bRequest;
+     * }
+     */
     public static byte bRequest$get(MemorySegment seg) {
         return (byte)IOUSBDevRequest.bRequest$VH.get(seg);
     }
-    public static void bRequest$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 bRequest;
+     * }
+     */
+    public static void bRequest$set(MemorySegment seg, byte x) {
         IOUSBDevRequest.bRequest$VH.set(seg, x);
     }
     public static byte bRequest$get(MemorySegment seg, long index) {
@@ -55,10 +92,22 @@ public class IOUSBDevRequest {
     public static VarHandle wValue$VH() {
         return IOUSBDevRequest.wValue$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt16 wValue;
+     * }
+     */
     public static short wValue$get(MemorySegment seg) {
         return (short)IOUSBDevRequest.wValue$VH.get(seg);
     }
-    public static void wValue$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt16 wValue;
+     * }
+     */
+    public static void wValue$set(MemorySegment seg, short x) {
         IOUSBDevRequest.wValue$VH.set(seg, x);
     }
     public static short wValue$get(MemorySegment seg, long index) {
@@ -71,10 +120,22 @@ public class IOUSBDevRequest {
     public static VarHandle wIndex$VH() {
         return IOUSBDevRequest.wIndex$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt16 wIndex;
+     * }
+     */
     public static short wIndex$get(MemorySegment seg) {
         return (short)IOUSBDevRequest.wIndex$VH.get(seg);
     }
-    public static void wIndex$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt16 wIndex;
+     * }
+     */
+    public static void wIndex$set(MemorySegment seg, short x) {
         IOUSBDevRequest.wIndex$VH.set(seg, x);
     }
     public static short wIndex$get(MemorySegment seg, long index) {
@@ -87,10 +148,22 @@ public class IOUSBDevRequest {
     public static VarHandle wLength$VH() {
         return IOUSBDevRequest.wLength$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt16 wLength;
+     * }
+     */
     public static short wLength$get(MemorySegment seg) {
         return (short)IOUSBDevRequest.wLength$VH.get(seg);
     }
-    public static void wLength$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt16 wLength;
+     * }
+     */
+    public static void wLength$set(MemorySegment seg, short x) {
         IOUSBDevRequest.wLength$VH.set(seg, x);
     }
     public static short wLength$get(MemorySegment seg, long index) {
@@ -103,26 +176,50 @@ public class IOUSBDevRequest {
     public static VarHandle pData$VH() {
         return IOUSBDevRequest.pData$VH;
     }
-    public static MemoryAddress pData$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)IOUSBDevRequest.pData$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * void* pData;
+     * }
+     */
+    public static MemorySegment pData$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDevRequest.pData$VH.get(seg);
     }
-    public static void pData$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * void* pData;
+     * }
+     */
+    public static void pData$set(MemorySegment seg, MemorySegment x) {
         IOUSBDevRequest.pData$VH.set(seg, x);
     }
-    public static MemoryAddress pData$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)IOUSBDevRequest.pData$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment pData$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDevRequest.pData$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void pData$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void pData$set(MemorySegment seg, long index, MemorySegment x) {
         IOUSBDevRequest.pData$VH.set(seg.asSlice(index*sizeof()), x);
     }
     static final VarHandle wLenDone$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("wLenDone"));
     public static VarHandle wLenDone$VH() {
         return IOUSBDevRequest.wLenDone$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt32 wLenDone;
+     * }
+     */
     public static int wLenDone$get(MemorySegment seg) {
         return (int)IOUSBDevRequest.wLenDone$VH.get(seg);
     }
-    public static void wLenDone$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt32 wLenDone;
+     * }
+     */
+    public static void wLenDone$set(MemorySegment seg, int x) {
         IOUSBDevRequest.wLenDone$VH.set(seg, x);
     }
     public static int wLenDone$get(MemorySegment seg, long index) {
@@ -133,10 +230,10 @@ public class IOUSBDevRequest {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 
