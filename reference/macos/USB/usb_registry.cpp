@@ -35,10 +35,10 @@ usb_registry::~usb_registry() {
         device_disconnected_iter = 0;
     }
     
-    CFRunLoopStop(run_loop);
-    monitor_thread.join();
-    
     if (notify_port != nullptr) {
+        CFRunLoopStop(run_loop);
+        monitor_thread.join();
+        
         IONotificationPortDestroy(notify_port);
         notify_port = nullptr;
     }

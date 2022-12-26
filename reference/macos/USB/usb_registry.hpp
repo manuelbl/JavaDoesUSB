@@ -37,6 +37,9 @@ public:
     /// Starts the registry
     void start();
     
+    /// Indicates if the registry has been started
+    bool isStarted() { return notify_port != nullptr; }
+    
     /// Gets the currently connected devices.
     std::vector<std::shared_ptr<usb_device>> get_devices();
 
