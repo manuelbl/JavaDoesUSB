@@ -14,7 +14,6 @@ JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
-  --include-function __errno_location \
   --include-constant ETIMEDOUT \
   --include-constant EPIPE \
   /usr/include/errno.h
@@ -26,18 +25,10 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function strerror \
   /usr/include/string.h
 
-# ioctl.h
-$JEXTRACT --source --output ../../src/main/java \
-  --header-class-name ioctl \
-  --target-package net.codecrete.usb.linux.gen.ioctl \
-  --include-function ioctl \
-  /usr/include/x86_64-linux-gnu/sys/ioctl.h
-
 # fcntl.h
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name fcntl \
   --target-package net.codecrete.usb.linux.gen.fcntl \
-  --include-function open \
   --include-constant O_CLOEXEC \
   --include-constant O_RDWR \
   /usr/include/fcntl.h

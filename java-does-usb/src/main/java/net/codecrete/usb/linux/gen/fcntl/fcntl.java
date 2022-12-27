@@ -2,9 +2,6 @@
 
 package net.codecrete.usb.linux.gen.fcntl;
 
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
-
 import static java.lang.foreign.ValueLayout.*;
 public class fcntl  {
 
@@ -23,22 +20,6 @@ public class fcntl  {
      */
     public static int O_RDWR() {
         return (int)2L;
-    }
-    public static MethodHandle open$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.open$MH,"open");
-    }
-    /**
-     * {@snippet :
-     * int open(char* __file, int __oflag,...);
-     * }
-     */
-    public static int open(MemorySegment __file, int __oflag, Object... x2) {
-        var mh$ = open$MH();
-        try {
-            return (int)mh$.invokeExact(__file, __oflag, x2);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
     }
     /**
      * {@snippet :

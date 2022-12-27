@@ -12,7 +12,6 @@ import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
-import net.codecrete.usb.linux.gen.ioctl.ioctl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_bulktransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
@@ -49,21 +48,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         // `descriptors` contains the device descriptor followed by the configuration descriptor
         // (including the interface descriptors, endpoint descriptors etc.)
-
-        try (var arena = Arena.openConfined()) {
-            var descriptorsSegment = MemorySegment.ofArray(descriptors);
-
-            // split off device descriptor (and copy it to fix alignment issues)
-            var deviceDesc = arena.allocate(DeviceDescriptor.LAYOUT);
-            deviceDesc.copyFrom(descriptorsSegment.asSlice(0, DeviceDescriptor.LAYOUT.byteSize()));
-
-            setFromDeviceDescriptor(deviceDesc);
-
-            // skip to configuration descriptor
-            var configDesc = arena.allocateArray(JAVA_BYTE, descriptors.length - 18);
-            configDesc.copyFrom(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
-            setConfigurationDescriptor(configDesc);
-        }
+        var descriptorsSegment = MemorySegment.ofArray(descriptors);
+        setFromDeviceDescriptor(descriptorsSegment);
+        setConfigurationDescriptor(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
     }
 
     @Override
@@ -78,9 +65,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var pathUtf8 = arena.allocateUtf8String(id_.toString());
-            fd = fcntl.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
-                throwLastError("Cannot open USB device");
+                throwLastError(errnoState, "Cannot open USB device");
         }
     }
 
@@ -107,9 +95,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            int ret = ioctl.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
-                throwLastError("Cannot claim USB interface");
+                throwLastError(errnoState, "Cannot claim USB interface");
             setClaimed(interfaceNumber, true);
         }
     }
@@ -133,9 +122,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
-            int ret = ioctl.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
             if (ret != 0)
-                throwLastError("Failed to set alternate interface");
+                throwLastError(errnoState, "Failed to set alternate interface");
         }
 
         intf.setAlternate(altSetting);
@@ -152,9 +142,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            int ret = ioctl.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
-                throwLastError("Cannot release USB interface");
+                throwLastError(errnoState, "Cannot release USB interface");
             setClaimed(interfaceNumber, false);
         }
     }
@@ -179,9 +170,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var data = arena.allocate(length);
             var ctrlTransfer = createCtrlTransfer(arena, USBDirection.IN, setup, data);
 
-            int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
             if (res < 0)
-                throwLastError("Control IN transfer failed");
+                throwLastError(errnoState, "Control IN transfer failed");
 
             return data.asSlice(0, res).toArray(JAVA_BYTE);
         }
@@ -196,9 +188,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 buffer.copyFrom(MemorySegment.ofArray(data));
             var ctrlTransfer = createCtrlTransfer(arena, USBDirection.OUT, setup, buffer);
 
-            int res = ioctl.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
             if (res < 0)
-                throwLastError("Control OUT transfer failed");
+                throwLastError(errnoState, "Control OUT transfer failed");
         }
     }
 
@@ -221,15 +214,13 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             buffer.copyFrom(MemorySegment.ofArray(data));
             var transfer = createBulkTransfer(arena, endpointAddress, buffer, timeout);
 
-            int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
             if (res < 0) {
-                int err = IO.getErrno();
+                int err = IO.getErrno(errnoState);
                 if (err == errno.ETIMEDOUT())
                     throw new USBTimeoutException("Transfer out aborted due to timeout");
-                // TODO: remove below code if 'errno' is no longer overwritten by JVM
-                if (err == 2)
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-                throwException(err, "USB OUT transfer on endpoint %d failed", endpointNumber);
+                throwLastError(errnoState, "USB OUT transfer on endpoint %d failed", endpointNumber);
             }
         }
     }
@@ -244,15 +235,13 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
 
-            int res = ioctl.ioctl(fd, USBDevFS.BULK, transfer.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
             if (res < 0) {
-                int err = IO.getErrno();
+                int err = IO.getErrno(errnoState);
                 if (err == errno.ETIMEDOUT())
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
-                // TODO: remove below code if 'errno' is no longer overwritten by JVM
-                if (err == 2)
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-                throwException(err, "USB IN transfer on endpoint %d failed", endpointNumber);
+                throwLastError(errnoState, "USB IN transfer on endpoint %d failed", endpointNumber);
             }
 
             return buffer.asSlice(0, res).toArray(JAVA_BYTE);
@@ -266,9 +255,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var endpointAddrSegment = arena.allocate(JAVA_INT, endpointAddress & 0xff);
-            int res = ioctl.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment.address());
+            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            int res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
             if (res < 0)
-                throwLastError("Clearing halt failed");
+                throwLastError(errnoState, "Clearing halt failed");
         }
     }
 

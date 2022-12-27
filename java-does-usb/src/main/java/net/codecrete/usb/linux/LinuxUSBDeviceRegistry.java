@@ -33,6 +33,12 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     private final MemorySegment MONITOR_NAME = GLOBAL_ALLOCATOR.allocateUtf8String("udev");
     private final MemorySegment DEVTYPE_USB_DEVICE = GLOBAL_ALLOCATOR.allocateUtf8String("usb_device");
 
+    private final MemorySegment ATTR_ID_VENDOR = GLOBAL_ALLOCATOR.allocateUtf8String("idVendor");
+    private final MemorySegment ATTR_ID_PRODUCT = GLOBAL_ALLOCATOR.allocateUtf8String("idProduct");
+    private final MemorySegment ATTR_MANUFACTURER = GLOBAL_ALLOCATOR.allocateUtf8String("manufacturer");
+    private final MemorySegment ATTR_PRODUCT = GLOBAL_ALLOCATOR.allocateUtf8String("product");
+    private final MemorySegment ATTR_SERIAL = GLOBAL_ALLOCATOR.allocateUtf8String("serial");
+
     @Override
     protected void monitorDevices() {
 
@@ -167,18 +173,18 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param udevDevice the device (udev_device*)
      * @return the device instance
      */
-    private static USBDevice getDeviceDetails(MemorySegment udevDevice) {
+    private USBDevice getDeviceDetails(MemorySegment udevDevice) {
 
         int vendorId = 0;
         int productId = 0;
 
         try {
             // retrieve device attributes
-            String idVendor = getDeviceAttribute(udevDevice, "idVendor");
+            String idVendor = getDeviceAttribute(udevDevice, ATTR_ID_VENDOR);
             if (idVendor == null)
                 return null;
 
-            String idProduct = getDeviceAttribute(udevDevice, "idProduct");
+            String idProduct = getDeviceAttribute(udevDevice, ATTR_ID_PRODUCT);
             if (idProduct == null)
                 return null;
 
@@ -193,8 +199,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             // create device instance
             var device = new LinuxUSBDevice(devPath, vendorId, productId);
 
-            device.setProductStrings(getDeviceAttribute(udevDevice, "manufacturer"),
-                    getDeviceAttribute(udevDevice, "product"), getDeviceAttribute(udevDevice, "serial"));
+            device.setProductStrings(getDeviceAttribute(udevDevice, ATTR_MANUFACTURER),
+                    getDeviceAttribute(udevDevice, ATTR_PRODUCT), getDeviceAttribute(udevDevice, ATTR_SERIAL));
 
             return device;
 
@@ -206,15 +212,12 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private static String getDeviceAttribute(MemorySegment udevDevice, String attribute) {
-        try (var arena = Arena.openConfined()) {
-            var sysattr = arena.allocateUtf8String(attribute);
-            var value = udev.udev_device_get_sysattr_value(udevDevice, sysattr);
-            if (value.address() == 0)
-                return null;
+    private static String getDeviceAttribute(MemorySegment udevDevice, MemorySegment attribute) {
+        var value = udev.udev_device_get_sysattr_value(udevDevice, attribute);
+        if (value.address() == 0)
+            return null;
 
-            return value.getUtf8String(0);
-        }
+        return value.getUtf8String(0);
     }
 
     private static String getDeviceName(MemorySegment udevDevice) {

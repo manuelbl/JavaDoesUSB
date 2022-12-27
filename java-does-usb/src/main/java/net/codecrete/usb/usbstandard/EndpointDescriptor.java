@@ -27,6 +27,10 @@ public class EndpointDescriptor {
         this.descriptor = descriptor;
     }
 
+    public EndpointDescriptor(MemorySegment segment, long offset) {
+        this(segment.asSlice(offset, LAYOUT.byteSize()));
+    }
+
     public int endpointAddress() {
         return 0xff & (byte) bEndpointAddress$VH.get(descriptor);
     }

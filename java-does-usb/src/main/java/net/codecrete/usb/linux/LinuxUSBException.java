@@ -10,6 +10,8 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
 import net.codecrete.usb.linux.gen.errno.errno;
 
+import java.lang.foreign.MemorySegment;
+
 /**
  * Exception thrown if a Linux specific error occurs.
  */
@@ -57,13 +59,15 @@ public class LinuxUSBException extends USBException {
     /**
      * Throws an exception for the last error.
      * <p>
-     * The message of the last Linux error code is looked ({@code errno}) up and appended to the message.
+     * The message of the last Linux error code is provided in a memory segment with the layout
+     * {@link IO#ERRNO_STATE}.
      * </p>
+     * @param errno segment with lat error code
      * @param message exception message format ({@link String#format(String, Object...)} style)
      * @param args arguments for exception message
      */
-    static void throwLastError(String message, Object... args) {
-        throwException(IO.getErrno(), message, args);
+    static void throwLastError(MemorySegment errno, String message, Object... args) {
+        throwException(IO.getErrno(errno), message, args);
     }
 
 }

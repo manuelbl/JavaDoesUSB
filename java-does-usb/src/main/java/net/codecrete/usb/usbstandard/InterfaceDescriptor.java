@@ -26,6 +26,10 @@ public class InterfaceDescriptor {
         this.descriptor = descriptor;
     }
 
+    public InterfaceDescriptor(MemorySegment segment, long offset) {
+        this(segment.asSlice(offset, LAYOUT.byteSize()));
+    }
+
     public int interfaceNumber() {
         return 0xff & (byte) bInterfaceNumber$VH.get(descriptor);
     }

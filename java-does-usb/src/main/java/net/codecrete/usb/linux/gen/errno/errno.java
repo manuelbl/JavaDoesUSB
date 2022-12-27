@@ -2,9 +2,6 @@
 
 package net.codecrete.usb.linux.gen.errno;
 
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
-
 import static java.lang.foreign.ValueLayout.*;
 public class errno  {
 
@@ -31,22 +28,6 @@ public class errno  {
      */
     public static int ETIMEDOUT() {
         return (int)110L;
-    }
-    public static MethodHandle __errno_location$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.__errno_location$MH,"__errno_location");
-    }
-    /**
-     * {@snippet :
-     * int* __errno_location();
-     * }
-     */
-    public static MemorySegment __errno_location() {
-        var mh$ = __errno_location$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact();
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
     }
 }
 
