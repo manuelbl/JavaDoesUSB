@@ -82,6 +82,7 @@ public class EnumerateDevices {
 - Java 19, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
+For a version compatible with JDK 20, see the branch `jdk20`.
 
 
 ## Platform-specific Considerations
