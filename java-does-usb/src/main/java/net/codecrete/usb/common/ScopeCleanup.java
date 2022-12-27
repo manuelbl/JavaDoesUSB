@@ -10,7 +10,7 @@ package net.codecrete.usb.common;
 import java.util.ArrayList;
 
 /**
- * Auto closeable actions for clean up.
+ * Auto closeable object for clean up actions.
  *
  * <p>
  * Multiple cleanup actions can be registered and will

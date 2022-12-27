@@ -38,7 +38,7 @@ class TransferTimeout {
     private synchronized void abort() {
         if (completed)
             return;
-        int ret = IoKitUSB.AbortPipe(endpointInfo.segment(), endpointInfo.pipeIndex());
+        int ret = IoKitUSB.AbortPipe(endpointInfo.iokitInterface(), endpointInfo.pipeIndex());
         if (ret != 0)
             throwException(ret, "Failed to abort USB transfer after timeout");
     }

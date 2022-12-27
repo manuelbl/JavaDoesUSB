@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.macos;
 
+import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface100;
 import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface190;
 
@@ -14,7 +15,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentScope;
 
 import static java.lang.foreign.ValueLayout.ADDRESS;
-import static net.codecrete.usb.common.ForeignMemory.UNBOUNDED_ADDRESS;
 
 /**
  * Helper functions to call the virtual methods of IOKit USB interfaces.
@@ -24,7 +24,7 @@ public class IoKitUSB {
     private static MemorySegment getVtable(MemorySegment self) {
         var object = MemorySegment.ofAddress(self.address(), ADDRESS.byteSize(), SegmentScope.global());
         // 800: size of biggest vtable and then some
-        return object.get(UNBOUNDED_ADDRESS, 0).asSlice(0, 800);
+        return ForeignMemory.deref(object, 800);
     }
 
     // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);

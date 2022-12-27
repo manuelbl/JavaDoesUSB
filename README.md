@@ -1,5 +1,7 @@
 # Java Does USB: USB Library for Java
 
+> **Development branch for JDK 20**
+
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
 *Java Does USB* is a library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
@@ -79,7 +81,7 @@ public class EnumerateDevices {
 
 ## Prerequisite
 
-- Java 19, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
+- Java 20, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
 

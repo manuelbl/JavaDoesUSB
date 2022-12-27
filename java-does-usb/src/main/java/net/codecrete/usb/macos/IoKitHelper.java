@@ -7,12 +7,12 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentScope;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
@@ -87,28 +87,26 @@ public class IoKitHelper {
      *
      * @param service the service
      * @param key     the property key
+     * @param arena   the arena for allocating memory
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static Integer getPropertyInt(int service, String key) {
+    public static Integer getPropertyInt(int service, MemorySegment key, Arena arena) {
 
-        try (var cleanup = new ScopeCleanup()) {
-            var value = getPropertyValue(service, key, cleanup);
-            if (value == null)
-                return null;
+        var value = IOKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
+        if (value.address() == 0)
+            return null;
 
-            Integer result = null;
-            var type = CoreFoundation.CFGetTypeID(value);
-            if (type == CoreFoundation.CFNumberGetTypeID()) {
-
-                try (var arena = Arena.openConfined()) {
-                    var numberValue = arena.allocate(JAVA_INT, 0);
-                    if (CoreFoundation.CFNumberGetValue(value, CoreFoundation.kCFNumberSInt32Type(), numberValue) != 0)
-                        result = numberValue.get(JAVA_INT, 0);
-                }
-            }
-
-            return result;
+        Integer result = null;
+        var type = CoreFoundation.CFGetTypeID(value);
+        if (type == CoreFoundation.CFNumberGetTypeID()) {
+            var numberValue = arena.allocate(JAVA_INT, 0);
+            if (CoreFoundation.CFNumberGetValue(value, CoreFoundation.kCFNumberSInt32Type(), numberValue) != 0)
+                result = numberValue.get(JAVA_INT, 0);
         }
+
+        CoreFoundation.CFRelease(value);
+
+        return result;
     }
 
     /**
@@ -119,43 +117,30 @@ public class IoKitHelper {
      *
      * @param service the service
      * @param key     the property key
+     * @param arena   the arena for allocating memory
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static String getPropertyString(int service, String key) {
+    public static String getPropertyString(int service, MemorySegment key, Arena arena) {
 
-        try (var cleanup = new ScopeCleanup()) {
-            var value = getPropertyValue(service, key, cleanup);
-            if (value == null)
-                return null;
-
-            String result = null;
-            var type = CoreFoundation.CFGetTypeID(value);
-            if (type == CoreFoundation.CFStringGetTypeID())
-                result = CoreFoundationHelper.stringFromCFStringRef(value);
-
-            return result;
-        }
-    }
-
-    private static MemorySegment getPropertyValue(int service, String key, ScopeCleanup cleanup) {
-        var cfKey = CoreFoundationHelper.createCFStringRef(key);
-        cleanup.add(() -> CoreFoundation.CFRelease(cfKey));
-
-        var value = IOKit.IORegistryEntryCreateCFProperty(service, cfKey, NULL, 0);
+        var value = IOKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
         if (value.address() == 0)
             return null;
-        cleanup.add(() -> CoreFoundation.CFRelease(value));
 
-        return value;
+        String result = null;
+        var type = CoreFoundation.CFGetTypeID(value);
+        if (type == CoreFoundation.CFStringGetTypeID())
+            result = CoreFoundationHelper.stringFromCFStringRef(value, arena);
+
+        CoreFoundation.CFRelease(value);
+
+        return result;
     }
 
     // debugging aid
     public static int getRefCount(MemorySegment self) {
-        try (var arena = Arena.openConfined()) {
-            var object = MemorySegment.ofAddress(self.address(), 16, arena.scope());
-            var dataAddr = object.get(ADDRESS, ADDRESS.byteSize());
-            var data = MemorySegment.ofAddress(dataAddr.address(), 12, arena.scope());
-            return data.get(JAVA_INT, 8);
-        }
+        var object = MemorySegment.ofAddress(self.address(), 16, SegmentScope.global());
+        var dataAddr = object.get(ADDRESS, ADDRESS.byteSize());
+        var data = MemorySegment.ofAddress(dataAddr.address(), 12, SegmentScope.global());
+        return data.get(JAVA_INT, 8);
     }
 }

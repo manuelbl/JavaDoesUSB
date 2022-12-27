@@ -58,6 +58,7 @@ public class EndpointInputStream extends InputStream {
         return n;
     }
 
+    @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
         return (packet_ != null ? packet_.length : 0) - readOffset_;
@@ -74,6 +75,7 @@ public class EndpointInputStream extends InputStream {
         } while (packet_.length == 0);
     }
 
+    @SuppressWarnings("RedundantThrows")
     @Override
     public void close() throws IOException {
         device_ = null;

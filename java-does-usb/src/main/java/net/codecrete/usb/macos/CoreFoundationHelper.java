@@ -12,6 +12,7 @@ import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
@@ -25,23 +26,18 @@ public class CoreFoundationHelper {
      * Gets Java string as a copy of the {@code CFStringRef}.
      *
      * @param string the string to copy ({@code CFStringRef})
+     * @param arena the arena to allocate memory
      * @return copied string
      */
-    public static String stringFromCFStringRef(MemorySegment string) {
+    public static String stringFromCFStringRef(MemorySegment string, Arena arena) {
 
-        try (var arena = Arena.openConfined()) {
-
-            long strLen = CoreFoundation.CFStringGetLength(string);
-            var buffer = arena.allocateArray(JAVA_CHAR, strLen);
-            var range = arena.allocate(CFRange.$LAYOUT());
-            CFRange.location$set(range, 0);
-            CFRange.length$set(range, strLen);
-            CoreFoundation.CFStringGetCharacters(string, range, buffer);
-            return new String(buffer.toArray(JAVA_CHAR));
-
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        long strLen = CoreFoundation.CFStringGetLength(string);
+        var buffer = arena.allocateArray(JAVA_CHAR, strLen);
+        var range = arena.allocate(CFRange.$LAYOUT());
+        CFRange.location$set(range, 0);
+        CFRange.length$set(range, strLen);
+        CoreFoundation.CFStringGetCharacters(string, range, buffer);
+        return new String(buffer.toArray(JAVA_CHAR));
     }
 
     /**
@@ -52,14 +48,13 @@ public class CoreFoundationHelper {
      * </p>
      *
      * @param string the string
+     * @param allocator the allocator for allocating memory
      * @return {@code CFStringRef}
      */
-    public static MemorySegment createCFStringRef(String string) {
-        try (var arena = Arena.openConfined()) {
-            char[] charArray = string.toCharArray();
-            var chars = arena.allocateArray(JAVA_CHAR, charArray.length);
-            chars.copyFrom(MemorySegment.ofArray(charArray));
-            return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
-        }
+    public static MemorySegment createCFStringRef(String string, SegmentAllocator allocator) {
+        char[] charArray = string.toCharArray();
+        var chars = allocator.allocateArray(JAVA_CHAR, charArray.length);
+        chars.copyFrom(MemorySegment.ofArray(charArray));
+        return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
     }
 }
