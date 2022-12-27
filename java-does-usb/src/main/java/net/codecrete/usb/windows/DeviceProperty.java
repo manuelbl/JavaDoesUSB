@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.windows;
 
+import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.windows.gen.advapi32.Advapi32;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -14,13 +15,11 @@ import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DETAIL_DATA_W;
 import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
 
-import java.lang.foreign.Addressable;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
 import java.util.List;
 
-import static java.lang.foreign.MemoryAddress.NULL;
+import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
@@ -55,10 +54,10 @@ public class DeviceProperty {
             (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50,
             (byte) 0xe0, 3);
 
-    public static int getDeviceIntProperty(Addressable devInfo, Addressable devInfoData, Addressable propertyKey) {
-        try (var session = MemorySession.openConfined()) {
-            var propertyTypeHolder = session.allocate(JAVA_INT);
-            var propertyValueHolder = session.allocate(JAVA_INT);
+    public static int getDeviceIntProperty(MemorySegment devInfo, MemorySegment devInfoData, MemorySegment propertyKey) {
+        try (var arena = Arena.openConfined()) {
+            var propertyTypeHolder = arena.allocate(JAVA_INT);
+            var propertyValueHolder = arena.allocate(JAVA_INT);
             if (SetupAPI.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
                 throwLastError("Internal error (SetupDiGetDevicePropertyW)");
@@ -70,29 +69,29 @@ public class DeviceProperty {
         }
     }
 
-    public static String getDeviceStringProperty(Addressable devInfo, Addressable devInfoData,
-                                                 Addressable propertyKey) {
-        try (var session = MemorySession.openConfined()) {
+    public static String getDeviceStringProperty(MemorySegment devInfo, MemorySegment devInfoData,
+                                                 MemorySegment propertyKey) {
+        try (var arena = Arena.openConfined()) {
             var propertyValue = getProperty(devInfo, devInfoData, propertyKey,
-                    SetupAPI.DEVPROP_TYPE_STRING(), session);
+                    SetupAPI.DEVPROP_TYPE_STRING(), arena);
             return Win.createStringFromSegment(propertyValue);
         }
     }
 
-    public static List<String> getDeviceStringListProperty(Addressable devInfo, Addressable devInfoData,
-                                                           Addressable propertyKey) {
-        try (var session = MemorySession.openConfined()) {
+    public static List<String> getDeviceStringListProperty(MemorySegment devInfo, MemorySegment devInfoData,
+                                                           MemorySegment propertyKey) {
+        try (var arena = Arena.openConfined()) {
             var propertyValue = getProperty(devInfo, devInfoData, propertyKey,
-                    SetupAPI.DEVPROP_TYPE_STRING() | SetupAPI.DEVPROP_TYPEMOD_LIST(), session);
+                    SetupAPI.DEVPROP_TYPE_STRING() | SetupAPI.DEVPROP_TYPEMOD_LIST(), arena);
 
             return Win.createStringListFromSegment(propertyValue);
         }
     }
 
-    private static MemorySegment getProperty(Addressable devInfo, Addressable devInfoData, Addressable propertyKey,
-                                             int propertyType, MemorySession session) {
-        var propertyTypeHolder = session.allocate(JAVA_INT);
-        var requiredSizeHolder = session.allocate(JAVA_INT);
+    private static MemorySegment getProperty(MemorySegment devInfo, MemorySegment devInfoData, MemorySegment propertyKey,
+                                             int propertyType, Arena arena) {
+        var propertyTypeHolder = arena.allocate(JAVA_INT);
+        var requiredSizeHolder = arena.allocate(JAVA_INT);
         if (SetupAPI.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
                 requiredSizeHolder, 0) == 0) {
             // TODO: Reactivate when proper GetLastError() handling is available
@@ -106,7 +105,7 @@ public class DeviceProperty {
 
         int stringLen = requiredSizeHolder.get(JAVA_INT, 0) / 2 - 1;
 
-        var propertyValueHolder = session.allocateArray(JAVA_CHAR, stringLen + 1);
+        var propertyValueHolder = arena.allocateArray(JAVA_CHAR, stringLen + 1);
         if (SetupAPI.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
                 propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
             throwLastError("Internal error (SetupDiGetDevicePropertyW)");
@@ -114,49 +113,51 @@ public class DeviceProperty {
         return propertyValueHolder;
     }
 
-    public static List<String> findDeviceInterfaceGUIDs(MemoryAddress devInfoSetHandle, MemorySegment devInfo, MemorySession session) {
+    public static List<String> findDeviceInterfaceGUIDs(MemorySegment devInfoSetHandle, MemorySegment devInfo, Arena arena) {
 
-        // open device registry key
-        var regKey = SetupAPI.SetupDiOpenDevRegKey(devInfoSetHandle, devInfo, SetupAPI.DICS_FLAG_GLOBAL(),
-                0, SetupAPI.DIREG_DEV(), Advapi32.KEY_READ());
-        if (Win.IsInvalidHandle(regKey))
-            throwLastError("Cannot open device registry key");
-        session.addCloseAction(() -> Advapi32.RegCloseKey(regKey));
+        try (var cleanup = new ScopeCleanup()) {
+            // open device registry key
+            var regKey = SetupAPI.SetupDiOpenDevRegKey(devInfoSetHandle, devInfo, SetupAPI.DICS_FLAG_GLOBAL(),
+                    0, SetupAPI.DIREG_DEV(), Advapi32.KEY_READ());
+            if (Win.IsInvalidHandle(regKey))
+                throwLastError("Cannot open device registry key");
+            cleanup.add(() -> Advapi32.RegCloseKey(regKey));
 
-        // read registry value (without buffer, to query length)
-        var keyNameSegment = Win.createSegmentFromString("DeviceInterfaceGUIDs", session);
-        var valueTypeHolder = session.allocate(JAVA_INT);
-        var valueSizeHolder = session.allocate(JAVA_INT);
-        var res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, NULL, valueSizeHolder);
-        if (res == Kernel32.ERROR_FILE_NOT_FOUND())
-            return List.of(); // no device interface GUIDs
-        if (res != 0 && res != Kernel32.ERROR_MORE_DATA())
-            throwException(res, "Internal error (RegQueryValueExW)");
+            // read registry value (without buffer, to query length)
+            var keyNameSegment = Win.createSegmentFromString("DeviceInterfaceGUIDs", arena);
+            var valueTypeHolder = arena.allocate(JAVA_INT);
+            var valueSizeHolder = arena.allocate(JAVA_INT);
+            var res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, NULL, valueSizeHolder);
+            if (res == Kernel32.ERROR_FILE_NOT_FOUND())
+                return List.of(); // no device interface GUIDs
+            if (res != 0 && res != Kernel32.ERROR_MORE_DATA())
+                throwException(res, "Internal error (RegQueryValueExW)");
 
-        // read registry value (with buffer)
-        var valueSize = valueSizeHolder.get(JAVA_INT, 0);
-        var value = session.allocate(valueSize);
-        res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
-        if (res != 0)
-            throwException(res, "Internal error (RegQueryValueExW)");
+            // read registry value (with buffer)
+            var valueSize = valueSizeHolder.get(JAVA_INT, 0);
+            var value = arena.allocate(valueSize);
+            res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
+            if (res != 0)
+                throwException(res, "Internal error (RegQueryValueExW)");
 
-        return Win.createStringListFromSegment(value);
+            return Win.createStringListFromSegment(value);
+        }
     }
 
-    public static String getDevicePath(String instanceID, Addressable interfaceGuid) {
-        try (var session = MemorySession.openConfined()) {
+    public static String getDevicePath(String instanceID, MemorySegment interfaceGuid) {
+        try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
             // get device info set for instance
-            var instanceIDSegment = Win.createSegmentFromString(instanceID, session);
+            var instanceIDSegment = Win.createSegmentFromString(instanceID, arena);
             final var devInfoSetHandle = SetupAPI.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL,
                     SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE());
             if (Win.IsInvalidHandle(devInfoSetHandle))
                 throwException("internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
-            session.addCloseAction(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
             // retrieve first element of enumeration
-            var devIntfData = session.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
+            var devIntfData = arena.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             if (SetupAPI.SetupDiEnumDeviceInterfaces(devInfoSetHandle, NULL, interfaceGuid, 0, devIntfData) == 0)
                 throwException("internal error (SetupDiEnumDeviceInterfaces)");
@@ -165,7 +166,7 @@ public class DeviceProperty {
             // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
             // the device path fits)
             final int devicePathOffset = 4;
-            var intfDetailData = session.allocate(4 + 260 * 2);
+            var intfDetailData = arena.allocate(4 + 260 * 2);
             SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData,
                     (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
             int intfDetailDataSize = (int) intfDetailData.byteSize();
@@ -180,7 +181,7 @@ public class DeviceProperty {
     public static MemorySegment createDEVPROPKEY(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                                  byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6
             , byte data4_7, int pid) {
-        var propKey = MemorySession.global().allocate(GUID.sizeof() + JAVA_INT.byteSize());
+        var propKey = Win.GLOBAL_ALLOCATOR.allocate(GUID.sizeof() + JAVA_INT.byteSize());
         Win.setGUID(propKey, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6,
                 data4_7);
         propKey.set(JAVA_INT, 16, pid);

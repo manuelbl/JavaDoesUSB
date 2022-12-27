@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 
 /**
  * Handles for WinUSB devices and interfaces
@@ -34,11 +34,11 @@ class InterfaceHandle {
      * This is only used for the first interface in a composite function.
      * </p>
      */
-    MemoryAddress deviceHandle;
+    MemorySegment deviceHandle;
     /**
      * The WinUSB handle of the interface.
      */
-    MemoryAddress interfaceHandle;
+    MemorySegment interfaceHandle;
     /**
      * Count indicating how many interface depend on the device being open.
      */

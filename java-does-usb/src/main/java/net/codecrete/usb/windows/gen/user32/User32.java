@@ -2,41 +2,69 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-import java.lang.foreign.Addressable;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class User32  {
 
-    /* package-private */ User32() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
+    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    /**
+     * {@snippet :
+     * #define WM_DEVICECHANGE 537
+     * }
+     */
     public static int WM_DEVICECHANGE() {
         return (int)537L;
     }
+    /**
+     * {@snippet :
+     * #define DEVICE_NOTIFY_WINDOW_HANDLE 0
+     * }
+     */
     public static int DEVICE_NOTIFY_WINDOW_HANDLE() {
         return (int)0L;
     }
+    /**
+     * {@snippet :
+     * #define DBT_DEVICEARRIVAL 32768
+     * }
+     */
     public static int DBT_DEVICEARRIVAL() {
         return (int)32768L;
     }
+    /**
+     * {@snippet :
+     * #define DBT_DEVICEREMOVECOMPLETE 32772
+     * }
+     */
     public static int DBT_DEVICEREMOVECOMPLETE() {
         return (int)32772L;
     }
+    /**
+     * {@snippet :
+     * #define DBT_DEVTYP_DEVICEINTERFACE 5
+     * }
+     */
     public static int DBT_DEVTYP_DEVICEINTERFACE() {
         return (int)5L;
     }
     public static MethodHandle GetMessageW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.GetMessageW$MH,"GetMessageW");
     }
-    public static int GetMessageW ( Addressable lpMsg,  Addressable hWnd,  int wMsgFilterMin,  int wMsgFilterMax) {
+    /**
+     * {@snippet :
+     * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
+     * }
+     */
+    public static int GetMessageW(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax) {
         var mh$ = GetMessageW$MH();
         try {
             return (int)mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
@@ -47,10 +75,15 @@ public class User32  {
     public static MethodHandle RegisterDeviceNotificationW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.RegisterDeviceNotificationW$MH,"RegisterDeviceNotificationW");
     }
-    public static MemoryAddress RegisterDeviceNotificationW ( Addressable hRecipient,  Addressable NotificationFilter,  int Flags) {
+    /**
+     * {@snippet :
+     * HDEVNOTIFY RegisterDeviceNotificationW(HANDLE hRecipient, LPVOID NotificationFilter, DWORD Flags);
+     * }
+     */
+    public static MemorySegment RegisterDeviceNotificationW(MemorySegment hRecipient, MemorySegment NotificationFilter, int Flags) {
         var mh$ = RegisterDeviceNotificationW$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(hRecipient, NotificationFilter, Flags);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(hRecipient, NotificationFilter, Flags);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -58,7 +91,12 @@ public class User32  {
     public static MethodHandle DefWindowProcW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.DefWindowProcW$MH,"DefWindowProcW");
     }
-    public static long DefWindowProcW ( Addressable hWnd,  int Msg,  long wParam,  long lParam) {
+    /**
+     * {@snippet :
+     * LRESULT DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+     * }
+     */
+    public static long DefWindowProcW(MemorySegment hWnd, int Msg, long wParam, long lParam) {
         var mh$ = DefWindowProcW$MH();
         try {
             return (long)mh$.invokeExact(hWnd, Msg, wParam, lParam);
@@ -69,7 +107,12 @@ public class User32  {
     public static MethodHandle RegisterClassExW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.RegisterClassExW$MH,"RegisterClassExW");
     }
-    public static short RegisterClassExW ( Addressable x0) {
+    /**
+     * {@snippet :
+     * ATOM RegisterClassExW(const WNDCLASSEXW*);
+     * }
+     */
+    public static short RegisterClassExW(MemorySegment x0) {
         var mh$ = RegisterClassExW$MH();
         try {
             return (short)mh$.invokeExact(x0);
@@ -80,15 +123,25 @@ public class User32  {
     public static MethodHandle CreateWindowExW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.CreateWindowExW$MH,"CreateWindowExW");
     }
-    public static MemoryAddress CreateWindowExW ( int dwExStyle,  Addressable lpClassName,  Addressable lpWindowName,  int dwStyle,  int X,  int Y,  int nWidth,  int nHeight,  Addressable hWndParent,  Addressable hMenu,  Addressable hInstance,  Addressable lpParam) {
+    /**
+     * {@snippet :
+     * HWND CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+     * }
+     */
+    public static MemorySegment CreateWindowExW(int dwExStyle, MemorySegment lpClassName, MemorySegment lpWindowName, int dwStyle, int X, int Y, int nWidth, int nHeight, MemorySegment hWndParent, MemorySegment hMenu, MemorySegment hInstance, MemorySegment lpParam) {
         var mh$ = CreateWindowExW$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MemoryAddress HWND_MESSAGE() {
+    /**
+     * {@snippet :
+     * #define HWND_MESSAGE -3
+     * }
+     */
+    public static MemorySegment HWND_MESSAGE() {
         return constants$0.HWND_MESSAGE$ADDR;
     }
 }

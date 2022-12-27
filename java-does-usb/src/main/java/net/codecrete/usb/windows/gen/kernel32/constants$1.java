@@ -4,8 +4,10 @@ package net.codecrete.usb.windows.gen.kernel32;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$1 {
+final class constants$1 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$1() {}
     static final FunctionDescriptor FormatMessageW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,

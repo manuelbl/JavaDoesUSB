@@ -3,10 +3,12 @@
 package net.codecrete.usb.windows.gen.user32;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
-class constants$0 {
+final class constants$0 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$0() {}
     static final FunctionDescriptor GetMessageW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -61,7 +63,7 @@ class constants$0 {
         "CreateWindowExW",
         constants$0.CreateWindowExW$FUNC
     );
-    static final MemoryAddress HWND_MESSAGE$ADDR = MemoryAddress.ofLong(-3L);
+    static final MemorySegment HWND_MESSAGE$ADDR = MemorySegment.ofAddress(-3L);
 }
 
 

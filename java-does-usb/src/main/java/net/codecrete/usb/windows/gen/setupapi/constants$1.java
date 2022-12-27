@@ -4,8 +4,10 @@ package net.codecrete.usb.windows.gen.setupapi;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$1 {
+final class constants$1 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$1() {}
     static final FunctionDescriptor SetupDiDeleteDeviceInterfaceData$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT

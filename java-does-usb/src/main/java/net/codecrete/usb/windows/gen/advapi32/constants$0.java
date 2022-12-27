@@ -4,8 +4,10 @@ package net.codecrete.usb.windows.gen.advapi32;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$0 {
+final class constants$0 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$0() {}
     static final FunctionDescriptor RegCloseKey$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );

@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-public class SP_DEVINFO_DATA extends _SP_DEVINFO_DATA {
+/**
+ * {@snippet :
+ * typedef struct _SP_DEVINFO_DATA SP_DEVINFO_DATA;
+ * }
+ */
+public final class SP_DEVINFO_DATA extends _SP_DEVINFO_DATA {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private SP_DEVINFO_DATA() {}
 }
 
 

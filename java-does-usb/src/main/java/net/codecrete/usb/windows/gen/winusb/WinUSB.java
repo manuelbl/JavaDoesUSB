@@ -2,29 +2,37 @@
 
 package net.codecrete.usb.windows.gen.winusb;
 
-import java.lang.foreign.Addressable;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class WinUSB  {
 
-    /* package-private */ WinUSB() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
+    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    /**
+     * {@snippet :
+     * #define PIPE_TRANSFER_TIMEOUT 3
+     * }
+     */
     public static int PIPE_TRANSFER_TIMEOUT() {
         return (int)3L;
     }
     public static MethodHandle WinUsb_Initialize$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_Initialize$MH,"WinUsb_Initialize");
     }
-    public static int WinUsb_Initialize ( Addressable DeviceHandle,  Addressable InterfaceHandle) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_Initialize(HANDLE DeviceHandle, PWINUSB_INTERFACE_HANDLE InterfaceHandle);
+     * }
+     */
+    public static int WinUsb_Initialize(MemorySegment DeviceHandle, MemorySegment InterfaceHandle) {
         var mh$ = WinUsb_Initialize$MH();
         try {
             return (int)mh$.invokeExact(DeviceHandle, InterfaceHandle);
@@ -35,7 +43,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_Free$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_Free$MH,"WinUsb_Free");
     }
-    public static int WinUsb_Free ( Addressable InterfaceHandle) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle);
+     * }
+     */
+    public static int WinUsb_Free(MemorySegment InterfaceHandle) {
         var mh$ = WinUsb_Free$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle);
@@ -46,7 +59,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_GetAssociatedInterface$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetAssociatedInterface$MH,"WinUsb_GetAssociatedInterface");
     }
-    public static int WinUsb_GetAssociatedInterface ( Addressable InterfaceHandle,  byte AssociatedInterfaceIndex,  Addressable AssociatedInterfaceHandle) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_GetAssociatedInterface(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR AssociatedInterfaceIndex, PWINUSB_INTERFACE_HANDLE AssociatedInterfaceHandle);
+     * }
+     */
+    public static int WinUsb_GetAssociatedInterface(MemorySegment InterfaceHandle, byte AssociatedInterfaceIndex, MemorySegment AssociatedInterfaceHandle) {
         var mh$ = WinUsb_GetAssociatedInterface$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, AssociatedInterfaceIndex, AssociatedInterfaceHandle);
@@ -57,7 +75,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_GetDescriptor$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetDescriptor$MH,"WinUsb_GetDescriptor");
     }
-    public static int WinUsb_GetDescriptor ( Addressable InterfaceHandle,  byte DescriptorType,  byte Index,  short LanguageID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_GetDescriptor(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR DescriptorType, UCHAR Index, USHORT LanguageID, PUCHAR Buffer, ULONG BufferLength, PULONG LengthTransferred);
+     * }
+     */
+    public static int WinUsb_GetDescriptor(MemorySegment InterfaceHandle, byte DescriptorType, byte Index, short LanguageID, MemorySegment Buffer, int BufferLength, MemorySegment LengthTransferred) {
         var mh$ = WinUsb_GetDescriptor$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, DescriptorType, Index, LanguageID, Buffer, BufferLength, LengthTransferred);
@@ -68,7 +91,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_SetCurrentAlternateSetting$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetCurrentAlternateSetting$MH,"WinUsb_SetCurrentAlternateSetting");
     }
-    public static int WinUsb_SetCurrentAlternateSetting ( Addressable InterfaceHandle,  byte SettingNumber) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_SetCurrentAlternateSetting(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR SettingNumber);
+     * }
+     */
+    public static int WinUsb_SetCurrentAlternateSetting(MemorySegment InterfaceHandle, byte SettingNumber) {
         var mh$ = WinUsb_SetCurrentAlternateSetting$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, SettingNumber);
@@ -79,7 +107,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_SetPipePolicy$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetPipePolicy$MH,"WinUsb_SetPipePolicy");
     }
-    public static int WinUsb_SetPipePolicy ( Addressable InterfaceHandle,  byte PipeID,  int PolicyType,  int ValueLength,  Addressable Value) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_SetPipePolicy(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR PipeID, ULONG PolicyType, ULONG ValueLength, PVOID Value);
+     * }
+     */
+    public static int WinUsb_SetPipePolicy(MemorySegment InterfaceHandle, byte PipeID, int PolicyType, int ValueLength, MemorySegment Value) {
         var mh$ = WinUsb_SetPipePolicy$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, PipeID, PolicyType, ValueLength, Value);
@@ -90,7 +123,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_ReadPipe$MH() {
         return RuntimeHelper.requireNonNull(constants$1.WinUsb_ReadPipe$MH,"WinUsb_ReadPipe");
     }
-    public static int WinUsb_ReadPipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_ReadPipe(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR PipeID, PUCHAR Buffer, ULONG BufferLength, PULONG LengthTransferred, LPOVERLAPPED Overlapped);
+     * }
+     */
+    public static int WinUsb_ReadPipe(MemorySegment InterfaceHandle, byte PipeID, MemorySegment Buffer, int BufferLength, MemorySegment LengthTransferred, MemorySegment Overlapped) {
         var mh$ = WinUsb_ReadPipe$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, PipeID, Buffer, BufferLength, LengthTransferred, Overlapped);
@@ -101,7 +139,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_WritePipe$MH() {
         return RuntimeHelper.requireNonNull(constants$1.WinUsb_WritePipe$MH,"WinUsb_WritePipe");
     }
-    public static int WinUsb_WritePipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_WritePipe(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR PipeID, PUCHAR Buffer, ULONG BufferLength, PULONG LengthTransferred, LPOVERLAPPED Overlapped);
+     * }
+     */
+    public static int WinUsb_WritePipe(MemorySegment InterfaceHandle, byte PipeID, MemorySegment Buffer, int BufferLength, MemorySegment LengthTransferred, MemorySegment Overlapped) {
         var mh$ = WinUsb_WritePipe$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, PipeID, Buffer, BufferLength, LengthTransferred, Overlapped);
@@ -112,7 +155,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_ControlTransfer$MH() {
         return RuntimeHelper.requireNonNull(constants$1.WinUsb_ControlTransfer$MH,"WinUsb_ControlTransfer");
     }
-    public static int WinUsb_ControlTransfer ( Addressable InterfaceHandle,  MemorySegment SetupPacket,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_ControlTransfer(WINUSB_INTERFACE_HANDLE InterfaceHandle, WINUSB_SETUP_PACKET SetupPacket, PUCHAR Buffer, ULONG BufferLength, PULONG LengthTransferred, LPOVERLAPPED Overlapped);
+     * }
+     */
+    public static int WinUsb_ControlTransfer(MemorySegment InterfaceHandle, MemorySegment SetupPacket, MemorySegment Buffer, int BufferLength, MemorySegment LengthTransferred, MemorySegment Overlapped) {
         var mh$ = WinUsb_ControlTransfer$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, SetupPacket, Buffer, BufferLength, LengthTransferred, Overlapped);
@@ -123,7 +171,12 @@ public class WinUSB  {
     public static MethodHandle WinUsb_ResetPipe$MH() {
         return RuntimeHelper.requireNonNull(constants$1.WinUsb_ResetPipe$MH,"WinUsb_ResetPipe");
     }
-    public static int WinUsb_ResetPipe ( Addressable InterfaceHandle,  byte PipeID) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_ResetPipe(WINUSB_INTERFACE_HANDLE InterfaceHandle, UCHAR PipeID);
+     * }
+     */
+    public static int WinUsb_ResetPipe(MemorySegment InterfaceHandle, byte PipeID) {
         var mh$ = WinUsb_ResetPipe$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle, PipeID);

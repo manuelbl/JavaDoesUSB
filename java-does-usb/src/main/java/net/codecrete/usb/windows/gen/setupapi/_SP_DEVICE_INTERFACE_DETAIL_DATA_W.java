@@ -4,9 +4,17 @@ package net.codecrete.usb.windows.gen.setupapi;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
+ *     DWORD cbSize;
+ *     WCHAR DevicePath[1];
+ * };
+ * }
+ */
 public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_LONG$LAYOUT.withName("cbSize"),
         MemoryLayout.sequenceLayout(1, Constants$root.C_SHORT$LAYOUT).withName("DevicePath"),
         MemoryLayout.paddingLayout(16)
@@ -18,10 +26,22 @@ public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
     public static VarHandle cbSize$VH() {
         return _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD cbSize;
+     * }
+     */
     public static int cbSize$get(MemorySegment seg) {
         return (int)_SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.get(seg);
     }
-    public static void cbSize$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD cbSize;
+     * }
+     */
+    public static void cbSize$set(MemorySegment seg, int x) {
         _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.set(seg, x);
     }
     public static int cbSize$get(MemorySegment seg, long index) {
@@ -35,10 +55,10 @@ public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 
