@@ -31,11 +31,6 @@ public class IO {
     private static final FunctionDescriptor open$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT);
     private static final MethodHandle open$MH = linker.downcallHandle(linker.defaultLookup().find("open").get(), open$FUNC, ERRNO_STATE);
 
-    /**
-     * {@snippet lang=c :
-     * int ioctl(int fd, unsigned long request, ...);
-     * }
-     */
     public static int ioctl(int fd, long request, MemorySegment segment, MemorySegment errno) {
         try {
             return (int)ioctl$MH.invokeExact(errno, fd, request, segment);
@@ -44,11 +39,6 @@ public class IO {
         }
     }
 
-    /**
-     * {@snippet lang=c :
-     * int open(char* file, int oflag, ...);
-     * }
-     */
     public static int open(MemorySegment file, int oflag, MemorySegment errno) {
         try {
             return (int)open$MH.invokeExact(errno, file, oflag);

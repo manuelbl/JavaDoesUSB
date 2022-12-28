@@ -13,7 +13,8 @@ import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 
 /**
  * USB endpoint descriptor

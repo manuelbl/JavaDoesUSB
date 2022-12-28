@@ -260,7 +260,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                 // For certain devices, it seems to take some time until DEVPKEY_Device_Children
                 // entry is present. So we retry a few times if needed and pause in between.
-                List<String> childrenInstanceIDs = null;
+                List<String> childrenInstanceIDs;
                 int numTries = 5;
                 while (true) {
                     numTries -= 1;

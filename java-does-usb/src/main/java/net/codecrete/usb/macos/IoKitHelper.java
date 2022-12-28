@@ -53,7 +53,7 @@ public class IoKitHelper {
      * @param service     the service
      * @param pluginType  the plugin interface type
      * @param interfaceId the interface ID
-     * @return the interface, or <code>null</code> if the plugin type or interface is not available
+     * @return the interface, or {@code null} if the plugin type or interface is not available
      */
     public static MemorySegment getInterface(int service, MemorySegment pluginType, MemorySegment interfaceId) {
         try (var arena = Arena.openConfined()) {
