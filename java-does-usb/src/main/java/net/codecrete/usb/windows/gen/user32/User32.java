@@ -56,38 +56,6 @@ public class User32  {
     public static int DBT_DEVTYP_DEVICEINTERFACE() {
         return (int)5L;
     }
-    public static MethodHandle GetMessageW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.GetMessageW$MH,"GetMessageW");
-    }
-    /**
-     * {@snippet :
-     * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
-     * }
-     */
-    public static int GetMessageW(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax) {
-        var mh$ = GetMessageW$MH();
-        try {
-            return (int)mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle RegisterDeviceNotificationW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.RegisterDeviceNotificationW$MH,"RegisterDeviceNotificationW");
-    }
-    /**
-     * {@snippet :
-     * HDEVNOTIFY RegisterDeviceNotificationW(HANDLE hRecipient, LPVOID NotificationFilter, DWORD Flags);
-     * }
-     */
-    public static MemorySegment RegisterDeviceNotificationW(MemorySegment hRecipient, MemorySegment NotificationFilter, int Flags) {
-        var mh$ = RegisterDeviceNotificationW$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(hRecipient, NotificationFilter, Flags);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle DefWindowProcW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.DefWindowProcW$MH,"DefWindowProcW");
     }
@@ -100,38 +68,6 @@ public class User32  {
         var mh$ = DefWindowProcW$MH();
         try {
             return (long)mh$.invokeExact(hWnd, Msg, wParam, lParam);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle RegisterClassExW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.RegisterClassExW$MH,"RegisterClassExW");
-    }
-    /**
-     * {@snippet :
-     * ATOM RegisterClassExW(const WNDCLASSEXW*);
-     * }
-     */
-    public static short RegisterClassExW(MemorySegment x0) {
-        var mh$ = RegisterClassExW$MH();
-        try {
-            return (short)mh$.invokeExact(x0);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle CreateWindowExW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CreateWindowExW$MH,"CreateWindowExW");
-    }
-    /**
-     * {@snippet :
-     * HWND CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-     * }
-     */
-    public static MemorySegment CreateWindowExW(int dwExStyle, MemorySegment lpClassName, MemorySegment lpWindowName, int dwStyle, int X, int Y, int nWidth, int nHeight, MemorySegment hWndParent, MemorySegment hMenu, MemorySegment hInstance, MemorySegment lpParam) {
-        var mh$ = CreateWindowExW$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

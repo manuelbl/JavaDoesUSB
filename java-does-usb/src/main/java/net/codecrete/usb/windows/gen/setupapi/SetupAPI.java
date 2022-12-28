@@ -104,22 +104,6 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle SetupDiEnumDeviceInfo$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiEnumDeviceInfo$MH,"SetupDiEnumDeviceInfo");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiEnumDeviceInfo(HDEVINFO DeviceInfoSet, DWORD MemberIndex, PSP_DEVINFO_DATA DeviceInfoData);
-     * }
-     */
-    public static int SetupDiEnumDeviceInfo(MemorySegment DeviceInfoSet, int MemberIndex, MemorySegment DeviceInfoData) {
-        var mh$ = SetupDiEnumDeviceInfo$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, MemberIndex, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle SetupDiDestroyDeviceInfoList$MH() {
         return RuntimeHelper.requireNonNull(constants$0.SetupDiDestroyDeviceInfoList$MH,"SetupDiDestroyDeviceInfoList");
     }
@@ -132,22 +116,6 @@ public class SetupAPI  {
         var mh$ = SetupDiDestroyDeviceInfoList$MH();
         try {
             return (int)mh$.invokeExact(DeviceInfoSet);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiEnumDeviceInterfaces$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiEnumDeviceInterfaces$MH,"SetupDiEnumDeviceInterfaces");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiEnumDeviceInterfaces(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, const GUID* InterfaceClassGuid, DWORD MemberIndex, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
-     * }
-     */
-    public static int SetupDiEnumDeviceInterfaces(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData, MemorySegment InterfaceClassGuid, int MemberIndex, MemorySegment DeviceInterfaceData) {
-        var mh$ = SetupDiEnumDeviceInterfaces$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, InterfaceClassGuid, MemberIndex, DeviceInterfaceData);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -169,7 +137,7 @@ public class SetupAPI  {
         }
     }
     public static MethodHandle SetupDiDeleteDeviceInterfaceData$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiDeleteDeviceInterfaceData$MH,"SetupDiDeleteDeviceInterfaceData");
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiDeleteDeviceInterfaceData$MH,"SetupDiDeleteDeviceInterfaceData");
     }
     /**
      * {@snippet :
@@ -184,72 +152,8 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle SetupDiGetDeviceInterfaceDetailW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiGetDeviceInterfaceDetailW(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData, PSP_DEVICE_INTERFACE_DETAIL_DATA_W DeviceInterfaceDetailData, DWORD DeviceInterfaceDetailDataSize, PDWORD RequiredSize, PSP_DEVINFO_DATA DeviceInfoData);
-     * }
-     */
-    public static int SetupDiGetDeviceInterfaceDetailW(MemorySegment DeviceInfoSet, MemorySegment DeviceInterfaceData, MemorySegment DeviceInterfaceDetailData, int DeviceInterfaceDetailDataSize, MemorySegment RequiredSize, MemorySegment DeviceInfoData) {
-        var mh$ = SetupDiGetDeviceInterfaceDetailW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiGetClassDevsW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetClassDevsW$MH,"SetupDiGetClassDevsW");
-    }
-    /**
-     * {@snippet :
-     * HDEVINFO SetupDiGetClassDevsW(const GUID* ClassGuid, PCWSTR Enumerator, HWND hwndParent, DWORD Flags);
-     * }
-     */
-    public static MemorySegment SetupDiGetClassDevsW(MemorySegment ClassGuid, MemorySegment Enumerator, MemorySegment hwndParent, int Flags) {
-        var mh$ = SetupDiGetClassDevsW$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(ClassGuid, Enumerator, hwndParent, Flags);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDevRegKey$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiOpenDevRegKey$MH,"SetupDiOpenDevRegKey");
-    }
-    /**
-     * {@snippet :
-     * HKEY SetupDiOpenDevRegKey(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, DWORD Scope, DWORD HwProfile, DWORD KeyType, REGSAM samDesired);
-     * }
-     */
-    public static MemorySegment SetupDiOpenDevRegKey(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData, int Scope, int HwProfile, int KeyType, int samDesired) {
-        var mh$ = SetupDiOpenDevRegKey$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, Scope, HwProfile, KeyType, samDesired);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiGetDevicePropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDevicePropertyW$MH,"SetupDiGetDevicePropertyW");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiGetDevicePropertyW(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, const DEVPROPKEY* PropertyKey, DEVPROPTYPE* PropertyType, PBYTE PropertyBuffer, DWORD PropertyBufferSize, PDWORD RequiredSize, DWORD Flags);
-     * }
-     */
-    public static int SetupDiGetDevicePropertyW(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData, MemorySegment PropertyKey, MemorySegment PropertyType, MemorySegment PropertyBuffer, int PropertyBufferSize, MemorySegment RequiredSize, int Flags) {
-        var mh$ = SetupDiGetDevicePropertyW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, Flags);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle SetupDiGetDeviceRegistryPropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
     }
     /**
      * {@snippet :

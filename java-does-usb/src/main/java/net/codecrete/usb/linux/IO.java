@@ -40,7 +40,7 @@ public class IO {
         try {
             return (int)ioctl$MH.invokeExact(errno, fd, request, segment);
         } catch (Throwable ex) {
-            throw new AssertionError("should not reach here", ex);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -53,7 +53,7 @@ public class IO {
         try {
             return (int)open$MH.invokeExact(errno, file, oflag);
         } catch (Throwable ex) {
-            throw new AssertionError("should not reach here", ex);
+            throw new RuntimeException(ex);
         }
     }
 

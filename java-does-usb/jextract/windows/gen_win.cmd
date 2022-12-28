@@ -22,6 +22,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant ERROR_FILE_NOT_FOUND ^
   --include-constant ERROR_SEM_TIMEOUT ^
   --include-constant ERROR_GEN_FAILURE ^
+  --include-constant ERROR_NOT_FOUND ^
   --include-constant GENERIC_READ ^
   --include-constant GENERIC_WRITE ^
   --include-constant FILE_SHARE_READ ^
@@ -43,17 +44,11 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   -l SetupAPI ^
   --header-class-name SetupAPI ^
   --target-package net.codecrete.usb.windows.gen.setupapi ^
-  --include-function SetupDiGetClassDevsW ^
   --include-function SetupDiDestroyDeviceInfoList ^
-  --include-function SetupDiEnumDeviceInfo ^
-  --include-function SetupDiEnumDeviceInterfaces ^
-  --include-function SetupDiGetDeviceInterfaceDetailW ^
   --include-function SetupDiGetDeviceRegistryPropertyW ^
-  --include-function SetupDiGetDevicePropertyW ^
   --include-function SetupDiOpenDeviceInterfaceW ^
   --include-function SetupDiCreateDeviceInfoList ^
   --include-function SetupDiOpenDeviceInfoW ^
-  --include-function SetupDiOpenDevRegKey ^
   --include-function SetupDiDeleteDeviceInterfaceData ^
   --include-struct _SP_DEVINFO_DATA ^
   --include-typedef SP_DEVINFO_DATA ^
@@ -61,6 +56,8 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-typedef SP_DEVICE_INTERFACE_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
   --include-typedef SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
+  --include-struct _DEVPROPKEY ^
+  --include-typedef DEVPROPKEY ^
   --include-constant DIGCF_PRESENT ^
   --include-constant DIGCF_DEVICEINTERFACE ^
   --include-constant SPDRP_ADDRESS ^
@@ -95,10 +92,6 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        -l User32 ^
        --header-class-name User32 ^
        --target-package net.codecrete.usb.windows.gen.user32 ^
-       --include-function RegisterClassExW ^
-       --include-function CreateWindowExW ^
-       --include-function RegisterDeviceNotificationW ^
-       --include-function GetMessageW ^
        --include-function DefWindowProcW ^
        --include-constant DEVICE_NOTIFY_WINDOW_HANDLE ^
        --include-constant HWND_MESSAGE ^

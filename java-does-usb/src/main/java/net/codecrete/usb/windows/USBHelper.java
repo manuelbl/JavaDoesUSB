@@ -50,7 +50,7 @@ public class USBHelper {
             JAVA_BYTE.withName("CurrentConfigurationValue"),
             JAVA_BYTE.withName("Speed"),
             JAVA_BYTE.withName("DeviceIsHub"),
-            JAVA_SHORT.withName("DeviceAddress"),
+            JAVA_SHORT.withBitAlignment(8).withName("DeviceAddress"),
             JAVA_INT.withName("NumberOfOpenPipes"),
             JAVA_INT.withName("ConnectionStatus")
             // USB_PIPE_INFO PipeList[0]

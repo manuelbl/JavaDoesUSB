@@ -8,9 +8,11 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
+import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 
 import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
@@ -71,13 +73,28 @@ public class WindowsUSBException extends USBException {
         throwException(Kernel32.GetLastError(), message, args);
     }
 
+    /**
+     * Throws an exception for the last error.
+     * <p>
+     * The last Windows error code is taken from the call capture state
+     * {@link Win.LAST_ERROR_STATE} provided as the first parameter.
+     * </p>
+     *
+     * @param lastErrorState call capture state containing last error code
+     * @param message exception message format ({@link String#format(String, Object...)} style)
+     * @param args arguments for exception message
+     */
+    static void throwLastError(MemorySegment lastErrorState, String message, Object... args) {
+        throwException(Win.getLastError(lastErrorState), message, args);
+    }
+
     private static String getErrorMessage(int errorCode) {
         try (var arena = Arena.openConfined()) {
             var messagePointerHolder = arena.allocate(ADDRESS);
             Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()
                             | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
                     NULL, errorCode, 0, messagePointerHolder, 0, NULL);
-            var messagePointer = messagePointerHolder.get(ADDRESS, 0);
+            var messagePointer = messagePointerHolder.get(ForeignMemory.UNBOUNDED_ADDRESS, 0);
             String message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);
             return message.trim();

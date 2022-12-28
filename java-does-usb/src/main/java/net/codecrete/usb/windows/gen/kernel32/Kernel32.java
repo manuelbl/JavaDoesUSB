@@ -264,6 +264,14 @@ public class Kernel32  {
     public static int ERROR_NO_MORE_ITEMS() {
         return (int)259L;
     }
+    /**
+     * {@snippet :
+     * #define ERROR_NOT_FOUND 1168
+     * }
+     */
+    public static int ERROR_NOT_FOUND() {
+        return (int)1168L;
+    }
 }
 
 

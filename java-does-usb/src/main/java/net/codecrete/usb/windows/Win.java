@@ -11,6 +11,7 @@ import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
 import java.lang.foreign.*;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,21 @@ public class Win {
      */
     public static final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
 
+    /**
+     * Call state for capturing the {@code GetLastError()} value.
+     */
+    public static final Linker.Option.CaptureCallState LAST_ERROR_STATE = Linker.Option.captureCallState("GetLastError");
+
+    private static final VarHandle callState_GetLastError$VH = LAST_ERROR_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("GetLastError"));
+
+    /**
+     * Returns the error code captured using the call state {@link #LAST_ERROR_STATE}.
+     * @param callState the call state
+     * @return the error code
+     */
+    public static int getLastError(MemorySegment callState) {
+        return (int) callState_GetLastError$VH.get(callState);
+    }
     /**
      * Checks if a Windows handle is invalid.
      *
