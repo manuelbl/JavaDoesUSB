@@ -80,22 +80,6 @@ public class Kernel32  {
     public static int FORMAT_MESSAGE_FROM_SYSTEM() {
         return (int)4096L;
     }
-    public static MethodHandle CreateFileW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CreateFileW$MH,"CreateFileW");
-    }
-    /**
-     * {@snippet :
-     * HANDLE CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
-     * }
-     */
-    public static MemorySegment CreateFileW(MemorySegment lpFileName, int dwDesiredAccess, int dwShareMode, MemorySegment lpSecurityAttributes, int dwCreationDisposition, int dwFlagsAndAttributes, MemorySegment hTemplateFile) {
-        var mh$ = CreateFileW$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle CloseHandle$MH() {
         return RuntimeHelper.requireNonNull(constants$0.CloseHandle$MH,"CloseHandle");
     }
@@ -108,38 +92,6 @@ public class Kernel32  {
         var mh$ = CloseHandle$MH();
         try {
             return (int)mh$.invokeExact(hObject);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle GetLastError$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.GetLastError$MH,"GetLastError");
-    }
-    /**
-     * {@snippet :
-     * DWORD GetLastError();
-     * }
-     */
-    public static int GetLastError() {
-        var mh$ = GetLastError$MH();
-        try {
-            return (int)mh$.invokeExact();
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle DeviceIoControl$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.DeviceIoControl$MH,"DeviceIoControl");
-    }
-    /**
-     * {@snippet :
-     * BOOL DeviceIoControl(HANDLE hDevice, DWORD dwIoControlCode, LPVOID lpInBuffer, DWORD nInBufferSize, LPVOID lpOutBuffer, DWORD nOutBufferSize, LPDWORD lpBytesReturned, LPOVERLAPPED lpOverlapped);
-     * }
-     */
-    public static int DeviceIoControl(MemorySegment hDevice, int dwIoControlCode, MemorySegment lpInBuffer, int nInBufferSize, MemorySegment lpOutBuffer, int nOutBufferSize, MemorySegment lpBytesReturned, MemorySegment lpOverlapped) {
-        var mh$ = DeviceIoControl$MH();
-        try {
-            return (int)mh$.invokeExact(hDevice, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -177,7 +129,7 @@ public class Kernel32  {
         }
     }
     public static MethodHandle FormatMessageW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.FormatMessageW$MH,"FormatMessageW");
+        return RuntimeHelper.requireNonNull(constants$0.FormatMessageW$MH,"FormatMessageW");
     }
     /**
      * {@snippet :

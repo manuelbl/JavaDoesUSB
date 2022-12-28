@@ -40,6 +40,14 @@ public class User32B {
             Win.LAST_ERROR_STATE
     );
 
+    public static short RegisterClassExW(MemorySegment unnamedParam1, MemorySegment lastErrorState) {
+        try {
+            return (short)RegisterClassExW$MH.invokeExact(lastErrorState, unnamedParam1);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     private static final FunctionDescriptor CreateWindowExW$FUNC =
             FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, JAVA_INT, JAVA_INT,
                     JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS);
@@ -50,42 +58,6 @@ public class User32B {
             Win.LAST_ERROR_STATE
     );
 
-    private static final FunctionDescriptor RegisterDeviceNotificationW$FUNC =
-            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
-
-    private static final MethodHandle RegisterDeviceNotificationW$MH = LINKER.downcallHandle(
-            LOOKUP.find("RegisterDeviceNotificationW").get(),
-            RegisterDeviceNotificationW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    private static final FunctionDescriptor GetMessageW$FUNC =
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT);
-
-    private static final MethodHandle GetMessageW$MH = LINKER.downcallHandle(
-            LOOKUP.find("GetMessageW").get(),
-            GetMessageW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    /**
-     * {@snippet :
-     * ATOM RegisterClassExW(const WNDCLASSEXW* unnamedParam1);
-     * }
-     */
-    public static short RegisterClassExW(MemorySegment unnamedParam1, MemorySegment lastErrorState) {
-        try {
-            return (short)RegisterClassExW$MH.invokeExact(lastErrorState, unnamedParam1);
-        } catch (Throwable ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * {@snippet :
-     * HWND CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
-     * }
-     */
     public static MemorySegment CreateWindowExW(int dwExStyle, MemorySegment lpClassName, MemorySegment lpWindowName,
                                                 int dwStyle, int X, int Y, int nWidth, int nHeight,
                                                 MemorySegment hWndParent, MemorySegment hMenu, MemorySegment hInstance,
@@ -98,11 +70,15 @@ public class User32B {
         }
     }
 
-    /**
-     * {@snippet :
-     * HDEVNOTIFY RegisterDeviceNotificationW(HANDLE hRecipient, LPVOID NotificationFilter, DWORD Flags);
-     * }
-     */
+    private static final FunctionDescriptor RegisterDeviceNotificationW$FUNC =
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
+
+    private static final MethodHandle RegisterDeviceNotificationW$MH = LINKER.downcallHandle(
+            LOOKUP.find("RegisterDeviceNotificationW").get(),
+            RegisterDeviceNotificationW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static MemorySegment RegisterDeviceNotificationW(MemorySegment hRecipient, MemorySegment NotificationFilter,
                                                             int Flags, MemorySegment lastErrorState) {
         try {
@@ -112,11 +88,15 @@ public class User32B {
         }
     }
 
-    /**
-     * {@snippet :
-     * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
-     * }
-     */
+    private static final FunctionDescriptor GetMessageW$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT);
+
+    private static final MethodHandle GetMessageW$MH = LINKER.downcallHandle(
+            LOOKUP.find("GetMessageW").get(),
+            GetMessageW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static int GetMessageW(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax,
                                   MemorySegment lastErrorState) {
         try {

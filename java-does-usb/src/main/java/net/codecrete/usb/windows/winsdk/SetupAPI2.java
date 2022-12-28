@@ -42,57 +42,6 @@ public class SetupAPI2 {
             Win.LAST_ERROR_STATE
     );
 
-    private static final FunctionDescriptor SetupDiEnumDeviceInfo$FUNC =
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
-
-    private static final MethodHandle SetupDiEnumDeviceInfo$MH = LINKER.downcallHandle(
-            LOOKUP.find("SetupDiEnumDeviceInfo").get(),
-            SetupDiEnumDeviceInfo$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    private static final FunctionDescriptor SetupDiOpenDevRegKey$FUNC =
-            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT,  JAVA_INT, JAVA_INT, JAVA_INT);
-
-    private static final MethodHandle SetupDiOpenDevRegKey$MH = LINKER.downcallHandle(
-            LOOKUP.find("SetupDiOpenDevRegKey").get(),
-            SetupDiOpenDevRegKey$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    private static final FunctionDescriptor SetupDiGetClassDevsW$FUNC =
-            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
-
-    private static final MethodHandle SetupDiGetClassDevsW$MH = LINKER.downcallHandle(
-            LOOKUP.find("SetupDiGetClassDevsW").get(),
-            SetupDiGetClassDevsW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    private static final FunctionDescriptor SetupDiEnumDeviceInterfaces$FUNC =
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS);
-
-    private static final MethodHandle SetupDiEnumDeviceInterfaces$MH = LINKER.downcallHandle(
-            LOOKUP.find("SetupDiEnumDeviceInterfaces").get(),
-            SetupDiEnumDeviceInterfaces$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-    private static final FunctionDescriptor SetupDiGetDeviceInterfaceDetailW$FUNC =
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS);
-
-    private static final MethodHandle SetupDiGetDeviceInterfaceDetailW$MH = LINKER.downcallHandle(
-            LOOKUP.find("SetupDiGetDeviceInterfaceDetailW").get(),
-            SetupDiGetDeviceInterfaceDetailW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
-
-
-    /**
-     * {@snippet lang=c :
-     * BOOL SetupDiGetDevicePropertyW(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, const DEVPROPKEY* PropertyKey, DEVPROPTYPE* PropertyType, PBYTE PropertyBuffer, DWORD PropertyBufferSize, PDWORD RequiredSize, DWORD Flags);
-     * }
-     */
     public static int SetupDiGetDevicePropertyW(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData,
                                                 MemorySegment PropertyKey, MemorySegment PropertyType,
                                                 MemorySegment PropertyBuffer, int PropertyBufferSize,
@@ -106,11 +55,15 @@ public class SetupAPI2 {
         }
     }
 
-    /**
-     * {@snippet lang=c :
-     * BOOL SetupDiEnumDeviceInfo(HDEVINFO DeviceInfoSet, DWORD MemberIndex, PSP_DEVINFO_DATA DeviceInfoData);
-     * }
-     */
+    private static final FunctionDescriptor SetupDiEnumDeviceInfo$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS);
+
+    private static final MethodHandle SetupDiEnumDeviceInfo$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiEnumDeviceInfo").get(),
+            SetupDiEnumDeviceInfo$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static int SetupDiEnumDeviceInfo(MemorySegment DeviceInfoSet, int MemberIndex, MemorySegment DeviceInfoData,
                                             MemorySegment lastErrorState) {
         try {
@@ -120,11 +73,15 @@ public class SetupAPI2 {
         }
     }
 
-    /**
-     * {@snippet lang=c :
-     * HDEVINFO SetupDiGetClassDevsW(const GUID* ClassGuid, PCWSTR Enumerator, HWND hwndParent, DWORD Flags);
-     * }
-     */
+    private static final FunctionDescriptor SetupDiOpenDevRegKey$FUNC =
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT,  JAVA_INT, JAVA_INT, JAVA_INT);
+
+    private static final MethodHandle SetupDiOpenDevRegKey$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiOpenDevRegKey").get(),
+            SetupDiOpenDevRegKey$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static MemorySegment SetupDiOpenDevRegKey(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData,
                                                      int Scope, int HwProfile, int KeyType, int samDesired,
                                                      MemorySegment lastErrorState) {
@@ -135,6 +92,15 @@ public class SetupAPI2 {
         }
     }
 
+    private static final FunctionDescriptor SetupDiGetClassDevsW$FUNC =
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
+
+    private static final MethodHandle SetupDiGetClassDevsW$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiGetClassDevsW").get(),
+            SetupDiGetClassDevsW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static MemorySegment SetupDiGetClassDevsW(MemorySegment ClassGuid, MemorySegment Enumerator,
                                                      MemorySegment hwndParent, int Flags, MemorySegment lastErrorState) {
         try {
@@ -144,11 +110,15 @@ public class SetupAPI2 {
         }
     }
 
-    /**
-     * {@snippet :
-     * BOOL SetupDiEnumDeviceInterfaces(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, const GUID* InterfaceClassGuid, DWORD MemberIndex, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
-     * }
-     */
+    private static final FunctionDescriptor SetupDiEnumDeviceInterfaces$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS);
+
+    private static final MethodHandle SetupDiEnumDeviceInterfaces$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiEnumDeviceInterfaces").get(),
+            SetupDiEnumDeviceInterfaces$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static int SetupDiEnumDeviceInterfaces(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData,
                                                   MemorySegment InterfaceClassGuid, int MemberIndex,
                                                   MemorySegment DeviceInterfaceData, MemorySegment lastErrorState) {
@@ -160,11 +130,15 @@ public class SetupAPI2 {
         }
     }
 
-    /**
-     * {@snippet :
-     * BOOL SetupDiGetDeviceInterfaceDetailW(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData, PSP_DEVICE_INTERFACE_DETAIL_DATA_W DeviceInterfaceDetailData, DWORD DeviceInterfaceDetailDataSize, PDWORD RequiredSize, PSP_DEVINFO_DATA DeviceInfoData);
-     * }
-     */
+    private static final FunctionDescriptor SetupDiGetDeviceInterfaceDetailW$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS);
+
+    private static final MethodHandle SetupDiGetDeviceInterfaceDetailW$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiGetDeviceInterfaceDetailW").get(),
+            SetupDiGetDeviceInterfaceDetailW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
     public static int SetupDiGetDeviceInterfaceDetailW(MemorySegment DeviceInfoSet, MemorySegment DeviceInterfaceData,
                                                        MemorySegment DeviceInterfaceDetailData, int DeviceInterfaceDetailDataSize,
                                                        MemorySegment RequiredSize, MemorySegment DeviceInfoData,
@@ -176,4 +150,60 @@ public class SetupAPI2 {
             throw new RuntimeException(ex);
         }
     }
+
+    private static final FunctionDescriptor SetupDiCreateDeviceInfoList$FUNC =
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS);
+
+    private static final MethodHandle SetupDiCreateDeviceInfoList$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiCreateDeviceInfoList").get(),
+            SetupDiCreateDeviceInfoList$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static MemorySegment SetupDiCreateDeviceInfoList(MemorySegment ClassGuid, MemorySegment hwndParent,
+                                                            MemorySegment lastErrorState) {
+        try {
+            return (MemorySegment)SetupDiCreateDeviceInfoList$MH.invokeExact(lastErrorState, ClassGuid, hwndParent);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static final FunctionDescriptor SetupDiOpenDeviceInfoW$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS );
+
+    private static final MethodHandle SetupDiOpenDeviceInfoW$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiOpenDeviceInfoW").get(),
+            SetupDiOpenDeviceInfoW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static int SetupDiOpenDeviceInfoW(MemorySegment DeviceInfoSet, MemorySegment DeviceInstanceId,
+                                             MemorySegment hwndParent, int OpenFlags, MemorySegment DeviceInfoData,
+                                             MemorySegment lastErrorState) {
+        try {
+            return (int)SetupDiOpenDeviceInfoW$MH.invokeExact(lastErrorState, DeviceInfoSet, DeviceInstanceId, hwndParent, OpenFlags, DeviceInfoData);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static final FunctionDescriptor SetupDiOpenDeviceInterfaceW$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS);
+
+    private static final MethodHandle SetupDiOpenDeviceInterfaceW$MH = LINKER.downcallHandle(
+            LOOKUP.find("SetupDiOpenDeviceInterfaceW").get(),
+            SetupDiOpenDeviceInterfaceW$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static int SetupDiOpenDeviceInterfaceW(MemorySegment DeviceInfoSet, MemorySegment DevicePath, int OpenFlags,
+                                                  MemorySegment DeviceInterfaceData, MemorySegment lastErrorState) {
+        try {
+            return (int)SetupDiOpenDeviceInterfaceW$MH.invokeExact(lastErrorState, DeviceInfoSet, DevicePath, OpenFlags, DeviceInterfaceData);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 }

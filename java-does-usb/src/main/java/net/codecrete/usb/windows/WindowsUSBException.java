@@ -64,18 +64,6 @@ public class WindowsUSBException extends USBException {
     /**
      * Throws an exception for the last error.
      * <p>
-     * The message of the last Windows error code is looked up and appended to the message.
-     * </p>
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
-     */
-    static void throwLastError(String message, Object... args) {
-        throwException(Kernel32.GetLastError(), message, args);
-    }
-
-    /**
-     * Throws an exception for the last error.
-     * <p>
      * The last Windows error code is taken from the call capture state
      * {@link Win.LAST_ERROR_STATE} provided as the first parameter.
      * </p>

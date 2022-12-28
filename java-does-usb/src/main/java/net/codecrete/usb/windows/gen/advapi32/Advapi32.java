@@ -56,14 +56,6 @@ public class Advapi32  {
     public static int KEY_READ() {
         return (int)131097L;
     }
-    /**
-     * {@snippet :
-     * #define REG_MULTI_SZ 7
-     * }
-     */
-    public static int REG_MULTI_SZ() {
-        return (int)7L;
-    }
 }
 
 

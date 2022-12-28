@@ -8,44 +8,12 @@ final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor CreateFileW$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle CreateFileW$MH = RuntimeHelper.downcallHandle(
-        "CreateFileW",
-        constants$0.CreateFileW$FUNC
-    );
     static final FunctionDescriptor CloseHandle$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle CloseHandle$MH = RuntimeHelper.downcallHandle(
         "CloseHandle",
         constants$0.CloseHandle$FUNC
-    );
-    static final FunctionDescriptor GetLastError$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT);
-    static final MethodHandle GetLastError$MH = RuntimeHelper.downcallHandle(
-        "GetLastError",
-        constants$0.GetLastError$FUNC
-    );
-    static final FunctionDescriptor DeviceIoControl$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle DeviceIoControl$MH = RuntimeHelper.downcallHandle(
-        "DeviceIoControl",
-        constants$0.DeviceIoControl$FUNC
     );
     static final FunctionDescriptor GetModuleHandleW$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
@@ -60,6 +28,19 @@ final class constants$0 {
     static final MethodHandle LocalFree$MH = RuntimeHelper.downcallHandle(
         "LocalFree",
         constants$0.LocalFree$FUNC
+    );
+    static final FunctionDescriptor FormatMessageW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_LONG$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle FormatMessageW$MH = RuntimeHelper.downcallHandle(
+        "FormatMessageW",
+        constants$0.FormatMessageW$FUNC
     );
 }
 

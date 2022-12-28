@@ -72,38 +72,6 @@ public class SetupAPI  {
     public static int DIREG_DEV() {
         return (int)1L;
     }
-    public static MethodHandle SetupDiCreateDeviceInfoList$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiCreateDeviceInfoList$MH,"SetupDiCreateDeviceInfoList");
-    }
-    /**
-     * {@snippet :
-     * HDEVINFO SetupDiCreateDeviceInfoList(const GUID* ClassGuid, HWND hwndParent);
-     * }
-     */
-    public static MemorySegment SetupDiCreateDeviceInfoList(MemorySegment ClassGuid, MemorySegment hwndParent) {
-        var mh$ = SetupDiCreateDeviceInfoList$MH();
-        try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(ClassGuid, hwndParent);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDeviceInfoW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInfoW$MH,"SetupDiOpenDeviceInfoW");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiOpenDeviceInfoW(HDEVINFO DeviceInfoSet, PCWSTR DeviceInstanceId, HWND hwndParent, DWORD OpenFlags, PSP_DEVINFO_DATA DeviceInfoData);
-     * }
-     */
-    public static int SetupDiOpenDeviceInfoW(MemorySegment DeviceInfoSet, MemorySegment DeviceInstanceId, MemorySegment hwndParent, int OpenFlags, MemorySegment DeviceInfoData) {
-        var mh$ = SetupDiOpenDeviceInfoW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInstanceId, hwndParent, OpenFlags, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle SetupDiDestroyDeviceInfoList$MH() {
         return RuntimeHelper.requireNonNull(constants$0.SetupDiDestroyDeviceInfoList$MH,"SetupDiDestroyDeviceInfoList");
     }
@@ -116,22 +84,6 @@ public class SetupAPI  {
         var mh$ = SetupDiDestroyDeviceInfoList$MH();
         try {
             return (int)mh$.invokeExact(DeviceInfoSet);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDeviceInterfaceW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInterfaceW$MH,"SetupDiOpenDeviceInterfaceW");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiOpenDeviceInterfaceW(HDEVINFO DeviceInfoSet, PCWSTR DevicePath, DWORD OpenFlags, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
-     * }
-     */
-    public static int SetupDiOpenDeviceInterfaceW(MemorySegment DeviceInfoSet, MemorySegment DevicePath, int OpenFlags, MemorySegment DeviceInterfaceData) {
-        var mh$ = SetupDiOpenDeviceInterfaceW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DevicePath, OpenFlags, DeviceInterfaceData);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
@@ -151,30 +103,6 @@ public class SetupAPI  {
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
-    }
-    public static MethodHandle SetupDiGetDeviceRegistryPropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
-    }
-    /**
-     * {@snippet :
-     * BOOL SetupDiGetDeviceRegistryPropertyW(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA DeviceInfoData, DWORD Property, PDWORD PropertyRegDataType, PBYTE PropertyBuffer, DWORD PropertyBufferSize, PDWORD RequiredSize);
-     * }
-     */
-    public static int SetupDiGetDeviceRegistryPropertyW(MemorySegment DeviceInfoSet, MemorySegment DeviceInfoData, int Property, MemorySegment PropertyRegDataType, MemorySegment PropertyBuffer, int PropertyBufferSize, MemorySegment RequiredSize) {
-        var mh$ = SetupDiGetDeviceRegistryPropertyW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, Property, PropertyRegDataType, PropertyBuffer, PropertyBufferSize, RequiredSize);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    /**
-     * {@snippet :
-     * #define SPDRP_ADDRESS 28
-     * }
-     */
-    public static int SPDRP_ADDRESS() {
-        return (int)28L;
     }
 }
 

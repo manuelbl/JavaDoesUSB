@@ -8,10 +8,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   -l Kernel32 ^
   --header-class-name Kernel32 ^
   --target-package net.codecrete.usb.windows.gen.kernel32 ^
-  --include-function CreateFileW ^
   --include-function CloseHandle ^
-  --include-function DeviceIoControl ^
-  --include-function GetLastError ^
   --include-function GetModuleHandleW ^
   --include-function FormatMessageW ^
   --include-function LocalFree ^
@@ -45,10 +42,6 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --header-class-name SetupAPI ^
   --target-package net.codecrete.usb.windows.gen.setupapi ^
   --include-function SetupDiDestroyDeviceInfoList ^
-  --include-function SetupDiGetDeviceRegistryPropertyW ^
-  --include-function SetupDiOpenDeviceInterfaceW ^
-  --include-function SetupDiCreateDeviceInfoList ^
-  --include-function SetupDiOpenDeviceInfoW ^
   --include-function SetupDiDeleteDeviceInterfaceData ^
   --include-struct _SP_DEVINFO_DATA ^
   --include-typedef SP_DEVINFO_DATA ^
@@ -60,7 +53,6 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-typedef DEVPROPKEY ^
   --include-constant DIGCF_PRESENT ^
   --include-constant DIGCF_DEVICEINTERFACE ^
-  --include-constant SPDRP_ADDRESS ^
   --include-constant DEVPROP_TYPE_UINT32 ^
   --include-constant DEVPROP_TYPE_STRING ^
   --include-constant DEVPROP_TYPEMOD_LIST ^
@@ -116,16 +108,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        -l Winusb ^
        --header-class-name WinUSB ^
        --target-package net.codecrete.usb.windows.gen.winusb ^
-       --include-function WinUsb_Initialize ^
        --include-function WinUsb_Free ^
-       --include-function WinUsb_GetDescriptor ^
-       --include-function WinUsb_ControlTransfer ^
-       --include-function WinUsb_WritePipe ^
-       --include-function WinUsb_ReadPipe ^
-       --include-function WinUsb_GetAssociatedInterface ^
-       --include-function WinUsb_SetPipePolicy ^
-       --include-function WinUsb_SetCurrentAlternateSetting ^
-       --include-function WinUsb_ResetPipe ^
        --include-constant PIPE_TRANSFER_TIMEOUT ^
        windows_headers.h
 
@@ -138,7 +121,6 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --target-package net.codecrete.usb.windows.gen.advapi32 ^
        --include-function RegQueryValueExW ^
        --include-function RegCloseKey ^
-       --include-constant REG_MULTI_SZ ^
        --include-constant KEY_READ ^
        windows_headers.h
 

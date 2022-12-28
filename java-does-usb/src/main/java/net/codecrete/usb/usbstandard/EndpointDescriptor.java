@@ -13,8 +13,7 @@ import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
-import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
+import static java.lang.foreign.ValueLayout.*;
 
 /**
  * USB endpoint descriptor
@@ -60,7 +59,7 @@ public class EndpointDescriptor {
             JAVA_BYTE.withName("bDescriptorType"),
             JAVA_BYTE.withName("bEndpointAddress"),
             JAVA_BYTE.withName("bmAttributes"),
-            JAVA_SHORT.withBitAlignment(8).withName("wMaxPacketSize"),
+            JAVA_SHORT_UNALIGNED.withName("wMaxPacketSize"),
             JAVA_BYTE.withName("bInterval")
     );
 

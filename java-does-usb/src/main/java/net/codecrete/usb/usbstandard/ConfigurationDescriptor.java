@@ -13,8 +13,7 @@ import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
-import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
+import static java.lang.foreign.ValueLayout.*;
 
 /**
  * USB configuration descriptor
@@ -68,7 +67,7 @@ public class ConfigurationDescriptor {
     public static final GroupLayout LAYOUT = structLayout(
             JAVA_BYTE.withName("bLength"),
             JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_SHORT.withBitAlignment(8).withName("wTotalLength"),
+            JAVA_SHORT_UNALIGNED.withName("wTotalLength"),
             JAVA_BYTE.withName("bNumInterfaces"),
             JAVA_BYTE.withName("bConfigurationValue"),
             JAVA_BYTE.withName("iConfiguration"),

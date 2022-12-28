@@ -8,41 +8,12 @@ final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor SetupDiCreateDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiCreateDeviceInfoList$MH = RuntimeHelper.downcallHandle(
-        "SetupDiCreateDeviceInfoList",
-        constants$0.SetupDiCreateDeviceInfoList$FUNC
-    );
-    static final FunctionDescriptor SetupDiOpenDeviceInfoW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiOpenDeviceInfoW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiOpenDeviceInfoW",
-        constants$0.SetupDiOpenDeviceInfoW$FUNC
-    );
     static final FunctionDescriptor SetupDiDestroyDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle SetupDiDestroyDeviceInfoList$MH = RuntimeHelper.downcallHandle(
         "SetupDiDestroyDeviceInfoList",
         constants$0.SetupDiDestroyDeviceInfoList$FUNC
-    );
-    static final FunctionDescriptor SetupDiOpenDeviceInterfaceW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiOpenDeviceInterfaceW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiOpenDeviceInterfaceW",
-        constants$0.SetupDiOpenDeviceInterfaceW$FUNC
     );
     static final FunctionDescriptor SetupDiDeleteDeviceInterfaceData$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -51,19 +22,6 @@ final class constants$0 {
     static final MethodHandle SetupDiDeleteDeviceInterfaceData$MH = RuntimeHelper.downcallHandle(
         "SetupDiDeleteDeviceInterfaceData",
         constants$0.SetupDiDeleteDeviceInterfaceData$FUNC
-    );
-    static final FunctionDescriptor SetupDiGetDeviceRegistryPropertyW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiGetDeviceRegistryPropertyW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiGetDeviceRegistryPropertyW",
-        constants$0.SetupDiGetDeviceRegistryPropertyW$FUNC
     );
 }
 
