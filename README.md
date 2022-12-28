@@ -119,8 +119,6 @@ USB devices can implement certain control requests to instruct Windows to automa
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
-This library does not yet run reliably on Windows as the Java VM sometimes overwrites the last error code, which is needed for proper function, not just in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
-
 The library has not been tested on Windows for ARM64. It might or might not work.
 
 
