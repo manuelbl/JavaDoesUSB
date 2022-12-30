@@ -88,7 +88,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hwnd = User32B.CreateWindowExW(0, className, windowName, 0, 0, 0, 0, 0,
                         User32.HWND_MESSAGE(), NULL, instance, NULL, lastErrorState);
                 if (hwnd.address() == 0)
-                    throwLastError(lastErrorState, "internal error (CreateWindowExW)");
+                    throwLastError(lastErrorState, "Internal error (CreateWindowExW)");
 
                 // configure notifications
                 var notificationFilter = arena.allocate(DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
@@ -100,7 +100,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 var notifyHandle = User32B.RegisterDeviceNotificationW(hwnd, notificationFilter,
                         User32.DEVICE_NOTIFY_WINDOW_HANDLE(), lastErrorState);
                 if (notifyHandle.address() == 0)
-                    throwLastError(lastErrorState, "internal error (RegisterDeviceNotificationW)");
+                    throwLastError(lastErrorState, "Internal error (RegisterDeviceNotificationW)");
 
                 // initial device enumeration
                 enumeratePresentDevices();
@@ -130,8 +130,15 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var lastErrorState = outerArena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // get device information set of all USB devices present
-            final var devInfoSetHandle = createDevInfoSet(outerCleanup, lastErrorState);
+            var devInfoSetHandle = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
+                    NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
+            if (Win.IsInvalidHandle(devInfoSetHandle))
+                throwLastError(lastErrorState, "Internal error (SetupDiGetClassDevsW)");
 
+            // ensure the result is destroyed when the scope is left
+            outerCleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+
+            // allocate SP_DEVINFO_DATA (will receive details for each device)
             var devInfo = outerArena.allocate(SP_DEVINFO_DATA.$LAYOUT());
             SP_DEVINFO_DATA.cbSize$set(devInfo, (int) SP_DEVINFO_DATA.$LAYOUT().byteSize());
 
@@ -183,10 +190,10 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                 var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
-                // create device info set
+                // create empty device info set
                 var devInfoSetHandle = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
                 if (Win.IsInvalidHandle(devInfoSetHandle))
-                    throwLastError(lastErrorState, "Cannot create device info list");
+                    throwLastError(lastErrorState, "Internal error (SetupDiCreateDeviceInfoList)");
                 cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
 
                 // get device info for child
@@ -418,15 +425,20 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
-            // get device information set of all USB devices present
-            final var devInfoSetHandle = createDevInfoSet(cleanup, lastErrorState);
+            // create empty device info set
+            var devInfoSetHandle = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
+            if (Win.IsInvalidHandle(devInfoSetHandle))
+                throwLastError(lastErrorState, "Internal error (SetupDiCreateDeviceInfoList)");
 
+            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+
+            // load device information into dev info set
             var devIntfData = arena.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, arena);
             if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0,
                     devIntfData, lastErrorState) == 0)
-                throwLastError(lastErrorState, "internal error (SetupDiOpenDeviceInterfaceW)");
+                throwLastError(lastErrorState, "Internal error (SetupDiOpenDeviceInterfaceW)");
 
             cleanup.add(() -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData));
 
@@ -436,7 +448,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     NULL, devInfo, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
-                    throwException(err, "internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    throwException(err, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
             }
 
             // ensure all hubs are closed later
@@ -487,29 +499,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     private static boolean isCompositeDevice(String deviceService) {
         // usbccgp is the USB Generic Parent Driver used for composite devices
         return "usbccgp".equalsIgnoreCase(deviceService);
-    }
-
-    /**
-     * Creates a new device information set for USB devices.
-     * <p>
-     * The info set is added to the cleanup object for later releasing.
-     * A native memory segment is passed to be used for the last error call state.
-     * </p>
-     * @param cleanup cleanup handler
-     * @param lastErrorState memory segment for last error call state
-     * @return handle to device information set
-     */
-    private static MemorySegment createDevInfoSet(ScopeCleanup cleanup, MemorySegment lastErrorState) {
-        // get device information set of all USB devices present
-        var devInfoSetHandle = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
-                NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
-        if (Win.IsInvalidHandle(devInfoSetHandle))
-            throwLastError(lastErrorState, "internal error (SetupDiGetClassDevsW)");
-
-        // ensure the result is destroyed when the scope is left
-        cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
-
-        return devInfoSetHandle;
     }
 
     private static final Pattern MULTIPLE_INTERFACE_ID = Pattern.compile("USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
