@@ -198,7 +198,7 @@ std::map<int, std::wstring> usb_registry::enumerate_child_devices(const std::vec
     for (const std::wstring& child_instance_id : child_ids) {
         HDEVINFO dev_info_set_hdl = SetupDiCreateDeviceInfoList(NULL, NULL);
         if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
-            throw usb_error("internal error (SetupDiGetClassDevsA)", GetLastError());
+            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result id destroyed when the scope is left
         auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
@@ -287,16 +287,17 @@ void usb_registry::on_device_connected(const WCHAR* path) {
 
     usb_device_ptr device;
     try {
-        // get as set of all USB devices present
-        HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+        // create empty device information set
+        HDEVINFO dev_info_set_hdl = SetupDiCreateDeviceInfoList(NULL, NULL);
         if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
-            usb_error::throw_error("internal error (SetupDiGetClassDevsW)");
+            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result is destroyed when the scope is left
         auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
             SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
         });
 
+        // load device information into dev info set
         SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
         if (!SetupDiOpenDeviceInterfaceW(dev_info_set_hdl, path, 0, &dev_intf_data))
             usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
@@ -305,6 +306,7 @@ void usb_registry::on_device_connected(const WCHAR* path) {
             SetupDiDeleteDeviceInterfaceData(dev_info_set_hdl, &dev_intf_data);
         });
 
+        // load device info data
         SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
         if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, nullptr, 0, nullptr, &dev_info)) {
             DWORD err = GetLastError();
