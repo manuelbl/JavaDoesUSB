@@ -121,20 +121,20 @@ void usb_registry::monitor() {
 void usb_registry::detect_present_devices() {
 
     // get device information set of all USB devices present
-    HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+    HDEVINFO dev_info_set = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    if (dev_info_set == INVALID_HANDLE_VALUE)
         throw usb_error("internal error (SetupDiGetClassDevsA)", GetLastError());
 
     // ensure the result id destroyed when the scope is left
-    auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-        SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+    auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+        SetupDiDestroyDeviceInfoList(dev_info_set);
     });
 
-    SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
+    SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
 
     // iterate over the set
     for (int i = 0; ; i++) {
-        if (!SetupDiEnumDeviceInfo(dev_info_set_hdl, i, &dev_info)) {
+        if (!SetupDiEnumDeviceInfo(dev_info_set, i, &dev_info_data)) {
             DWORD err = GetLastError();
             if (err == ERROR_NO_MORE_ITEMS)
                 break;
@@ -142,16 +142,16 @@ void usb_registry::detect_present_devices() {
         }
 
         // create new device
-        auto device = create_device(dev_info_set_hdl, &dev_info);
+        auto device = create_device(dev_info_set, &dev_info_data);
         devices.push_back(device);
     }
 }
 
-std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hdl, SP_DEVINFO_DATA* dev_info) {
+std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
 
-    DWORD usb_port_num = usb_device_info::get_device_property_int(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Address);
-    std::wstring instance_id = usb_device_info::get_device_property_string(dev_info_set_hdl, dev_info, &DEVPKEY_Device_InstanceId);
-    std::wstring parent_instance_id = usb_device_info::get_device_property_string(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Parent);
+    DWORD usb_port_num = usb_device_info::get_device_property_int(dev_info_set, dev_info_data, &DEVPKEY_Device_Address);
+    std::wstring instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_InstanceId);
+    std::wstring parent_instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_Parent);
 
     std::wstring hub_path = usb_device_info::get_device_path(parent_instance_id, &GUID_DEVINTERFACE_USB_HUB);
 
@@ -166,8 +166,8 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hd
 
     // check for composite device
     std::map<int, std::wstring> children{};
-    if (usb_device_info::is_composite_device(dev_info_set_hdl, dev_info))
-        children = enumerate_child_devices(usb_device_info::get_device_property_string_list(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Children));
+    if (usb_device_info::is_composite_device(dev_info_set, dev_info_data))
+        children = enumerate_child_devices(usb_device_info::get_device_property_string_list(dev_info_set, dev_info_data, &DEVPKEY_Device_Children));
 
     auto path = usb_device_info::get_device_path(instance_id, &GUID_DEVINTERFACE_USB_DEVICE);
 
@@ -196,27 +196,27 @@ std::map<int, std::wstring> usb_registry::enumerate_child_devices(const std::vec
     std::map<int, std::wstring> children{};
 
     for (const std::wstring& child_instance_id : child_ids) {
-        HDEVINFO dev_info_set_hdl = SetupDiCreateDeviceInfoList(NULL, NULL);
-        if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
+        if (dev_info_set == INVALID_HANDLE_VALUE)
             throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result id destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+            SetupDiDestroyDeviceInfoList(dev_info_set);
         });
 
         // get device info for child
-        SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
-        if (!SetupDiOpenDeviceInfoW(dev_info_set_hdl, child_instance_id.c_str(), nullptr, 0, &dev_info))
+        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
+        if (!SetupDiOpenDeviceInfoW(dev_info_set, child_instance_id.c_str(), nullptr, 0, &dev_info_data))
             throw usb_error("internal error (SetupDiOpenDeviceInfoW)", GetLastError());
         
         // get first interface number
-        int interface_number = usb_device_info::get_first_interface(dev_info_set_hdl, &dev_info);
+        int interface_number = usb_device_info::get_first_interface(dev_info_set, &dev_info_data);
         if (interface_number == -1)
             continue;
 
         // get device interface GUIDs
-        auto device_guids = usb_device_info::find_device_interface_guids(dev_info_set_hdl, &dev_info);
+        auto device_guids = usb_device_info::find_device_interface_guids(dev_info_set, &dev_info_data);
 
         CLSID clsid{};
         // use GUIDs to get device path
@@ -288,34 +288,34 @@ void usb_registry::on_device_connected(const WCHAR* path) {
     usb_device_ptr device;
     try {
         // create empty device information set
-        HDEVINFO dev_info_set_hdl = SetupDiCreateDeviceInfoList(NULL, NULL);
-        if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
+        if (dev_info_set == INVALID_HANDLE_VALUE)
             throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result is destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+            SetupDiDestroyDeviceInfoList(dev_info_set);
         });
 
         // load device information into dev info set
         SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
-        if (!SetupDiOpenDeviceInterfaceW(dev_info_set_hdl, path, 0, &dev_intf_data))
+        if (!SetupDiOpenDeviceInterfaceW(dev_info_set, path, 0, &dev_intf_data))
             usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
 
-        auto dev_intf_data_guard = make_scope_exit([dev_info_set_hdl, &dev_intf_data]() {
-            SetupDiDeleteDeviceInterfaceData(dev_info_set_hdl, &dev_intf_data);
+        auto dev_intf_data_guard = make_scope_exit([dev_info_set, &dev_intf_data]() {
+            SetupDiDeleteDeviceInterfaceData(dev_info_set, &dev_intf_data);
         });
 
         // load device info data
-        SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
-        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, nullptr, 0, nullptr, &dev_info)) {
+        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
+        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set, &dev_intf_data, nullptr, 0, nullptr, &dev_info_data)) {
             DWORD err = GetLastError();
             if (err != ERROR_INSUFFICIENT_BUFFER)
                 throw usb_error("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
         }
 
         // create new device
-        device = create_device(dev_info_set_hdl, &dev_info);
+        device = create_device(dev_info_set, &dev_info_data);
         devices.push_back(device);
     }
     catch (const std::exception& e) {

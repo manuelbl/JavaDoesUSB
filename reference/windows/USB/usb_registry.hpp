@@ -57,7 +57,7 @@ private:
 
     bool handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set_hdl, SP_DEVINFO_DATA* dev_info);
+    std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info);
 
     std::vector<usb_device_ptr> devices;
 
