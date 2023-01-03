@@ -130,17 +130,17 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var lastErrorState = outerArena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // get device information set of all USB devices present
-            var devInfoSetHandle = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
+            var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL,
                     NULL, SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
-            if (Win.IsInvalidHandle(devInfoSetHandle))
+            if (Win.IsInvalidHandle(devInfoSet))
                 throwLastError(lastErrorState, "Internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
-            outerCleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+            outerCleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // allocate SP_DEVINFO_DATA (will receive details for each device)
-            var devInfo = outerArena.allocate(SP_DEVINFO_DATA.$LAYOUT());
-            SP_DEVINFO_DATA.cbSize$set(devInfo, (int) SP_DEVINFO_DATA.$LAYOUT().byteSize());
+            var devInfoData = outerArena.allocate(SP_DEVINFO_DATA.$LAYOUT());
+            SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) SP_DEVINFO_DATA.$LAYOUT().byteSize());
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
@@ -149,19 +149,19 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             // iterate all devices
             for (int i = 0; true; i++) {
 
-                if (SetupAPI2.SetupDiEnumDeviceInfo(devInfoSetHandle, i, devInfo, lastErrorState) == 0) {
+                if (SetupAPI2.SetupDiEnumDeviceInfo(devInfoSet, i, devInfoData, lastErrorState) == 0) {
                     int err = Win.getLastError(lastErrorState);
                     if (err == Kernel32.ERROR_NO_MORE_ITEMS())
                         break;
                     throwLastError(lastErrorState, "Internal error (SetupDiEnumDeviceInfo)");
                 }
 
-                var instanceID = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo,
+                var instanceId = DeviceProperty.getDeviceStringProperty(devInfoSet, devInfoData,
                         DeviceProperty.DEVPKEY_Device_InstanceId);
-                var devicePath = DeviceProperty.getDevicePath(instanceID, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+                var devicePath = DeviceProperty.getDevicePath(instanceId, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
 
                 try {
-                    deviceList.add(createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles));
+                    deviceList.add(createDeviceFromDeviceInfo(devInfoSet, devInfoData, devicePath, hubHandles));
 
                 } catch (Throwable e) {
                     System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring "
@@ -191,21 +191,21 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
                 // create empty device info set
-                var devInfoSetHandle = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
-                if (Win.IsInvalidHandle(devInfoSetHandle))
+                var devInfoSet = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
+                if (Win.IsInvalidHandle(devInfoSet))
                     throwLastError(lastErrorState, "Internal error (SetupDiCreateDeviceInfoList)");
-                cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+                cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
                 // get device info for child
-                var devInfo = arena.allocate(SP_DEVINFO_DATA.$LAYOUT());
-                SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
+                var devInfoData = arena.allocate(SP_DEVINFO_DATA.$LAYOUT());
+                SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) devInfoData.byteSize());
                 var instanceIdSegment = Win.createSegmentFromString(instanceId, arena);
-                if (SetupAPI2.SetupDiOpenDeviceInfoW(devInfoSetHandle, instanceIdSegment, NULL, 0,
-                        devInfo, lastErrorState) == 0)
+                if (SetupAPI2.SetupDiOpenDeviceInfoW(devInfoSet, instanceIdSegment, NULL, 0,
+                        devInfoData, lastErrorState) == 0)
                     throwLastError(lastErrorState, "Internal error (SetupDiOpenDeviceInfoW)");
 
                 // get hardware IDs (to extract interface number)
-                var hardwareIds = DeviceProperty.getDeviceStringListProperty(devInfoSetHandle, devInfo,
+                var hardwareIds = DeviceProperty.getDeviceStringListProperty(devInfoSet, devInfoData,
                         DeviceProperty.DEVPKEY_Device_HardwareIds);
                 if (hardwareIds == null)
                     throwException("DEVPKEY_Device_HardwareIds not found");
@@ -213,7 +213,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 if (interfaceNumber == -1)
                     continue;
 
-                var guids = DeviceProperty.findDeviceInterfaceGUIDs(devInfoSetHandle, devInfo, arena);
+                var guids = DeviceProperty.findDeviceInterfaceGUIDs(devInfoSet, devInfoData, arena);
 
                 for (var guid : guids) {
                     // check for Class GUID
@@ -236,15 +236,15 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         return children;
     }
 
-    private USBDevice createDeviceFromDeviceInfo(MemorySegment devInfoSetHandle, MemorySegment devInfo,
+    private USBDevice createDeviceFromDeviceInfo(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                  String devicePath, HashMap<String, MemorySegment> hubHandles) {
         try (var arena = Arena.openConfined()) {
 
-            var usbPortNum = DeviceProperty.getDeviceIntProperty(devInfoSetHandle, devInfo,
+            var usbPortNum = DeviceProperty.getDeviceIntProperty(devInfoSet, devInfoData,
                     DeviceProperty.DEVPKEY_Device_Address);
-            var parentInstanceID = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo,
+            var parentInstanceId = DeviceProperty.getDeviceStringProperty(devInfoSet, devInfoData,
                     DeviceProperty.DEVPKEY_Device_Parent);
-            var hubPath = DeviceProperty.getDevicePath(parentInstanceID, USBHelper.GUID_DEVINTERFACE_USB_HUB);
+            var hubPath = DeviceProperty.getDevicePath(parentInstanceId, USBHelper.GUID_DEVINTERFACE_USB_HUB);
 
             // open hub if not open yet
             var hubHandle = hubHandles.get(hubPath);
@@ -259,19 +259,16 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             }
 
             // check for composite device
-            var deviceService = DeviceProperty.getDeviceStringProperty(devInfoSetHandle, devInfo,
-                    DeviceProperty.DEVPKEY_Device_Service);
-
             Map<Integer, String> children = null;
-            if (isCompositeDevice(deviceService)) {
+            if (DeviceProperty.isCompositeDevice(devInfoSet, devInfoData)) {
 
-                // For certain devices, it seems to take some time until DEVPKEY_Device_Children
+                // For certain devices, it seems to take some time until the "Device_Children"
                 // entry is present. So we retry a few times if needed and pause in between.
                 List<String> childrenInstanceIDs;
                 int numTries = 5;
                 while (true) {
                     numTries -= 1;
-                    childrenInstanceIDs = DeviceProperty.getDeviceStringListProperty(devInfoSetHandle, devInfo,
+                    childrenInstanceIDs = DeviceProperty.getDeviceStringListProperty(devInfoSet, devInfoData,
                             DeviceProperty.DEVPKEY_Device_Children);
                     if (childrenInstanceIDs != null || numTries == 0)
                         break;
@@ -426,26 +423,26 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // create empty device info set
-            var devInfoSetHandle = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
-            if (Win.IsInvalidHandle(devInfoSetHandle))
+            var devInfoSet = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
+            if (Win.IsInvalidHandle(devInfoSet))
                 throwLastError(lastErrorState, "Internal error (SetupDiCreateDeviceInfoList)");
 
-            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // load device information into dev info set
             var devIntfData = arena.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, arena);
-            if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSetHandle, devicePathSegment, 0,
+            if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSet, devicePathSegment, 0,
                     devIntfData, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Internal error (SetupDiOpenDeviceInterfaceW)");
 
-            cleanup.add(() -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSetHandle, devIntfData));
+            cleanup.add(() -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSet, devIntfData));
 
-            var devInfo = arena.allocate(SP_DEVINFO_DATA.$LAYOUT());
-            SP_DEVINFO_DATA.cbSize$set(devInfo, (int) devInfo.byteSize());
-            if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, NULL, 0,
-                    NULL, devInfo, lastErrorState) == 0) {
+            var devInfoData = arena.allocate(SP_DEVINFO_DATA.$LAYOUT());
+            SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) devInfoData.byteSize());
+            if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, NULL, 0,
+                    NULL, devInfoData, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
                     throwException(err, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
@@ -457,7 +454,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             try {
                 // create device instance
-                var device = createDeviceFromDeviceInfo(devInfoSetHandle, devInfo, devicePath, hubHandles);
+                var device = createDeviceFromDeviceInfo(devInfoSet, devInfoData, devicePath, hubHandles);
 
                 // add it to device list
                 addDevice(device);
@@ -494,11 +491,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 return i;
         }
         return -1;
-    }
-
-    private static boolean isCompositeDevice(String deviceService) {
-        // usbccgp is the USB Generic Parent Driver used for composite devices
-        return "usbccgp".equalsIgnoreCase(deviceService);
     }
 
     private static final Pattern MULTIPLE_INTERFACE_ID = Pattern.compile("USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");

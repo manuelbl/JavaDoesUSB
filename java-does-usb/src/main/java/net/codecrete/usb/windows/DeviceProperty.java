@@ -57,17 +57,17 @@ public class DeviceProperty {
 
     /**
      * Gets the device property with integer type.
-     * @param devInfo device information set containing the device
-     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the device in the information set
+     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
      */
-    public static int getDeviceIntProperty(MemorySegment devInfo, MemorySegment devInfoData, MemorySegment propertyKey) {
+    public static int getDeviceIntProperty(MemorySegment devInfoSet, MemorySegment devInfoData, MemorySegment propertyKey) {
         try (var arena = Arena.openConfined()) {
             var propertyTypeHolder = arena.allocate(JAVA_INT);
             var propertyValueHolder = arena.allocate(JAVA_INT);
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            if (SetupAPI2.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
+            if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Internal error (SetupDiGetDevicePropertyW)");
 
@@ -80,15 +80,15 @@ public class DeviceProperty {
 
     /**
      * Gets the device property with string type.
-     * @param devInfo device information set containing the device
-     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the device in the information set
+     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
      */
-    public static String getDeviceStringProperty(MemorySegment devInfo, MemorySegment devInfoData,
+    public static String getDeviceStringProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                  MemorySegment propertyKey) {
         try (var arena = Arena.openConfined()) {
-            var propertyValue = getVariableLengthProperty(devInfo, devInfoData, propertyKey, SetupAPI.DEVPROP_TYPE_STRING(), arena);
+            var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey, SetupAPI.DEVPROP_TYPE_STRING(), arena);
             if (propertyValue == null)
                 return null;
             return Win.createStringFromSegment(propertyValue);
@@ -97,15 +97,15 @@ public class DeviceProperty {
 
     /**
      * Gets the device property with string list type.
-     * @param devInfo device information set containing the device
-     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the device in the information set
+     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
      */
-    public static List<String> getDeviceStringListProperty(MemorySegment devInfo, MemorySegment devInfoData,
+    public static List<String> getDeviceStringListProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                            MemorySegment propertyKey) {
         try (var arena = Arena.openConfined()) {
-            var propertyValue = getVariableLengthProperty(devInfo, devInfoData, propertyKey,
+            var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey,
                     SetupAPI.DEVPROP_TYPE_STRING() | SetupAPI.DEVPROP_TYPEMOD_LIST(), arena);
             if (propertyValue == null)
                 return null;
@@ -114,14 +114,14 @@ public class DeviceProperty {
         }
     }
 
-    private static MemorySegment getVariableLengthProperty(MemorySegment devInfo, MemorySegment devInfoData, MemorySegment propertyKey,
+    private static MemorySegment getVariableLengthProperty(MemorySegment devInfoSet, MemorySegment devInfoData, MemorySegment propertyKey,
                                                            int propertyType, Arena arena) {
 
         // query length (thus no buffer)
         var propertyTypeHolder = arena.allocate(JAVA_INT);
         var requiredSizeHolder = arena.allocate(JAVA_INT);
         var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
+        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
                 requiredSizeHolder, 0, lastErrorState) == 0) {
             int err = Win.getLastError(lastErrorState);
             if (err == Kernel32.ERROR_NOT_FOUND())
@@ -139,7 +139,7 @@ public class DeviceProperty {
         var propertyValueHolder = arena.allocateArray(JAVA_CHAR, stringLen + 1);
 
         // get property value
-        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfo, devInfoData, propertyKey, propertyTypeHolder,
+        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
                 propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, lastErrorState) == 0)
             throwLastError(lastErrorState, "Internal error (SetupDiGetDevicePropertyW)");
 
@@ -148,18 +148,18 @@ public class DeviceProperty {
 
     /**
      * Gets a list of {@code DeviceInterfaceGUIDs} from device-specific configuration information in the registry.
-     * @param devInfoSetHandle device information set containing the device
-     * @param devInfo {@code SP_DEVINFO_DATA} structure specifying the device in the information set
+     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param arena arena for allocating memory
      * @return list of GUIDs
      */
-    public static List<String> findDeviceInterfaceGUIDs(MemorySegment devInfoSetHandle, MemorySegment devInfo, Arena arena) {
+    public static List<String> findDeviceInterfaceGUIDs(MemorySegment devInfoSet, MemorySegment devInfoData, Arena arena) {
 
         try (var cleanup = new ScopeCleanup()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // open device registry key
-            var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSetHandle, devInfo, SetupAPI.DICS_FLAG_GLOBAL(),
+            var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(),
                     0, SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), lastErrorState);
             if (Win.IsInvalidHandle(regKey))
                 throwLastError(lastErrorState, "Cannot open device registry key");
@@ -198,18 +198,18 @@ public class DeviceProperty {
 
             // get device info set for instance
             var instanceIDSegment = Win.createSegmentFromString(instanceID, arena);
-            final var devInfoSetHandle = SetupAPI2.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL,
+            final var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL,
                     SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
-            if (Win.IsInvalidHandle(devInfoSetHandle))
+            if (Win.IsInvalidHandle(devInfoSet))
                 throwLastError(lastErrorState, "internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
-            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSetHandle));
+            cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // retrieve first element of enumeration
             var devIntfData = arena.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
-            if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSetHandle, NULL, interfaceGuid, 0,
+            if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0,
                     devIntfData, lastErrorState) == 0)
                 throwLastError(lastErrorState, "internal error (SetupDiEnumDeviceInterfaces)");
 
@@ -221,12 +221,26 @@ public class DeviceProperty {
             SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData,
                     (int) SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
             int intfDetailDataSize = (int) intfDetailData.byteSize();
-            if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSetHandle, devIntfData, intfDetailData,
+            if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, intfDetailData,
                     intfDetailDataSize, NULL, NULL, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
             return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
         }
+    }
+
+    /**
+     * Checks if the device is a composite USB device
+     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
+     * @return {@code true} if it is a composite device
+     */
+    public static boolean isCompositeDevice(MemorySegment devInfoSet, MemorySegment devInfoData) {
+        var deviceService = getDeviceStringProperty(devInfoSet, devInfoData,
+                DEVPKEY_Device_Service);
+
+        // usbccgp is the USB Generic Parent Driver used for composite devices
+        return "usbccgp".equalsIgnoreCase(deviceService);
     }
 
     private static MemorySegment createDEVPROPKEY(int data1, short data2, short data3, byte data4_0, byte data4_1,
