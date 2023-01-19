@@ -75,9 +75,11 @@ public class WindowsUSBException extends USBException {
     private static String getErrorMessage(int errorCode) {
         try (var session = MemorySession.openConfined()) {
             var messagePointerHolder = session.allocate(ADDRESS);
-            Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()
+            int res = Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()
                             | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
                     NULL, errorCode, 0, messagePointerHolder, 0, NULL);
+            if (res == 0)
+                return "unspecified error";
             var messagePointer = messagePointerHolder.get(ADDRESS, 0);
             String message = Win.createStringFromSegment(MemorySegment.ofAddress(messagePointer, 4000, session));
             Kernel32.LocalFree(messagePointer);
