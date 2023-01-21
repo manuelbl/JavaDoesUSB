@@ -8,6 +8,7 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.USBException;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBDeviceRegistry;
@@ -391,6 +392,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE, index,
                     DEFAULT_LANGUAGE, arena));
             return stringDesc.string();
+        } catch (USBException e) {
+            System.err.printf("Info: [JavaDoesUSB] failed to retrieve string descriptor %d (%s) - ignoring%n", index, e.getMessage());
+            return null;
         }
     }
 
