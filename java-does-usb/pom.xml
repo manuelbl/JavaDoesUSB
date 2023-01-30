@@ -57,7 +57,9 @@
                 <version>3.10.1</version>
                 <configuration>
                     <release>19</release>
-                    <compilerArgs>--enable-preview</compilerArgs>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
                     <source>19</source>
                     <target>19</target>
                 </configuration>
