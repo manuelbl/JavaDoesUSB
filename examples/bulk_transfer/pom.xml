@@ -6,7 +6,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>bulk-transfer</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
 
   <name>bulk-transfer</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/bulk_transfer</url>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1</version>
     </dependency>
   </dependencies>
 

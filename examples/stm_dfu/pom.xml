@@ -4,7 +4,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>stm_dfu</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
 
   <name>stm_dfu</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/stm_dfu</url>
@@ -13,7 +13,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1</version>
     </dependency>
   </dependencies>
 
