@@ -55,3 +55,8 @@ int iokit_helper::ioreg_get_property_as_int(io_service_t service, CFStringRef pr
     CFNumberGetValue(static_cast<CFNumberRef>(property), kCFNumberSInt32Type, &value);
     return value;
 }
+
+int iokit_helper::get_ref_count(void* obj) {
+    int* data = reinterpret_cast<int**>(obj)[1];
+    return data[2];
+}

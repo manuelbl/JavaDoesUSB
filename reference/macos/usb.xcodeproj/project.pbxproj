@@ -20,6 +20,7 @@
 		64937C7E28D60C82009BD0C2 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64937C7D28D60C82009BD0C2 /* CoreFoundation.framework */; };
 		64937C8128D6F9DE009BD0C2 /* tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C7F28D6F9DE009BD0C2 /* tests.cpp */; };
 		64937C8428D71D31009BD0C2 /* assertion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64937C8228D71D31009BD0C2 /* assertion.cpp */; };
+		649E7E1A298AEB580043B589 /* usb_iostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 649E7E18298AEB580043B589 /* usb_iostream.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -60,6 +61,8 @@
 		64937C8028D6F9DE009BD0C2 /* tests.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = tests.hpp; sourceTree = "<group>"; };
 		64937C8228D71D31009BD0C2 /* assertion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = assertion.cpp; sourceTree = "<group>"; };
 		64937C8328D71D31009BD0C2 /* assertion.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = assertion.hpp; sourceTree = "<group>"; };
+		649E7E18298AEB580043B589 /* usb_iostream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = usb_iostream.cpp; sourceTree = "<group>"; };
+		649E7E19298AEB580043B589 /* usb_iostream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = usb_iostream.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,16 +98,20 @@
 		64937C6228D5EBF1009BD0C2 /* USB */ = {
 			isa = PBXGroup;
 			children = (
-				64835E5D290BCA9F00113E4E /* config_parser.cpp */,
-				64835E5E290BCA9F00113E4E /* config_parser.hpp */,
-				64835E5F290BCA9F00113E4E /* configuration.cpp */,
-				64835E5C290BCA9F00113E4E /* configuration.hpp */,
 				64937C8328D71D31009BD0C2 /* assertion.hpp */,
 				64937C8228D71D31009BD0C2 /* assertion.cpp */,
+				64835E5E290BCA9F00113E4E /* config_parser.hpp */,
+				64835E5D290BCA9F00113E4E /* config_parser.cpp */,
+				64835E5C290BCA9F00113E4E /* configuration.hpp */,
+				64835E5F290BCA9F00113E4E /* configuration.cpp */,
 				64937C6D28D5ED1F009BD0C2 /* iokit_helper.hpp */,
 				64937C6C28D5ED1F009BD0C2 /* iokit_helper.cpp */,
 				64937C6328D5EBF1009BD0C2 /* main.cpp */,
+				64292E7229144D6C004F6169 /* prng.hpp */,
+				64292E7129144D6C004F6169 /* prng.cpp */,
 				64937C6F28D5ED1F009BD0C2 /* scope.hpp */,
+				64292E7529144DE1004F6169 /* speed_test.hpp */,
+				64292E7429144DE1004F6169 /* speed_test.cpp */,
 				64937C8028D6F9DE009BD0C2 /* tests.hpp */,
 				64937C7F28D6F9DE009BD0C2 /* tests.cpp */,
 				64937C7528D5ED8D009BD0C2 /* usb_error.hpp */,
@@ -113,10 +120,8 @@
 				64937C7728D5FE6D009BD0C2 /* usb_device.cpp */,
 				64937C6E28D5ED1F009BD0C2 /* usb_registry.hpp */,
 				64937C6B28D5ED1F009BD0C2 /* usb_registry.cpp */,
-				64292E7129144D6C004F6169 /* prng.cpp */,
-				64292E7229144D6C004F6169 /* prng.hpp */,
-				64292E7429144DE1004F6169 /* speed_test.cpp */,
-				64292E7529144DE1004F6169 /* speed_test.hpp */,
+				649E7E19298AEB580043B589 /* usb_iostream.hpp */,
+				649E7E18298AEB580043B589 /* usb_iostream.cpp */,
 			);
 			path = USB;
 			sourceTree = "<group>";
@@ -193,6 +198,7 @@
 				64937C7928D5FE6D009BD0C2 /* usb_device.cpp in Sources */,
 				64937C7228D5ED1F009BD0C2 /* usb_registry.cpp in Sources */,
 				64835E60290BCA9F00113E4E /* config_parser.cpp in Sources */,
+				649E7E1A298AEB580043B589 /* usb_iostream.cpp in Sources */,
 				64937C6428D5EBF1009BD0C2 /* main.cpp in Sources */,
 				64937C7628D5ED8D009BD0C2 /* usb_error.cpp in Sources */,
 				64292E7329144D6C004F6169 /* prng.cpp in Sources */,

@@ -19,10 +19,10 @@
 #include <thread>
 
 usb_registry::usb_registry()
-: notify_port(nullptr), run_loop_source(nullptr),
+: notify_port(nullptr), monitor_run_loop_source(nullptr),
     device_connected_iter(0), device_disconnected_iter(0),
     on_connected_callback(nullptr), on_disconnected_callback(nullptr),
-    is_device_list_ready(false) {
+    async_io_run_loop(nullptr), is_device_list_ready(false) {
 }
 
 usb_registry::~usb_registry() {
@@ -34,9 +34,12 @@ usb_registry::~usb_registry() {
         IOObjectRelease(device_disconnected_iter);
         device_disconnected_iter = 0;
     }
-    
+    if (async_io_run_loop != nullptr) {
+        CFRunLoopStop(async_io_run_loop);
+        async_io_thread.join();
+    }
     if (notify_port != nullptr) {
-        CFRunLoopStop(run_loop);
+        CFRunLoopStop(monitor_run_loop);
         monitor_thread.join();
         
         IONotificationPortDestroy(notify_port);
@@ -59,17 +62,17 @@ void usb_registry::set_on_device_disconnected(std::function<void(usb_device_ptr 
 void usb_registry::start() {
     monitor_thread = std::thread(&usb_registry::monitor, this);
     
-    std::unique_lock<std::mutex> wait_lock(monitor_mutex);
+    std::unique_lock wait_lock(monitor_mutex);
     monitor_condition.wait(wait_lock, [this] { return is_device_list_ready; });
 }
 
 void usb_registry::monitor() {
     
     notify_port = IONotificationPortCreate(kIOMainPortDefault);
-    run_loop_source = IONotificationPortGetRunLoopSource(notify_port);
+    monitor_run_loop_source = IONotificationPortGetRunLoopSource(notify_port);
     
-    run_loop = CFRunLoopGetCurrent();
-    CFRunLoopAddSource(run_loop, run_loop_source, kCFRunLoopDefaultMode);
+    monitor_run_loop = CFRunLoopGetCurrent();
+    CFRunLoopAddSource(monitor_run_loop, monitor_run_loop_source, kCFRunLoopDefaultMode);
     
     auto matching_dict = IOServiceMatching(kIOUSBDeviceClassName);  // Interested in instances of USB device
 
@@ -103,7 +106,11 @@ void usb_registry::monitor() {
     // iterate to activate notifications
     device_disconnected(device_disconnected_iter);
     
-    is_device_list_ready = true;
+    {
+        std::lock_guard lock(monitor_mutex);
+        is_device_list_ready = true;
+    }
+    
     monitor_condition.notify_all();
 
     // start run loop
@@ -142,7 +149,7 @@ void usb_registry::device_connected(io_iterator_t iterator) {
             continue; // ignore
         
         // Create new device
-        std::shared_ptr<usb_device> device(new usb_device(service, dev, entry_id, vendor_id, product_id));
+        std::shared_ptr<usb_device> device(new usb_device(this, service, dev, entry_id, vendor_id, product_id));
         devices.push_back(device);
         
         // Call callback function
@@ -182,4 +189,38 @@ void usb_registry::device_disconnected(io_iterator_t iterator) {
         if (on_disconnected_callback != nullptr)
             on_disconnected_callback(device);
     }
+}
+
+std::shared_ptr<usb_device> usb_registry::get_shared_ptr(usb_device* device) {
+    auto it = std::find_if(devices.cbegin(), devices.cend(), [device](auto dev) { return dev.get() == device; });
+    if (it == devices.cend())
+        return nullptr;
+    
+    return *it;
+}
+
+void usb_registry::add_event_source(CFRunLoopSourceRef source) {
+    std::unique_lock wait_lock(async_io_mutex);
+    if (async_io_run_loop == nullptr) {
+        async_io_thread = std::thread(&usb_registry::async_io_run, this, source);
+        async_io_condition.wait(wait_lock, [this] { return async_io_run_loop != nullptr; });
+        return;
+    }
+    
+    CFRunLoopAddSource(async_io_run_loop, source, kCFRunLoopDefaultMode);
+}
+
+void usb_registry::remove_event_source(CFRunLoopSourceRef source) {
+    CFRunLoopRemoveSource(async_io_run_loop, source, kCFRunLoopDefaultMode);
+}
+
+void usb_registry::async_io_run(CFRunLoopSourceRef first_source) {
+    {
+        std::lock_guard lock(async_io_mutex);
+        async_io_run_loop = CFRunLoopGetCurrent();
+        CFRunLoopAddSource(async_io_run_loop, first_source, kCFRunLoopDefaultMode);
+    }
+    
+    async_io_condition.notify_all();
+    CFRunLoopRun();
 }

@@ -52,20 +52,38 @@ private:
 
     static void device_connected_f(void *refcon, io_iterator_t iterator);
     static void device_disconnected_f(void *refcon, io_iterator_t iterator);
+    
+    std::shared_ptr<usb_device> get_shared_ptr(usb_device* device);
+    // Add event source to background thread for handling asynchronous IO completion
+    void add_event_source(CFRunLoopSourceRef source);
+    // Remove event source to background thread for handling asynchronous IO completion
+    void remove_event_source(CFRunLoopSourceRef source);
+    // Main function for background thread
+    void async_io_run(CFRunLoopSourceRef first_source);
 
     std::vector<usb_device_ptr> devices;
 
     std::function<void(usb_device_ptr device)> on_connected_callback;
     std::function<void(usb_device_ptr device)> on_disconnected_callback;
 
+    // monitoring thread, port, run loop, mutex, condition etc.
     std::thread monitor_thread;
-    CFRunLoopRef run_loop;
+    CFRunLoopRef monitor_run_loop;
     IONotificationPortRef notify_port;
-    CFRunLoopSourceRef run_loop_source;
+    CFRunLoopSourceRef monitor_run_loop_source;
+    std::mutex monitor_mutex;
+    std::condition_variable monitor_condition;
+
+    // async_io thread and run loop
+    std::thread async_io_thread;
+    volatile CFRunLoopRef async_io_run_loop;
+    std::mutex async_io_mutex;
+    std::condition_variable async_io_condition;
+
     io_iterator_t device_connected_iter;
     io_iterator_t device_disconnected_iter;
     
     bool is_device_list_ready;
-    std::mutex monitor_mutex;
-    std::condition_variable monitor_condition;
+    
+    friend class usb_device;
 };

@@ -20,6 +20,8 @@ public:
     static std::string string_from_cfstring(CFStringRef str);
     static std::string ioreg_get_property_as_string(io_service_t service, CFStringRef property_name);
     static int ioreg_get_property_as_int(io_service_t service, CFStringRef property_name);
+    
+    static int get_ref_count(void* obj);
 };
 
 template<typename T> T** iokit_helper::get_interface(io_service_t service, CFUUIDRef plugin_type, CFUUIDRef interface_id) {
