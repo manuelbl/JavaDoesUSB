@@ -40,14 +40,17 @@ bool speed_test::transmit(int num_bytes) {
     
     prng seq(PRNG_INIT);
     
-    std::vector<uint8_t> buf(2048);
+    std::vector<uint8_t> buf(2000);
     int pos = 0;
     
+    auto is_ptr = device_->open_output_stream(ep_out_);
+    std::ostream& os = *is_ptr;
+
     while (num_bytes > 0) {
         int n = std::min(num_bytes, static_cast<int>(buf.size()));
         try {
             seq.fill(buf, n);
-            device_->transfer_out(ep_out_, buf, n);
+            os.write(reinterpret_cast<char*>(buf.data()), n);
                         
         } catch (usb_error& error) {
             std::cerr << std::endl << "ERROR: " << error.what() << " (writing at pos " << pos << ")" << std::endl;
@@ -66,12 +69,21 @@ bool speed_test::receive(int num_bytes) {
     
     prng seq(PRNG_INIT);
     int pos = 0;
+    std::vector<uint8_t> data;
+    
+    auto is_ptr = device_->open_input_stream(ep_in_);
+    std::istream& is = *is_ptr;
     
     while (num_bytes > 0) {
         int n;
         try {
-            std::vector<uint8_t> data = device_->transfer_in(ep_in_);
-            n = std::min(num_bytes, static_cast<int>(data.size()));
+            data.resize(2000);
+            is.read(reinterpret_cast<char*>(data.data()), data.capacity());
+            n = static_cast<int>(is.gcount());
+            if (n <= 0)
+                break;
+            data.resize(n);
+
             int p = seq.verify(data, n);
             if (p != -1) {
                 std::cerr << std::endl << "Invalid data received at pos " << (pos + p) << std::endl;
@@ -87,6 +99,10 @@ bool speed_test::receive(int num_bytes) {
         pos += n;
         
         update_progress(n);
+    }
+    
+    if (num_bytes != 0) {
+        std::cerr << std::endl << "ERROR: EOF encountered after " << pos << " bytes" << std::endl;
     }
     
     return true;
@@ -111,7 +127,7 @@ void speed_test::start_measurement() {
 }
 
 void speed_test::update_progress(int n) {
-    std::lock_guard<std::mutex> lockGuard(progress_mutex);
+    std::lock_guard lock(progress_mutex);
     processed_bytes += n;
 }
 

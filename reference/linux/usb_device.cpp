@@ -8,6 +8,8 @@
 //
 
 #include "usb_device.hpp"
+#include "usb_iostream.hpp"
+#include "usb_registry.hpp"
 #include "usb_error.hpp"
 #include "scope.hpp"
 #include "config_parser.hpp"
@@ -21,8 +23,8 @@
 #include <fstream>
 
 
-usb_device::usb_device(const char* path, int vendor_id, int product_id)
-: path_(path), fd_(-1), vendor_id_(vendor_id), product_id_(product_id) {
+usb_device::usb_device(usb_registry* registry, const char* path, int vendor_id, int product_id)
+: registry_(registry), path_(path), fd_(-1), uses_urbs_(false), vendor_id_(vendor_id), product_id_(product_id) {
     read_descriptor();
 }
 
@@ -112,6 +114,11 @@ void usb_device::open() {
 void usb_device::close() {
     if (!is_open())
         return;
+
+    if (uses_urbs_) {
+        registry_->remove_async_fd(fd_);
+        uses_urbs_ = false;
+    }
     
     for (auto& intf : interfaces_)
         intf.set_claimed(false);
@@ -170,7 +177,7 @@ std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {
 
     std::vector<uint8_t> data(ep->packet_size());
 
-    struct usbdevfs_bulktransfer transfer = {0};
+    usbdevfs_bulktransfer transfer = {0};
     transfer.ep = endpoint_number + 128;
     transfer.len = ep->packet_size();
     transfer.timeout = timeout;
@@ -190,7 +197,7 @@ void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& d
 
     check_endpoint(usb_direction::out, endpoint_number);
 
-    struct usbdevfs_bulktransfer transfer = {0};
+    usbdevfs_bulktransfer transfer = {0};
     transfer.ep = endpoint_number;
     transfer.len = data.size();
     transfer.timeout = timeout;
@@ -206,7 +213,7 @@ int usb_device::control_transfer_core(const usb_control_request &request, uint8_
     if (!is_open())
         throw usb_error("USB device is not open");
     
-    struct usbdevfs_ctrltransfer ctrl_request = {0};
+    usbdevfs_ctrltransfer ctrl_request = {0};
     ctrl_request.bRequestType = request.bmRequestType;
     ctrl_request.bRequest = request.bRequest;
     ctrl_request.wValue = request.wValue;
@@ -271,4 +278,29 @@ const usb_endpoint* usb_device::check_endpoint(usb_direction direction, int endp
     }
 
     throw usb_error("no such endpoint");
+}
+
+std::unique_ptr<std::istream> usb_device::open_input_stream(int endpoint_number) {
+    return std::unique_ptr<std::istream>(new usb_istream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+std::unique_ptr<std::ostream> usb_device::open_output_stream(int endpoint_number) {
+    return std::unique_ptr<std::ostream>(new usb_ostream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+void usb_device::submit_urb(usbdevfs_urb* urb) {
+    if (!uses_urbs_) {
+        uses_urbs_ = true;
+        registry_->add_async_fd(fd_);
+    }
+
+    int result = ioctl(fd_, USBDEVFS_SUBMITURB, urb);
+    if (result < 0)
+        usb_error::throw_error("Failed to submit URB");
+}
+
+void usb_device::cancel_urb(usbdevfs_urb* urb) {
+    int result = ioctl(fd_, USBDEVFS_DISCARDURB, urb);
+    if (result < 0)
+        usb_error::throw_error("Failed to submit URB");
 }

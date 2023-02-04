@@ -68,6 +68,8 @@ struct usb_control_request {
     }
 };
 
+class usb_registry;
+struct usbdevfs_urb;
 
 /**
  * USB device.
@@ -203,17 +205,44 @@ public:
      */
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
 
+    /**
+     * Open a new input stream for a bulk endpoint.
+     *
+     * The input stream is optimized for maximum throughput.
+     *
+     * Do not use the input stream concurrently with other transfer operations on the same endpoint. The input stream
+     * buffers data for high throughput. When the stream is closed, any data in the buffers will be lost.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::istream> open_input_stream(int endpoint_number);
+
+    /**
+     * Open a new output stream for a bulk endpoint.
+     *
+     * The output stream is optimized for maximum throughput.
+     *
+     * Do not use the output stream concurrently with other transfer operations on the same endpoint.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::ostream> open_output_stream(int endpoint_number);
+
 private:
-    usb_device(const char* path, int vendor_id, int product_id);
+    usb_device(usb_registry* registry, const char* path, int vendor_id, int product_id);
     void set_product_strings(const char* manufacturer, const char* product, const char* serial_number);
     const char* path() const { return path_.c_str(); }
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
     void read_descriptor();
     usb_interface* get_intf_ptr(int number);
     const usb_endpoint* check_endpoint(usb_direction direction, int endpoint_number);
+    void submit_urb(usbdevfs_urb* urb);
+    void cancel_urb(usbdevfs_urb* urb);
 
+    usb_registry* registry_;
     std::string path_;
     int fd_;
+    bool uses_urbs_;
     std::set<int> claimed_interfaces_;
     std::vector<usb_interface> interfaces_;
 
@@ -224,6 +253,8 @@ private:
     std::string serial_number_;
     
     friend class usb_registry;
+    friend class usb_istreambuf;
+    friend class usb_ostreambuf;
 };
 
 typedef std::shared_ptr<usb_device> usb_device_ptr;

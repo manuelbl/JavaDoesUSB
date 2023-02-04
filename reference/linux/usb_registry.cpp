@@ -16,6 +16,8 @@
 #include <poll.h>
 #include <unistd.h>
 #include <sys/eventfd.h>
+#include <linux/usbdevice_fs.h>
+#include <sys/ioctl.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -26,15 +28,21 @@
 #include <thread>
 
 usb_registry::usb_registry()
-: wake_event_fd(-1),
-    on_connected_callback(nullptr), on_disconnected_callback(nullptr),
-    is_device_list_ready(false) {
+: monitor_wake_event_fd(-1),
+    on_connected_callback(nullptr), on_disconnected_callback(nullptr), is_device_list_ready(false),
+    async_io_update_event_fd(-1), async_io_update_request(0), async_io_update_response(0) {
 }
 
 usb_registry::~usb_registry() {
-    eventfd_write(wake_event_fd, 1);
+    eventfd_write(monitor_wake_event_fd, 1);
     monitor_thread.join();
-    ::close(wake_event_fd);
+    ::close(monitor_wake_event_fd);
+
+    if (async_io_update_event_fd != -1) {
+        eventfd_write(async_io_update_event_fd, 999999);
+        async_io_thread.join();
+        ::close(async_io_update_event_fd);
+    }
 }
 
 std::vector<usb_device_ptr> usb_registry::get_devices() {
@@ -50,8 +58,8 @@ void usb_registry::set_on_device_disconnected(std::function<void(usb_device_ptr 
 }
 
 void usb_registry::start() {
-    wake_event_fd = eventfd(0, 0);
-    if (wake_event_fd < 0)
+    monitor_wake_event_fd = eventfd(0, 0);
+    if (monitor_wake_event_fd < 0)
         usb_error::throw_error("internal error(eventfd)");
 
     monitor_thread = std::thread(&usb_registry::monitor, this);
@@ -94,7 +102,7 @@ void usb_registry::monitor() {
         pollfd fds[2];
         fds[0].fd = monitor_fd;
         fds[0].events = POLLIN;
-        fds[1].fd = wake_event_fd;
+        fds[1].fd = monitor_wake_event_fd;
         fds[1].events = POLLIN;
 
         int ret = poll(fds, 2, -1);
@@ -224,11 +232,139 @@ std::shared_ptr<usb_device> usb_registry::create_device(udev_device* udev_dev) {
     if (vendor_id == 0 || product_id == 0)
         return nullptr;
     
-    std::shared_ptr<usb_device> device(new usb_device(path, vendor_id, product_id));
+    std::shared_ptr<usb_device> device(new usb_device(this, path, vendor_id, product_id));
     device->set_product_strings(
         udev_device_get_sysattr_value(udev_dev, "manufacturer"),
         udev_device_get_sysattr_value(udev_dev, "product"),
         udev_device_get_sysattr_value(udev_dev, "serial")
     );
     return device;
+}
+
+std::shared_ptr<usb_device> usb_registry::get_shared_ptr(usb_device* device) {
+    auto it = std::find_if(devices.cbegin(), devices.cend(), [device](auto dev) { return dev.get() == device; });
+    if (it == devices.cend())
+        return nullptr;
+
+    return *it;
+}
+
+void usb_registry::async_io_run() {
+
+    {
+        std::lock_guard lock(async_io_mutex);
+        async_io_update_response = async_io_update_request;
+        async_io_condition.notify_all();
+    }
+
+    std::vector<pollfd> fds;
+    fds.resize(2);
+    fds[0].fd = async_io_update_event_fd;
+    fds[0].events = POLLIN;
+
+    while (true) {
+
+        int num_fds = 1;
+        fds.resize(async_io_fds.size() + 1);
+
+        {
+            std::lock_guard lock(async_io_mutex);
+            for (auto fd : async_io_fds) {
+                fds[num_fds].fd = fd;
+                fds[num_fds].events = POLLIN | POLLOUT;
+                num_fds += 1;
+            }
+        }
+
+        int ret = poll(fds.data(), num_fds, -1);
+        if (ret < 0)
+            usb_error::throw_error("internal error (poll)");
+
+        for (auto it = fds.begin(); it != fds.end(); ++it) {
+            if (it->revents == 0)
+                continue;
+
+            if (it->fd == async_io_update_event_fd) {
+                eventfd_t value = 0;
+                eventfd_read(async_io_update_event_fd, &value);
+                if (value >= 999999)
+                    return;
+                    
+                std::lock_guard lock(async_io_mutex);
+                async_io_update_response = async_io_update_request;
+                async_io_condition.notify_all();
+                continue;
+            }
+
+            if ((it->revents & POLLERR) != 0) {
+                // TODO
+                continue;
+            }
+
+            if (it->revents != 0) {
+                usbdevfs_urb* urb = nullptr;
+                ret = ioctl(it->fd, USBDEVFS_REAPURB, &urb);
+                if (ret < 0)
+                    usb_error::throw_error("internal error (reap URB)");
+                
+                auto completion = reinterpret_cast<std::function<void()>*>(urb->usercontext);
+                (*completion)();
+            }
+        }
+    }
+}
+
+void usb_registry::add_async_fd(int fd) {
+    int expected_request;
+
+    {
+        std::lock_guard lock(async_io_mutex);
+
+        // start background thread if needed
+        if (async_io_update_event_fd == -1) {
+            async_io_update_event_fd = eventfd(0, 0);
+            if (async_io_update_event_fd < 0)
+                usb_error::throw_error("internal error(eventfd)");
+
+            async_io_thread = std::thread(&usb_registry::async_io_run, this);
+        }
+
+        if (std::find(async_io_fds.begin(), async_io_fds.end(), fd) != async_io_fds.end())
+            return; // already registered
+
+        async_io_fds.emplace_back(fd);
+        eventfd_write(async_io_update_event_fd, 1);
+
+        async_io_update_request += 1;
+        expected_request = async_io_update_request;
+    }
+
+    // wait for background process to add file descriptor for polling
+    {
+        std::unique_lock wait_lock(async_io_mutex);
+        async_io_condition.wait(wait_lock, [this, expected_request] { return expected_request - async_io_update_response <= 0; });
+    }
+}
+
+
+void usb_registry::remove_async_fd(int fd) {
+    int expected_request;
+
+    {
+        std::lock_guard lock(async_io_mutex);
+
+        async_io_fds.erase(
+            std::remove(async_io_fds.begin(), async_io_fds.end(), fd),
+            async_io_fds.end()
+        );
+        async_io_update_request += 1;
+        expected_request = async_io_update_request;
+        eventfd_write(async_io_update_event_fd, 1);
+    }
+
+    // wait for background process to remove file descriptor from polling
+    {
+        std::unique_lock wait_lock(async_io_mutex);
+        async_io_condition.wait(wait_lock, [this, expected_request] { return expected_request - async_io_update_response <= 0; });
+    }
 }

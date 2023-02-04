@@ -30,6 +30,11 @@ void usb_error::throw_error(const char* message) {
     throw usb_error(message, errno);
 }
 
+void usb_error::check(int code, const char* message) {
+    if (code != 0)
+        throw usb_error(message, code);
+}
+
 std::string usb_error::full_message(const char* message, int code) {
     if (code == 0)
         return message;

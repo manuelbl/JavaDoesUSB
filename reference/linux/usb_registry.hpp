@@ -50,7 +50,12 @@ private:
     void on_device_connected(udev_device* udev_dev);
     void on_device_disconnected(udev_device* udev_dev);
 
+    void async_io_run();
+    void add_async_fd(int fd);
+    void remove_async_fd(int fd);
+
     std::shared_ptr<usb_device> create_device(udev_device* udev_dev);
+    std::shared_ptr<usb_device> get_shared_ptr(usb_device* device);
 
     std::vector<usb_device_ptr> devices;
 
@@ -58,10 +63,18 @@ private:
     std::function<void(usb_device_ptr device)> on_disconnected_callback;
 
     std::thread monitor_thread;
-
-    int wake_event_fd;
-
+    int monitor_wake_event_fd;
     bool is_device_list_ready;
     std::mutex monitor_mutex;
     std::condition_variable monitor_condition;
+
+    std::thread async_io_thread;
+    std::mutex async_io_mutex;
+    std::condition_variable async_io_condition;
+    std::vector<int> async_io_fds;
+    int async_io_update_event_fd;
+    int async_io_update_request;
+    int async_io_update_response;
+
+    friend usb_device;
 };
