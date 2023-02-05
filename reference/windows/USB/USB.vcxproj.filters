@@ -48,6 +48,9 @@
     <ClCompile Include="speed_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="usb_iostream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assertion.hpp">
@@ -81,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="speed_test.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="usb_iostream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

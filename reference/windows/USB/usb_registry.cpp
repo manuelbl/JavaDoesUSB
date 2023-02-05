@@ -29,14 +29,19 @@
 
 usb_registry::usb_registry()
 : on_connected_callback(nullptr), on_disconnected_callback(nullptr),
-    is_device_list_ready(false), background_thread_id_(0), message_window(nullptr) {
+    is_device_list_ready(false), monitor_thread_id_(0), message_window(nullptr),
+    async_io_completion_port(nullptr) {
 }
 
 usb_registry::~usb_registry() {
-
     SendMessage(message_window, WM_CLOSE, 0, 0);
     monitor_thread.join();
     
+    if (async_io_completion_port != nullptr) {
+        PostQueuedCompletionStatus(async_io_completion_port, 0, -1, nullptr);
+        async_io_thread.join();
+        CloseHandle(async_io_completion_port);
+    }
 }
 
 std::vector<usb_device_ptr> usb_registry::get_devices() {
@@ -54,7 +59,7 @@ void usb_registry::set_on_device_disconnected(std::function<void(usb_device_ptr 
 void usb_registry::start() {
     monitor_thread = std::thread(&usb_registry::monitor, this);
     
-    std::unique_lock<std::mutex> wait_lock(monitor_mutex);
+    std::unique_lock wait_lock(monitor_mutex);
     monitor_condition.wait(wait_lock, [this] { return is_device_list_ready; });
 }
 
@@ -63,7 +68,7 @@ static const LPCWSTR WINDOW_NAME = L"USB device monitor";
 
 void usb_registry::monitor() {
 
-    background_thread_id_ = GetCurrentThreadId();
+    monitor_thread_id_ = GetCurrentThreadId();
     HMODULE instance = GetModuleHandleW(nullptr);
 
     WNDCLASSEXW wx = { 0 };
@@ -182,7 +187,7 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set, S
     auto config_desc = usb_device_info::get_descriptor(hub_handle, usb_port_num, USB_CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
 
     // Create new device
-    std::shared_ptr<usb_device> device(new usb_device(std::move(path), conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct, config_desc, std::move(children)));
+    std::shared_ptr<usb_device> device(new usb_device(this, std::move(path), conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct, config_desc, std::move(children)));
     device->set_product_names(
         usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
         usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
@@ -369,4 +374,66 @@ void usb_registry::on_device_disconnected(const WCHAR* path) {
             std::cerr << "Unhandled exception (not derived from std::exception)" << std::endl;
         }
     }
+}
+
+std::shared_ptr<usb_device> usb_registry::get_shared_ptr(usb_device* device) {
+    auto it = std::find_if(devices.cbegin(), devices.cend(), [device](auto dev) { return dev.get() == device; });
+    if (it == devices.cend())
+        return nullptr;
+
+    return *it;
+}
+
+void usb_registry::async_io_run() {
+
+    while (true) {
+        OVERLAPPED* overlapped = nullptr;
+        DWORD num_bytes = 0;
+        ULONG_PTR completion_key = 0;
+        if (!GetQueuedCompletionStatus(async_io_completion_port, &num_bytes, &completion_key, &overlapped, INFINITE) && overlapped == nullptr)
+            usb_error::throw_error("internal error (GetQueuedCompletionStatus)");
+
+        if (overlapped == nullptr)
+            return; // registry is closing
+
+        std::function<void(DWORD result, DWORD num_bytes)>* completion_handler = get_completion_handler(overlapped);
+        if (overlapped == nullptr)
+            continue; // might be completion from synchronous operation
+
+        DWORD result = static_cast<DWORD>(overlapped->Internal);
+        (*completion_handler)(result, num_bytes);
+    }
+}
+
+void usb_registry::add_to_completion_port(HANDLE handle) {
+    HANDLE port_handle = CreateIoCompletionPort(handle, async_io_completion_port, 0xd03fbc01, 0);
+    if (port_handle == nullptr)
+        usb_error::throw_error("internal error (CreateIoCompletionPort)");
+
+    if (async_io_completion_port == nullptr) {
+        async_io_completion_port = port_handle;
+        async_io_thread = std::thread(&usb_registry::async_io_run, this);
+    }
+}
+
+void usb_registry::add_completion_handler(OVERLAPPED* overlapped, std::function<void(DWORD result, DWORD num_bytes)>* completion_handler) {
+    std::lock_guard lock(async_io_mutex);
+
+    async_io_completion_handlers.insert(std::pair(overlapped, completion_handler));
+}
+
+void usb_registry::remove_completion_handler(OVERLAPPED* overlapped) {
+    std::lock_guard lock(async_io_mutex);
+
+    async_io_completion_handlers.erase(overlapped);
+}
+
+std::function<void(DWORD result, DWORD num_bytes)>* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
+    std::lock_guard lock(async_io_mutex);
+
+    auto it = async_io_completion_handlers.find(overlapped);
+    if (it == async_io_completion_handlers.end())
+        return nullptr;
+
+    return it->second;
 }

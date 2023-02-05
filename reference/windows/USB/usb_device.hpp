@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -74,6 +76,8 @@ struct usb_control_request {
     }
 };
 
+
+class usb_registry;
 
 /**
  * USB device.
@@ -209,6 +213,29 @@ public:
      */
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
 
+    /**
+     * Open a new input stream for a bulk endpoint.
+     *
+     * The input stream is optimized for maximum throughput.
+     *
+     * Do not use the input stream concurrently with other transfer operations on the same endpoint. The input stream
+     * buffers data for high throughput. When the stream is closed, any data in the buffers will be lost.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::istream> open_input_stream(int endpoint_number);
+
+    /**
+     * Open a new output stream for a bulk endpoint.
+     *
+     * The output stream is optimized for maximum throughput.
+     *
+     * Do not use the output stream concurrently with other transfer operations on the same endpoint.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::ostream> open_output_stream(int endpoint_number);
+
 private:
     struct interface_handle {
         int interface_num;
@@ -221,7 +248,7 @@ private:
         interface_handle(int intf_num, int first_num, std::wstring&& path);
     };
 
-    usb_device(std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children);
+    usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children);
     void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
     void build_handles(const std::wstring& device_path, std::map<int, std::wstring>&& children);
 
@@ -238,6 +265,14 @@ private:
         return static_cast<uint8_t>(direction) | static_cast<uint8_t>(endpoint_number);
     }
 
+    void configure_for_async_io(usb_direction direction, int endpoint_number);
+    void add_completion_handler(OVERLAPPED* overlapped, std::function<void(DWORD result, DWORD size)>* completion_handler);
+    void remove_completion_handler(OVERLAPPED* overlapped);
+    void submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_len, OVERLAPPED* overlapped);
+    void submit_transfer_out(int endpoint_number, uint8_t* data, int data_len, OVERLAPPED* overlapped);
+    void cancel_transfer(usb_direction direction, int endpoint_number, OVERLAPPED* overlapped);
+
+    usb_registry* registry_;
     bool is_open_;
 
     int product_id_;
@@ -250,7 +285,10 @@ private:
     std::vector<usb_interface> interfaces_;
     std::vector<usb_composite_function> functions_;
     std::vector<interface_handle> interface_handles_;
+
     friend class usb_registry;
+    friend class usb_istreambuf;
+    friend class usb_ostreambuf;
 };
 
 typedef std::shared_ptr<usb_device> usb_device_ptr;

@@ -9,13 +9,15 @@
 
 #include "usb_device.hpp"
 #include "usb_error.hpp"
+#include "usb_iostream.hpp"
 #include "scope.hpp"
 #include "config_parser.hpp"
+#include "usb_registry.hpp"
 
 #include <cstdio>
 
-usb_device::usb_device(std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children)
-: vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
+usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children)
+: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
 
     config_parser parser{};
     parser.parse(config_desc.data(), static_cast<int>(config_desc.size()));
@@ -139,6 +141,8 @@ void usb_device::claim_interface(int interface_number) {
             nullptr);
         if (first_intf_handle->device_handle == INVALID_HANDLE_VALUE)
             usb_error::throw_error("Cannot open USB device");
+
+        registry_->add_to_completion_port(first_intf_handle->device_handle);
     }
 
     // open interface
@@ -372,6 +376,70 @@ usb_device::interface_handle* usb_device::check_valid_endpoint(usb_direction dir
         throw usb_error("endpoint's interface has not been claimed");
 
     return get_interface_handle(intf->number());
+}
+
+std::unique_ptr<std::istream> usb_device::open_input_stream(int endpoint_number) {
+    return std::unique_ptr<std::istream>(new usb_istream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+std::unique_ptr<std::ostream> usb_device::open_output_stream(int endpoint_number) {
+    return std::unique_ptr<std::ostream>(new usb_ostream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+void usb_device::add_completion_handler(OVERLAPPED* overlapped, std::function<void(DWORD result, DWORD size)>* completion_handler) {
+    registry_->add_completion_handler(overlapped, completion_handler);
+}
+
+void usb_device::remove_completion_handler(OVERLAPPED* overlapped) {
+    registry_->remove_completion_handler(overlapped);
+}
+
+void usb_device::configure_for_async_io(usb_direction direction, int endpoint_number) {
+    auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
+    UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
+
+    ULONG value = 0;
+    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
+        usb_error::throw_error("Failed to set endpoint timeout");
+
+    if (direction == usb_direction::in) {
+        value = TRUE;
+        if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, RAW_IO, sizeof(value), &value))
+            usb_error::throw_error("Failed to set endpoint for raw IO");
+    }
+}
+
+void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_len, OVERLAPPED* overlapped) {
+
+    auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
+    UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
+
+    if (!WinUsb_ReadPipe(intf_handle, endpoint_address, buffer, buffer_len, nullptr, overlapped)) {
+        DWORD err = GetLastError();
+        if (err == ERROR_IO_PENDING)
+            return;
+        throw new usb_error("Failed to submit transfer IN", err);
+    }
+}
+
+void usb_device::submit_transfer_out(int endpoint_number, uint8_t* data, int data_len, OVERLAPPED* overlapped) {
+
+    auto intf_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->intf_handle;
+    UCHAR endpoint_address = ep_address(usb_direction::out, endpoint_number);
+
+    if (!WinUsb_WritePipe(intf_handle, endpoint_address, data, data_len, nullptr, overlapped)) {
+        DWORD err = GetLastError();
+        if (err == ERROR_IO_PENDING)
+            return;
+        throw new usb_error("Failed to submit transfer OUT", err);
+    }
+}
+
+void usb_device::cancel_transfer(usb_direction direction, int endpoint_number, OVERLAPPED* overlapped) {
+    auto handle_info = check_valid_endpoint(direction, endpoint_number);
+
+    if (!CancelIoEx(handle_info->device_handle, overlapped))
+        usb_error::throw_error("Error on cancelling transfer");
 }
 
 
