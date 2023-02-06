@@ -395,18 +395,16 @@ void usb_device::remove_completion_handler(OVERLAPPED* overlapped) {
 }
 
 void usb_device::configure_for_async_io(usb_direction direction, int endpoint_number) {
-    auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
-    UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
+    auto intf_handle = check_valid_endpoint(direction, endpoint_number)->intf_handle;
+    UCHAR endpoint_address = ep_address(direction, endpoint_number);
 
-    ULONG value = 0;
-    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
+    ULONG timeout = 0;
+    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(timeout), &timeout))
         usb_error::throw_error("Failed to set endpoint timeout");
 
-    if (direction == usb_direction::in) {
-        value = TRUE;
-        if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, RAW_IO, sizeof(value), &value))
-            usb_error::throw_error("Failed to set endpoint for raw IO");
-    }
+    UCHAR raw_io = 1;
+    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, RAW_IO, sizeof(raw_io), &raw_io))
+        usb_error::throw_error("Failed to set endpoint for raw IO");
 }
 
 void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_len, OVERLAPPED* overlapped) {

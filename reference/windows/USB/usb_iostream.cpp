@@ -17,6 +17,8 @@ usb_istreambuf::usb_istreambuf(usb_device_ptr device, int endpoint_number)
 : device(device), endpoint_number(endpoint_number), is_closed(false), submitted_index(0), completed_index(0), processed_index(-1) {
 
     setg(nullptr, nullptr, nullptr);
+
+    device->configure_for_async_io(usb_direction::in, endpoint_number);
     
     buffer_size = 4 * device->get_endpoint(usb_direction::in, endpoint_number).packet_size();
 
@@ -122,6 +124,8 @@ usb_istreambuf::int_type usb_istreambuf::underflow() {
 usb_ostreambuf::usb_ostreambuf(usb_device_ptr device, int endpoint_number)
 : device(device), endpoint_number(endpoint_number), processing_index(0), completed_index(0), checked_index(0), needs_zlp(false) {
     
+    device->configure_for_async_io(usb_direction::out, endpoint_number);
+
     packet_size = device->get_endpoint(usb_direction::out, endpoint_number).packet_size();
     buffer_size = 1 * packet_size;
 
