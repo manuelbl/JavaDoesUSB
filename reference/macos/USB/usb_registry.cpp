@@ -202,9 +202,13 @@ std::shared_ptr<usb_device> usb_registry::get_shared_ptr(usb_device* device) {
 void usb_registry::add_event_source(CFRunLoopSourceRef source) {
     std::unique_lock wait_lock(async_io_mutex);
     if (async_io_run_loop == nullptr) {
-        async_io_thread = std::thread(&usb_registry::async_io_run, this, source);
-        async_io_condition.wait(wait_lock, [this] { return async_io_run_loop != nullptr; });
-        return;
+        if (async_io_thread.joinable()) {
+            async_io_condition.wait(wait_lock, [this] { return async_io_run_loop != nullptr; });
+        } else {
+            async_io_thread = std::thread(&usb_registry::async_io_run, this, source);
+            async_io_condition.wait(wait_lock, [this] { return async_io_run_loop != nullptr; });
+            return;
+        }
     }
     
     CFRunLoopAddSource(async_io_run_loop, source, kCFRunLoopDefaultMode);

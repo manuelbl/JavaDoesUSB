@@ -13,191 +13,183 @@
 // --- usb_istreambuf ---
 
 usb_istreambuf::usb_istreambuf(usb_device_ptr device, int endpoint_number)
-: device_(device), ep_num_(endpoint_number), is_closed_(false), submitted_index_(0), completed_index_(0), processed_index_(-1) {
+: device(device), endpoint_number(endpoint_number), is_closed(false) {
     setg(nullptr, nullptr, nullptr);
     
-    packet_size_ = device->get_endpoint(usb_direction::in, endpoint_number).packet_size();
+    buffer_size = device->get_endpoint(usb_direction::in, endpoint_number).packet_size();
     
-    // allocate the buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        request_buffers[i] = new uint8_t[packet_size_];
-    
-    // create completion handler lambda
-    io_completion = [this](IOReturn result, int size) { on_completed(result, size); };
-    
-    // start requests except for one
-    const std::lock_guard lock(io_mutex);
-    for (int i = 0; i < num_outstanding_requests - 1; i++)
-        submit_request();
+    // allocate the buffers and submit requests
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        transfer_request* request = &requests[i];
+        request->buffer = new uint8_t[buffer_size];
+        request->io_completion = [this, request](IOReturn result, int size) { on_completed(request, result, size); };
+        
+        if (i == 0)
+            current_request = request;
+        else
+            submit_transfer(request);
+    }
 }
          
 usb_istreambuf::~usb_istreambuf() {
+    close();
+    
     // free buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        delete [] request_buffers[i];
+    for (int i = 0; i < max_outstanding_requests; i++)
+        delete [] requests[i].buffer;
 }
 
 void usb_istreambuf::close() {
-    is_closed_ = true;
-    io_condition.notify_all();
-    device_->abort_transfer(usb_direction::in, ep_num_);
+    is_closed = true;
+    setg(nullptr, nullptr, nullptr);
+
+    device->abort_transfer(usb_direction::in, endpoint_number);
+
+    // wait until completion handlers have been called
+    while (num_outstanding_requests > 0)
+        wait_for_request_completion();
 }
 
-void usb_istreambuf::submit_request() {
-    int index = submitted_index_ % num_outstanding_requests;
-    submitted_index_ += 1;
-    
-    device_->submit_transfer_in(ep_num_, request_buffers[index], packet_size_, io_completion);
+void usb_istreambuf::submit_transfer(transfer_request* request) {
+    device->submit_transfer_in(endpoint_number, request->buffer, buffer_size, request->io_completion);
+    num_outstanding_requests += 1;
 }
 
-void usb_istreambuf::on_completed(IOReturn result, int size) {
-    const std::lock_guard lock(io_mutex);
-    if (is_closed_) {
-        completed_index_ += 1;
-        if (completed_index_ == submitted_index_)
-            delete this;
-        return;
-    }
-    
-    int index = completed_index_ % num_outstanding_requests;
-    request_sizes[index] = size;
-    request_results[index] = result;
-    
-    completed_index_ += 1;
-    io_condition.notify_all();
+void usb_istreambuf::on_completed(transfer_request* request, IOReturn result, int size) {
+    request->result_code = result;
+    request->result_size = size;
+    completed_request_queue.put(request);
+}
+
+usb_istreambuf::transfer_request* usb_istreambuf::wait_for_request_completion() {
+    transfer_request* request = completed_request_queue.take();
+    num_outstanding_requests -= 1;
+    return request;
+
 }
 
 usb_istreambuf::int_type usb_istreambuf::underflow() {
-    if (is_closed_)
+    if (is_closed)
         return traits_type::eof();
     
     if (gptr() < egptr())
         return traits_type::to_int_type(*gptr());
     
-    // loop until no ZLP has been received
-    while (true) {
-        std::unique_lock wait_lock(io_mutex);
-        processed_index_ += 1;
-        submit_request();
+    // loop until non-ZLP has been received
+    do {
+        submit_transfer(current_request);
         
-        // wait until a completed request is available
-        io_condition.wait(wait_lock, [this] { return completed_index_ - processed_index_ > 0 || is_closed_; });
+        current_request = wait_for_request_completion();
+        usb_error::check(current_request->result_code, "error reading from USB endpoint");
+
+        char* buf = reinterpret_cast<char*>(current_request->buffer);
+        int size = current_request->result_size;
+        setg(buf, buf, buf + size);
         
-        if (is_closed_)
-            return traits_type::eof();
-        
-        int index = processed_index_ % num_outstanding_requests;
-        usb_error::check(request_results[index], "error reading from USB endpoint");
-        
-        // set stream buffer to buffer from completed request
-        char* buf = reinterpret_cast<char*>(request_buffers[index]);
-        int size = request_sizes[index];
-        
-        if (size != 0) {
-            setg(buf, buf, buf + size);
-            return traits_type::to_int_type(*gptr());
-        }
-    }
+    } while (current_request->result_size == 0);
+
+    return traits_type::to_int_type(*gptr());
 }
 
 
 // --- usb_ostreambuf ---
 
 usb_ostreambuf::usb_ostreambuf(usb_device_ptr device, int endpoint_number)
-: device_(device), ep_num_(endpoint_number), is_closed_(false), processing_index_(0),
-    completed_index_(0), checked_index_(0), needs_zlp_(false) {
+: device(device), endpoint_number(endpoint_number), is_closed(false), needs_zlp(false) {
     
-    packet_size_ = device->get_endpoint(usb_direction::out, endpoint_number).packet_size();
+    packet_size = device->get_endpoint(usb_direction::out, endpoint_number).packet_size();
+    buffer_size = packet_size;
     
-    // allocate the buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        request_buffers[i] = new uint8_t[packet_size_];
-    
-    char* buf = reinterpret_cast<char*>(request_buffers[0]);
-    setp(buf, buf + packet_size_);
-    
-    // create completion handler lambda
-    io_completion = [this](IOReturn result, int size) { on_completed(result, size); };
+    // create requests
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        transfer_request* request = &requests[i];
+        request->buffer = new uint8_t[buffer_size];
+        request->io_completion = [this, request](IOReturn result, int size) { on_completed(request, result); };
+    }
+
+    fill_queue();
+}
+
+void usb_ostreambuf::fill_queue() {
+    for (int i = 1; i < max_outstanding_requests; i++)
+        available_request_queue.put(&requests[i]);
+
+    // configure stream buffer for first request
+    current_request = &requests[0];
+    char* buf = reinterpret_cast<char*>(current_request->buffer);
+    setp(buf, buf + buffer_size);
 }
          
 usb_ostreambuf::~usb_ostreambuf() {
+    sync();
+    
     // free buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        delete [] request_buffers[i];
+    for (int i = 0; i < max_outstanding_requests; i++)
+        delete [] requests[i].buffer;
 }
 
 int usb_ostreambuf::sync() {
-    std::unique_lock wait_lock(io_mutex);
-
     // submit request if there is any data in the current buffer
     auto size = pptr() - pbase();
-    if (size > 0) {
-        int index = processing_index_ % num_outstanding_requests;
-        device_->submit_transfer_out(ep_num_, request_buffers[index], (int)size, io_completion);
-        processing_index_ += 1;
-        needs_zlp_ = size == packet_size_;
-    }
+    if (size > 0)
+        submit_transfer((int)size);
     
     // send a zero-length packet if required
-    if (needs_zlp_) {
-        // wait until an unused buffer is available
-        io_condition.wait(wait_lock, [this] { return processing_index_ - completed_index_ < num_outstanding_requests; });
-        check_for_errors();
-        
-        device_->submit_transfer_out(ep_num_, nullptr, 0, io_completion);
-        processing_index_ += 1;
-        needs_zlp_ = false;
-    }
-
-    // wait until all buffers have been transmitted
-    io_condition.wait(wait_lock, [this] { return processing_index_ == completed_index_; });
-    check_for_errors();
+    if (needs_zlp)
+        submit_transfer(0);
     
+    // Wait until all buffers have been transmitted by removing them from the
+    // queue and reinserting them. One request is the current request.
+    // So the queue only contains max_outstanding_requests - 1 requests.
+    for (int i = 0; i < max_outstanding_requests - 1; i++)
+        wait_for_available_transfer();
+    
+    fill_queue();
+
     return 0;
 }
 
 int usb_ostreambuf::overflow (int c) {
-    std::unique_lock wait_lock(io_mutex);
-
     // submit request
     auto size = pptr() - pbase();
-    int index = processing_index_ % num_outstanding_requests;
-    device_->submit_transfer_out(ep_num_, request_buffers[index], (int)size, io_completion);
-    processing_index_ += 1;
-    needs_zlp_ = size == packet_size_;
+    submit_transfer((int)size);
     
-    // wait until an unused buffer is available
-    io_condition.wait(wait_lock, [this] { return processing_index_ - completed_index_ < num_outstanding_requests; });
-    check_for_errors();
-    
-    // configure stream buffer
-    index = processing_index_ % num_outstanding_requests;
-    char* buf = reinterpret_cast<char*>(request_buffers[index]);
-    setp(buf, buf + packet_size_);
-
     // insert char
     if (c != traits_type::eof()) {
         *pptr() = (char)c;
-        pbump( 1 );
+        pbump(1);
     }
     
     return c;
 }
 
-void usb_ostreambuf::on_completed(IOReturn result, int size) {
-    const std::lock_guard lock(io_mutex);
-    int index = completed_index_ % num_outstanding_requests;
-    request_results[index] = result;    
-    completed_index_ += 1;
-    io_condition.notify_all();
+void usb_ostreambuf::submit_transfer(int size) {
+    device->submit_transfer_out(endpoint_number, current_request->buffer, size, current_request->io_completion);
+    needs_zlp = size == packet_size;
+    
+    current_request = wait_for_available_transfer();
+
+    // configure stream buffer
+    char* buf = reinterpret_cast<char*>(current_request->buffer);
+    setp(buf, buf + buffer_size);
 }
 
-void usb_ostreambuf::check_for_errors() {
-    while (completed_index_ - checked_index_ > 0) {
-        int index = completed_index_ % num_outstanding_requests;
-        usb_error::check(request_results[index], "error writing to USB endpoint");
-        checked_index_ += 1;
+void usb_ostreambuf::on_completed(transfer_request* request, IOReturn result) {
+    request->result_code = result;
+    available_request_queue.put(request);
+}
+
+usb_ostreambuf::transfer_request* usb_ostreambuf::wait_for_available_transfer() {
+    auto request = available_request_queue.take();
+    
+    // check for error
+    int result = request->result_code;
+    if (result != 0) {
+        request->result_code = 0;
+        throw usb_error("error writing to USB endpoint", result);
     }
+    
+    return request;
 }
 
 
@@ -207,8 +199,8 @@ usb_istream::usb_istream(usb_device_ptr device, int ep_num)
     : std::istream(new usb_istreambuf(device, ep_num)) {}
 
 usb_istream::~usb_istream() {
-    // close buffer (it will deallocate itself)
-    static_cast<usb_istreambuf*>(rdbuf())->close();
+    // free stream buffer
+    delete rdbuf();
 }
 
 
@@ -218,6 +210,6 @@ usb_ostream::usb_ostream(usb_device_ptr device, int ep_num)
     : std::ostream(new usb_ostreambuf(device, ep_num)) {}
 
 usb_ostream::~usb_ostream() {
-    // flush all data
-    static_cast<usb_ostreambuf*>(rdbuf())->pubsync();
+    // free stream buffer
+    delete rdbuf();
 }

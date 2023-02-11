@@ -10,10 +10,9 @@
 #pragma  once
 
 #include <iostream>
-#include <mutex>
-#include <vector>
 #include <IOKit/IOReturn.h>
 #include "usb_device.hpp"
+#include "blocking_queue.hpp"
 
 /**
  * Input stream buffer for USB bulk or interrupt endpoint.
@@ -34,41 +33,43 @@ public:
 protected:
     /// Called when the internal buffer has no further data to read.
     virtual int_type underflow();
-    
-    void on_completed(IOReturn result, int size);
-    
+        
 private:
-    void submit_request();
+    /// Transfer request
+    struct transfer_request {
+        /// buffer for recevied data
+        uint8_t* buffer;
+        /// result coce
+        int result_code;
+        /// result size (in bytes)
+        int result_size;
+        /// IO completion handler
+        std::function<void(IOReturn, int)> io_completion;
+    };
+
+    void on_completed(transfer_request* request, IOReturn result, int size);
+    void submit_transfer(transfer_request* request);
+    transfer_request* wait_for_request_completion();
 
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
-    
+    static constexpr int max_outstanding_requests = 4;
+
     /// USB device
-    usb_device_ptr device_;
+    usb_device_ptr device;
     /// endpoint number
-    int ep_num_;
+    int endpoint_number;
     /// Indicates that this stream buffer is closed
-    bool is_closed_;
-    /// packet size
-    int packet_size_;
-    /// Mutex for synchronization between input stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between input stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index after last submitted IO request
-    unsigned int submitted_index_;
-    /// Index after last completed IO request
-    unsigned int completed_index_;
-    /// Index after last processed IO request
-    unsigned int processed_index_;
-    /// Data buffers for receiving data
-    uint8_t* request_buffers[num_outstanding_requests];
-    /// Size of received data
-    int request_sizes[num_outstanding_requests];
-    /// Result code of IO request
-    IOReturn request_results[num_outstanding_requests];
-    /// IO completion lambda
-    std::function<void(IOReturn, int)> io_completion;
+    bool is_closed;
+    /// buffer size
+    int buffer_size;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with completed requests
+    blocking_queue<transfer_request*> completed_request_queue;
+    /// number of outstanding requests (requests pending with OS and requests in queue)
+    int num_outstanding_requests;
+    /// current request being read from
+    transfer_request* current_request;
 };
 
 /**
@@ -90,42 +91,45 @@ protected:
     /// Called when the internal buffer has no space left to add more data.
     virtual int overflow (int c);
     
-    void on_completed(IOReturn result, int size);
-    
-    void check_for_errors();
     
 private:
-    void submit_request();
+    /// Transfer request
+    struct transfer_request {
+        /// buffer for recevied data
+        uint8_t* buffer;
+        /// result coce
+        int result_code;
+        /// IO completion handler
+        std::function<void(IOReturn, int)> io_completion;
+    };
+
+    void fill_queue();
+    void submit_transfer(int size);
+    void on_completed(transfer_request* request, IOReturn result);
+    transfer_request* wait_for_available_transfer();
 
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
+    static constexpr int max_outstanding_requests = 4;
     
     /// USB device
-    usb_device_ptr device_;
+    usb_device_ptr device;
     /// endpoint number
-    int ep_num_;
+    int endpoint_number;
     /// Indicates that this stream buffer is closed
-    bool is_closed_;
+    bool is_closed;
     /// Indicates if a zero-length packet is required
-    bool needs_zlp_;
+    bool needs_zlp;
     /// packet size
-    int packet_size_;
-    /// Mutex for synchronization between output stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between output stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index of buffer being currently used by base class
-    unsigned int processing_index_;
-    /// Index after last completed IO request
-    unsigned int completed_index_;
-    /// Index after last completed IO request that has been checked for errors
-    unsigned int checked_index_;
-    /// Data buffers for transmitting data
-    uint8_t* request_buffers[num_outstanding_requests];
-    /// Result code of IO request
-    IOReturn request_results[num_outstanding_requests];
-    /// IO completion lambda
-    std::function<void(IOReturn, int)> io_completion;
+    int packet_size;
+    /// packet size
+    int buffer_size;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with available requests
+    blocking_queue<transfer_request*> available_request_queue;
+    /// current request being written to
+    transfer_request* current_request;
+
 };
 
 /**

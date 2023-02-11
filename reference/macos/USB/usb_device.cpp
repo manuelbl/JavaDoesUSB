@@ -372,9 +372,6 @@ void usb_device::abort_transfer(usb_direction direction, int endpoint_number) {
 
     IOReturn ret = (*interface)->AbortPipe(interface, pipe->pipe_index);
     usb_error::check(ret, "failed to abort transfer");
-    
-    ret = (*interface)->ClearPipeStallBothEnds(interface, pipe->pipe_index);
-    usb_error::check(ret, "failed to clear pipe stall");
 }
 
 const usb_device::pipe_info* usb_device::get_pipe(int endpoint_address) {

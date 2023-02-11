@@ -40,6 +40,7 @@
 		64292E7229144D6C004F6169 /* prng.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = prng.hpp; sourceTree = "<group>"; };
 		64292E7429144DE1004F6169 /* speed_test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = speed_test.cpp; sourceTree = "<group>"; };
 		64292E7529144DE1004F6169 /* speed_test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = speed_test.hpp; sourceTree = "<group>"; };
+		64443AF22997C56E009283A9 /* blocking_queue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = blocking_queue.hpp; sourceTree = "<group>"; };
 		64835E5C290BCA9F00113E4E /* configuration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = configuration.hpp; sourceTree = "<group>"; };
 		64835E5D290BCA9F00113E4E /* config_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = config_parser.cpp; sourceTree = "<group>"; };
 		64835E5E290BCA9F00113E4E /* config_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config_parser.hpp; sourceTree = "<group>"; };
@@ -100,6 +101,7 @@
 			children = (
 				64937C8328D71D31009BD0C2 /* assertion.hpp */,
 				64937C8228D71D31009BD0C2 /* assertion.cpp */,
+				64443AF22997C56E009283A9 /* blocking_queue.hpp */,
 				64835E5E290BCA9F00113E4E /* config_parser.hpp */,
 				64835E5D290BCA9F00113E4E /* config_parser.cpp */,
 				64835E5C290BCA9F00113E4E /* configuration.hpp */,
