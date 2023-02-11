@@ -201,8 +201,24 @@ public class CoreFoundation  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    public static MethodHandle CFRunLoopRemoveSource$MH() {
+        return RuntimeHelper.requireNonNull(constants$1.CFRunLoopRemoveSource$MH,"CFRunLoopRemoveSource");
+    }
+    /**
+     * {@snippet :
+     * void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode);
+     * }
+     */
+    public static void CFRunLoopRemoveSource(MemorySegment rl, MemorySegment source, MemorySegment mode) {
+        var mh$ = CFRunLoopRemoveSource$MH();
+        try {
+            mh$.invokeExact(rl, source, mode);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
     public static MethodHandle CFUUIDGetUUIDBytes$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFUUIDGetUUIDBytes$MH,"CFUUIDGetUUIDBytes");
+        return RuntimeHelper.requireNonNull(constants$2.CFUUIDGetUUIDBytes$MH,"CFUUIDGetUUIDBytes");
     }
     /**
      * {@snippet :

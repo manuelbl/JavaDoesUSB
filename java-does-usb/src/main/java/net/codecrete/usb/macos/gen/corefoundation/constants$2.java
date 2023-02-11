@@ -9,6 +9,30 @@ final class constants$2 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$2() {}
+    static final FunctionDescriptor CFUUIDGetUUIDBytes$FUNC = FunctionDescriptor.of(MemoryLayout.structLayout(
+        Constants$root.C_CHAR$LAYOUT.withName("byte0"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte1"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte2"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte3"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte4"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte5"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte6"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte7"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte8"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte9"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte10"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte11"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte12"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte13"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte14"),
+        Constants$root.C_CHAR$LAYOUT.withName("byte15")
+    ),
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle CFUUIDGetUUIDBytes$MH = RuntimeHelper.downcallHandle(
+        "CFUUIDGetUUIDBytes",
+        constants$2.CFUUIDGetUUIDBytes$FUNC
+    );
     static final FunctionDescriptor CFUUIDCreateFromUUIDBytes$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         MemoryLayout.structLayout(

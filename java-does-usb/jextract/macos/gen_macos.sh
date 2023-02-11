@@ -23,6 +23,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function CFNumberGetValue \
   --include-function CFRunLoopGetCurrent \
   --include-function CFRunLoopAddSource \
+  --include-function CFRunLoopRemoveSource \
   --include-function CFRunLoopRun \
   --include-function CFUUIDGetUUIDBytes \
   --include-constant kCFNumberSInt32Type \

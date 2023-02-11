@@ -19,8 +19,15 @@ import net.codecrete.usb.macos.gen.iokit.IOUSBDevRequest;
 import net.codecrete.usb.macos.gen.iokit.IOUSBFindInterfaceRequest;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,13 +38,15 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 public class MacosUSBDevice extends USBDeviceImpl {
 
+    private final MacosUSBDeviceRegistry registry;
     private MemorySegment device;
     private int configurationValue;
     private List<InterfaceInfo> claimedInterfaces;
     private Map<Byte, EndpointInfo> endpoints;
 
-    MacosUSBDevice(MemorySegment device, Object id, int vendorId, int productId) {
+    MacosUSBDevice(MacosUSBDeviceRegistry registry, MemorySegment device, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
+        this.registry = registry;
 
         loadDescription(device);
 
@@ -212,6 +221,10 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException("Invalid interface number: %d", interfaceNumber);
 
         var interfaceInfo = interfaceInfoOptional.get();
+
+        var source = IoKitUSB.GetInterfaceAsyncEventSource(interfaceInfo.iokitInterface());
+        if (source.address() != 0)
+            registry.removeEventSource(source);
 
         int ret = IoKitUSB.USBInterfaceClose(interfaceInfo.iokitInterface());
         if (ret != 0)
@@ -419,7 +432,73 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
-    @Override
+    static final MethodHandle asyncIOCompletedMH;
+
+    static {
+        try {
+            asyncIOCompletedMH = MethodHandles.lookup().findStatic(MacosUSBDevice.class, "asyncIOCompleted",
+                    MethodType.methodType(void.class, AsyncIOCallback.class, MemorySegment.class, int.class, MemorySegment.class));
+        } catch (IllegalAccessException|NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void asyncIOCompleted(AsyncIOCallback callback, MemorySegment ignoredRefcon, int result, MemorySegment arg0) {
+        callback.completed(result, (int)arg0.address());
+    }
+
+    synchronized MemorySegment createCompletionHandler(USBDirection direction, int endpointNumber, Arena arena, AsyncIOCallback callback) {
+        var endpoint = getEndpointInfo(endpointNumber, direction, USBTransferType.BULK, null);
+
+        var source = IoKitUSB.GetInterfaceAsyncEventSource(endpoint.iokitInterface());
+        if (source.address() == 0) {
+            try (Arena innerArena = Arena.openConfined()) {
+                var sourceHolder = innerArena.allocate(ADDRESS);
+                int ret = IoKitUSB.CreateInterfaceAsyncEventSource(endpoint.iokitInterface(), sourceHolder);
+                if (ret != 0)
+                    throwException(ret, "failed to create event source");
+                source = sourceHolder.get(ADDRESS, 0);
+                registry.addEventSource(source);
+            }
+        }
+
+        var methodHandle = asyncIOCompletedMH.bindTo(callback);
+        return Linker.nativeLinker().upcallStub(methodHandle,
+                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS), arena.scope());
+    }
+
+    void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, MemorySegment completionHandler) {
+
+        var endpoint = getEndpointInfo(endpointNumber, USBDirection.IN,
+                USBTransferType.BULK, null);
+
+        // submit request
+        int ret = IoKitUSB.ReadPipeAsync(endpoint.iokitInterface(), endpoint.pipeIndex, buffer, bufferSize, completionHandler, MemorySegment.NULL);
+        if (ret != 0)
+            throwException(ret, "failed to submit async transfer");
+    }
+
+    void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, MemorySegment completionHandler) {
+
+        var endpoint = getEndpointInfo(endpointNumber, USBDirection.OUT,
+                USBTransferType.BULK, null);
+
+        // submit request
+        int ret = IoKitUSB.WritePipeAsync(endpoint.iokitInterface(), endpoint.pipeIndex, data, dataSize, completionHandler, MemorySegment.NULL);
+        if (ret != 0)
+            throwException(ret, "failed to submit async transfer");
+    }
+
+    public void abortTransfer(USBDirection direction, int endpointNumber) {
+        var endpointInfo = getEndpointInfo(endpointNumber, direction,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
+
+        int ret = IoKitUSB.AbortPipe(endpointInfo.iokitInterface(), endpointInfo.pipeIndex());
+        if (ret != 0)
+            throwException(ret, "Aborting transfer failed");
+    }
+
+        @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
         var endpointInfo = getEndpointInfo(endpointNumber, direction,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -427,6 +506,20 @@ public class MacosUSBDevice extends USBDeviceImpl {
         int ret = IoKitUSB.ClearPipeStallBothEnds(endpointInfo.iokitInterface(), endpointInfo.pipeIndex);
         if (ret != 0)
             throwException(ret, "Clearing halt condition failed");
+    }
+
+    @Override
+    public InputStream openInputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        return new MacosEndpointInputStream(this, endpointNumber);
+    }
+
+    @Override
+    public OutputStream openOutputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+        return new MacosEndpointOutputStream(this, endpointNumber);
     }
 
     private static USBTransferType getTransferType(byte macosTransferType) {
@@ -442,5 +535,17 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     record EndpointInfo(MemorySegment iokitInterface, byte pipeIndex, USBTransferType transferType, int packetSize) {
+    }
+
+    @FunctionalInterface
+    public interface AsyncIOCallback {
+
+        /**
+         * Called when the asynchronous IO has completed.
+         *
+         * @param result the result code of the operation
+         * @param size the size of the transferred data (in bytes)
+         */
+        void completed(int result, int size);
     }
 }
