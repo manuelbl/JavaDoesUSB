@@ -433,6 +433,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     static final MethodHandle asyncIOCompletedMH;
+    static final FunctionDescriptor completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
 
     static {
         try {
@@ -463,8 +464,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
 
         var methodHandle = asyncIOCompletedMH.bindTo(callback);
-        return Linker.nativeLinker().upcallStub(methodHandle,
-                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS), arena.scope());
+        return Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, arena.scope());
     }
 
     void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, MemorySegment completionHandler) {
