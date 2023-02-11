@@ -259,7 +259,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     private final ReentrantLock asyncIoLock = new ReentrantLock();
-    private final Condition asyncIoReady = asyncIoLock.newCondition();
+    private Condition asyncIoReady;
     private MemorySegment asyncIoRunLoop;
 
     void addEventSource(MemorySegment source) {
@@ -267,15 +267,24 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             asyncIoLock.lock();
 
             if (asyncIoRunLoop == null) {
-                // start background thread
-                Thread t = new Thread(() -> asyncIOCompletionTask(source), "USB async IO");
-                t.setDaemon(true);
-                t.start();
 
-                while (asyncIoRunLoop == null)
-                    asyncIoReady.awaitUninterruptibly();
+                if (asyncIoReady == null) {
+                    // start background thread
+                    asyncIoReady = asyncIoLock.newCondition();
+                    Thread t = new Thread(() -> asyncIOCompletionTask(source), "USB async IO");
+                    t.setDaemon(true);
+                    t.start();
 
-                return;
+                    while (asyncIoRunLoop == null)
+                        asyncIoReady.awaitUninterruptibly();
+
+                    return;
+
+                } else {
+                    // special case: run loop is not ready yet but background process is already starting
+                    while (asyncIoRunLoop == null)
+                        asyncIoReady.awaitUninterruptibly();
+                }
             }
 
             CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode$get());
