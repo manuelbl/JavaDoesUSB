@@ -8,6 +8,7 @@
 package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  */
 public class MacosEndpointInputStream extends InputStream {
 
-    private static final int MAX_OUTSTANDING_REQUESTS = 4;
+    private static final int MAX_OUTSTANDING_REQUESTS = 8;
 
     private MacosUSBDevice device;
     private final int endpointNumber;
@@ -46,7 +47,7 @@ public class MacosEndpointInputStream extends InputStream {
     // Queue of completed requests
     private final ArrayBlockingQueue<TransferRequest> completedRequestQueue;
     // Number of outstanding requests (includes requests pending with the
-    // operation system and requests in the completed queue)
+    // operating system and requests in the completed queue)
     private int numOutstandingRequests;
     // Request and buffer being currently read from
     private TransferRequest currentRequest;
@@ -63,23 +64,56 @@ public class MacosEndpointInputStream extends InputStream {
         this.device = device;
         this.endpointNumber = endpointNumber;
 
-        bufferSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+        bufferSize = 4 * device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
         completedRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
-        arena = Arena.openShared();
 
         // create all requests and submit all except one
-        for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
-            final var request = new TransferRequest();
-            request.buffer = arena.allocate(bufferSize, 8);
-            request.completionHandler = device.createCompletionHandler(USBDirection.IN, endpointNumber, arena,
-                    (result, size) -> onCompletion(request, result, size));
+        arena = Arena.openShared();
+        try {
+            for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
+                final var request = new TransferRequest();
+                request.buffer = arena.allocate(bufferSize, 8);
+                request.completionHandler = device.createCompletionHandler(USBDirection.IN, endpointNumber, arena, (result, size) -> onCompletion(request, result, size));
 
-            if (i == 0) {
-                currentRequest = request;
-            } else {
-                submitRequest(request);
+                if (i == 0) {
+                    currentRequest = request;
+                } else {
+                    submitRequest(request);
+                }
             }
+        } catch (Throwable t) {
+            collectOutstandingRequests();
+            throw t;
         }
+    }
+
+    @SuppressWarnings("RedundantThrows")
+    @Override
+    public void close() throws IOException {
+        if (device == null)
+            return; // already closed
+
+        // abort all transfers on endpoint
+        try {
+            device.abortTransfer(USBDirection.IN, endpointNumber);
+        } catch (USBException e) {
+            // If aborting the transfer is not possible, the device has
+            // likely been closed or unplugged. So all outstanding
+            // requests will terminate anyway.
+        }
+        device = null;
+
+        collectOutstandingRequests();
+    }
+
+    private void collectOutstandingRequests() {
+        // wait until completion handlers have been called
+        while (numOutstandingRequests > 0)
+            waitForRequestCompletion();
+
+        completedRequestQueue.clear();
+        currentRequest = null;
+        arena.close();
     }
 
     @Override
@@ -89,9 +123,6 @@ public class MacosEndpointInputStream extends InputStream {
 
         if (available() == 0)
             receiveMoreData();
-
-        if (isClosed())
-            return -1;
 
         int b = currentRequest.buffer.get(JAVA_BYTE, readOffset) & 0xff;
         readOffset += 1;
@@ -106,15 +137,12 @@ public class MacosEndpointInputStream extends InputStream {
         if (available() == 0)
             receiveMoreData();
 
-        if (isClosed())
-            return -1;
-
         // copy data to receiving buffer
         int n = Math.min(len, currentRequest.resultSize - readOffset);
         MemorySegment.copy(currentRequest.buffer, readOffset, MemorySegment.ofArray(b), off, n);
         readOffset += n;
 
-        // TODO: poll for further completed requests if 'n' is les than 'len'
+        // TODO: poll for further completed requests if 'n' is less than 'len'
 
         return n;
     }
@@ -129,36 +157,25 @@ public class MacosEndpointInputStream extends InputStream {
         return device == null;
     }
 
-    @SuppressWarnings("RedundantThrows")
-    @Override
-    public void close() throws IOException {
-        // abort all transfers on endpoint
-        device.abortTransfer(USBDirection.IN, endpointNumber);
-        device = null;
-
-        // wait until completion handlers have been called
-        while (numOutstandingRequests > 0)
-            waitForRequestCompletion();
-
-        completedRequestQueue.clear();
-        currentRequest = null;
-        arena.close();
-    }
-
     private void receiveMoreData() throws IOException {
-        // loop until non-ZLP has been received
-        do {
-            submitRequest(currentRequest);
+        try {
+            // loop until non-ZLP has been received
+            do {
+                submitRequest(currentRequest);
 
-            currentRequest = waitForRequestCompletion();
-            readOffset = 0;
+                currentRequest = waitForRequestCompletion();
+                readOffset = 0;
 
-            // check for error
-            if (currentRequest.result != 0) {
-                close();
-                throwException(currentRequest.result, "error reading from USB endpoint");
-            }
-        } while (currentRequest.resultSize == 0);
+                // check for error
+                if (currentRequest.result != 0)
+                    throwException(currentRequest.result, "error reading from USB endpoint");
+
+            } while (currentRequest.resultSize == 0);
+
+        } catch (Throwable t) {
+            close();
+            throw t;
+        }
     }
 
     void submitRequest(TransferRequest request) {
