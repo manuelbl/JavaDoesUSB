@@ -52,6 +52,8 @@ public class MacosEndpointOutputStream extends OutputStream {
     private boolean needsZlp;
     private TransferRequest currentRequest;
     private int writeOffset;
+    private int numOutstandingRequests;
+    private boolean hasError;
 
 
     /**
@@ -72,8 +74,7 @@ public class MacosEndpointOutputStream extends OutputStream {
         for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
             final var request = new TransferRequest();
             request.buffer = arena.allocate(bufferSize, 8);
-            request.completionHandler = device.createCompletionHandler(USBDirection.OUT, endpointNumber, arena,
-                    (result, size) -> onCompletion(request, result));
+            request.completionHandler = (result, size) -> onCompletion(request, result);
 
             if (i == 0) {
                 currentRequest = request;
@@ -81,6 +82,22 @@ public class MacosEndpointOutputStream extends OutputStream {
                 availableRequestQueue.add(request);
             }
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (isClosed())
+            return;
+
+        if (!hasError)
+            flush();
+        else
+            waitForOutstandingRequests();
+
+        device = null;
+        availableRequestQueue.clear();
+        currentRequest = null;
+        arena.close();
     }
 
     @Override
@@ -122,50 +139,86 @@ public class MacosEndpointOutputStream extends OutputStream {
         if (needsZlp)
             submitTransfer(0);
 
-        // Wait until all buffers have been transmitted by removing them from the
-        // queue and reinserting them. One request is the current request.
-        // So the queue only contains MAX_OUTSTANDING_REQUESTS - 1 requests.
-        var requests = new TransferRequest[MAX_OUTSTANDING_REQUESTS - 1];
-        for (int i = 0; i < MAX_OUTSTANDING_REQUESTS - 1; i++)
-            requests[i] = waitForAvailableRequest();
-        availableRequestQueue.addAll(Arrays.asList(requests).subList(1, MAX_OUTSTANDING_REQUESTS - 1));
-    }
-
-    @Override
-    public void close() throws IOException {
-        flush();
-
-        device = null;
-        availableRequestQueue.clear();
-        currentRequest = null;
-        arena.close();
+        waitForOutstandingRequests();
     }
 
     private boolean isClosed() {
         return device == null;
     }
 
-    private void submitTransfer(int size) {
-        device.submitTransferOut(endpointNumber, currentRequest.buffer, size, currentRequest.completionHandler);
-        needsZlp = size == packetSize;
+    /**
+     * Submits a request for transfer and set a new request
+     * as the current one, possibly waiting until it is ready.
+     * <p>
+     *     Throws an exception if the request to be reused has completed with an error on the
+     *     previous operation. The exception is suppressed if {@code hasError} flag is set.
+     * </p>
+     *
+     * @param size size of data to be transmitted
+     */
+    private void submitTransfer(int size) throws IOException {
+        try {
+            device.submitTransferOut(endpointNumber, currentRequest.buffer, size, 0, currentRequest.completionHandler);
 
-        writeOffset = 0;
-        currentRequest = waitForAvailableRequest();
+            synchronized (this) {
+                numOutstandingRequests += 1;
+            }
+
+            needsZlp = size == packetSize;
+            writeOffset = 0;
+            currentRequest = waitForAvailableRequest();
+
+        } catch (Throwable t) {
+            hasError = true;
+            close();
+            throw t;
+        }
     }
 
-    private void onCompletion(TransferRequest request, int result) {
-        request.result = result;
-        availableRequestQueue.add(request);
+    /**
+     * Wait until all outstanding requests have been completed.
+     * <p>
+     *     Throws an exception if any of the requests has completed with an error.
+     *     The exception is suppressed if {@code hasError} flag is set.
+     * </p>
+     */
+    private void waitForOutstandingRequests() {
+        // Wait until all buffers have been transmitted by removing them from the
+        // queue and reinserting them.
+
+        int numRequests;
+        synchronized (this) {
+            numRequests = numOutstandingRequests + availableRequestQueue.size();
+        }
+
+        if (numRequests == 0)
+            return;
+
+        var requests = new TransferRequest[numRequests];
+        for (int i = 0; i < numRequests; i++)
+            requests[i] = waitForAvailableRequest();
+
+        // reinsert the requests
+        if (!hasError)
+            availableRequestQueue.addAll(Arrays.asList(requests));
     }
 
-    TransferRequest waitForAvailableRequest() {
+    /**
+     * Wait until one of the allocated requests is available for use.
+     * <p>
+     *     Throws an exception if the request to be reused has completed with an error on the
+     *     previous operation. The exception is suppressed if {@code hasError} flag is set.
+     * </p>
+     * @return request ready for use
+     */
+    private TransferRequest waitForAvailableRequest() {
         while (true) {
             try {
                 TransferRequest request = availableRequestQueue.take();
 
                 // check for error
                 int result = request.result;
-                if (result != 0) {
+                if (result != 0 && !hasError) {
                     request.result = 0;
                     throwException(result, "error writing to USB endpoint");
                 }
@@ -178,9 +231,21 @@ public class MacosEndpointOutputStream extends OutputStream {
         }
     }
 
+    /**
+     * Called by the asynchronous IO completion handler.
+     *
+     * @param request the completed request
+     * @param result the request result code
+     */
+    private synchronized void onCompletion(TransferRequest request, int result) {
+        request.result = result;
+        availableRequestQueue.add(request);
+        numOutstandingRequests -= 1;
+    }
+
     private static class TransferRequest {
         MemorySegment buffer;
         int result;
-        MemorySegment completionHandler;
+        MacosUSBDevice.AsyncIOCompletion completionHandler;
     }
 }

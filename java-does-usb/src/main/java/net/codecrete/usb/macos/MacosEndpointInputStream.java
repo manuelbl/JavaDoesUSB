@@ -73,7 +73,7 @@ public class MacosEndpointInputStream extends InputStream {
             for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
                 final var request = new TransferRequest();
                 request.buffer = arena.allocate(bufferSize, 8);
-                request.completionHandler = device.createCompletionHandler(USBDirection.IN, endpointNumber, arena, (result, size) -> onCompletion(request, result, size));
+                request.completionHandler = (result, size) -> onCompletion(request, result, size);
 
                 if (i == 0) {
                     currentRequest = request;
@@ -90,8 +90,8 @@ public class MacosEndpointInputStream extends InputStream {
     @SuppressWarnings("RedundantThrows")
     @Override
     public void close() throws IOException {
-        if (device == null)
-            return; // already closed
+        if (isClosed())
+            return;
 
         // abort all transfers on endpoint
         try {
@@ -179,7 +179,7 @@ public class MacosEndpointInputStream extends InputStream {
     }
 
     void submitRequest(TransferRequest request) {
-        device.submitTransferIn(endpointNumber, request.buffer, bufferSize, request.completionHandler);
+        device.submitTransferIn(endpointNumber, request.buffer, bufferSize, 0, request.completionHandler);
         numOutstandingRequests += 1;
     }
 
@@ -206,6 +206,6 @@ public class MacosEndpointInputStream extends InputStream {
         MemorySegment buffer;
         int result;
         int resultSize;
-        MemorySegment completionHandler;
+        MacosUSBDevice.AsyncIOCompletion completionHandler;
     }
 }

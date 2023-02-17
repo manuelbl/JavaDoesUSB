@@ -21,10 +21,7 @@ import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
-import java.lang.foreign.MemorySegment;
+import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -36,13 +33,59 @@ import java.util.Map;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
+/**
+ * MacOS implementation of {@link net.codecrete.usb.USBDevice}.
+ * <p>
+ *     All read and write operations on endpoints are submitted through synchronized methods in order to control
+ *     concurrency. If it wasn't controlled, the danger is that device and interface pointers are used, which have
+ *     just been closed and thus deallocated by another thread, likely leading to crashes.
+ * </p>
+ * <p>
+ *     As a consequence of the synchronized submission, blocking operations consists of submitting an
+ *     asynchronous request and waiting for the completion.
+ * </p>
+ * <p>
+ *     For the completion callback, an upcall stub is created for each device instance. The device instance is bound
+ *     to this stub. The stub is used as the {@code callback} parameter in the native functions. For each USB
+ *     interface, an event source is registered in the registry's asynchronous IO completion background thread.
+ *     To map the callback to a specific request, the request provides a completion handler. It is assigned a unique
+ *     number. The number is passed as {@code refcon} to the native call while the mapping between the number and the
+ *     completion handler is maintained in a hash map.
+ * </p>
+ */
 public class MacosUSBDevice extends USBDeviceImpl {
 
+    static final MethodHandle asyncIOCompletedMH;
+    // Function descriptor for callback functions of type 'IOAsyncCallback1'
+    static final FunctionDescriptor completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
+
+    static {
+        try {
+            asyncIOCompletedMH = MethodHandles.lookup().findStatic(MacosUSBDevice.class, "asyncIOCompleted",
+                    MethodType.methodType(void.class, MacosUSBDevice.class, MemorySegment.class, int.class, MemorySegment.class));
+        } catch (IllegalAccessException|NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final MacosUSBDeviceRegistry registry;
+    // Native USB device interface (IOUSBDeviceInterface**)
     private MemorySegment device;
+    // Currently selected configuration
     private int configurationValue;
+    // Details about interfaces that have been claimed
     private List<InterfaceInfo> claimedInterfaces;
+    // Details about endpoints of current alternate settings (for claimed interfaces)
     private Map<Byte, EndpointInfo> endpoints;
+    // Last used handler ID
+    private int lastHandlerId;
+    // Completion handlers of currently outstanding asynchronous IO requests,
+    // indexed by assigned ID, which is passed in and out as 'refcon'
+    private Map<Integer, AsyncIOCompletion> completionHandlers;
+    /// Arena used to allocate upcall stub for event source
+    private Arena arena;
+    /// Upcall stub for IO completion callback
+    private MemorySegment completionUpcallStub;
 
     MacosUSBDevice(MacosUSBDeviceRegistry registry, MemorySegment device, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
@@ -71,6 +114,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         claimedInterfaces = new ArrayList<>();
 
+        addDeviceEventSource();
+
         // set configuration
         ret = IoKitUSB.SetConfiguration(device, (byte) configurationValue);
         if (ret != 0)
@@ -92,6 +137,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         claimedInterfaces = null;
         endpoints = null;
+
+        var source = IoKitUSB.GetDeviceAsyncEventSource(device);
+        if (source.address() != 0)
+            registry.removeEventSource(source);
+
         IoKitUSB.USBDeviceClose(device);
     }
 
@@ -183,6 +233,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             IoKitUSB.AddRef(interfaceInfo.iokitInterface());
             claimedInterfaces.add(interfaceInfo);
             setClaimed(interfaceNumber, true);
+            addInterfaceEventSource(interfaceInfo);
         }
 
         updateEndpointList();
@@ -322,43 +373,34 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
-        MemorySegment dev;
-        synchronized (this) {
-            checkIsOpen();
-            dev = device;
-        }
-
         try (var arena = Arena.openConfined()) {
             var data = arena.allocate(length);
             var deviceRequest = createDeviceRequest(arena, USBDirection.IN, setup, data);
+            var request = createRequest();
 
-            int ret = IoKitUSB.DeviceRequest(dev, deviceRequest);
-            if (ret != 0)
-                throwException(ret, "Control IN transfer failed");
+            synchronized (request) {
+                submitControlTransfer(deviceRequest, (result, size) -> onRequestCompleted(request, result, size));
+                waitForRequest(request, USBDirection.IN, 0, false);
+            }
 
-            int lenDone = IOUSBDevRequest.wLenDone$get(deviceRequest);
-            return data.asSlice(0, lenDone).toArray(JAVA_BYTE);
+            return data.asSlice(0, request.size).toArray(JAVA_BYTE);
         }
     }
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        MemorySegment dev;
-        synchronized (this) {
-            checkIsOpen();
-            dev = device;
-        }
-
         try (var arena = Arena.openConfined()) {
             int dataLength = data != null ? data.length : 0;
             var dataSegment = arena.allocate(dataLength);
             if (dataLength > 0)
                 dataSegment.copyFrom(MemorySegment.ofArray(data));
             var deviceRequest = createDeviceRequest(arena, USBDirection.OUT, setup, dataSegment);
+            var request = createRequest();
 
-            int ret = IoKitUSB.DeviceRequest(dev, deviceRequest);
-            if (ret != 0)
-                throwException(ret, "Control OUT transfer failed");
+            synchronized (request) {
+                submitControlTransfer(deviceRequest, (result, size) -> onRequestCompleted(request, result, size));
+                waitForRequest(request, USBDirection.OUT, 0, false);
+            }
         }
     }
 
@@ -371,31 +413,19 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var nativeData = arena.allocateArray(JAVA_BYTE, data.length);
             nativeData.copyFrom(MemorySegment.ofArray(data));
 
-            int ret;
-            if (timeout <= 0) {
-                // transfer without timeout
-                ret = IoKitUSB.WritePipe(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData, data.length);
+            var request = createRequest();
+            synchronized (request) {
+                if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
+                    // no timeout or timeout handled by operating system
+                    submitTransferOut(endpointNumber, nativeData, data.length, timeout, (result, size) -> onRequestCompleted(request, result, size));
+                    waitForRequest(request, USBDirection.OUT, endpointNumber, false);
 
-            } else if (epInfo.transferType() == USBTransferType.BULK) {
-
-                // bulk transfer with timeout
-                ret = IoKitUSB.WritePipeTO(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData,
-                        data.length, timeout, timeout);
-                if (ret == IOKit.kIOUSBTransactionTimeout())
-                    throw new USBTimeoutException("Transfer out aborted due to timeout");
-
-            } else {
-
-                // interrupt transfer with timeout
-                var transferTimeout = new TransferTimeout(epInfo, timeout);
-                ret = IoKitUSB.WritePipe(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData, data.length);
-                if (ret == IOKit.kIOReturnAborted())
-                    throw new USBTimeoutException("Transfer out aborted due to timeout");
-                transferTimeout.markCompleted();
+                } else {
+                    // interrupt transfer with timeout
+                    submitTransferOut(endpointNumber, nativeData, data.length, 0, (result, size) -> onRequestCompleted(request, result, size));
+                    waitForRequestOrAbort(request, timeout, USBDirection.OUT, endpointNumber);
+                }
             }
-
-            if (ret != 0)
-                throwException(ret, "Sending data to endpoint %d failed", endpointNumber);
         }
     }
 
@@ -406,91 +436,166 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var nativeData = arena.allocateArray(JAVA_BYTE, epInfo.packetSize());
-            var sizeHolder = arena.allocate(JAVA_INT, epInfo.packetSize());
-            int ret;
 
-            if (timeout <= 0) {
-                // transfer without timeout
-                ret = IoKitUSB.ReadPipe(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData, sizeHolder);
+            var request = createRequest();
+            synchronized (request) {
+                if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
+                    // no timeout or timeout handled by operating system
+                    submitTransferIn(endpointNumber, nativeData, epInfo.packetSize(), timeout, (result, size) -> onRequestCompleted(request, result, size));
+                    waitForRequest(request, USBDirection.IN, endpointNumber, false);
 
-            } else if (epInfo.transferType() == USBTransferType.BULK) {
-
-                // bulk transfer with timeout
-                ret = IoKitUSB.ReadPipeTO(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData,
-                        sizeHolder, timeout, timeout);
-                if (ret == IOKit.kIOUSBTransactionTimeout())
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-
-            } else {
-
-                // interrupt transfer with timeout
-                var transferTimeout = new TransferTimeout(epInfo, timeout);
-                ret = IoKitUSB.ReadPipe(epInfo.iokitInterface(), epInfo.pipeIndex(), nativeData, sizeHolder);
-                if (ret == IOKit.kIOReturnAborted())
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-                transferTimeout.markCompleted();
+                } else {
+                    // interrupt transfer with timeout
+                    submitTransferIn(endpointNumber, nativeData, epInfo.packetSize(), 0, (result, size) -> onRequestCompleted(request, result, size));
+                    waitForRequestOrAbort(request, timeout, USBDirection.IN, endpointNumber);
+                }
             }
-            if (ret != 0)
-                throwException(ret, "Receiving data from endpoint %d failed", endpointNumber);
 
-            int size = sizeHolder.get(JAVA_INT, 0);
-            return nativeData.asSlice(0, size).toArray(JAVA_BYTE);
+            return nativeData.asSlice(0, request.size).toArray(JAVA_BYTE);
         }
     }
 
-    static final MethodHandle asyncIOCompletedMH;
-    static final FunctionDescriptor completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
+    /**
+     * Submits a transfer IN request to the specified BULK or INTERRUPT endpoint.
+     * <p>
+     *     A timeout may only be specified for BULK endpoints.
+     * </p>
+     * @param endpointNumber endpoint number
+     * @param buffer buffer that will receive data
+     * @param bufferSize buffer length (should be packet size or multiple thereof)
+     * @param timeout the timeout, in milliseconds, or 0 for no timeout
+     * @param completionHandler handler that will be called when the request completes
+     */
+    synchronized void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, int timeout, AsyncIOCompletion completionHandler) {
 
-    static {
-        try {
-            asyncIOCompletedMH = MethodHandles.lookup().findStatic(MacosUSBDevice.class, "asyncIOCompleted",
-                    MethodType.methodType(void.class, AsyncIOCallback.class, MemorySegment.class, int.class, MemorySegment.class));
-        } catch (IllegalAccessException|NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    static void asyncIOCompleted(AsyncIOCallback callback, MemorySegment ignoredRefcon, int result, MemorySegment arg0) {
-        callback.completed(result, (int)arg0.address());
-    }
-
-    synchronized MemorySegment createCompletionHandler(USBDirection direction, int endpointNumber, Arena arena, AsyncIOCallback callback) {
-        var endpoint = getEndpointInfo(endpointNumber, direction, USBTransferType.BULK, null);
-
-        var source = IoKitUSB.GetInterfaceAsyncEventSource(endpoint.iokitInterface());
-        if (source.address() == 0) {
-            try (Arena innerArena = Arena.openConfined()) {
-                var sourceHolder = innerArena.allocate(ADDRESS);
-                int ret = IoKitUSB.CreateInterfaceAsyncEventSource(endpoint.iokitInterface(), sourceHolder);
-                if (ret != 0)
-                    throwException(ret, "failed to create event source");
-                source = sourceHolder.get(ADDRESS, 0);
-                registry.addEventSource(source);
-            }
-        }
-
-        var methodHandle = asyncIOCompletedMH.bindTo(callback);
-        return Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, arena.scope());
-    }
-
-    void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, MemorySegment completionHandler) {
-
-        EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         // submit request
-        int ret = IoKitUSB.ReadPipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), buffer, bufferSize, completionHandler, MemorySegment.NULL);
+        int ret;
+        if (timeout <= 0)
+            ret = IoKitUSB.ReadPipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), buffer, bufferSize,
+                getCompletionUpcallStub(), saveCompletionHandler(completionHandler));
+        else
+            ret = IoKitUSB.ReadPipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), buffer, bufferSize, timeout,
+                timeout, getCompletionUpcallStub(), saveCompletionHandler(completionHandler));
+
         if (ret != 0)
-            throwException(ret, "failed to submit async transfer");
+            throwException(ret, "failed to submit transfer IN request");
     }
 
-    void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, MemorySegment completionHandler) {
+    /**
+     * Submits a transfer OUT request to the specified BULK or INTERRUPT endpoint.
+     * <p>
+     *     A timeout may only be specified for BULK endpoints.
+     * </p>
+     * @param endpointNumber endpoint number
+     * @param data buffer with data to be transmitted
+     * @param dataSize number of bytes to be transmitted
+     * @param timeout the timeout, in milliseconds, or 0 for no timeout
+     * @param completionHandler handler that will be called when the request completes
+     */
+    synchronized void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, int timeout,
+                                        AsyncIOCompletion completionHandler) {
 
-        EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+        EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         // submit request
-        int ret = IoKitUSB.WritePipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), data, dataSize, completionHandler, MemorySegment.NULL);
+        int ret;
+        if (timeout <= 0)
+            ret = IoKitUSB.WritePipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), data, dataSize,
+                    getCompletionUpcallStub(), saveCompletionHandler(completionHandler));
+        else
+            ret = IoKitUSB.WritePipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), data, dataSize, timeout,
+                    timeout, getCompletionUpcallStub(), saveCompletionHandler(completionHandler));
+
         if (ret != 0)
-            throwException(ret, "failed to submit async transfer");
+            throwException(ret, "failed to submit transfer OUT request");
+    }
+
+    /**
+     * Submits a control transfer request.
+     * @param deviceRequest control transfer request
+     * @param completionHandler handler that will be called when the request completes
+     */
+    synchronized void submitControlTransfer(MemorySegment deviceRequest, AsyncIOCompletion completionHandler) {
+
+        checkIsOpen();
+
+        // submit request
+        int ret = IoKitUSB.DeviceRequestAsync(device, deviceRequest, getCompletionUpcallStub(), saveCompletionHandler(completionHandler));
+
+        if (ret != 0)
+            throwException(ret, "failed to submit control transfer request");
+    }
+
+    private TransferRequest createRequest() {
+        var request = new TransferRequest();
+        request.size = -1;
+        return request;
+    }
+
+    private void waitForRequest(TransferRequest request, USBDirection direction, int endpointNumber, boolean ignoreAbort) {
+        // wait for request
+        while (request.size == -1) {
+            try {
+                request.wait();
+            } catch (InterruptedException e) {
+                // ignore and retry
+            }
+        }
+
+        // test for error
+        if (request.result != 0) {
+            var operation = getOperationDescription(direction, endpointNumber);
+            if (request.result == IOKit.kIOUSBTransactionTimeout())
+                throw new USBTimeoutException(operation + "aborted due to timeout");
+            if (request.result != IOKit.kIOReturnAborted() || !ignoreAbort)
+                throwException(request.result, operation + " failed");
+        }
+    }
+
+    private void waitForRequestOrAbort(TransferRequest request, int timeout, USBDirection direction, int endpointNumber) {
+        // wait for request or abort when timeout occurs
+        long expiration = System.currentTimeMillis() + timeout;
+        long remainingTimeout = timeout;
+        while (remainingTimeout > 0 && request.size == -1) {
+            try {
+                request.wait(remainingTimeout);
+                remainingTimeout = expiration - System.currentTimeMillis();
+
+            } catch (InterruptedException e) {
+                // ignore and retry
+            }
+        }
+
+        // test for timeout
+        if (request.result == 0 && remainingTimeout <= 0) {
+            abortTransfer(direction, endpointNumber);
+            waitForRequest(request, direction, endpointNumber, true);
+            throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to timeout");
+        }
+
+        if (request.result != 0) {
+            var operation = direction == USBDirection.IN ? "Transfer in" : "Transfer out";
+            throwException(request.result, getOperationDescription(direction, endpointNumber) + " failed", operation);
+        }
+    }
+
+    private static String getOperationDescription(USBDirection direction, int endpointNumber) {
+        if (endpointNumber == 0) {
+            return "Control transfer";
+        } else {
+            return String.format("Transfer %s on endpoint %d", direction.name(), endpointNumber);
+        }
+
+    }
+
+    private static void onRequestCompleted(TransferRequest request, int result, int size) {
+        synchronized (request) {
+            request.result = result;
+            request.size = size;
+            request.notify();
+        }
     }
 
     public void abortTransfer(USBDirection direction, int endpointNumber) {
@@ -535,14 +640,73 @@ public class MacosUSBDevice extends USBDeviceImpl {
         };
     }
 
-    record InterfaceInfo(MemorySegment iokitInterface, int interfaceNumber) {
+    private synchronized MemorySegment getCompletionUpcallStub() {
+        if (completionUpcallStub == null) {
+            arena = Arena.openShared();
+            var methodHandle = asyncIOCompletedMH.bindTo(this);
+            completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, arena.scope());
+        }
+
+        return completionUpcallStub;
     }
 
-    record EndpointInfo(MemorySegment iokitInterface, byte pipeIndex, USBTransferType transferType, int packetSize) {
+    private synchronized MemorySegment saveCompletionHandler(AsyncIOCompletion handler) {
+        if (completionHandlers == null)
+            completionHandlers = new HashMap<>();
+
+        while (true) {
+            lastHandlerId += 1;
+            var key = Integer.valueOf(lastHandlerId);
+            if (completionHandlers.containsKey(key))
+                continue;
+
+            completionHandlers.put(key, handler);
+            return MemorySegment.ofAddress(lastHandlerId, 0, SegmentScope.global());
+        }
+    }
+
+    private synchronized void addDeviceEventSource() {
+        try (Arena innerArena = Arena.openConfined()) {
+            var sourceHolder = innerArena.allocate(ADDRESS);
+            int ret = IoKitUSB.CreateDeviceAsyncEventSource(device, sourceHolder);
+            if (ret != 0)
+                throwException(ret, "failed to create event source");
+            var source = sourceHolder.get(ADDRESS, 0);
+            registry.addEventSource(source);
+        }
+    }
+
+    private synchronized void addInterfaceEventSource(InterfaceInfo interfaceInfo) {
+        try (Arena innerArena = Arena.openConfined()) {
+            var sourceHolder = innerArena.allocate(ADDRESS);
+            int ret = IoKitUSB.CreateInterfaceAsyncEventSource(interfaceInfo.iokitInterface(), sourceHolder);
+            if (ret != 0)
+                throwException(ret, "failed to create event source");
+            var source = sourceHolder.get(ADDRESS, 0);
+            registry.addEventSource(source);
+        }
+    }
+
+    private synchronized AsyncIOCompletion getCompletionHandler(MemorySegment refcon) {
+        var key = Integer.valueOf((int)refcon.address());
+        var handler = completionHandlers.remove(key);
+
+        if (!isOpen() && completionHandlers.size() == 0) {
+            completionHandlers = null;
+            completionUpcallStub = null;
+            arena.close();
+            arena = null;
+        }
+
+        return handler;
+    }
+
+    private static void asyncIOCompleted(MacosUSBDevice device, MemorySegment refcon, int result, MemorySegment arg0) {
+        device.getCompletionHandler(refcon).completed(result, (int)arg0.address());
     }
 
     @FunctionalInterface
-    public interface AsyncIOCallback {
+    public interface AsyncIOCompletion {
 
         /**
          * Called when the asynchronous IO has completed.
@@ -551,5 +715,16 @@ public class MacosUSBDevice extends USBDeviceImpl {
          * @param size the size of the transferred data (in bytes)
          */
         void completed(int result, int size);
+    }
+
+    record InterfaceInfo(MemorySegment iokitInterface, int interfaceNumber) {
+    }
+
+    record EndpointInfo(MemorySegment iokitInterface, byte pipeIndex, USBTransferType transferType, int packetSize) {
+    }
+
+    static class TransferRequest {
+        int result;
+        int size;
     }
 }
