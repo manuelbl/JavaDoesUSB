@@ -14,7 +14,7 @@
 // --- usb_istreambuf ---
 
 usb_istreambuf::usb_istreambuf(usb_device_ptr device, int endpoint_number)
-: device(device), endpoint_number(endpoint_number), is_closed(false), submitted_index(0), completed_index(0), processed_index(-1) {
+: device(device), endpoint_number(endpoint_number), is_closed(false) {
 
     setg(nullptr, nullptr, nullptr);
 
@@ -22,66 +22,62 @@ usb_istreambuf::usb_istreambuf(usb_device_ptr device, int endpoint_number)
     
     buffer_size = 4 * device->get_endpoint(usb_direction::in, endpoint_number).packet_size();
 
-    // create buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        buffers[i] = new uint8_t[buffer_size];
-    
-    // initialize OUTLAPPED structure and submit request
-    memset(overlapped_requests, 0, sizeof(overlapped_requests));
+    // allocate the buffers and submit requests
+    memset(requests, 0, sizeof(requests));
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        transfer_request* request = &requests[i];
+        request->buffer = new uint8_t[buffer_size];
+        request->io_completion = [this, request]() { on_completed(request); };
+        device->add_completion_handler(&request->overlapped, &request->io_completion);
 
-    // create and register IO completion handler
-    io_completion_handler = [this](DWORD result, DWORD size) { on_io_completion(result, size); };
-    for (int i = 0; i < num_outstanding_requests; i++)
-        device->add_completion_handler(&overlapped_requests[i], &io_completion_handler);
-
-    // start requests except for one
-    const std::lock_guard lock(io_mutex);
-    for (int i = 0; i < num_outstanding_requests - 1; i++)
-        submit_request();
+        if (i == 0)
+            current_request = request;
+        else
+            submit_transfer(request);
+    }
 }
          
 usb_istreambuf::~usb_istreambuf() {
     close();
 
-    for (int i = 0; i < num_outstanding_requests; i++)
-        delete[] buffers[i];
+    for (int i = 0; i < max_outstanding_requests; i++)
+        delete[] requests[i].buffer;
 }
 
 void usb_istreambuf::close() {
-    {
-        const std::lock_guard lock(io_mutex);
+    is_closed = true;
+    setg(nullptr, nullptr, nullptr);
 
-        is_closed = true;
-
-        for (int i = completed_index; submitted_index - i > 0; i += 1) {
-            int index = i % num_outstanding_requests;
-            device->cancel_transfer(usb_direction::in, endpoint_number, &overlapped_requests[index]);
-        }
+    // cancel outstanding requests
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        if (!requests[i].is_completed)
+            device->cancel_transfer(usb_direction::in, endpoint_number, &requests[i].overlapped);
     }
 
-    io_condition.notify_all();
+    // wait until completion handlers have been called
+    while (num_outstanding_requests > 0)
+        wait_for_request_completion();
 
-    // wait until all completion handlers have been called
-    std::unique_lock wait_lock(io_mutex);
-    io_condition.wait(wait_lock, [this] { return completed_index == submitted_index; });
+    // remove completion handlers
+    for (int i = 0; i < max_outstanding_requests; i++)
+        device->remove_completion_handler(&requests->overlapped);
 }
 
-void usb_istreambuf::submit_request() {
-    int index = submitted_index % num_outstanding_requests;    
-    submitted_index += 1;
-
-    device->submit_transfer_in(endpoint_number, buffers[index], buffer_size, &overlapped_requests[index]);
+void usb_istreambuf::submit_transfer(transfer_request* request) {
+    request->is_completed = false;
+    device->submit_transfer_in(endpoint_number, request->buffer, buffer_size, &request->overlapped);
+    num_outstanding_requests += 1;
 }
 
-void usb_istreambuf::on_io_completion(DWORD result, DWORD size) {
-    const std::lock_guard lock(io_mutex);
+void usb_istreambuf::on_completed(transfer_request* request) {
+    request->is_completed = true;
+    completed_request_queue.put(request);
+}
 
-    int index = completed_index % num_outstanding_requests;
-    request_sizes[index] = size;
-    request_results[index] = result;
-
-    completed_index += 1;
-    io_condition.notify_all();
+usb_istreambuf::transfer_request* usb_istreambuf::wait_for_request_completion() {
+    transfer_request* request = completed_request_queue.take();
+    num_outstanding_requests -= 1;
+    return request;
 }
 
 usb_istreambuf::int_type usb_istreambuf::underflow() {
@@ -91,110 +87,91 @@ usb_istreambuf::int_type usb_istreambuf::underflow() {
     if (gptr() < egptr())
         return traits_type::to_int_type(*gptr());
 
-    // loop until no ZLP has been received
-    while (true) {
-        std::unique_lock wait_lock(io_mutex);
-        processed_index += 1;
-        submit_request();
+    // loop until non-ZLP has been received
+    do {
+        submit_transfer(current_request);
 
-        // wait until a completed request is available
-        io_condition.wait(wait_lock, [this] { return completed_index - processed_index > 0 || is_closed; });
+        current_request = wait_for_request_completion();
+        if (current_request->result_code() != S_OK)
+            throw new usb_error("transfer IN failed", current_request->result_code());
 
-        if (is_closed)
-            return traits_type::eof();
+        char* buf = reinterpret_cast<char*>(current_request->buffer);
+        int size = current_request->result_size();
+        setg(buf, buf, buf + size);
 
-        int index = processed_index % num_outstanding_requests;
-        if (request_results[index] != S_OK)
-            throw new usb_error("transfer IN failed", request_results[index]);
+    } while (current_request->result_size() == 0);
 
-        // set stream buffer to buffer from completed request
-        char* buf = reinterpret_cast<char*>(buffers[index]);
-        int size = request_sizes[index];
-
-        if (size != 0) {
-            setg(buf, buf, buf + size);
-            return traits_type::to_int_type(*gptr());
-        }
-    }
+    return traits_type::to_int_type(*gptr());
 }
 
 
 // --- usb_ostreambuf ---
 
 usb_ostreambuf::usb_ostreambuf(usb_device_ptr device, int endpoint_number)
-: device(device), endpoint_number(endpoint_number), processing_index(0), completed_index(0), checked_index(0), needs_zlp(false) {
+: device(device), endpoint_number(endpoint_number), needs_zlp(false) {
     
     device->configure_for_async_io(usb_direction::out, endpoint_number);
 
     packet_size = device->get_endpoint(usb_direction::out, endpoint_number).packet_size();
     buffer_size = 1 * packet_size;
 
-    // create buffers
-    for (int i = 0; i < num_outstanding_requests; i++)
-        buffers[i] = new uint8_t[buffer_size];
+    // create requests
+    memset(requests, 0, sizeof(requests));
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        transfer_request* request = &requests[i];
+        request->buffer = new uint8_t[buffer_size];
+        request->io_completion = [this, request](void) { on_completed(request); };
+        device->add_completion_handler(&request->overlapped, &request->io_completion);
+    }
 
-    char* buf = reinterpret_cast<char*>(buffers[0]);
-    setp(buf, buf + buffer_size);
-
-    // initialize OUTLAPPED structure and submit request
-    memset(overlapped_requests, 0, sizeof(overlapped_requests));
-
-    // create and register IO completion handler
-    io_completion_handler = [this](DWORD result, DWORD size) { on_io_completion(result, size); };
-    for (int i = 0; i < num_outstanding_requests; i++)
-        device->add_completion_handler(&overlapped_requests[i], &io_completion_handler);
+    fill_queue();
 }
          
+void usb_ostreambuf::fill_queue() {
+    for (int i = 1; i < max_outstanding_requests; i++)
+        available_request_queue.put(&requests[i]);
+
+    // configure stream buffer for first request
+    current_request = &requests[0];
+    char* buf = reinterpret_cast<char*>(current_request->buffer);
+    setp(buf, buf + buffer_size);
+}
+
 usb_ostreambuf::~usb_ostreambuf() {
     sync();
 
-    for (int i = 0; i < num_outstanding_requests; i++)
-        delete[] buffers[i];
+    // free buffers
+    for (int i = 0; i < max_outstanding_requests; i++) {
+        device->remove_completion_handler(&requests[i].overlapped);
+        delete[] requests[i].buffer;
+    }
 }
 
 int usb_ostreambuf::sync() {
-    std::unique_lock wait_lock(io_mutex);
-
     // submit request if there is any data in the current buffer
-    auto size = static_cast<int>(pptr() - pbase());
+    auto size = pptr() - pbase();
     if (size > 0)
-        submit_transfer(size);
-    
+        submit_transfer((int)size);
+
     // send a zero-length packet if required
-    if (needs_zlp) {
-        // wait until an unused buffer is available
-        io_condition.wait(wait_lock, [this] { return processing_index - completed_index < num_outstanding_requests; });
-        check_for_errors();
-
+    if (needs_zlp)
         submit_transfer(0);
-    }
 
-    // wait until all buffers have been transmitted
-    io_condition.wait(wait_lock, [this] { return processing_index == completed_index; });
-    check_for_errors();
+    // Wait until all buffers have been transmitted by removing them from the
+    // queue and reinserting them. One request is the current request.
+    // So the queue only contains max_outstanding_requests - 1 requests.
+    for (int i = 0; i < max_outstanding_requests - 1; i++)
+        wait_for_available_transfer();
 
-    int index = processing_index % num_outstanding_requests;
-    char* buf = reinterpret_cast<char*>(buffers[index]);
-    setp(buf, buf + buffer_size);
+    fill_queue();
 
     return 0;
 }
 
 int usb_ostreambuf::overflow (int c) {
-    std::unique_lock wait_lock(io_mutex);
-
     // submit request
-    auto size = static_cast<int>(pptr() - pbase());
-    submit_transfer(size);
-
-    // wait until an unused buffer is available
-    io_condition.wait(wait_lock, [this] { return processing_index - completed_index < num_outstanding_requests; });
-    check_for_errors();
-
-    // configure stream buffer
-    int index = processing_index % num_outstanding_requests;
-    char* buf = reinterpret_cast<char*>(buffers[index]);
-    setp(buf, buf + buffer_size);
+    auto size = pptr() - pbase();
+    submit_transfer((int)size);
 
     // insert char
     if (c != traits_type::eof()) {
@@ -205,29 +182,30 @@ int usb_ostreambuf::overflow (int c) {
     return c;
 }
 
-void usb_ostreambuf::on_io_completion(DWORD result, DWORD size) {
-    const std::lock_guard lock(io_mutex);
-    int index = completed_index % num_outstanding_requests;
-    request_results[index] = result;
-    completed_index += 1;
-    io_condition.notify_all();
-}
-
-void usb_ostreambuf::check_for_errors() {
-
-    while (completed_index - checked_index > 0) {
-        int index = completed_index % num_outstanding_requests;
-        if (request_results[index] != S_OK)
-            throw new usb_error("transfer OUT failed", request_results[index]);
-        checked_index += 1;
-    }
-}
-
 void usb_ostreambuf::submit_transfer(int size) {
-    int index = processing_index % num_outstanding_requests;
-    device->submit_transfer_out(endpoint_number, buffers[index], size, &overlapped_requests[index]);
-    processing_index += 1;
+    device->submit_transfer_out(endpoint_number, current_request->buffer, size, &current_request->overlapped);
     needs_zlp = size == packet_size;
+
+    current_request = wait_for_available_transfer();
+
+    // configure stream buffer
+    char* buf = reinterpret_cast<char*>(current_request->buffer);
+    setp(buf, buf + buffer_size);
+}
+
+void usb_ostreambuf::on_completed(transfer_request* request) {
+    available_request_queue.put(request);
+}
+
+usb_ostreambuf::transfer_request* usb_ostreambuf::wait_for_available_transfer() {
+    auto request = available_request_queue.take();
+
+    // check for error
+    DWORD result = request->result_code();
+    if (result != S_OK)
+        throw new usb_error("transfer OUT failed", result);
+
+    return request;
 }
 
 

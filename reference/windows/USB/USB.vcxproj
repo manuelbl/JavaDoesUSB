@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assertion.hpp" />
+    <ClInclude Include="blocking_queue.hpp" />
     <ClInclude Include="configuration.hpp" />
     <ClInclude Include="config_parser.hpp" />
     <ClInclude Include="prng.hpp" />

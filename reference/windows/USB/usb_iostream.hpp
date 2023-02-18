@@ -13,6 +13,7 @@
 #include <mutex>
 #include <vector>
 #include "usb_device.hpp"
+#include "blocking_queue.hpp"
 
 /**
  * Input stream buffer for USB bulk or interrupt endpoint.
@@ -32,13 +33,34 @@ protected:
     virtual int_type underflow();
 
 private:
-    void submit_request();
+    /// Transfer request
+    struct transfer_request {
+        /// buffer for recevied data
+        uint8_t* buffer;
+        /// IO completion handler
+        std::function<void(void)> io_completion;
+        /// data structure for overlapped requests
+        OVERLAPPED overlapped;
+        /// indicates if the request has completed
+        bool is_completed;
+
+        DWORD result_code() {
+            return static_cast<DWORD>(overlapped.Internal);
+        }
+
+        DWORD result_size() {
+            return static_cast<DWORD>(overlapped.InternalHigh);
+        }
+    };
+
+    void submit_transfer(transfer_request* request);
 
     void close();
-    void on_io_completion(DWORD result, DWORD size);
+    void on_completed(transfer_request* request);
+    transfer_request* wait_for_request_completion();
 
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
+    static constexpr int max_outstanding_requests = 4;
     
     /// USB device
     usb_device_ptr device;
@@ -48,26 +70,14 @@ private:
     bool is_closed;
     /// buffer size
     int buffer_size;
-    /// Mutex for synchronization between input stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between input stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index after last submitted IO request
-    int submitted_index;
-    /// Index after last completed IO request
-    int completed_index;
-    /// Index after last processed IO request
-    int processed_index;
-    /// Async IO request information
-    OVERLAPPED overlapped_requests[num_outstanding_requests];
-    /// Data buffers
-    uint8_t* buffers[num_outstanding_requests];
-    /// Size of received data
-    DWORD request_sizes[num_outstanding_requests];
-    /// Result code of IO request
-    DWORD request_results[num_outstanding_requests];
-    /// Async IO completion handler
-    std::function<void(DWORD result, DWORD size)> io_completion_handler;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with completed requests
+    blocking_queue<transfer_request*> completed_request_queue;
+    /// number of outstanding requests (requests pending with OS and requests in queue)
+    int num_outstanding_requests;
+    /// current request being read from
+    transfer_request* current_request;
 
     friend class usb_istream;
 };
@@ -92,13 +102,32 @@ protected:
     virtual int overflow (int c);
 
 private:
-    void submit_transfer(int size);
-    void check_for_errors();
+    /// Transfer request
+    struct transfer_request {
+        /// buffer for recevied data
+        uint8_t* buffer;
+        /// overlapped data structure
+        OVERLAPPED overlapped;
+        /// IO completion handler
+        std::function<void(void)> io_completion;
 
-    void on_io_completion(DWORD result, DWORD size);
+        DWORD result_code() {
+            return static_cast<DWORD>(overlapped.Internal);
+        }
+
+        DWORD result_size() {
+            return static_cast<DWORD>(overlapped.InternalHigh);
+        }
+    };
+
+    void fill_queue();
+    void submit_transfer(int size);
+    transfer_request* wait_for_available_transfer();
+
+    void on_completed(transfer_request* request);
 
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
+    static constexpr int max_outstanding_requests = 4;
     
     /// USB device
     usb_device_ptr device;
@@ -110,24 +139,12 @@ private:
     int packet_size;
     /// buffer size
     int buffer_size;
-    /// Mutex for synchronization between output stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between output stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index of buffer being currently used by base class
-    int processing_index;
-    /// Index after last completed IO request
-    int completed_index;
-    /// Index after last completed IO request that has been checked for errors
-    int checked_index;
-    /// Async IO request information
-    OVERLAPPED overlapped_requests[num_outstanding_requests];
-    /// Data buffers for transmitting data
-    uint8_t* buffers[num_outstanding_requests];
-    /// Result code of IO request
-    DWORD request_results[num_outstanding_requests];
-    /// Async IO completion handler
-    std::function<void(DWORD result, DWORD size)> io_completion_handler;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with available requests
+    blocking_queue<transfer_request*> available_request_queue;
+    /// current request being written to
+    transfer_request* current_request;
 };
 
 /**
