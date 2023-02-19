@@ -17,6 +17,7 @@ import net.codecrete.usb.windows.winsdk.Kernel32B;
 import net.codecrete.usb.windows.winsdk.WinUSB2;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentScope;
@@ -334,6 +335,26 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
+    synchronized long submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, AsyncIOCompletion completion) {
+        var endpoint = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var overlapped = getOverlapped(completion);
+
+            // submit transfer
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), data, dataSize,
+                    NULL, overlapped, lastErrorState) == 0) {
+                int err = Win.getLastError(lastErrorState);
+                if (err != Kernel32.ERROR_IO_PENDING())
+                    throwException(err, "Submitting transfer OUT failed");
+            }
+
+            return overlapped.address();
+        }
+    }
+
     synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
         var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
@@ -417,6 +438,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
 
         return new WindowsEndpointInputStream(this, endpointNumber);
+    }
+
+    @Override
+    public OutputStream openOutputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+
+        return new WindowsEndpointOutputStream(this, endpointNumber);
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {
