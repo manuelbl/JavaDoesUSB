@@ -24,6 +24,14 @@ public class WinUSB  {
     public static int PIPE_TRANSFER_TIMEOUT() {
         return (int)3L;
     }
+    /**
+     * {@snippet :
+     * #define RAW_IO 7
+     * }
+     */
+    public static int RAW_IO() {
+        return (int)7L;
+    }
     public static MethodHandle WinUsb_Free$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_Free$MH,"WinUsb_Free");
     }

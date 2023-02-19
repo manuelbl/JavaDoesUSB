@@ -11,13 +11,17 @@ import net.codecrete.usb.*;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
+import net.codecrete.usb.windows.gen.kernel32.OVERLAPPED;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
 import net.codecrete.usb.windows.winsdk.Kernel32B;
 import net.codecrete.usb.windows.winsdk.WinUSB2;
 
+import java.io.InputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +35,20 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  */
 public class WindowsUSBDevice extends USBDeviceImpl {
 
+    private final WindowsUSBDeviceRegistry registry;
     private List<InterfaceHandle> interfaceHandles_;
     private boolean isOpen_;
+    // Completion handlers of currently outstanding asynchronous IO requests,
+    // indexed by OVERLAPPED pointer.
+    private Map<MemorySegment, AsyncIOCompletion> completionHandlers;
+    // available OVERLAPPED data structures
+    private List<MemorySegment> availableOverlappedStructs;
+    // Arena used to allocate OVERLAPPED data structures
+    private Arena arena;
 
-    WindowsUSBDevice(String devicePath, Map<Integer, String> children, int vendorId, int productId, MemorySegment configDesc) {
+    WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children, int vendorId, int productId, MemorySegment configDesc) {
         super(devicePath, vendorId, productId);
+        this.registry = registry;
         readDescription(configDesc, devicePath, children);
     }
 
@@ -68,17 +81,25 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void open() {
+    public synchronized void open() {
         if (isOpen())
             throwException("the device is already open");
 
         isOpen_ = true;
+
+        availableOverlappedStructs = new ArrayList<>();
+        arena = Arena.openShared();
+        completionHandlers = new HashMap<>();
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (!isOpen())
             return;
+
+        availableOverlappedStructs = null;
+        arena.close();
+        completionHandlers = null;
 
         for (var intf : interfaces_) {
             if (intf.isClaimed())
@@ -88,7 +109,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         isOpen_ = false;
     }
 
-    public void claimInterface(int interfaceNumber) {
+    public synchronized void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
@@ -116,6 +137,9 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
                 if (Win.IsInvalidHandle(deviceHandle))
                     throwLastError(lastErrorState, "Cannot open USB device %s", firstIntfHandle.devicePath);
+
+                registry.addToCompletionPort(deviceHandle, this);
+
             } else {
                 deviceHandle = firstIntfHandle.deviceHandle;
             }
@@ -141,7 +165,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
+    public synchronized void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
         checkIsOpen();
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
@@ -164,7 +188,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         intf.setAlternate(altSetting);
     }
 
-    public void releaseInterface(int interfaceNumber) {
+    public synchronized void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
@@ -182,6 +206,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         // close device
         firstIntfHandle.deviceOpenCount -= 1;
         if (firstIntfHandle.deviceOpenCount == 0) {
+            registry.removeFromCompletionPort(firstIntfHandle.deviceHandle);
             Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
         }
@@ -309,6 +334,71 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
+    synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
+        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var overlapped = getOverlapped(completion);
+
+            // submit transfer
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, bufferSize,
+                    NULL, overlapped, lastErrorState) == 0) {
+                int err = Win.getLastError(lastErrorState);
+                if (err != Kernel32.ERROR_IO_PENDING())
+                    throwException(err, "Submitting transfer IN failed");
+            }
+
+            return overlapped.address();
+        }
+    }
+
+    /**
+     * Cancels an asynchronous IO request.
+     * <p>
+     *     If the specific request is not found, the error is silently ignored. Such errors
+     *     are likely to happen due to concurrency issues.
+     * </p>
+     * @param endpointNumber endpoint number
+     * @param direction endpoint direction
+     * @param cancelHandle request's cancel handle returned when the request was submitted
+     */
+    synchronized void cancelTransfer(int endpointNumber, USBDirection direction, long cancelHandle) {
+        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var overlapped = MemorySegment.ofAddress(cancelHandle, 0, SegmentScope.global());
+
+            if (Kernel32B.CancelIoEx(intfHandle.deviceHandle, overlapped, lastErrorState) == 0) {
+                int err = Win.getLastError(lastErrorState);
+                if (err != Kernel32.ERROR_NOT_FOUND())
+                    throwException(err, "Cancelling transfer failed");
+            }
+        }
+    }
+
+    synchronized void configureForAsyncIo(int endpointNumber, USBDirection direction) {
+        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+
+            var timeoutHolder = arena.allocate(JAVA_INT, 0);
+            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
+                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, lastErrorState) == 0)
+                throwLastError(lastErrorState, "Setting timeout failed");
+
+            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte)0);
+            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
+                    WinUSB.RAW_IO(), (int) rawIoHolder.byteSize(), rawIoHolder, lastErrorState) == 0)
+                throwLastError(lastErrorState, "Setting raw IO failed");
+        }
+    }
+
     @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -319,6 +409,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             if (WinUSB2.WinUsb_ResetPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), lastErrorState) == 0)
                 throwLastError(lastErrorState, "Clearing halt failed");
         }
+    }
+
+    @Override
+    public InputStream openInputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+
+        return new WindowsEndpointInputStream(this, endpointNumber);
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {
@@ -366,5 +464,36 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         throwException("Control transfer failed as no interface has been claimed");
         throw new AssertionError("not reached");
+    }
+
+    synchronized void onAsyncIoCompleted(MemorySegment overlapped) {
+        var handler = completionHandlers.get(overlapped);
+        handler.completed((int)OVERLAPPED.Internal$get(overlapped), (int)OVERLAPPED.InternalHigh$get(overlapped));
+        completionHandlers.remove(overlapped);
+        availableOverlappedStructs.add(overlapped);
+    }
+
+    private MemorySegment getOverlapped(AsyncIOCompletion completionHandler) {
+        MemorySegment overlapped;
+        int size = availableOverlappedStructs.size();
+        if (size == 0) {
+            overlapped = arena.allocate(OVERLAPPED.$LAYOUT());
+        } else {
+            overlapped = availableOverlappedStructs.remove(size - 1);
+        }
+        completionHandlers.put(overlapped, completionHandler);
+        return overlapped;
+    }
+
+    @FunctionalInterface
+    public interface AsyncIOCompletion {
+
+        /**
+         * Called when the asynchronous IO has completed.
+         *
+         * @param result the result code of the operation
+         * @param size the size of the transferred data (in bytes)
+         */
+        void completed(int result, int size);
     }
 }

@@ -20,6 +20,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant ERROR_SEM_TIMEOUT ^
   --include-constant ERROR_GEN_FAILURE ^
   --include-constant ERROR_NOT_FOUND ^
+  --include-constant ERROR_IO_PENDING ^
   --include-constant GENERIC_READ ^
   --include-constant GENERIC_WRITE ^
   --include-constant FILE_SHARE_READ ^
@@ -30,8 +31,11 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant FORMAT_MESSAGE_ALLOCATE_BUFFER ^
   --include-constant FORMAT_MESSAGE_FROM_SYSTEM ^
   --include-constant FORMAT_MESSAGE_IGNORE_INSERTS ^
+  --include-constant INFINITE ^
   --include-struct _GUID ^
   --include-typedef GUID ^
+  --include-struct _OVERLAPPED ^
+  --include-typedef OVERLAPPED ^
   windows_headers.h
 
 call %JEXTRACT% --source --output ../../src/main/java ^
@@ -110,6 +114,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --target-package net.codecrete.usb.windows.gen.winusb ^
        --include-function WinUsb_Free ^
        --include-constant PIPE_TRANSFER_TIMEOUT ^
+       --include-constant RAW_IO ^
        windows_headers.h
 
 call %JEXTRACT% --source --output ../../src/main/java ^

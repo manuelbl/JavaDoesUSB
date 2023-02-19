@@ -76,7 +76,7 @@ public class WindowsUSBException extends USBException {
         throwException(Win.getLastError(lastErrorState), message, args);
     }
 
-    private static String getErrorMessage(int errorCode) {
+    static String getErrorMessage(int errorCode) {
         try (var arena = Arena.openConfined()) {
             var messagePointerHolder = arena.allocate(ADDRESS);
             int res = Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()

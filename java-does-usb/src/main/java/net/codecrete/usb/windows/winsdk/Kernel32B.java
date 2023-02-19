@@ -14,8 +14,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.invoke.MethodHandle;
 
-import static java.lang.foreign.ValueLayout.ADDRESS;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.*;
 
 /**
  * Native function calls for Kernel32.
@@ -68,6 +67,63 @@ public class Kernel32B {
                                       MemorySegment lpBytesReturned, MemorySegment lpOverlapped, MemorySegment lastErrorState) {
         try {
             return (int)DeviceIoControl$MH.invokeExact(lastErrorState, hDevice, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static final FunctionDescriptor GetQueuedCompletionStatus$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
+
+    private static final MethodHandle GetQueuedCompletionStatus$MH = LINKER.downcallHandle(
+            LOOKUP.find("GetQueuedCompletionStatus").get(),
+            GetQueuedCompletionStatus$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static int GetQueuedCompletionStatus(MemorySegment CompletionPort,
+                                                          MemorySegment lpNumberOfBytesTransferred,
+                                                          MemorySegment lpCompletionKey, MemorySegment lpOverlapped,
+                                                          int dwMilliseconds, MemorySegment lastErrorState) {
+        try {
+            return (int)GetQueuedCompletionStatus$MH.invokeExact(lastErrorState, CompletionPort,
+                    lpNumberOfBytesTransferred, lpCompletionKey, lpOverlapped, dwMilliseconds);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static final FunctionDescriptor CreateIoCompletionPort$FUNC =
+            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_LONG, JAVA_INT);
+
+    private static final MethodHandle CreateIoCompletionPort$MH = LINKER.downcallHandle(
+            LOOKUP.find("CreateIoCompletionPort").get(),
+            CreateIoCompletionPort$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static MemorySegment CreateIoCompletionPort(MemorySegment FileHandle, MemorySegment ExistingCompletionPort,
+                                       long CompletionKey, int NumberOfConcurrentThreads, MemorySegment lastErrorState) {
+        try {
+            return (MemorySegment) CreateIoCompletionPort$MH.invokeExact(lastErrorState, FileHandle,
+                    ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static final FunctionDescriptor CancelIoEx$FUNC =
+            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
+
+    private static final MethodHandle CancelIoEx$MH = LINKER.downcallHandle(
+            LOOKUP.find("CancelIoEx").get(),
+            CancelIoEx$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static int CancelIoEx(MemorySegment hFile, MemorySegment lpOverlapped, MemorySegment lastErrorState) {
+        try {
+            return (int) CancelIoEx$MH.invokeExact(lastErrorState, hFile, lpOverlapped);
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }

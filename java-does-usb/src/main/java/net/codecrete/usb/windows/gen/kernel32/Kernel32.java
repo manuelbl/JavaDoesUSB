@@ -162,6 +162,14 @@ public class Kernel32  {
     }
     /**
      * {@snippet :
+     * #define INFINITE 4294967295
+     * }
+     */
+    public static int INFINITE() {
+        return (int)4294967295L;
+    }
+    /**
+     * {@snippet :
      * #define ERROR_SUCCESS 0
      * }
      */
@@ -215,6 +223,14 @@ public class Kernel32  {
      */
     public static int ERROR_NO_MORE_ITEMS() {
         return (int)259L;
+    }
+    /**
+     * {@snippet :
+     * #define ERROR_IO_PENDING 997
+     * }
+     */
+    public static int ERROR_IO_PENDING() {
+        return (int)997L;
     }
     /**
      * {@snippet :

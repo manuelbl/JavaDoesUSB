@@ -18,6 +18,7 @@ import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.usbstandard.StringDescriptor;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
+import net.codecrete.usb.windows.gen.kernel32.OVERLAPPED;
 import net.codecrete.usb.windows.gen.ole32.Ole32;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVICE_INTERFACE_DATA;
 import net.codecrete.usb.windows.gen.setupapi.SP_DEVINFO_DATA;
@@ -28,10 +29,7 @@ import net.codecrete.usb.windows.winsdk.Kernel32B;
 import net.codecrete.usb.windows.winsdk.SetupAPI2;
 import net.codecrete.usb.windows.winsdk.User32B;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
-import java.lang.foreign.MemorySegment;
+import java.lang.foreign.*;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
@@ -55,6 +53,15 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  * </p>
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
+
+    /// Windows completion port for asynchronous/overlapped IO
+    private MemorySegment asyncIoCompletionPort = NULL;
+    /// last used completion key
+    private long lastUsedCompletionKey;
+    /// USB devices indexed by completion key
+    private Map<Long, WindowsUSBDevice> devicesByCompletionKey;
+    /// completion keys indexed by Windows device handle
+    private Map<MemorySegment, Long> completionKeysByHandle;
 
     @Override
     protected void monitorDevices() {
@@ -324,7 +331,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, arena);
 
-            var device = new WindowsUSBDevice(devicePath, children, vendorId, productId, configDesc);
+            var device = new WindowsUSBDevice(this, devicePath, children, vendorId, productId, configDesc);
             device.setFromDeviceDescriptor(descriptorSegment);
             device.setProductString(descriptorSegment, (index) -> getStringDescriptor(hubHandle, usbPortNum, index));
 
@@ -516,4 +523,91 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         return -1;
     }
+
+    /**
+     * Background task for handling asynchronous IO completions.
+     */
+    private void asyncCompletionTask() {
+
+        try (var arena = Arena.openConfined()) {
+
+            var overlappedHolder = arena.allocate(ADDRESS, NULL);
+            var numBytesHolder = arena.allocate(JAVA_INT, 0);
+            var completionKeyHolder = arena.allocate(JAVA_LONG, 0);
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+
+            while (true) {
+                overlappedHolder.set(ADDRESS, 0, MemorySegment.NULL);
+                completionKeyHolder.set(JAVA_LONG, 0, 0);
+
+                int res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder, completionKeyHolder,
+                        overlappedHolder, Kernel32.INFINITE(), lastErrorState);
+                var overlapped = overlappedHolder.get(ADDRESS, 0);
+
+                if (res == 0 && overlapped == MemorySegment.NULL)
+                    throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+
+                if (overlapped == MemorySegment.NULL)
+                    return; // registry is closing
+
+                long completionKey = completionKeyHolder.get(JAVA_LONG, 0);
+                var device = devicesByCompletionKey.get(completionKey);
+
+                if (device != null) {
+                    overlapped = OVERLAPPED.ofAddress(overlapped, SegmentScope.global());
+                    device.onAsyncIoCompleted(overlapped);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a Windows handle (of a USB device) to the completion port
+     * @param handle Windows handle
+     * @param device USB device
+     */
+    synchronized void addToCompletionPort(MemorySegment handle, WindowsUSBDevice device) {
+
+        lastUsedCompletionKey += 1;
+        var completionKey = Long.valueOf(lastUsedCompletionKey);
+        if (devicesByCompletionKey == null) {
+            devicesByCompletionKey = new HashMap<>();
+            completionKeysByHandle = new HashMap<>();
+        }
+        devicesByCompletionKey.put(completionKey, device);
+        completionKeysByHandle.put(handle, completionKey);
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+
+            // Creates a new port if it doesn't exist; adds handle to existing port if it exists
+            MemorySegment portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
+                    lastUsedCompletionKey, 0, lastErrorState);
+            if (portHandle == MemorySegment.NULL)
+                throwLastError(lastErrorState, "internal error (CreateIoCompletionPort)");
+
+            if (asyncIoCompletionPort == MemorySegment.NULL) {
+                asyncIoCompletionPort = portHandle;
+
+                // start background thread for handling IO completion
+                Thread t = new Thread(this::asyncCompletionTask, "USB async IO");
+                t.setDaemon(true);
+                t.start();
+            }
+        }
+    }
+
+    /**
+     * Removes a handle from the dispatching.
+     * <p>
+     *     The handle is removed from the completion port by closing the device.
+     * </p>
+     * @param handle Windows device handle
+     */
+    synchronized void removeFromCompletionPort(MemorySegment handle) {
+        Long completionKey = completionKeysByHandle.get(handle);
+        completionKeysByHandle.remove(handle);
+        devicesByCompletionKey.remove(completionKey);
+    }
+
 }
