@@ -155,4 +155,19 @@ public class WinUSB2 {
             throw new RuntimeException(ex);
         }
     }
+    private static final FunctionDescriptor WinUsb_AbortPipe$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_BYTE);
+
+    private static final MethodHandle WinUsb_AbortPipe$MH = LINKER.downcallHandle(
+            LOOKUP.find("WinUsb_AbortPipe").get(),
+            WinUsb_ResetPipe$FUNC,
+            Win.LAST_ERROR_STATE
+    );
+
+    public static int WinUsb_AbortPipe(MemorySegment InterfaceHandle, byte PipeID, MemorySegment lastErrorState) {
+        try {
+            return (int)WinUsb_AbortPipe$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

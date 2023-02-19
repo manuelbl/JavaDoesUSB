@@ -303,6 +303,16 @@ public interface USBDevice {
     InputStream openInputStream(int endpointNumber);
 
     /**
+     * Aborts all transfers on an endpoint.
+     * <p>
+     * This operation is not valid on the control endpoint 0.
+     * </p>
+     * @param direction endpoint direction
+     * @param endpointNumber endpoint number (in the range between 1 and 127)
+     */
+    void abortTransfers(USBDirection direction, int endpointNumber);
+
+    /**
      * Clears an endpoint's halt condition.
      * <p>
      * An endpoint is halted (aka stalled) if an error occurs in the communication. Before the

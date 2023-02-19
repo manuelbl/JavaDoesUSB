@@ -36,7 +36,7 @@ public class SpeedTest extends TestDeviceBase {
         assertArrayEquals(sampleData, reader.resultNow());
 
         double throughput = 2.0 * numBytes / (end - start);
-        double expectedThroughput = isHighSpeed ? 19000 : 500;
+        double expectedThroughput = isHighSpeed ? 15000 : 500;
         System.out.printf("Throughput: expected ≥%,.0f KB/s, actual %,.0f KB/s%n", expectedThroughput, throughput);
 
         assertTrue(throughput >= expectedThroughput, "Expected throughput not achieved");

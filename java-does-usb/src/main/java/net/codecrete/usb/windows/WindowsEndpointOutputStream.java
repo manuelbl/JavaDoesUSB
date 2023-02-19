@@ -68,7 +68,7 @@ public class WindowsEndpointOutputStream extends OutputStream {
         packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
         bufferSize = packetSize;
 
-        device.configureForAsyncIo(endpointNumber, USBDirection.OUT);
+        device.configureForAsyncIo(USBDirection.OUT, endpointNumber);
 
         availableRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
         arena = Arena.openShared();

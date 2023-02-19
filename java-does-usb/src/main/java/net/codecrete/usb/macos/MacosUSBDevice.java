@@ -615,6 +615,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException(ret, "Clearing halt condition failed");
     }
 
+
+    @Override
+    public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
     @Override
     public InputStream openInputStream(int endpointNumber) {
         // check that endpoint number is valid

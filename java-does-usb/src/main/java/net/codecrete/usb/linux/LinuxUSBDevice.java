@@ -206,13 +206,13 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        var endpointAddress = getEndpointAddress(endpointNumber, USBDirection.OUT,
+        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
-            var transfer = createBulkTransfer(arena, endpointAddress, buffer, timeout);
+            var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
 
             var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
@@ -227,7 +227,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int timeout) {
-        var endpoint = getEndpoint(endpointNumber, USBDirection.IN,
+        var endpoint = getEndpoint(USBDirection.IN, endpointNumber,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
@@ -250,11 +250,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
-        var endpointAddress = getEndpointAddress(endpointNumber, direction,
+        var endpoint = getEndpoint(direction, endpointNumber,
                 USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
-            var endpointAddrSegment = arena.allocate(JAVA_INT, endpointAddress & 0xff);
+            var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
             var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
             if (res < 0)
@@ -262,4 +262,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
+    @Override
+    public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
 }

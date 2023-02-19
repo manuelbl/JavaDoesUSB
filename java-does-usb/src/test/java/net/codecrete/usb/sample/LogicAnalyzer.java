@@ -223,7 +223,7 @@ public class LogicAnalyzer implements Closeable {
     void stopAcquisition() {
         // stop the acquisition by halting the bulk endpoint and clearing the halt
         stopped = true;
-        device.clearHalt(USBDirection.IN, EP);
+        device.abortTransfers(USBDirection.IN, EP);
     }
 
     void detectBufferOverrun() {
@@ -263,6 +263,7 @@ public class LogicAnalyzer implements Closeable {
         }
 
         device.open();
+        device.claimInterface(0);
 
         byte[] cmd = new byte[] { 1 };
         device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);

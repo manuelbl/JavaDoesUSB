@@ -222,45 +222,15 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     /**
-     * Checks if the specified endpoint is valid for communication and returns the endpoint address.
-     *
-     * @param endpointNumber endpoint number (1 to 127)
-     * @param direction      transfer direction
-     * @param transferType1  transfer type 1
-     * @param transferType2  transfer type 2 (or {@code null})
-     * @return endpoint address
-     */
-    protected byte getEndpointAddress(int endpointNumber, USBDirection direction,
-                                      USBTransferType transferType1, USBTransferType transferType2) {
-
-        checkIsOpen();
-
-        if (endpointNumber >= 1 && endpointNumber <= 127) {
-            for (var intf : interfaces_) {
-                if (intf.isClaimed()) {
-                    for (var ep : intf.alternate().endpoints()) {
-                        if (ep.number() == endpointNumber && ep.direction() == direction
-                                && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
-                            return (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0));
-                    }
-                }
-            }
-        }
-
-        throwInvalidEndpointException(endpointNumber, direction, transferType1, transferType2);
-        throw new AssertionError("not reached");
-    }
-
-    /**
      * Checks if the specified endpoint is valid for communication and returns the endpoint.
      *
-     * @param endpointNumber endpoint number (1 to 127)
      * @param direction      transfer direction
+     * @param endpointNumber endpoint number (1 to 127)
      * @param transferType1  transfer type 1
      * @param transferType2  transfer type 2 (or {@code null})
      * @return endpoint
      */
-    protected EndpointInfo getEndpoint(int endpointNumber, USBDirection direction,
+    protected EndpointInfo getEndpoint(USBDirection direction, int endpointNumber,
                                        USBTransferType transferType1, USBTransferType transferType2) {
 
         checkIsOpen();
@@ -279,11 +249,11 @@ public abstract class USBDeviceImpl implements USBDevice {
             }
         }
 
-        throwInvalidEndpointException(endpointNumber, direction, transferType1, transferType2);
+        throwInvalidEndpointException(direction, endpointNumber, transferType1, transferType2);
         return null; // will never be reached
     }
 
-    protected void throwInvalidEndpointException(int endpointNumber, USBDirection direction,
+    protected void throwInvalidEndpointException(USBDirection direction, int endpointNumber,
                                                  USBTransferType transferType1, USBTransferType transferType2) {
         String transferTypeDesc;
         if (transferType2 == null)
@@ -336,7 +306,7 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public OutputStream openOutputStream(int endpointNumber) {
         // check that endpoint number is valid
-        var endpointInfo = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+        var endpointInfo = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
         var endpoint = getInterface(endpointInfo.interfaceNumber).alternate().getEndpoint(endpointNumber, USBDirection.OUT);
         return new EndpointOutputStream(this, endpointNumber, endpoint.packetSize());
     }
@@ -344,7 +314,7 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public InputStream openInputStream(int endpointNumber) {
         // check that endpoint number is valid
-        getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
         return new EndpointInputStream(this, endpointNumber);
     }
 

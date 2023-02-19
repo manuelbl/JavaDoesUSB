@@ -275,7 +275,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
         checkIsOpen();
 
-        var endpoint = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -305,7 +305,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int timeout) {
-        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -336,7 +336,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     synchronized long submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, AsyncIOCompletion completion) {
-        var endpoint = getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -356,7 +356,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
-        var endpoint = getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -381,12 +381,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
      *     If the specific request is not found, the error is silently ignored. Such errors
      *     are likely to happen due to concurrency issues.
      * </p>
-     * @param endpointNumber endpoint number
      * @param direction endpoint direction
+     * @param endpointNumber endpoint number
      * @param cancelHandle request's cancel handle returned when the request was submitted
      */
-    synchronized void cancelTransfer(int endpointNumber, USBDirection direction, long cancelHandle) {
-        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+    synchronized void cancelTransfer(USBDirection direction, int endpointNumber, long cancelHandle) {
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -401,8 +401,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
-    synchronized void configureForAsyncIo(int endpointNumber, USBDirection direction) {
-        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+    synchronized void configureForAsyncIo(USBDirection direction, int endpointNumber) {
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -422,7 +422,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
-        var endpoint = getEndpoint(endpointNumber, direction, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
@@ -433,9 +433,21 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
+    public void abortTransfers(USBDirection direction, int endpointNumber) {
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
+
+        try (var arena = Arena.openConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            if (WinUSB2.WinUsb_AbortPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), lastErrorState) == 0)
+                throwLastError(lastErrorState, "Aborting transfers on endpoint failed");
+        }
+    }
+
+    @Override
     public InputStream openInputStream(int endpointNumber) {
         // check that endpoint number is valid
-        getEndpoint(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
+        getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
 
         return new WindowsEndpointInputStream(this, endpointNumber);
     }
@@ -443,7 +455,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public OutputStream openOutputStream(int endpointNumber) {
         // check that endpoint number is valid
-        getEndpoint(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
+        getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 
         return new WindowsEndpointOutputStream(this, endpointNumber);
     }

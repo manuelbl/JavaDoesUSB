@@ -39,19 +39,18 @@ public class WindowsEndpointInputStream extends InputStream {
 
     private WindowsUSBDevice device;
     private final int endpointNumber;
-    // Arena to allocate buffers and completion handlers
+    /// Arena to allocate buffers and completion handlers
     private final Arena arena;
-    // Size of buffers (multiple of packet size)
+    /// Size of buffers (multiple of packet size)
     private final int bufferSize;
-    // Queue of completed requests
+    /// Queue of completed requests
     private final ArrayBlockingQueue<TransferRequest> completedRequestQueue;
-    // Number of outstanding requests (includes requests pending with the
-    // operating system and requests in the completed queue)
+    /// Number of outstanding requests (includes requests pending with the
+    /// operating system and requests in the completed queue)
     private int numOutstandingRequests;
-    // Request and buffer being currently read from
-    private TransferRequest[] allRequests;
+    /// Request and buffer being currently read from
     private TransferRequest currentRequest;
-    // Read offset within current request
+    /// Read offset within current request
     private int readOffset;
 
     /**
@@ -67,15 +66,13 @@ public class WindowsEndpointInputStream extends InputStream {
         bufferSize = 4 * device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
         completedRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
 
-        device.configureForAsyncIo(endpointNumber, USBDirection.IN);
+        device.configureForAsyncIo(USBDirection.IN, endpointNumber);
 
         // create all requests and submit all except one
-        allRequests = new TransferRequest[MAX_OUTSTANDING_REQUESTS];
         arena = Arena.openShared();
         try {
             for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
                 final var request = new TransferRequest();
-                allRequests[i] = request;
                 request.buffer = arena.allocate(bufferSize, 8);
                 request.completionHandler = (result, size) -> onCompletion(request, result, size);
 
@@ -98,17 +95,10 @@ public class WindowsEndpointInputStream extends InputStream {
             return;
 
         // abort all transfers on endpoint
-        abortAllRequests();
+        device.abortTransfers(USBDirection.IN, endpointNumber);
         device = null;
 
         collectOutstandingRequests();
-    }
-
-    private void abortAllRequests() {
-        for (var request : allRequests) {
-            if (request != null && request.cancelHandle != 0)
-                device.cancelTransfer(endpointNumber, USBDirection.IN, request.cancelHandle);
-        }
     }
 
     private void collectOutstandingRequests() {
@@ -116,7 +106,6 @@ public class WindowsEndpointInputStream extends InputStream {
         while (numOutstandingRequests > 0)
             waitForRequestCompletion();
 
-        allRequests = null;
         completedRequestQueue.clear();
         currentRequest = null;
         arena.close();
