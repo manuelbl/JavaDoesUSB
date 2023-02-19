@@ -68,9 +68,9 @@ private:
 
     void async_io_run();
     void add_to_completion_port(HANDLE);
-    void add_completion_handler(OVERLAPPED* overlapped, std::function<void(void)>* completion_handler);
+    void add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler);
     void remove_completion_handler(OVERLAPPED* overlapped);
-    std::function<void(void)>* get_completion_handler(OVERLAPPED* overlapped);
+    usb_io_callback* get_completion_handler(OVERLAPPED* overlapped);
 
     std::thread monitor_thread;
     
@@ -83,7 +83,7 @@ private:
     std::thread async_io_thread;
     std::mutex async_io_mutex;
     HANDLE async_io_completion_port;
-    std::map<OVERLAPPED*, std::function<void(void)>*> async_io_completion_handlers;
+    std::map<OVERLAPPED*, usb_io_callback*> async_io_completion_handlers;
 
     friend class usb_device;
     friend class usb_istreambuf;

@@ -386,7 +386,7 @@ std::unique_ptr<std::ostream> usb_device::open_output_stream(int endpoint_number
     return std::unique_ptr<std::ostream>(new usb_ostream(registry_->get_shared_ptr(this), endpoint_number));
 }
 
-void usb_device::add_completion_handler(OVERLAPPED* overlapped, std::function<void(void)>* completion_handler) {
+void usb_device::add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler) {
     registry_->add_completion_handler(overlapped, completion_handler);
 }
 

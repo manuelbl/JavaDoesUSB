@@ -38,7 +38,7 @@ private:
         /// buffer for recevied data
         uint8_t* buffer;
         /// IO completion handler
-        std::function<void(void)> io_completion;
+        usb_io_callback io_completion;
         /// data structure for overlapped requests
         OVERLAPPED overlapped;
         /// indicates if the request has completed
@@ -109,7 +109,7 @@ private:
         /// overlapped data structure
         OVERLAPPED overlapped;
         /// IO completion handler
-        std::function<void(void)> io_completion;
+        usb_io_callback io_completion;
 
         DWORD result_code() {
             return static_cast<DWORD>(overlapped.Internal);

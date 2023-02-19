@@ -25,6 +25,7 @@
 
 #include "configuration.hpp"
 
+typedef std::function<void(void)> usb_io_callback;
 
 /**
  * USB control request type.
@@ -266,7 +267,7 @@ private:
     }
 
     void configure_for_async_io(usb_direction direction, int endpoint_number);
-    void add_completion_handler(OVERLAPPED* overlapped, std::function<void(void)>* completion_handler);
+    void add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler);
     void remove_completion_handler(OVERLAPPED* overlapped);
     void submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_len, OVERLAPPED* overlapped);
     void submit_transfer_out(int endpoint_number, uint8_t* data, int data_len, OVERLAPPED* overlapped);

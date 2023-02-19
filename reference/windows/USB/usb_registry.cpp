@@ -396,7 +396,7 @@ void usb_registry::async_io_run() {
         if (overlapped == nullptr)
             return; // registry is closing
 
-        std::function<void(void)>* completion_handler = get_completion_handler(overlapped);
+        usb_io_callback* completion_handler = get_completion_handler(overlapped);
         if (overlapped == nullptr)
             continue; // might be completion from synchronous operation
 
@@ -415,7 +415,7 @@ void usb_registry::add_to_completion_port(HANDLE handle) {
     }
 }
 
-void usb_registry::add_completion_handler(OVERLAPPED* overlapped, std::function<void(void)>* completion_handler) {
+void usb_registry::add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler) {
     std::lock_guard lock(async_io_mutex);
 
     async_io_completion_handlers.insert(std::pair(overlapped, completion_handler));
@@ -427,7 +427,7 @@ void usb_registry::remove_completion_handler(OVERLAPPED* overlapped) {
     async_io_completion_handlers.erase(overlapped);
 }
 
-std::function<void(void)>* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
+usb_io_callback* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
     std::lock_guard lock(async_io_mutex);
 
     auto it = async_io_completion_handlers.find(overlapped);
