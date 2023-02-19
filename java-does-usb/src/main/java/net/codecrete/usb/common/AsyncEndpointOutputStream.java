@@ -5,10 +5,9 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.macos;
+package net.codecrete.usb.common;
 
 import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.common.AsyncIOCompletion;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,7 +17,6 @@ import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 /**
  * Output stream for bulk endpoints – optimized for high throughput.
@@ -37,13 +35,13 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  * is available for use.
  * </p>
  */
-public class MacosEndpointOutputStream extends OutputStream {
+public abstract class AsyncEndpointOutputStream extends OutputStream {
 
     private static final int MAX_OUTSTANDING_REQUESTS = 4;
 
-    private MacosUSBDevice device;
-    private final int endpointNumber;
-    private final Arena arena;
+    protected USBDeviceImpl device;
+    protected final int endpointNumber;
+    protected final Arena arena;
     // Endpoint's packet size
     private final int packetSize;
     // Size of buffers (multiple of packet size)
@@ -62,12 +60,13 @@ public class MacosEndpointOutputStream extends OutputStream {
      * @param device USB device
      * @param endpointNumber endpoint number
      */
-    MacosEndpointOutputStream(MacosUSBDevice device, int endpointNumber) {
+    protected AsyncEndpointOutputStream(USBDeviceImpl device, int endpointNumber) {
         this.device = device;
         this.endpointNumber = endpointNumber;
 
         packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
         bufferSize = packetSize;
+
         availableRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
         arena = Arena.openShared();
 
@@ -159,7 +158,7 @@ public class MacosEndpointOutputStream extends OutputStream {
      */
     private void submitTransfer(int size) throws IOException {
         try {
-            device.submitTransferOut(endpointNumber, currentRequest.buffer, size, 0, currentRequest.completionHandler);
+            submitTransferOut(currentRequest.buffer, size, currentRequest.completionHandler);
 
             synchronized (this) {
                 numOutstandingRequests += 1;
@@ -221,7 +220,7 @@ public class MacosEndpointOutputStream extends OutputStream {
                 int result = request.result;
                 if (result != 0 && !hasError) {
                     request.result = 0;
-                    throwException(result, "error writing to USB endpoint");
+                    throwException(result, "error reading from USB endpoint");
                 }
 
                 return request;
@@ -243,6 +242,10 @@ public class MacosEndpointOutputStream extends OutputStream {
         availableRequestQueue.add(request);
         numOutstandingRequests -= 1;
     }
+
+    protected abstract void submitTransferOut(MemorySegment data, int dataSize, AsyncIOCompletion completion);
+
+    protected abstract void throwException(int errorCode, String message);
 
     private static class TransferRequest {
         MemorySegment buffer;

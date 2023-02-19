@@ -8,6 +8,7 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
+import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
@@ -524,17 +525,5 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
         completionHandlers.put(overlapped, completionHandler);
         return overlapped;
-    }
-
-    @FunctionalInterface
-    public interface AsyncIOCompletion {
-
-        /**
-         * Called when the asynchronous IO has completed.
-         *
-         * @param result the result code of the operation
-         * @param size the size of the transferred data (in bytes)
-         */
-        void completed(int result, int size);
     }
 }

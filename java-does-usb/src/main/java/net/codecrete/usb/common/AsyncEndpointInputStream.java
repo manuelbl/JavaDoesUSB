@@ -5,11 +5,10 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.macos;
+package net.codecrete.usb.common;
 
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBException;
-import net.codecrete.usb.common.AsyncIOCompletion;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +17,6 @@ import java.lang.foreign.MemorySegment;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 /**
  * Input stream for bulk endpoints – optimized for high throughput.
@@ -35,16 +33,16 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  * waits for the next item in the queue.
  * </p>
  */
-public class MacosEndpointInputStream extends InputStream {
+public abstract class AsyncEndpointInputStream extends InputStream {
 
     private static final int MAX_OUTSTANDING_REQUESTS = 8;
 
-    private MacosUSBDevice device;
-    private final int endpointNumber;
+    protected USBDeviceImpl device;
+    protected final int endpointNumber;
     // Arena to allocate buffers and completion handlers
-    private final Arena arena;
+    protected final Arena arena;
     // Size of buffers (multiple of packet size)
-    private final int bufferSize;
+    protected final int bufferSize;
     // Queue of completed requests
     private final ArrayBlockingQueue<TransferRequest> completedRequestQueue;
     // Number of outstanding requests (includes requests pending with the
@@ -61,7 +59,7 @@ public class MacosEndpointInputStream extends InputStream {
      * @param device         USB device
      * @param endpointNumber endpoint number
      */
-    MacosEndpointInputStream(MacosUSBDevice device, int endpointNumber) {
+    protected AsyncEndpointInputStream(USBDeviceImpl device, int endpointNumber) {
         this.device = device;
         this.endpointNumber = endpointNumber;
 
@@ -96,7 +94,7 @@ public class MacosEndpointInputStream extends InputStream {
 
         // abort all transfers on endpoint
         try {
-            device.abortTransfer(USBDirection.IN, endpointNumber);
+            device.abortTransfers(USBDirection.IN, endpointNumber);
         } catch (USBException e) {
             // If aborting the transfer is not possible, the device has
             // likely been closed or unplugged. So all outstanding
@@ -180,9 +178,13 @@ public class MacosEndpointInputStream extends InputStream {
     }
 
     void submitRequest(TransferRequest request) {
-        device.submitTransferIn(endpointNumber, request.buffer, bufferSize, 0, request.completionHandler);
+        submitTransferIn(request.buffer, bufferSize, request.completionHandler);
         numOutstandingRequests += 1;
     }
+
+    protected abstract void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion);
+
+    protected abstract void throwException(int errorCode, String message);
 
     void onCompletion(TransferRequest request, int result, int size) {
         request.result = result;

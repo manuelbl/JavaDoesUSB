@@ -11,6 +11,7 @@ import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBTimeoutException;
 import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -709,18 +710,6 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     private static void asyncIOCompleted(MacosUSBDevice device, MemorySegment refcon, int result, MemorySegment arg0) {
         device.getCompletionHandler(refcon).completed(result, (int)arg0.address());
-    }
-
-    @FunctionalInterface
-    public interface AsyncIOCompletion {
-
-        /**
-         * Called when the asynchronous IO has completed.
-         *
-         * @param result the result code of the operation
-         * @param size the size of the transferred data (in bytes)
-         */
-        void completed(int result, int size);
     }
 
     record InterfaceInfo(MemorySegment iokitInterface, int interfaceNumber) {
