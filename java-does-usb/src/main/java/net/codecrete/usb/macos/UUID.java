@@ -21,6 +21,7 @@ public class UUID {
 
     /**
      * Creates a CFUUID struct from a byte array.
+     *
      * @param bytes UUID as 16 bytes
      * @return the CFUUID
      */

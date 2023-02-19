@@ -26,7 +26,7 @@ public class CoreFoundationHelper {
      * Gets Java string as a copy of the {@code CFStringRef}.
      *
      * @param string the string to copy ({@code CFStringRef})
-     * @param arena the arena to allocate memory
+     * @param arena  the arena to allocate memory
      * @return copied string
      */
     public static String stringFromCFStringRef(MemorySegment string, Arena arena) {
@@ -47,7 +47,7 @@ public class CoreFoundationHelper {
      * ownership without incrementing the reference count.
      * </p>
      *
-     * @param string the string
+     * @param string    the string
      * @param allocator the allocator for allocating memory
      * @return {@code CFStringRef}
      */

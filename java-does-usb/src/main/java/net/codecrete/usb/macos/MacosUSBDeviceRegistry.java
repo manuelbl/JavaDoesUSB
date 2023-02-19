@@ -35,12 +35,18 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
     private final MemorySegment KEY_ID_VENDOR = CoreFoundationHelper.createCFStringRef("idVendor", GLOBAL_ALLOCATOR);
     private final MemorySegment KEY_ID_PRODUCT = CoreFoundationHelper.createCFStringRef("idProduct", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_VENDOR = CoreFoundationHelper.createCFStringRef("kUSBVendorString", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_PRODUCT = CoreFoundationHelper.createCFStringRef("kUSBProductString", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_SERIAL_NUM = CoreFoundationHelper.createCFStringRef("kUSBSerialNumberString", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_CLASS = CoreFoundationHelper.createCFStringRef("bDeviceClass", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_SUBCLASS = CoreFoundationHelper.createCFStringRef("bDeviceSubClass", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_PROTOCOL = CoreFoundationHelper.createCFStringRef("bDeviceProtocol", GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_VENDOR = CoreFoundationHelper.createCFStringRef("kUSBVendorString",
+            GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_PRODUCT = CoreFoundationHelper.createCFStringRef("kUSBProductString",
+            GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_SERIAL_NUM = CoreFoundationHelper.createCFStringRef("kUSBSerialNumberString",
+            GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_DEVICE_CLASS = CoreFoundationHelper.createCFStringRef("bDeviceClass",
+            GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_DEVICE_SUBCLASS = CoreFoundationHelper.createCFStringRef("bDeviceSubClass",
+            GLOBAL_ALLOCATOR);
+    private final MemorySegment KEY_DEVICE_PROTOCOL = CoreFoundationHelper.createCFStringRef("bDeviceProtocol",
+            GLOBAL_ALLOCATOR);
     private final MemorySegment KEY_USB_BCD = CoreFoundationHelper.createCFStringRef("bcdUSB", GLOBAL_ALLOCATOR);
     private final MemorySegment KEY_DEVICE_BCD = CoreFoundationHelper.createCFStringRef("bcdDevice", GLOBAL_ALLOCATOR);
 
@@ -113,7 +119,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     final int service = svc;
                     cleanup.add(() -> IOKit.IOObjectRelease(service));
 
-                    var device = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBDeviceUserClientTypeID, IoKitHelper.kIOUSBDeviceInterfaceID100);
+                    var device = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBDeviceUserClientTypeID,
+                            IoKitHelper.kIOUSBDeviceInterfaceID100);
                     if (device != null)
                         cleanup.add(() -> IoKitUSB.Release(device));
 
@@ -183,7 +190,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             Integer subclassCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_SUBCLASS, arena);
             Integer protocolCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_PROTOCOL, arena);
 
-            device.setClassCodes(classCode != null ? classCode : 0, subclassCode != null ? subclassCode : 0, protocolCode != null ? protocolCode : 0);
+            device.setClassCodes(classCode != null ? classCode : 0, subclassCode != null ? subclassCode : 0,
+                    protocolCode != null ? protocolCode : 0);
 
             Integer usbVersion = IoKitHelper.getPropertyInt(service, KEY_USB_BCD, arena);
             Integer deviceVersion = IoKitHelper.getPropertyInt(service, KEY_DEVICE_BCD, arena);
@@ -239,7 +247,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param ignoredRefCon ignored parameter
      * @param iterator      device iterator
      */
-    private void onDevicesDisconnected(@SuppressWarnings("SameParameterValue") MemorySegment ignoredRefCon, int iterator) {
+    private void onDevicesDisconnected(@SuppressWarnings("SameParameterValue") MemorySegment ignoredRefCon,
+                                       int iterator) {
 
         // process device iterator for disconnected devices
         iterateDevices(iterator, (entryId, service, deviceIntf) -> {

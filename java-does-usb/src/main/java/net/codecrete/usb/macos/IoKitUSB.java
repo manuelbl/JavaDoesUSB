@@ -69,17 +69,21 @@ public class IoKitUSB {
 
     // IOReturn (*SetConfiguration)(void *self, UInt8 configNum);
     public static int SetConfiguration(MemorySegment self, byte configValue) {
-        return IOUSBDeviceInterface100.SetConfiguration(getVtable(self), SegmentScope.global()).apply(self, configValue);
+        return IOUSBDeviceInterface100.SetConfiguration(getVtable(self), SegmentScope.global()).apply(self,
+                configValue);
     }
 
     // IOReturn (*CreateInterfaceIterator)(void *self, IOUSBFindInterfaceRequest *req, io_iterator_t *iter);
     public static int CreateInterfaceIterator(MemorySegment self, MemorySegment req, MemorySegment iter) {
-        return IOUSBDeviceInterface100.CreateInterfaceIterator(getVtable(self), SegmentScope.global()).apply(self, req, iter);
+        return IOUSBDeviceInterface100.CreateInterfaceIterator(getVtable(self), SegmentScope.global()).apply(self,
+                req, iter);
     }
 
     // IOReturn (* DeviceRequestAsync)(void* self, IOUSBDevRequest* req, IOAsyncCallback1 callback, void* refCon);
-    public static int DeviceRequestAsync(MemorySegment self, MemorySegment deviceRequest, MemorySegment callback, MemorySegment refCon) {
-        return IOUSBDeviceInterface100.DeviceRequestAsync(getVtable(self), SegmentScope.global()).apply(self, deviceRequest, callback, refCon);
+    public static int DeviceRequestAsync(MemorySegment self, MemorySegment deviceRequest, MemorySegment callback,
+                                         MemorySegment refCon) {
+        return IOUSBDeviceInterface100.DeviceRequestAsync(getVtable(self), SegmentScope.global()).apply(self,
+                deviceRequest, callback, refCon);
     }
 
     // IOReturn (*USBInterfaceOpen)(void *self);;
@@ -94,12 +98,14 @@ public class IoKitUSB {
 
     // IOReturn (*GetInterfaceNumber)(void *self, UInt8 *intfNumber);
     public static int GetInterfaceNumber(MemorySegment self, MemorySegment intfNumberHolder) {
-        return IOUSBInterfaceInterface190.GetInterfaceNumber(getVtable(self), SegmentScope.global()).apply(self, intfNumberHolder);
+        return IOUSBInterfaceInterface190.GetInterfaceNumber(getVtable(self), SegmentScope.global()).apply(self,
+                intfNumberHolder);
     }
 
     // IOReturn (*GetNumEndpoints)(void *self, UInt8 *intfNumEndpoints);
     public static int GetNumEndpoints(MemorySegment self, MemorySegment intfNumEndpointsHolder) {
-        return IOUSBInterfaceInterface190.GetNumEndpoints(getVtable(self), SegmentScope.global()).apply(self, intfNumEndpointsHolder);
+        return IOUSBInterfaceInterface190.GetNumEndpoints(getVtable(self), SegmentScope.global()).apply(self,
+                intfNumEndpointsHolder);
     }
 
     // IOReturn (*GetPipeProperties)(void *self, UInt8 pipeRef, UInt8 *direction, UInt8 *number, UInt8 *transferType,
@@ -107,30 +113,42 @@ public class IoKitUSB {
     public static int GetPipeProperties(MemorySegment self, byte pipeRef, MemorySegment directionHolder,
                                         MemorySegment numberHolder, MemorySegment transferTypeHolder,
                                         MemorySegment maxPacketSizeHolder, MemorySegment intervalHolder) {
-        return IOUSBInterfaceInterface190.GetPipeProperties(getVtable(self), SegmentScope.global()).apply(self, pipeRef,
-                directionHolder, numberHolder, transferTypeHolder, maxPacketSizeHolder, intervalHolder);
+        return IOUSBInterfaceInterface190.GetPipeProperties(getVtable(self), SegmentScope.global()).apply(self,
+                pipeRef, directionHolder, numberHolder, transferTypeHolder, maxPacketSizeHolder, intervalHolder);
     }
 
-    // IOReturn (*ReadPipeAsync)(void *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback, void *refcon);
-    public static int ReadPipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size, MemorySegment callback, MemorySegment refcon) {
-        return IOUSBInterfaceInterface190.ReadPipeAsync(getVtable(self), SegmentScope.global())
-                .apply(self, pipeRef, buf, size, callback, refcon);
+    // IOReturn (*ReadPipeAsync)(void *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback, void
+    // *refcon);
+    public static int ReadPipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
+                                    MemorySegment callback, MemorySegment refcon) {
+        return IOUSBInterfaceInterface190.ReadPipeAsync(getVtable(self), SegmentScope.global()).apply(self, pipeRef,
+                buf, size, callback, refcon);
     }
 
-    // IOReturn (*ReadPipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32 completionTimeout, IOAsyncCallback1 callback, void *refcon);
-    public static int ReadPipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size, int noDataTimeout, int completionTimeout, MemorySegment callback, MemorySegment refcon) {
-        return IOUSBInterfaceInterface190.ReadPipeAsyncTO(getVtable(self), SegmentScope.global())
-                .apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout, callback, refcon);
+    // IOReturn (*ReadPipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32
+    // completionTimeout, IOAsyncCallback1 callback, void *refcon);
+    public static int ReadPipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
+                                      int noDataTimeout, int completionTimeout, MemorySegment callback,
+                                      MemorySegment refcon) {
+        return IOUSBInterfaceInterface190.ReadPipeAsyncTO(getVtable(self), SegmentScope.global()).apply(self, pipeRef
+                , buf, size, noDataTimeout, completionTimeout, callback, refcon);
     }
 
-    // IOReturn (*WritePipeAsync)(vovoid *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback, void *refcon);
-    public static int WritePipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size, MemorySegment callback, MemorySegment refcon) {
-        return IOUSBInterfaceInterface190.WritePipeAsync(getVtable(self), SegmentScope.global()).apply(self, pipeRef, buf, size, callback, refcon);
+    // IOReturn (*WritePipeAsync)(vovoid *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback,
+    // void *refcon);
+    public static int WritePipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
+                                     MemorySegment callback, MemorySegment refcon) {
+        return IOUSBInterfaceInterface190.WritePipeAsync(getVtable(self), SegmentScope.global()).apply(self, pipeRef,
+                buf, size, callback, refcon);
     }
 
-    // IOReturn (*WritePipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32 completionTimeout, IOAsyncCallback1 callback, void *refcon);
-    public static int WritePipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size, int noDataTimeout, int completionTimeout, MemorySegment callback, MemorySegment refcon) {
-        return IOUSBInterfaceInterface190.WritePipeAsyncTO(getVtable(self), SegmentScope.global()).apply(self, pipeRef, buf, size, noDataTimeout, completionTimeout, callback, refcon);
+    // IOReturn (*WritePipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32
+    // completionTimeout, IOAsyncCallback1 callback, void *refcon);
+    public static int WritePipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
+                                       int noDataTimeout, int completionTimeout, MemorySegment callback,
+                                       MemorySegment refcon) {
+        return IOUSBInterfaceInterface190.WritePipeAsyncTO(getVtable(self), SegmentScope.global()).apply(self,
+                pipeRef, buf, size, noDataTimeout, completionTimeout, callback, refcon);
     }
 
     // IOReturn (* AbortPipe)(void* self, UInt8 pipeRef);
@@ -140,12 +158,14 @@ public class IoKitUSB {
 
     // IOReturn (*SetAlternateInterface)(void *self, UInt8 alternateSetting);
     public static int SetAlternateInterface(MemorySegment self, byte alternateSetting) {
-        return IOUSBInterfaceInterface190.SetAlternateInterface(getVtable(self), SegmentScope.global()).apply(self, alternateSetting);
+        return IOUSBInterfaceInterface190.SetAlternateInterface(getVtable(self), SegmentScope.global()).apply(self,
+                alternateSetting);
     }
 
     // IOReturn (* ClearPipeStallBothEnds)(void* self, UInt8 pipeRef);
     public static int ClearPipeStallBothEnds(MemorySegment self, byte pipeRef) {
-        return IOUSBInterfaceInterface190.ClearPipeStallBothEnds(getVtable(self), SegmentScope.global()).apply(self, pipeRef);
+        return IOUSBInterfaceInterface190.ClearPipeStallBothEnds(getVtable(self), SegmentScope.global()).apply(self,
+                pipeRef);
     }
 
     // CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void* self);
