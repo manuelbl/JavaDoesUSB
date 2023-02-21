@@ -9,12 +9,12 @@
 
 #pragma  once
 
-#include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <mutex>
 #include <linux/usbdevice_fs.h>
 #include "usb_device.hpp"
+#include "blocking_queue.hpp"
 
 /**
  * Input stream buffer for USB bulk or interrupt endpoint.
@@ -29,44 +29,53 @@ public:
     /// Destructor
     virtual ~usb_istreambuf();
     
-    /// Closes this buffer. This stream buffer will automatically free itself.
-    void close();
-    
 protected:
     /// Called when the internal buffer has no further data to read.
     virtual int_type underflow();
     
-    void on_completed();
-    
 private:
-    void submit_request();
+    /// Transfer request
+    struct transfer_request {
+        /// USB request buffer
+        usbdevfs_urb urb;
+        /// IO completion handler
+        usb_io_callback io_completion;
+        /// indicates if the request has completed
+        bool is_completed;
+
+        int result_code() {
+            return urb.status;
+        }
+
+        int result_size() {
+            return urb.actual_length;
+        }
+    };
+
+    void submit_transfer(transfer_request* request);
+    void close();
+    void on_completed(transfer_request* request);
+    transfer_request* wait_for_request_completion();
 
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
+    static constexpr int max_outstanding_requests = 4;
     
     /// USB device
-    usb_device_ptr device_;
+    usb_device_ptr device;
     /// endpoint number
-    int ep_num_;
+    int endpoint_number;
     /// Indicates that this stream buffer is closed
-    bool is_closed_;
+    bool is_closed;
     /// buffer size
-    int buffer_size_;
-    /// Mutex for synchronization between input stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between input stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index after last submitted IO request
-    unsigned int submitted_index_;
-    /// Index after last completed IO request
-    unsigned int completed_index_;
-    /// Index after last processed IO request
-    unsigned int processed_index_;
-    /// USB request buffers
-    usbdevfs_urb urbs_[num_outstanding_requests];
-    /// IO completion lambda
-    std::function<void()> io_completion;
-};
+    int buffer_size;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with completed requests
+    blocking_queue<transfer_request*> completed_request_queue;
+    /// number of outstanding requests (requests pending with OS and requests in queue)
+    int num_outstanding_requests;
+    /// current request being read from
+    transfer_request* current_request;};
 
 /**
  * Output stream buffer for USB bulk or interrupt endpoint.
@@ -87,38 +96,51 @@ protected:
     /// Called when the internal buffer has no space left to add more data.
     virtual int overflow (int c);
     
-    void on_completed();
-    
-    void check_for_errors();
-    
 private:
+    /// Transfer request
+    struct transfer_request {
+        /// USB request buffer
+        usbdevfs_urb urb;
+        /// IO completion handler
+        usb_io_callback io_completion;
+        /// indicates if the request has completed
+        bool is_completed;
+
+        int result_code() {
+            return urb.status;
+        }
+
+        int result_size() {
+            return urb.actual_length;
+        }
+    };
+
+    void fill_queue();
+    void submit_transfer(int size);
+    transfer_request* wait_for_available_transfer();
+    void on_completed(transfer_request* request);
+
     /// Maximum number of concurrently outstanding requests
-    static constexpr int num_outstanding_requests = 4;
-    
+    static constexpr int max_outstanding_requests = 4;
+
     /// USB device
-    usb_device_ptr device_;
+    usb_device_ptr device;
     /// endpoint number
-    int ep_num_;
+    int endpoint_number;
     /// Indicates that this stream buffer is closed
-    bool is_closed_;
+    bool is_closed;
     /// Indicates if a zero-length packet is required
-    bool needs_zlp_;
+    bool needs_zlp;
+    /// packet size
+    int packet_size;
     /// buffer size
-    int buffer_size_;
-    /// Mutex for synchronization between output stream caller and background thread handling IO completion.
-    std::mutex io_mutex;
-    /// Condition for synchronization between output stream caller and background thread handling IO completion
-    std::condition_variable io_condition;
-    /// Index of buffer being currently used by base class
-    unsigned int processing_index_;
-    /// Index after last completed IO request
-    unsigned int completed_index_;
-    /// Index after last completed IO request that has been checked for errors
-    unsigned int checked_index_;
-    /// USB request buffers
-    usbdevfs_urb urbs_[num_outstanding_requests];
-    /// IO completion lambda
-    std::function<void()> io_completion;
+    int buffer_size;
+    /// transfer requests
+    transfer_request requests[max_outstanding_requests];
+    /// queue with available requests
+    blocking_queue<transfer_request*> available_request_queue;
+    /// current request being written to
+    transfer_request* current_request;
 };
 
 /**

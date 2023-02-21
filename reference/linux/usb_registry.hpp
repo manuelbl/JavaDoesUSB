@@ -21,7 +21,6 @@
 struct udev;
 struct udev_device;
 
-
 /**
  * Registry of connected USB devices.
  */

@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +17,9 @@
 #include <stdint.h>
 
 #include "configuration.hpp"
+
+
+typedef std::function<void(void)> usb_io_callback;
 
 
 /**

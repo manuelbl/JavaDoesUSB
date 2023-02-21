@@ -307,7 +307,7 @@ void usb_registry::async_io_run() {
                 if (ret < 0)
                     usb_error::throw_error("internal error (reap URB)");
                 
-                auto completion = reinterpret_cast<std::function<void()>*>(urb->usercontext);
+                auto completion = reinterpret_cast<usb_io_callback*>(urb->usercontext);
                 (*completion)();
             }
         }

@@ -9,6 +9,7 @@ find_package(Threads REQUIRED)
 
 set(SOURCES
     assertion.cpp assertion.hpp
+    blocking_queue.hpp
     config_parser.cpp config_parser.hpp
     configuration.cpp configuration.hpp
     main.cpp
