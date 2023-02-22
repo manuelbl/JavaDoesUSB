@@ -5,28 +5,26 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.windows;
+package net.codecrete.usb.linux;
 
-import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.EndpointOutputStream;
 
 import java.lang.foreign.MemorySegment;
 
-public class WindowsEndpointOutputStream extends EndpointOutputStream {
+public class LinuxEndpointOutputStream extends EndpointOutputStream {
 
-    WindowsEndpointOutputStream(WindowsUSBDevice device, int endpointNumber) {
+    LinuxEndpointOutputStream(LinuxUSBDevice device, int endpointNumber) {
         super(device, endpointNumber);
-        device.configureForAsyncIo(USBDirection.OUT, endpointNumber);
     }
 
     @Override
     protected void submitTransferOut(MemorySegment data, int dataSize, AsyncIOCompletion completion) {
-        ((WindowsUSBDevice)device).submitTransferOut(endpointNumber, data, dataSize, completion);
+        ((LinuxUSBDevice) device).submitTransferOut(endpointNumber, data, dataSize, completion);
     }
 
     @Override
     protected void throwException(int errorCode, String message) {
-        WindowsUSBException.throwException(errorCode, message);
+        LinuxUSBException.throwException(errorCode, message);
     }
 }

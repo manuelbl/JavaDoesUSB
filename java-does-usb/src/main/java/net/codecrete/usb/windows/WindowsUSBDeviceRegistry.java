@@ -609,5 +609,4 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         completionKeysByHandle.remove(handle);
         devicesByCompletionKey.remove(completionKey);
     }
-
 }

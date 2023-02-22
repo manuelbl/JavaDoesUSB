@@ -18,4 +18,9 @@ public class USBDevFS {
     public static final long RELEASEINTERFACE = 0x80045510L;
     public static final long SETINTERFACE = 0x80085504L;
     public static final long CLEAR_HALT = 0x80045515L;
+    public static final long SUBMITURB = 0x8038550AL;
+    public static final long DISCARDURB = 0x550BL;
+    public static final long REAPURB = 0x4008550CL;
+    public static final long RESETEP = 0x80045503L;
+
 }

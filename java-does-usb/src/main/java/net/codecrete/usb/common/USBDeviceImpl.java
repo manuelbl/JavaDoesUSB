@@ -304,21 +304,6 @@ public abstract class USBDeviceImpl implements USBDevice {
     public abstract byte[] transferIn(int endpointNumber, int timeout);
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber) {
-        // check that endpoint number is valid
-        var endpointInfo = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
-        var endpoint = getInterface(endpointInfo.interfaceNumber).alternate().getEndpoint(endpointNumber, USBDirection.OUT);
-        return new EndpointOutputStream(this, endpointNumber, endpoint.packetSize());
-    }
-
-    @Override
-    public InputStream openInputStream(int endpointNumber) {
-        // check that endpoint number is valid
-        getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
-        return new EndpointInputStream(this, endpointNumber);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;

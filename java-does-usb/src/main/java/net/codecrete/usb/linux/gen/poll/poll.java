@@ -24,6 +24,22 @@ public class poll  {
     public static int POLLIN() {
         return (int)1L;
     }
+    /**
+     * {@snippet :
+     * #define POLLOUT 4
+     * }
+     */
+    public static int POLLOUT() {
+        return (int)4L;
+    }
+    /**
+     * {@snippet :
+     * #define POLLERR 8
+     * }
+     */
+    public static int POLLERR() {
+        return (int)8L;
+    }
     public static MethodHandle poll$MH() {
         return RuntimeHelper.requireNonNull(constants$0.poll$MH,"poll");
     }

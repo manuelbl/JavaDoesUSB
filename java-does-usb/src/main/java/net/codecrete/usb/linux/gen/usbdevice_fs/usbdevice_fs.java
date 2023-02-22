@@ -13,6 +13,14 @@ public class usbdevice_fs  {
     public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
     public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
     public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    /**
+     * {@snippet :
+     * #define USBDEVFS_URB_TYPE_BULK 3
+     * }
+     */
+    public static int USBDEVFS_URB_TYPE_BULK() {
+        return (int)3L;
+    }
 }
 
 

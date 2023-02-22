@@ -8,6 +8,7 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.*;
+import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.errno.errno;
@@ -19,6 +20,8 @@ import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.file.Files;
@@ -33,8 +36,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private int fd = -1;
 
-    LinuxUSBDevice(Object id, int vendorId, int productId) {
+    private final LinuxUSBDeviceRegistry registry;
+
+    LinuxUSBDevice(LinuxUSBDeviceRegistry registry, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
+        this.registry = registry;
         loadDescription((String) id);
     }
 
@@ -69,6 +75,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
                 throwLastError(errnoState, "Cannot open USB device");
+            registry.registerCompletionHandling(this);
         }
     }
 
@@ -77,11 +84,17 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
+        registry.unregisterCompletionHandling(this);
+
         for (var intf : interfaces_)
             ((USBInterfaceImpl) intf).setClaimed(false);
 
         unistd.close(fd);
         fd = -1;
+    }
+
+    int fileDescriptor() {
+        return fd;
     }
 
     public void claimInterface(int interfaceNumber) {
@@ -264,6 +277,35 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
-        throw new UnsupportedOperationException("not implemented yet");
+        var endpoint = getEndpoint(direction, endpointNumber,
+                USBTransferType.BULK, USBTransferType.INTERRUPT);
+
+        registry.abortTransfers(this, endpoint.endpointAddress());
+    }
+
+    @Override
+    public InputStream openInputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
+
+        return new LinuxEndpointInputStream(this, endpointNumber);
+    }
+
+    @Override
+    public OutputStream openOutputStream(int endpointNumber) {
+        // check that endpoint number is valid
+        getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
+
+        return new LinuxEndpointOutputStream(this, endpointNumber);
+    }
+
+    synchronized void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
+        var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        registry.submitBulkTransfer(this, endpoint.endpointAddress(), buffer, bufferSize, completion);
+    }
+
+    synchronized void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, AsyncIOCompletion completion) {
+        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
+        registry.submitBulkTransfer(this, endpoint.endpointAddress(), data, dataSize, completion);
     }
 }

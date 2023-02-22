@@ -8,12 +8,12 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.common.AsyncEndpointInputStream;
 import net.codecrete.usb.common.AsyncIOCompletion;
+import net.codecrete.usb.common.EndpointInputStream;
 
 import java.lang.foreign.MemorySegment;
 
-public class WindowsEndpointInputStream extends AsyncEndpointInputStream {
+public class WindowsEndpointInputStream extends EndpointInputStream {
 
     WindowsEndpointInputStream(WindowsUSBDevice device, int endpointNumber) {
         super(device, endpointNumber);

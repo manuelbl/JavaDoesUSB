@@ -16,6 +16,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-constant ETIMEDOUT \
   --include-constant EPIPE \
+  --include-constant EBADF \
   /usr/include/errno.h
 
 # string.h
@@ -48,12 +49,17 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct usbdevfs_bulktransfer \
   --include-struct usbdevfs_ctrltransfer \
   --include-struct usbdevfs_setinterface \
+  --include-struct usbdevfs_urb \
   --include-constant USBDEVFS_CONTROL \
   --include-constant USBDEVFS_BULK \
   --include-constant USBDEVFS_CLAIMINTERFACE \
   --include-constant USBDEVFS_RELEASEINTERFACE \
   --include-constant USBDEVFS_SETINTERFACE \
   --include-constant USBDEVFS_CLEAR_HALT \
+  --include-constant USBDEVFS_SUBMITURB \
+  --include-constant USBDEVFS_DISCARDURB \
+  --include-constant USBDEVFS_REAPURB \
+  --include-constant USBDEVFS_URB_TYPE_BULK \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h
@@ -90,5 +96,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function poll \
   --include-struct pollfd \
   --include-constant POLLIN \
+  --include-constant POLLOUT \
+  --include-constant POLLERR \
   /usr/include/poll.h
 

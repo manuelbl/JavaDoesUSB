@@ -15,6 +15,14 @@ public class errno  {
     public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     /**
      * {@snippet :
+     * #define EBADF 9
+     * }
+     */
+    public static int EBADF() {
+        return (int)9L;
+    }
+    /**
+     * {@snippet :
      * #define EPIPE 32
      * }
      */

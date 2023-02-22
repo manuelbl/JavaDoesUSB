@@ -7,12 +7,12 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.common.AsyncEndpointOutputStream;
 import net.codecrete.usb.common.AsyncIOCompletion;
+import net.codecrete.usb.common.EndpointOutputStream;
 
 import java.lang.foreign.MemorySegment;
 
-public class MacosEndpointOutputStream extends AsyncEndpointOutputStream {
+public class MacosEndpointOutputStream extends EndpointOutputStream {
 
     MacosEndpointOutputStream(MacosUSBDevice device, int endpointNumber) {
         super(device, endpointNumber);
