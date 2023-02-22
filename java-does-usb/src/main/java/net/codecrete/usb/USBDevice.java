@@ -134,7 +134,7 @@ public interface USBDevice {
     /**
      * Gets the endpoint with the specified number.
      *
-     * @param direction the endpoint direction
+     * @param direction      the endpoint direction
      * @param endpointNumber the endpoint number (between 1 and 127)
      * @return the endpoint, or {@code null} if no endpoint with the given direction and number exists
      */
@@ -152,6 +152,7 @@ public interface USBDevice {
      * <p>
      * The device must be open and the interface must be claimed for exclusive access.
      * </p>
+     *
      * @param interfaceNumber interface number
      * @param alternateNumber alternate setting number
      */
@@ -297,6 +298,7 @@ public interface USBDevice {
      * If {@link #transferIn(int)} and an input stream or multiple input streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
+     *
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
      * @return the new input stream
      */
@@ -307,7 +309,8 @@ public interface USBDevice {
      * <p>
      * This operation is not valid on the control endpoint 0.
      * </p>
-     * @param direction endpoint direction
+     *
+     * @param direction      endpoint direction
      * @param endpointNumber endpoint number (in the range between 1 and 127)
      */
     void abortTransfers(USBDirection direction, int endpointNumber);
@@ -322,7 +325,8 @@ public interface USBDevice {
      * <p>
      * Control endpoint 0 will never be halted.
      * </p>
-     * @param direction endpoint direction
+     *
+     * @param direction      endpoint direction
      * @param endpointNumber endpoint number (in the range between 1 and 127)
      */
     void clearHalt(USBDirection direction, int endpointNumber);

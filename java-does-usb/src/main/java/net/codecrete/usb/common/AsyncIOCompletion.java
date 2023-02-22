@@ -21,7 +21,7 @@ public interface AsyncIOCompletion {
      * </p>
      *
      * @param result the native result code of the operation.
-     * @param size the size of the transferred data (in bytes)
+     * @param size   the size of the transferred data (in bytes)
      */
     void completed(int result, int size);
 }

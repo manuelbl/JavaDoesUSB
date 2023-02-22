@@ -27,7 +27,8 @@ public class WindowsUSBException extends USBException {
      * <p>
      * The message for the Windows error code is looked up and appended to the message.
      * </p>
-     * @param message exception message
+     *
+     * @param message   exception message
      * @param errorCode Windows error code (usually returned from {@code GetLastError()})
      */
     public WindowsUSBException(String message, int errorCode) {
@@ -39,9 +40,10 @@ public class WindowsUSBException extends USBException {
      * <p>
      * The message for the Windows error code is looked up and appended to the message.
      * </p>
+     *
      * @param errorCode Windows error code (usually returned from {@code GetLastError()})
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param message   exception message format ({@link String#format(String, Object...)} style)
+     * @param args      arguments for exception message
      */
     static void throwException(int errorCode, String message, Object... args) {
         var formattedMessage = String.format(message, args);
@@ -54,8 +56,9 @@ public class WindowsUSBException extends USBException {
 
     /**
      * Throws a USB exception.
+     *
      * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param args    arguments for exception message
      */
     static void throwException(String message, Object... args) {
         throw new USBException(String.format(message, args));
@@ -69,8 +72,8 @@ public class WindowsUSBException extends USBException {
      * </p>
      *
      * @param lastErrorState call capture state containing last error code
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param message        exception message format ({@link String#format(String, Object...)} style)
+     * @param args           arguments for exception message
      */
     static void throwLastError(MemorySegment lastErrorState, String message, Object... args) {
         throwException(Win.getLastError(lastErrorState), message, args);
@@ -79,9 +82,8 @@ public class WindowsUSBException extends USBException {
     static String getErrorMessage(int errorCode) {
         try (var arena = Arena.openConfined()) {
             var messagePointerHolder = arena.allocate(ADDRESS);
-            int res = Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()
-                            | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
-                    NULL, errorCode, 0, messagePointerHolder, 0, NULL);
+            int res =
+                    Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(), NULL, errorCode, 0, messagePointerHolder, 0, NULL);
             if (res == 0)
                 return "unspecified error";
             var messagePointer = messagePointerHolder.get(ForeignMemory.UNBOUNDED_ADDRESS, 0);

@@ -218,8 +218,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             // create device instance
             var device = new LinuxUSBDevice(this, devPath, vendorId, productId);
 
-            device.setProductStrings(getDeviceAttribute(udevDevice, ATTR_MANUFACTURER),
-                    getDeviceAttribute(udevDevice, ATTR_PRODUCT), getDeviceAttribute(udevDevice, ATTR_SERIAL));
+            device.setProductStrings(getDeviceAttribute(udevDevice, ATTR_MANUFACTURER), getDeviceAttribute(udevDevice
+                    , ATTR_PRODUCT), getDeviceAttribute(udevDevice, ATTR_SERIAL));
 
             return device;
 
@@ -268,7 +268,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     private void asyncCompletionTask() {
 
         try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             var asyncPolls = pollfd.allocateArray(100, arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
             var eventfdValueHolder = arena.allocate(JAVA_LONG);
@@ -330,7 +330,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         int res;
         res = IO.ioctl(fd, REAPURB, urbPointerHolder, errnoState);
         if (res < 0) {
-            var err = IO.getErrno(errnoState);
+            var err = Linux.getErrno(errnoState);
             if (err == errno.EBADF())
                 return; // ignore, device might have been closed
             throwException(err, "internal error (reap URB)");
@@ -360,7 +360,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
 
         try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             if (IO.eventfd_write(asyncIOUpdateEventFd, 1, errnoState) < 0)
                 throwLastError(errnoState, "internal error (eventfd_write)");
         }
@@ -412,7 +412,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         notifyAsyncIOTask();
     }
 
-    synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, MemorySegment buffer, int bufferLength, AsyncIOCompletion completion) {
+    synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, MemorySegment buffer,
+                                         int bufferLength, AsyncIOCompletion completion) {
         var urb = getURB(completion);
 
         usbdevfs_urb.type$set(urb, (byte) USBDEVFS_URB_TYPE_BULK());
@@ -422,7 +423,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
         try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errnoState) < 0)
                 throwLastError(errnoState, "failed to submit bulk transfer request");
         }
@@ -450,7 +451,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
         int fd = device.fileDescriptor();
         try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
 
             for (var urbAddress : completionHandlerByURB.keySet()) {
                 var urb = usbdevfs_urb.ofAddress(MemorySegment.ofAddress(urbAddress), SegmentScope.global());
@@ -467,7 +468,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
     private void startAsyncIOHandler() {
         try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             asyncIOUpdateEventFd = IO.eventfd(0, 0, errnoState);
             if (asyncIOUpdateEventFd == -1) {
                 asyncIOUpdateEventFd = 0;

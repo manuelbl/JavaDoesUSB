@@ -21,7 +21,7 @@ public interface USBInterface {
      * Gets the interface number.
      * <p>
      * It is equal to the {@code bInterfaceNumber} field of the interface descriptor.
-     *</p>
+     * </p>
      *
      * @return the interface number
      */

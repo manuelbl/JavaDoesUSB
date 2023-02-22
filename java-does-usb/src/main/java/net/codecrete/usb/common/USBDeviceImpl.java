@@ -10,8 +10,6 @@ package net.codecrete.usb.common;
 import net.codecrete.usb.*;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.foreign.MemorySegment;
 import java.util.Collections;
 import java.util.List;
@@ -39,9 +37,9 @@ public abstract class USBDeviceImpl implements USBDevice {
     /**
      * Creates a new instance.
      *
-     * @param id           unique device ID
-     * @param vendorId     USB vendor ID
-     * @param productId    USB product ID
+     * @param id        unique device ID
+     * @param vendorId  USB vendor ID
+     * @param productId USB product ID
      */
     protected USBDeviceImpl(Object id, int vendorId, int productId) {
 
@@ -107,13 +105,19 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     @Override
-    public Version usbVersion() { return usbVersion_; }
+    public Version usbVersion() {
+        return usbVersion_;
+    }
 
     @Override
-    public Version deviceVersion() { return deviceVersion_; }
+    public Version deviceVersion() {
+        return deviceVersion_;
+    }
 
     @Override
-    public byte[] configurationDescriptor() { return configurationDescriptor_; }
+    public byte[] configurationDescriptor() {
+        return configurationDescriptor_;
+    }
 
     public Object getUniqueId() {
         return id_;
@@ -121,6 +125,7 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     /**
      * Sets the class codes and version for the device descriptor.
+     *
      * @param descriptor the device descriptor
      */
     public void setFromDeviceDescriptor(MemorySegment descriptor) {
@@ -134,6 +139,7 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     /**
      * Sets the configuration descriptor and derives the interface and endpoint descriptions.
+     *
      * @param descriptor configuration descriptor
      * @return parsed configuration
      */
@@ -160,10 +166,11 @@ public abstract class USBDeviceImpl implements USBDevice {
     /**
      * Sets the product strings from the device descriptor.
      * <p>
-     *     To lookup the string, a lookup function is provided. It takes the
-     *     string ID and returns the string from the string descriptor.
+     * To lookup the string, a lookup function is provided. It takes the
+     * string ID and returns the string from the string descriptor.
      * </p>
-     * @param descriptor device descriptor
+     *
+     * @param descriptor   device descriptor
      * @param stringLookup string lookup function
      */
     public void setProductString(MemorySegment descriptor, Function<Integer, String> stringLookup) {
@@ -230,8 +237,8 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param transferType2  transfer type 2 (or {@code null})
      * @return endpoint
      */
-    protected EndpointInfo getEndpoint(USBDirection direction, int endpointNumber,
-                                       USBTransferType transferType1, USBTransferType transferType2) {
+    protected EndpointInfo getEndpoint(USBDirection direction, int endpointNumber, USBTransferType transferType1,
+                                       USBTransferType transferType2) {
 
         checkIsOpen();
 
@@ -239,8 +246,7 @@ public abstract class USBDeviceImpl implements USBDevice {
             for (var intf : interfaces_) {
                 if (intf.isClaimed()) {
                     for (var ep : intf.alternate().endpoints()) {
-                        if (ep.number() == endpointNumber && ep.direction() == direction
-                                && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
+                        if (ep.number() == endpointNumber && ep.direction() == direction && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
                             return new EndpointInfo(intf.number(), ep.number(),
                                     (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0)),
                                     ep.packetSize());
@@ -260,9 +266,7 @@ public abstract class USBDeviceImpl implements USBDevice {
             transferTypeDesc = transferType1.name();
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
-        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " +
-                        "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc,
-                direction.name()));
+        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " + "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc, direction.name()));
     }
 
     protected int getInterfaceNumber(USBDirection direction, int endpointNumber) {

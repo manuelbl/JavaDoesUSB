@@ -48,7 +48,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     // Arena used to allocate OVERLAPPED data structures
     private Arena arena;
 
-    WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children, int vendorId, int productId, MemorySegment configDesc) {
+    WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children,
+                     int vendorId, int productId, MemorySegment configDesc) {
         super(devicePath, vendorId, productId);
         this.registry = registry;
         readDescription(configDesc, devicePath, children);
@@ -179,12 +180,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber, alternateNumber);
+            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
+                    alternateNumber);
 
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.interfaceHandle,
-                    (byte) alternateNumber, lastErrorState) == 0)
+            if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.interfaceHandle, (byte) alternateNumber,
+                    lastErrorState) == 0)
                 throwLastError(lastErrorState, "Failed to set alternate interface");
         }
         intf.setAlternate(altSetting);
@@ -216,7 +218,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         setClaimed(interfaceNumber, false);
     }
 
-    private MemorySegment createSetupPacket(USBDirection direction, USBControlTransfer setup, MemorySegment data, Arena arena) {
+    private MemorySegment createSetupPacket(USBDirection direction, USBControlTransfer setup, MemorySegment data,
+                                            Arena arena) {
         var setupPacket = new SetupPacket(arena);
         var bmRequest =
                 (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
@@ -239,8 +242,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var lengthHolder = arena.allocate(JAVA_INT);
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL, lastErrorState) == 0)
+            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer,
+                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Control transfer IN failed");
 
             int rxLength = lengthHolder.get(JAVA_INT, 0);
@@ -266,8 +269,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var lengthHolder = arena.allocate(JAVA_INT);
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL, lastErrorState) == 0)
+            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer,
+                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Control transfer OUT failed");
         }
     }
@@ -294,8 +297,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var lengthHolder = arena.allocate(JAVA_INT);
 
             // send data
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer,
+                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err == Kernel32.ERROR_SEM_TIMEOUT())
                     throw new USBTimeoutException("Transfer out aborted due to timeout");
@@ -322,8 +325,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var lengthHolder = arena.allocate(JAVA_INT);
 
             // receive data
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, (int) buffer.byteSize(),
-                    lengthHolder, NULL, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer,
+                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err == Kernel32.ERROR_SEM_TIMEOUT())
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
@@ -336,7 +339,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
-    synchronized long submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, AsyncIOCompletion completion) {
+    synchronized long submitTransferOut(int endpointNumber, MemorySegment data, int dataSize,
+                                        AsyncIOCompletion completion) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
@@ -345,8 +349,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var overlapped = getOverlapped(completion);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), data, dataSize,
-                    NULL, overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), data, dataSize, NULL
+                    , overlapped, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer OUT failed");
@@ -356,7 +360,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
-    synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
+    synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize,
+                                       AsyncIOCompletion completion) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
@@ -379,12 +384,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     /**
      * Cancels an asynchronous IO request.
      * <p>
-     *     If the specific request is not found, the error is silently ignored. Such errors
-     *     are likely to happen due to concurrency issues.
+     * If the specific request is not found, the error is silently ignored. Such errors
+     * are likely to happen due to concurrency issues.
      * </p>
-     * @param direction endpoint direction
+     *
+     * @param direction      endpoint direction
      * @param endpointNumber endpoint number
-     * @param cancelHandle request's cancel handle returned when the request was submitted
+     * @param cancelHandle   request's cancel handle returned when the request was submitted
      */
     synchronized void cancelTransfer(USBDirection direction, int endpointNumber, long cancelHandle) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
@@ -414,9 +420,9 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Setting timeout failed");
 
-            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte)0);
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
-                    WinUSB.RAW_IO(), (int) rawIoHolder.byteSize(), rawIoHolder, lastErrorState) == 0)
+            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 0);
+            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
+                    (int) rawIoHolder.byteSize(), rawIoHolder, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Setting raw IO failed");
         }
     }
@@ -510,7 +516,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     synchronized void onAsyncIoCompleted(MemorySegment overlapped) {
         var handler = completionHandlers.get(overlapped);
-        handler.completed((int)OVERLAPPED.Internal$get(overlapped), (int)OVERLAPPED.InternalHigh$get(overlapped));
+        handler.completed((int) OVERLAPPED.Internal$get(overlapped), (int) OVERLAPPED.InternalHigh$get(overlapped));
         completionHandlers.remove(overlapped);
         availableOverlappedStructs.add(overlapped);
     }

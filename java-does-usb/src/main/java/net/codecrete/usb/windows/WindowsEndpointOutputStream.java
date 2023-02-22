@@ -22,7 +22,7 @@ public class WindowsEndpointOutputStream extends EndpointOutputStream {
 
     @Override
     protected void submitTransferOut(MemorySegment data, int dataSize, AsyncIOCompletion completion) {
-        ((WindowsUSBDevice)device).submitTransferOut(endpointNumber, data, dataSize, completion);
+        ((WindowsUSBDevice) device).submitTransferOut(endpointNumber, data, dataSize, completion);
     }
 
     @Override

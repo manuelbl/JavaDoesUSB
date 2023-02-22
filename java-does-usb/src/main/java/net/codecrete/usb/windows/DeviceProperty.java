@@ -32,37 +32,39 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 public class DeviceProperty {
 
     public static final MemorySegment DEVPKEY_Device_Address = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
-            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1,
-            (byte) 0x46, (byte) 0xa8, (byte) 0x50, (byte) 0xe0, 30);
+            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
+            , (byte) 0xe0, 30);
 
     public static final MemorySegment DEVPKEY_Device_InstanceId = createDEVPROPKEY(0x78c34fc8, (short) 0x104a,
-            (short) 0x4aca, (byte) 0x9e, (byte) 0xa4, (byte) 0x52, (byte) 0x4d,
-            (byte) 0x52, (byte) 0x99, (byte) 0x6e, (byte) 0x57, 256);
+            (short) 0x4aca, (byte) 0x9e, (byte) 0xa4, (byte) 0x52, (byte) 0x4d, (byte) 0x52, (byte) 0x99, (byte) 0x6e
+            , (byte) 0x57, 256);
 
     public static final MemorySegment DEVPKEY_Device_Parent = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
-            (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64,
-            (byte) 0x80, (byte) 0x08, (byte) 0xa5, (byte) 0xa7, 8);
+            (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64, (byte) 0x80, (byte) 0x08, (byte) 0xa5
+            , (byte) 0xa7, 8);
 
     public static final MemorySegment DEVPKEY_Device_Service = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
-            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1,
-            (byte) 0x46, (byte) 0xa8, (byte) 0x50, (byte) 0xe0, 6);
+            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
+            , (byte) 0xe0, 6);
 
     public static final MemorySegment DEVPKEY_Device_Children = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
-            (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64,
-            (byte) 0x80, (byte) 0x08, (byte) 0xa5, (byte) 0xa7, 9);
+            (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64, (byte) 0x80, (byte) 0x08, (byte) 0xa5
+            , (byte) 0xa7, 9);
 
     public static final MemorySegment DEVPKEY_Device_HardwareIds = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
-            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1,
-            (byte) 0x46, (byte) 0xa8, (byte) 0x50, (byte) 0xe0, 3);
+            (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
+            , (byte) 0xe0, 3);
 
     /**
      * Gets the device property with integer type.
-     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     *
+     * @param devInfoSet  device information set containing the device ({@code HDEVINFO})
      * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
      */
-    public static int getDeviceIntProperty(MemorySegment devInfoSet, MemorySegment devInfoData, MemorySegment propertyKey) {
+    public static int getDeviceIntProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
+                                           MemorySegment propertyKey) {
         try (var arena = Arena.openConfined()) {
             var propertyTypeHolder = arena.allocate(JAVA_INT);
             var propertyValueHolder = arena.allocate(JAVA_INT);
@@ -80,7 +82,8 @@ public class DeviceProperty {
 
     /**
      * Gets the device property with string type.
-     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     *
+     * @param devInfoSet  device information set containing the device ({@code HDEVINFO})
      * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
@@ -88,7 +91,8 @@ public class DeviceProperty {
     public static String getDeviceStringProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                  MemorySegment propertyKey) {
         try (var arena = Arena.openConfined()) {
-            var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey, SetupAPI.DEVPROP_TYPE_STRING(), arena);
+            var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey,
+                    SetupAPI.DEVPROP_TYPE_STRING(), arena);
             if (propertyValue == null)
                 return null;
             return Win.createStringFromSegment(propertyValue);
@@ -97,7 +101,8 @@ public class DeviceProperty {
 
     /**
      * Gets the device property with string list type.
-     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     *
+     * @param devInfoSet  device information set containing the device ({@code HDEVINFO})
      * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @param propertyKey property key (of type {@code DEVPKEY})
      * @return property value
@@ -114,8 +119,8 @@ public class DeviceProperty {
         }
     }
 
-    private static MemorySegment getVariableLengthProperty(MemorySegment devInfoSet, MemorySegment devInfoData, MemorySegment propertyKey,
-                                                           int propertyType, Arena arena) {
+    private static MemorySegment getVariableLengthProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
+                                                           MemorySegment propertyKey, int propertyType, Arena arena) {
 
         // query length (thus no buffer)
         var propertyTypeHolder = arena.allocate(JAVA_INT);
@@ -148,19 +153,21 @@ public class DeviceProperty {
 
     /**
      * Gets a list of {@code DeviceInterfaceGUIDs} from device-specific configuration information in the registry.
-     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     *
+     * @param devInfoSet  device information set containing the device ({@code HDEVINFO})
      * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
-     * @param arena arena for allocating memory
+     * @param arena       arena for allocating memory
      * @return list of GUIDs
      */
-    public static List<String> findDeviceInterfaceGUIDs(MemorySegment devInfoSet, MemorySegment devInfoData, Arena arena) {
+    public static List<String> findDeviceInterfaceGUIDs(MemorySegment devInfoSet, MemorySegment devInfoData,
+                                                        Arena arena) {
 
         try (var cleanup = new ScopeCleanup()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // open device registry key
-            var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(),
-                    0, SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), lastErrorState);
+            var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(), 0,
+                    SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), lastErrorState);
             if (Win.IsInvalidHandle(regKey))
                 throwLastError(lastErrorState, "Cannot open device registry key");
             cleanup.add(() -> Advapi32.RegCloseKey(regKey));
@@ -188,7 +195,8 @@ public class DeviceProperty {
 
     /**
      * Gets the device path for the device with the given device instance ID and device interface class.
-     * @param instanceID device instance ID
+     *
+     * @param instanceID    device instance ID
      * @param interfaceGuid device interface class
      * @return the device path
      */
@@ -209,8 +217,8 @@ public class DeviceProperty {
             // retrieve first element of enumeration
             var devIntfData = arena.allocate(SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
-            if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0,
-                    devIntfData, lastErrorState) == 0)
+            if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
+                    lastErrorState) == 0)
                 throwLastError(lastErrorState, "internal error (SetupDiEnumDeviceInterfaces)");
 
             // get device path
@@ -231,23 +239,24 @@ public class DeviceProperty {
 
     /**
      * Checks if the device is a composite USB device
-     * @param devInfoSet device information set containing the device ({@code HDEVINFO})
+     *
+     * @param devInfoSet  device information set containing the device ({@code HDEVINFO})
      * @param devInfoData {@code SP_DEVINFO_DATA} structure specifying the element (device) in the information set
      * @return {@code true} if it is a composite device
      */
     public static boolean isCompositeDevice(MemorySegment devInfoSet, MemorySegment devInfoData) {
-        var deviceService = getDeviceStringProperty(devInfoSet, devInfoData,
-                DEVPKEY_Device_Service);
+        var deviceService = getDeviceStringProperty(devInfoSet, devInfoData, DEVPKEY_Device_Service);
 
         // usbccgp is the USB Generic Parent Driver used for composite devices
         return "usbccgp".equalsIgnoreCase(deviceService);
     }
 
     private static MemorySegment createDEVPROPKEY(int data1, short data2, short data3, byte data4_0, byte data4_1,
-            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6, byte data4_7, int pid) {
+                                                  byte data4_2, byte data4_3, byte data4_4, byte data4_5,
+                                                  byte data4_6, byte data4_7, int pid) {
         var propKey = Win.GLOBAL_ALLOCATOR.allocate(DEVPROPKEY.$LAYOUT());
-        Win.setGUID(DEVPROPKEY.fmtid$slice(propKey),
-                data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
+        Win.setGUID(DEVPROPKEY.fmtid$slice(propKey), data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4
+                , data4_5, data4_6, data4_7);
         DEVPROPKEY.pid$set(propKey, pid);
         return propKey;
     }

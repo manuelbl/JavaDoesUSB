@@ -63,7 +63,7 @@ public class LinuxUSBException extends USBException {
      * Throws an exception for the last error.
      * <p>
      * The message of the last Linux error code is provided in a memory segment with the layout
-     * {@link IO#ERRNO_STATE}.
+     * {@link Linux#ERRNO_STATE}.
      * </p>
      *
      * @param errno   segment with lat error code
@@ -71,7 +71,7 @@ public class LinuxUSBException extends USBException {
      * @param args    arguments for exception message
      */
     static void throwLastError(MemorySegment errno, String message, Object... args) {
-        throwException(IO.getErrno(errno), message, args);
+        throwException(Linux.getErrno(errno), message, args);
     }
 
 }

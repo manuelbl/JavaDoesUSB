@@ -69,17 +69,10 @@ public class InterfaceDescriptor {
     //     uint8_t bInterfaceProtocol;
     //     uint8_t iInterface;
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_BYTE.withName("bInterfaceNumber"),
-            JAVA_BYTE.withName("bAlternateSetting"),
-            JAVA_BYTE.withName("bNumEndpoints"),
-            JAVA_BYTE.withName("bInterfaceClass"),
-            JAVA_BYTE.withName("bInterfaceSubClass"),
-            JAVA_BYTE.withName("bInterfaceProtocol"),
-            JAVA_BYTE.withName("iInterface")
-    );
+    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_BYTE.withName("bInterfaceNumber"), JAVA_BYTE.withName("bAlternateSetting"),
+            JAVA_BYTE.withName("bNumEndpoints"), JAVA_BYTE.withName("bInterfaceClass"), JAVA_BYTE.withName(
+                    "bInterfaceSubClass"), JAVA_BYTE.withName("bInterfaceProtocol"), JAVA_BYTE.withName("iInterface"));
 
     private static final VarHandle bInterfaceNumber$VH = LAYOUT.varHandle(groupElement("bInterfaceNumber"));
     private static final VarHandle bAlternateSetting$VH = LAYOUT.varHandle(groupElement("bAlternateSetting"));

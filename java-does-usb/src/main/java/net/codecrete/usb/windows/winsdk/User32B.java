@@ -34,73 +34,63 @@ public class User32B {
 
     private static final FunctionDescriptor RegisterClassExW$FUNC = FunctionDescriptor.of(JAVA_SHORT, ADDRESS);
 
-    private static final MethodHandle RegisterClassExW$MH = LINKER.downcallHandle(
-            LOOKUP.find("RegisterClassExW").get(),
-            RegisterClassExW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
+    private static final MethodHandle RegisterClassExW$MH =
+            LINKER.downcallHandle(LOOKUP.find("RegisterClassExW").get(), RegisterClassExW$FUNC, Win.LAST_ERROR_STATE);
 
     public static short RegisterClassExW(MemorySegment unnamedParam1, MemorySegment lastErrorState) {
         try {
-            return (short)RegisterClassExW$MH.invokeExact(lastErrorState, unnamedParam1);
+            return (short) RegisterClassExW$MH.invokeExact(lastErrorState, unnamedParam1);
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private static final FunctionDescriptor CreateWindowExW$FUNC =
-            FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, JAVA_INT, JAVA_INT,
-                    JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS);
+    private static final FunctionDescriptor CreateWindowExW$FUNC = FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS,
+            ADDRESS, JAVA_INT, JAVA_INT, JAVA_INT, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS);
 
-    private static final MethodHandle CreateWindowExW$MH = LINKER.downcallHandle(
-            LOOKUP.find("CreateWindowExW").get(),
-            CreateWindowExW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
+    private static final MethodHandle CreateWindowExW$MH = LINKER.downcallHandle(LOOKUP.find("CreateWindowExW").get()
+            , CreateWindowExW$FUNC, Win.LAST_ERROR_STATE);
 
     public static MemorySegment CreateWindowExW(int dwExStyle, MemorySegment lpClassName, MemorySegment lpWindowName,
                                                 int dwStyle, int X, int Y, int nWidth, int nHeight,
-                                                MemorySegment hWndParent, MemorySegment hMenu, MemorySegment hInstance,
-                                                MemorySegment lpParam, MemorySegment lastErrorState) {
+                                                MemorySegment hWndParent, MemorySegment hMenu,
+                                                MemorySegment hInstance, MemorySegment lpParam,
+                                                MemorySegment lastErrorState) {
         try {
-            return (MemorySegment)CreateWindowExW$MH.invokeExact(lastErrorState, dwExStyle, lpClassName, lpWindowName,
-                    dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+            return (MemorySegment) CreateWindowExW$MH.invokeExact(lastErrorState, dwExStyle, lpClassName,
+                    lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private static final FunctionDescriptor RegisterDeviceNotificationW$FUNC =
-            FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT);
+    private static final FunctionDescriptor RegisterDeviceNotificationW$FUNC = FunctionDescriptor.of(ADDRESS, ADDRESS
+            , ADDRESS, JAVA_INT);
 
-    private static final MethodHandle RegisterDeviceNotificationW$MH = LINKER.downcallHandle(
-            LOOKUP.find("RegisterDeviceNotificationW").get(),
-            RegisterDeviceNotificationW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
+    private static final MethodHandle RegisterDeviceNotificationW$MH = LINKER.downcallHandle(LOOKUP.find(
+            "RegisterDeviceNotificationW").get(), RegisterDeviceNotificationW$FUNC, Win.LAST_ERROR_STATE);
 
-    public static MemorySegment RegisterDeviceNotificationW(MemorySegment hRecipient, MemorySegment NotificationFilter,
-                                                            int Flags, MemorySegment lastErrorState) {
+    public static MemorySegment RegisterDeviceNotificationW(MemorySegment hRecipient,
+                                                            MemorySegment NotificationFilter, int Flags,
+                                                            MemorySegment lastErrorState) {
         try {
-            return (MemorySegment)RegisterDeviceNotificationW$MH.invokeExact(lastErrorState, hRecipient, NotificationFilter, Flags);
+            return (MemorySegment) RegisterDeviceNotificationW$MH.invokeExact(lastErrorState, hRecipient,
+                    NotificationFilter, Flags);
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private static final FunctionDescriptor GetMessageW$FUNC =
-            FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT);
+    private static final FunctionDescriptor GetMessageW$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS,
+            JAVA_INT, JAVA_INT);
 
-    private static final MethodHandle GetMessageW$MH = LINKER.downcallHandle(
-            LOOKUP.find("GetMessageW").get(),
-            GetMessageW$FUNC,
-            Win.LAST_ERROR_STATE
-    );
+    private static final MethodHandle GetMessageW$MH = LINKER.downcallHandle(LOOKUP.find("GetMessageW").get(),
+            GetMessageW$FUNC, Win.LAST_ERROR_STATE);
 
     public static int GetMessageW(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax,
                                   MemorySegment lastErrorState) {
         try {
-            return (int)GetMessageW$MH.invokeExact(lastErrorState, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+            return (int) GetMessageW$MH.invokeExact(lastErrorState, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }

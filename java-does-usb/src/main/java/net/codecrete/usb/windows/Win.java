@@ -31,18 +31,22 @@ public class Win {
     /**
      * Call state for capturing the {@code GetLastError()} value.
      */
-    public static final Linker.Option.CaptureCallState LAST_ERROR_STATE = Linker.Option.captureCallState("GetLastError");
+    public static final Linker.Option.CaptureCallState LAST_ERROR_STATE = Linker.Option.captureCallState(
+            "GetLastError");
 
-    private static final VarHandle callState_GetLastError$VH = LAST_ERROR_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("GetLastError"));
+    private static final VarHandle callState_GetLastError$VH =
+            LAST_ERROR_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("GetLastError"));
 
     /**
      * Returns the error code captured using the call state {@link #LAST_ERROR_STATE}.
+     *
      * @param callState the call state
      * @return the error code
      */
     public static int getLastError(MemorySegment callState) {
         return (int) callState_GetLastError$VH.get(callState);
     }
+
     /**
      * Checks if a Windows handle is invalid.
      *
@@ -59,7 +63,7 @@ public class Win {
      * The memory segment contains a copy of the string (null-terminated, UTF-16/wide characters).
      * </p>
      *
-     * @param str     the string to copy
+     * @param str   the string to copy
      * @param arena the arena for the memory segment
      * @return the resulting memory segment
      */

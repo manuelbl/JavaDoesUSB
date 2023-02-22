@@ -30,6 +30,7 @@ public class ConfigurationDescriptor {
     public int descriptorType() {
         return 0xff & (byte) bDescriptorType$VH.get(descriptor);
     }
+
     public int totalLength() {
         return 0xffff & (short) wTotalLength$VH.get(descriptor);
     }
@@ -65,16 +66,10 @@ public class ConfigurationDescriptor {
     //     uint8_t  bmAttributes;
     //     uint8_t  bMaxPower;
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(
-            JAVA_BYTE.withName("bLength"),
-            JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_SHORT_UNALIGNED.withName("wTotalLength"),
-            JAVA_BYTE.withName("bNumInterfaces"),
-            JAVA_BYTE.withName("bConfigurationValue"),
-            JAVA_BYTE.withName("iConfiguration"),
-            JAVA_BYTE.withName("bmAttributes"),
-            JAVA_BYTE.withName("bMaxPower")
-    );
+    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
+            "bDescriptorType"), JAVA_SHORT_UNALIGNED.withName("wTotalLength"), JAVA_BYTE.withName("bNumInterfaces"),
+            JAVA_BYTE.withName("bConfigurationValue"), JAVA_BYTE.withName("iConfiguration"), JAVA_BYTE.withName(
+                    "bmAttributes"), JAVA_BYTE.withName("bMaxPower"));
 
     private static final VarHandle bDescriptorType$VH = LAYOUT.varHandle(groupElement("bDescriptorType"));
     private static final VarHandle wTotalLength$VH = LAYOUT.varHandle(groupElement("wTotalLength"));

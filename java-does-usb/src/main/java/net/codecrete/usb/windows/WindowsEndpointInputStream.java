@@ -22,7 +22,7 @@ public class WindowsEndpointInputStream extends EndpointInputStream {
 
     @Override
     protected void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
-        ((WindowsUSBDevice)device).submitTransferIn(endpointNumber, buffer, bufferSize, completion);
+        ((WindowsUSBDevice) device).submitTransferIn(endpointNumber, buffer, bufferSize, completion);
     }
 
     @Override

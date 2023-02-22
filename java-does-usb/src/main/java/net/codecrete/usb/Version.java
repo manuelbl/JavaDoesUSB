@@ -22,6 +22,7 @@ public final class Version {
      * is minor version, the low one is the subminor version. As an example,
      * 0x0321 represents the version 3.2.1.
      * </p>
+     *
      * @param bcdVersion version, encoded as described above
      */
     public Version(int bcdVersion) {
@@ -30,6 +31,7 @@ public final class Version {
 
     /**
      * Major version
+     *
      * @return major version
      */
     public int major() {
@@ -38,6 +40,7 @@ public final class Version {
 
     /**
      * Minor version
+     *
      * @return minor version
      */
     public int minor() {
@@ -46,6 +49,7 @@ public final class Version {
 
     /**
      * Subminor version
+     *
      * @return subminor version
      */
     public int subminor() {

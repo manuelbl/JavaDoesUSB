@@ -71,7 +71,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var pathUtf8 = arena.allocateUtf8String(id_.toString());
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
                 throwLastError(errnoState, "Cannot open USB device");
@@ -108,7 +108,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Cannot claim USB interface");
@@ -129,13 +129,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber, alternateNumber);
+            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
+                    alternateNumber);
 
         try (var arena = Arena.openConfined()) {
             var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Failed to set alternate interface");
@@ -155,7 +156,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Cannot release USB interface");
@@ -183,7 +184,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var data = arena.allocate(length);
             var ctrlTransfer = createCtrlTransfer(arena, USBDirection.IN, setup, data);
 
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
             if (res < 0)
                 throwLastError(errnoState, "Control IN transfer failed");
@@ -201,7 +202,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 buffer.copyFrom(MemorySegment.ofArray(data));
             var ctrlTransfer = createCtrlTransfer(arena, USBDirection.OUT, setup, buffer);
 
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
             if (res < 0)
                 throwLastError(errnoState, "Control OUT transfer failed");
@@ -219,18 +220,17 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
             var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
 
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
             if (res < 0) {
-                int err = IO.getErrno(errnoState);
+                int err = Linux.getErrno(errnoState);
                 if (err == errno.ETIMEDOUT())
                     throw new USBTimeoutException("Transfer out aborted due to timeout");
                 throwLastError(errnoState, "USB OUT transfer on endpoint %d failed", endpointNumber);
@@ -240,18 +240,17 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] transferIn(int endpointNumber, int timeout) {
-        var endpoint = getEndpoint(USBDirection.IN, endpointNumber,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(endpoint.packetSize());
 
             var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
 
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
             if (res < 0) {
-                int err = IO.getErrno(errnoState);
+                int err = Linux.getErrno(errnoState);
                 if (err == errno.ETIMEDOUT())
                     throw new USBTimeoutException("Transfer in aborted due to timeout");
                 throwLastError(errnoState, "USB IN transfer on endpoint %d failed", endpointNumber);
@@ -263,12 +262,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
-        var endpoint = getEndpoint(direction, endpointNumber,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
             var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
-            var errnoState = arena.allocate(IO.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             int res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
             if (res < 0)
                 throwLastError(errnoState, "Clearing halt failed");
@@ -277,8 +275,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
-        var endpoint = getEndpoint(direction, endpointNumber,
-                USBTransferType.BULK, USBTransferType.INTERRUPT);
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
         registry.abortTransfers(this, endpoint.endpointAddress());
     }
@@ -299,12 +296,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         return new LinuxEndpointOutputStream(this, endpointNumber);
     }
 
-    synchronized void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
+    synchronized void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize,
+                                       AsyncIOCompletion completion) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         registry.submitBulkTransfer(this, endpoint.endpointAddress(), buffer, bufferSize, completion);
     }
 
-    synchronized void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize, AsyncIOCompletion completion) {
+    synchronized void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize,
+                                        AsyncIOCompletion completion) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         registry.submitBulkTransfer(this, endpoint.endpointAddress(), data, dataSize, completion);
     }

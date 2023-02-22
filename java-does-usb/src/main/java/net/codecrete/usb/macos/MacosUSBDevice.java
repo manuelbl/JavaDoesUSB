@@ -353,8 +353,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
 
-        throwException("Endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s " +
-                "transfer in %s direction", endpointNumber, transferTypeDesc, direction.name());
+        throwException("Endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s "
+                + "transfer in %s direction", endpointNumber, transferTypeDesc, direction.name());
         throw new AssertionError("not reached");
     }
 

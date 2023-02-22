@@ -31,10 +31,11 @@ import java.util.ArrayList;
  */
 public class ScopeCleanup implements AutoCloseable {
 
-    private final ArrayList<Runnable> cleanupActions= new ArrayList<>();
+    private final ArrayList<Runnable> cleanupActions = new ArrayList<>();
 
     /**
      * Registers a cleanup action to be run later.
+     *
      * @param cleanupAction cleanup action
      */
     public void add(Runnable cleanupAction) {

@@ -24,7 +24,7 @@ public class ForeignMemory {
      * Dereferences the address at the start of the memory segment and returns the result as
      * a memory segment of the specified length.
      *
-     * @param segment the memory segment with the pointer at  offset 0
+     * @param segment  the memory segment with the pointer at  offset 0
      * @param byteSize the length
      * @return the dereferenced memory segment
      */
