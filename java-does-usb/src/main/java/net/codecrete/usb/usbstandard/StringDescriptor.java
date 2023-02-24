@@ -40,8 +40,11 @@ public class StringDescriptor {
     //     uint8_t   bDescriptorType;
     //     uint16_t  string[1];
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
-            "bDescriptorType"), JAVA_SHORT.withName("string"));
+    public static final GroupLayout LAYOUT = structLayout(
+            JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"),
+            JAVA_SHORT.withName("string")
+    );
 
     private static final VarHandle bLength$VH = LAYOUT.varHandle(groupElement("bLength"));
     private static final long string$offset = LAYOUT.byteOffset(groupElement("string"));

@@ -8,7 +8,6 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.USBDeviceRegistry;
 import net.codecrete.usb.linux.gen.errno.errno;
@@ -52,7 +51,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
     /// map of URB address to completion handler (for outstanding requests)
-    private final Map<Long, AsyncIOCompletion> completionHandlerByURB = new HashMap<>();
+    private final Map<Long, LinuxTransfer> completionHandlerByURB = new HashMap<>();
     /// array of file descriptors using asynchronous completion
     private int[] asyncFds;
     /// file descriptor to notify async IO background thread about an update
@@ -336,17 +335,11 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             throwException(err, "internal error (reap URB)");
         }
 
-        var addr = urbPointerHolder.get(ADDRESS, 0);
-        var urb = usbdevfs_urb.ofAddress(addr, SegmentScope.global());
-        int status = usbdevfs_urb.status$get(urb);
-        int length = usbdevfs_urb.actual_length$get(urb);
+        var urbAddr = urbPointerHolder.get(JAVA_LONG, 0);
+        var transfer = getRequest(urbAddr);
 
         // call completion handler
-        synchronized (this) {
-            var completionHandler = completionHandlerByURB.get(urb.address());
-            completionHandler.completed(status, length);
-            recycleURB(urb);
-        }
+        transfer.completionHandler.completed(transfer);
     }
 
     /**
@@ -371,7 +364,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      *
      * @param device USB device
      */
-    synchronized void registerCompletionHandling(LinuxUSBDevice device) {
+    synchronized void addForAsyncIOCompletion(LinuxUSBDevice device) {
         int n = asyncFds != null ? asyncFds.length : 0;
         int[] fds = new int[n + 1];
         if (n > 0)
@@ -388,7 +381,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      *
      * @param device USB device
      */
-    synchronized void unregisterCompletionHandling(LinuxUSBDevice device) {
+    synchronized void removeFromAsyncIOCompletion(LinuxUSBDevice device) {
         // copy file descriptor (except the device's) into new array
         int n = asyncFds.length;
         if (n == 0)
@@ -406,20 +399,20 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             }
         }
 
-
         // activate new array
         asyncFds = fds;
         notifyAsyncIOTask();
     }
 
-    synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, MemorySegment buffer,
-                                         int bufferLength, AsyncIOCompletion completion) {
-        var urb = getURB(completion);
+    synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, LinuxTransfer request) {
+
+        addURB(request);
+        var urb = request.urb;
 
         usbdevfs_urb.type$set(urb, (byte) USBDEVFS_URB_TYPE_BULK());
         usbdevfs_urb.endpoint$set(urb, (byte) endpointAddress);
-        usbdevfs_urb.buffer$set(urb, buffer);
-        usbdevfs_urb.buffer_length$set(urb, bufferLength);
+        usbdevfs_urb.buffer$set(urb, request.data);
+        usbdevfs_urb.buffer_length$set(urb, request.dataSize);
         usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
         try (var arena = Arena.openConfined()) {
@@ -429,7 +422,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    private MemorySegment getURB(AsyncIOCompletion completionHandler) {
+    void addURB(LinuxTransfer request) {
         MemorySegment urb;
         int size = availableURBs.size();
         if (size > 0) {
@@ -438,14 +431,21 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             urb = usbdevfs_urb.allocate(GLOBAL_ALLOCATOR);
         }
 
-        completionHandlerByURB.put(urb.address(), completionHandler);
-
-        return urb;
+        request.urb = urb;
+        completionHandlerByURB.put(urb.address(), request);
     }
 
-    synchronized void recycleURB(MemorySegment urb) {
-        completionHandlerByURB.remove(urb.address());
-        availableURBs.add(urb);
+    private synchronized LinuxTransfer getRequest(long urbAddr) {
+        var request = completionHandlerByURB.remove(urbAddr);
+        if (request == null)
+            return null;
+
+        request.resultCode = usbdevfs_urb.status$get(request.urb);
+        request.resultSize = usbdevfs_urb.actual_length$get(request.urb);
+
+        availableURBs.add(request.urb);
+        request.urb = null;
+        return request;
     }
 
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {

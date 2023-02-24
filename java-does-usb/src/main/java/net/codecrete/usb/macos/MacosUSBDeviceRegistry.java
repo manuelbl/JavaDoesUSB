@@ -18,8 +18,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.lang.foreign.MemorySegment.NULL;
@@ -178,7 +176,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             info.vid = vendorId;
             info.pid = productId;
 
-            var device = new MacosUSBDevice(this, deviceIntf, entryID, vendorId, productId);
+            var device = new MacosUSBDevice(deviceIntf, entryID, vendorId, productId);
 
             String manufacturer = IoKitHelper.getPropertyString(service, KEY_VENDOR, arena);
             String product = IoKitHelper.getPropertyString(service, KEY_PRODUCT, arena);
@@ -265,60 +263,6 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
             removeDevice(entryId);
         });
-    }
-
-    private final ReentrantLock asyncIoLock = new ReentrantLock();
-    private Condition asyncIoReady;
-    private MemorySegment asyncIoRunLoop;
-
-    void addEventSource(MemorySegment source) {
-        try {
-            asyncIoLock.lock();
-
-            if (asyncIoRunLoop == null) {
-
-                if (asyncIoReady == null) {
-                    // start background thread
-                    asyncIoReady = asyncIoLock.newCondition();
-                    Thread t = new Thread(() -> asyncIOCompletionTask(source), "USB async IO");
-                    t.setDaemon(true);
-                    t.start();
-
-                    while (asyncIoRunLoop == null)
-                        asyncIoReady.awaitUninterruptibly();
-
-                    return;
-
-                } else {
-                    // special case: run loop is not ready yet but background process is already starting
-                    while (asyncIoRunLoop == null)
-                        asyncIoReady.awaitUninterruptibly();
-                }
-            }
-
-            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode$get());
-
-        } finally {
-            asyncIoLock.unlock();
-        }
-    }
-
-    void removeEventSource(MemorySegment source) {
-        CoreFoundation.CFRunLoopRemoveSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode$get());
-    }
-
-    private void asyncIOCompletionTask(MemorySegment firstSource) {
-        try {
-            asyncIoLock.lock();
-            asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
-            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, firstSource, IOKit.kCFRunLoopDefaultMode$get());
-            asyncIoReady.signalAll();
-        } finally {
-            asyncIoLock.unlock();
-        }
-
-        // loop forever
-        CoreFoundation.CFRunLoopRun();
     }
 
     @FunctionalInterface

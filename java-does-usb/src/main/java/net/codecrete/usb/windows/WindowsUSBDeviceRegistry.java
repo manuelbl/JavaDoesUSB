@@ -54,14 +54,10 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
-    /// Windows completion port for asynchronous/overlapped IO
+    /**
+     * Windows completion port for asynchronous/overlapped IO
+     */
     private MemorySegment asyncIoCompletionPort = NULL;
-    /// last used completion key
-    private long lastUsedCompletionKey;
-    /// USB devices indexed by completion key
-    private Map<Long, WindowsUSBDevice> devicesByCompletionKey;
-    /// completion keys indexed by Windows device handle
-    private Map<MemorySegment, Long> completionKeysByHandle;
 
     @Override
     protected void monitorDevices() {
@@ -546,21 +542,25 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                 int res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
                         completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), lastErrorState);
-                var overlapped = overlappedHolder.get(ADDRESS, 0);
+                var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
-                if (res == 0 && overlapped == MemorySegment.NULL)
+                if (res == 0 && overlappedAddr == 0)
                     throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
-                if (overlapped == MemorySegment.NULL)
-                    return; // registry is closing
+                if (overlappedAddr == 0)
+                    return; // registry is closing?
 
-                long completionKey = completionKeyHolder.get(JAVA_LONG, 0);
-                var device = devicesByCompletionKey.get(completionKey);
+                var request = getRequest(overlappedAddr);
+                if (request != null)
+                    request.completionHandler.completed(request);
 
-                if (device != null) {
-                    overlapped = OVERLAPPED.ofAddress(overlapped, SegmentScope.global());
-                    device.onAsyncIoCompleted(overlapped);
-                }
+//                long completionKey = completionKeyHolder.get(JAVA_LONG, 0);
+//                var device = devicesByCompletionKey.get(completionKey);
+//
+//                if (device != null) {
+//                    overlapped = OVERLAPPED.ofAddress(overlapped, SegmentScope.global());
+//                    device.onAsyncIoCompleted(overlapped);
+//                }
             }
         }
     }
@@ -573,46 +573,70 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
      */
     synchronized void addToCompletionPort(MemorySegment handle, WindowsUSBDevice device) {
 
-        lastUsedCompletionKey += 1;
-        var completionKey = Long.valueOf(lastUsedCompletionKey);
-        if (devicesByCompletionKey == null) {
-            devicesByCompletionKey = new HashMap<>();
-            completionKeysByHandle = new HashMap<>();
-        }
-        devicesByCompletionKey.put(completionKey, device);
-        completionKeysByHandle.put(handle, completionKey);
-
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
             // Creates a new port if it doesn't exist; adds handle to existing port if it exists
             MemorySegment portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
-                    lastUsedCompletionKey, 0, lastErrorState);
+                    handle.address(), 0, lastErrorState);
             if (portHandle == MemorySegment.NULL)
                 throwLastError(lastErrorState, "internal error (CreateIoCompletionPort)");
 
             if (asyncIoCompletionPort == MemorySegment.NULL) {
                 asyncIoCompletionPort = portHandle;
-
-                // start background thread for handling IO completion
-                Thread t = new Thread(this::asyncCompletionTask, "USB async IO");
-                t.setDaemon(true);
-                t.start();
+                startAsyncIOTask();
             }
         }
     }
 
-    /**
-     * Removes a handle from the dispatching.
-     * <p>
-     * The handle is removed from the completion port by closing the device.
-     * </p>
-     *
-     * @param handle Windows device handle
-     */
-    synchronized void removeFromCompletionPort(MemorySegment handle) {
-        Long completionKey = completionKeysByHandle.get(handle);
-        completionKeysByHandle.remove(handle);
-        devicesByCompletionKey.remove(completionKey);
+    void startAsyncIOTask() {
+        availableOverlappedStructs = new ArrayList<>();
+        arena = Arena.openShared();
+        requestsByOverlapped = new HashMap<>();
+
+        // start background thread for handling IO completion
+        Thread t = new Thread(this::asyncCompletionTask, "USB async IO");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // Currently outstanding transfer requests,
+    // indexed by OVERLAPPED address.
+    private Map<Long, WindowsTransfer> requestsByOverlapped;
+    // available OVERLAPPED data structures
+    private List<MemorySegment> availableOverlappedStructs;
+    // Arena used to allocate OVERLAPPED data structures
+    private Arena arena;
+
+    void addOverlapped(WindowsTransfer request) {
+        MemorySegment overlapped;
+        int size = availableOverlappedStructs.size();
+        if (size == 0) {
+            overlapped = arena.allocate(OVERLAPPED.$LAYOUT());
+        } else {
+            overlapped = availableOverlappedStructs.remove(size - 1);
+        }
+
+        request.overlapped = overlapped;
+        requestsByOverlapped.put(overlapped.address(), request);
+    }
+
+    private synchronized WindowsTransfer getRequest(long overlappedAddr) {
+        var request = requestsByOverlapped.remove(overlappedAddr);
+        if (request == null)
+            return null;
+
+        request.resultCode = (int) OVERLAPPED.Internal$get(request.overlapped);
+        request.resultSize = (int) OVERLAPPED.InternalHigh$get(request.overlapped);
+
+        availableOverlappedStructs.add(request.overlapped);
+        request.overlapped = null;
+        return request;
+    }
+
+    synchronized WindowsTransfer createRequest() {
+        var request = new WindowsTransfer();
+        request.resultSize = -1;
+        return request;
     }
 }

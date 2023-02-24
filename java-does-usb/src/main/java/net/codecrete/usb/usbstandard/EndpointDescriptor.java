@@ -55,9 +55,14 @@ public class EndpointDescriptor {
     //     uint16_t wMaxPacketSize;
     //     uint8_t bInterval;
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
-            "bDescriptorType"), JAVA_BYTE.withName("bEndpointAddress"), JAVA_BYTE.withName("bmAttributes"),
-            JAVA_SHORT_UNALIGNED.withName("wMaxPacketSize"), JAVA_BYTE.withName("bInterval"));
+    public static final GroupLayout LAYOUT = structLayout(
+            JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"),
+            JAVA_BYTE.withName("bEndpointAddress"),
+            JAVA_BYTE.withName("bmAttributes"),
+            JAVA_SHORT_UNALIGNED.withName("wMaxPacketSize"),
+            JAVA_BYTE.withName("bInterval")
+    );
 
     private static final VarHandle bEndpointAddress$VH = LAYOUT.varHandle(groupElement("bEndpointAddress"));
     private static final VarHandle bmAttributes$VH = LAYOUT.varHandle(groupElement("bmAttributes"));

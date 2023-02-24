@@ -307,6 +307,22 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public abstract byte[] transferIn(int endpointNumber, int timeout);
 
+    /**
+     * Create a transfer object suitable for this device.
+     *
+     * @return transfer object
+     */
+    protected abstract Transfer createTransfer();
+
+    /**
+     * Throws an exception for the specified operating-specific error code.
+     *
+     * @param errorCode error code, operating specific
+     * @param message   exception message format ({@link String#format(String, Object...)} style)
+     * @param args      arguments for exception message
+     */
+    protected abstract void throwOSException(int errorCode, String message, Object... args);
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

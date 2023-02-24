@@ -8,10 +8,8 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.EndpointInputStream;
-
-import java.lang.foreign.MemorySegment;
+import net.codecrete.usb.common.Transfer;
 
 public class WindowsEndpointInputStream extends EndpointInputStream {
 
@@ -21,12 +19,7 @@ public class WindowsEndpointInputStream extends EndpointInputStream {
     }
 
     @Override
-    protected void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
-        ((WindowsUSBDevice) device).submitTransferIn(endpointNumber, buffer, bufferSize, completion);
-    }
-
-    @Override
-    protected void throwException(int errorCode, String message) {
-        WindowsUSBException.throwException(errorCode, message);
+    protected void submitTransferIn(Transfer transfer) {
+        ((WindowsUSBDevice) device).submitTransferIn(endpointNumber, (WindowsTransfer) transfer);
     }
 }

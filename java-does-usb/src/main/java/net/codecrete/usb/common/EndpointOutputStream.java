@@ -22,22 +22,22 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * Output stream for bulk endpoints – optimized for high throughput.
  *
  * <p>
- * Multiple asynchronous transfer OUT requests are submitted to achieve a good
+ * Multiple asynchronous transfers are submitted to achieve a good
  * degree of concurrency between the USB communication handled by the operating
- * system and the producing application code. The number of requests is limited
- * in order to retain the flow control and keep memory usage at a reasonable size.
+ * system and the producing application code. The number of concurrent transfers is limited
+ * in order to retain flow control and keep memory usage at a reasonable size.
  * </p>
  * <p>
  * For thread synchronization (between the background thread handling IO completion
  * and the producing application thread) a blocking queue is used. It is prefilled with
- * requests ready to be used for a transfer. The background thread adds the completed
- * requests back to this queue. The producing application thread waits until a request
+ * transfer instances ready to be used. The background thread adds the completed
+ * instances back to this queue. The producing application thread waits until a transfer instance
  * is available for use.
  * </p>
  */
 public abstract class EndpointOutputStream extends OutputStream {
 
-    private static final int MAX_OUTSTANDING_REQUESTS = 4;
+    private static final int MAX_OUTSTANDING_TRANSFERS = 4;
 
     protected USBDeviceImpl device;
     protected final int endpointNumber;
@@ -46,12 +46,12 @@ public abstract class EndpointOutputStream extends OutputStream {
     private final int packetSize;
     // Size of buffers (multiple of packet size)
     private final int bufferSize;
-    // Blocking queue of available requests (to limit the number of submitted requests)
-    private final ArrayBlockingQueue<TransferRequest> availableRequestQueue;
+    // Blocking queue of available transfers (to limit the number of submitted transfers)
+    private final ArrayBlockingQueue<Transfer> availableTransferQueue;
     private boolean needsZlp;
-    private TransferRequest currentRequest;
+    private Transfer currentTransfer;
     private int writeOffset;
-    private int numOutstandingRequests;
+    private int numOutstandingTransfers;
     private boolean hasError;
 
 
@@ -68,21 +68,25 @@ public abstract class EndpointOutputStream extends OutputStream {
         packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
         bufferSize = packetSize;
 
-        availableRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
+        availableTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
         arena = Arena.openShared();
 
-        // prefill request queue
-        for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
-            final var request = new TransferRequest();
-            request.buffer = arena.allocate(bufferSize, 8);
-            request.completionHandler = (result, size) -> onCompletion(request, result);
+        // prefill transfer queue
+        for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
+            final var transfer = device.createTransfer();
+            transfer.data = arena.allocate(bufferSize, 8);
+            transfer.completionHandler = this::onCompletion;
 
             if (i == 0) {
-                currentRequest = request;
+                currentTransfer = transfer;
             } else {
-                availableRequestQueue.add(request);
+                availableTransferQueue.add(transfer);
             }
         }
+    }
+
+    private boolean isClosed() {
+        return device == null;
     }
 
     @Override
@@ -93,11 +97,11 @@ public abstract class EndpointOutputStream extends OutputStream {
         if (!hasError)
             flush();
         else
-            waitForOutstandingRequests();
+            waitForOutstandingTransfers();
 
         device = null;
-        availableRequestQueue.clear();
-        currentRequest = null;
+        availableTransferQueue.clear();
+        currentTransfer = null;
         arena.close();
     }
 
@@ -106,7 +110,7 @@ public abstract class EndpointOutputStream extends OutputStream {
         if (isClosed())
             throw new IOException("Bulk endpoint output stream has been closed");
 
-        currentRequest.buffer.set(JAVA_BYTE, writeOffset, (byte) b);
+        currentTransfer.data.set(JAVA_BYTE, writeOffset, (byte) b);
         writeOffset += 1;
         if (writeOffset == bufferSize)
             submitTransfer(writeOffset);
@@ -119,7 +123,7 @@ public abstract class EndpointOutputStream extends OutputStream {
 
         while (len > 0) {
             int chunkSize = Math.min(len, bufferSize - writeOffset);
-            MemorySegment.copy(b, off, currentRequest.buffer, JAVA_BYTE, writeOffset, chunkSize);
+            MemorySegment.copy(b, off, currentTransfer.data, JAVA_BYTE, writeOffset, chunkSize);
             writeOffset += chunkSize;
             off += chunkSize;
             len -= chunkSize;
@@ -140,18 +144,14 @@ public abstract class EndpointOutputStream extends OutputStream {
         if (needsZlp)
             submitTransfer(0);
 
-        waitForOutstandingRequests();
-    }
-
-    private boolean isClosed() {
-        return device == null;
+        waitForOutstandingTransfers();
     }
 
     /**
-     * Submits a request for transfer and set a new request
-     * as the current one, possibly waiting until it is ready.
+     * Submits a transfer and set a new transfer instance
+     * as the current one, possibly waiting until one is ready.
      * <p>
-     * Throws an exception if the request to be reused has completed with an error on the
+     * Throws an exception if the transfer to be reused has completed with an error on the
      * previous operation. The exception is suppressed if {@code hasError} flag is set.
      * </p>
      *
@@ -159,15 +159,16 @@ public abstract class EndpointOutputStream extends OutputStream {
      */
     private void submitTransfer(int size) throws IOException {
         try {
-            submitTransferOut(currentRequest.buffer, size, currentRequest.completionHandler);
+            currentTransfer.dataSize = size;
+            submitTransferOut(currentTransfer);
 
             synchronized (this) {
-                numOutstandingRequests += 1;
+                numOutstandingTransfers += 1;
             }
 
             needsZlp = size == packetSize;
             writeOffset = 0;
-            currentRequest = waitForAvailableRequest();
+            currentTransfer = waitForAvailableTransfer();
 
         } catch (Throwable t) {
             hasError = true;
@@ -177,55 +178,55 @@ public abstract class EndpointOutputStream extends OutputStream {
     }
 
     /**
-     * Wait until all outstanding requests have been completed.
+     * Wait until all outstanding transfers have been completed.
      * <p>
-     * Throws an exception if any of the requests has completed with an error.
+     * Throws an exception if any of the transfers has completed with an error.
      * The exception is suppressed if {@code hasError} flag is set.
      * </p>
      */
-    private void waitForOutstandingRequests() {
+    private void waitForOutstandingTransfers() {
         // Wait until all buffers have been transmitted by removing them from the
         // queue and reinserting them.
 
-        int numRequests;
+        int numTransfers;
         synchronized (this) {
-            numRequests = numOutstandingRequests + availableRequestQueue.size();
+            numTransfers = numOutstandingTransfers + availableTransferQueue.size();
         }
 
-        if (numRequests == 0)
+        if (numTransfers == 0)
             return;
 
-        var requests = new TransferRequest[numRequests];
-        for (int i = 0; i < numRequests; i++)
-            requests[i] = waitForAvailableRequest();
+        var transfers = new Transfer[numTransfers];
+        for (int i = 0; i < numTransfers; i++)
+            transfers[i] = waitForAvailableTransfer();
 
-        // reinsert the requests
+        // reinsert the transfer instances
         if (!hasError)
-            availableRequestQueue.addAll(Arrays.asList(requests));
+            availableTransferQueue.addAll(Arrays.asList(transfers));
     }
 
     /**
-     * Wait until one of the allocated requests is available for use.
+     * Wait until one of the allocated transfer instances is available for use.
      * <p>
-     * Throws an exception if the request to be reused has completed with an error on the
+     * Throws an exception if the transfer to be reused has completed with an error on the
      * previous operation. The exception is suppressed if {@code hasError} flag is set.
      * </p>
      *
-     * @return request ready for use
+     * @return transfer instance ready for use
      */
-    private TransferRequest waitForAvailableRequest() {
+    private Transfer waitForAvailableTransfer() {
         while (true) {
             try {
-                TransferRequest request = availableRequestQueue.take();
+                Transfer transfer = availableTransferQueue.take();
 
                 // check for error
-                int result = request.result;
+                int result = transfer.resultCode;
                 if (result != 0 && !hasError) {
-                    request.result = 0;
-                    throwException(result, "error reading from USB endpoint");
+                    transfer.resultCode = 0;
+                    device.throwOSException(result, "error writing to endpoint %d", endpointNumber);
                 }
 
-                return request;
+                return transfer;
 
             } catch (InterruptedException e) {
                 // ignore and retry
@@ -236,22 +237,12 @@ public abstract class EndpointOutputStream extends OutputStream {
     /**
      * Called by the asynchronous IO completion handler.
      *
-     * @param request the completed request
-     * @param result  the request result code
+     * @param transfer the completed request
      */
-    private synchronized void onCompletion(TransferRequest request, int result) {
-        request.result = result;
-        availableRequestQueue.add(request);
-        numOutstandingRequests -= 1;
+    private synchronized void onCompletion(Transfer transfer) {
+        availableTransferQueue.add(transfer);
+        numOutstandingTransfers -= 1;
     }
 
-    protected abstract void submitTransferOut(MemorySegment data, int dataSize, AsyncIOCompletion completion);
-
-    protected abstract void throwException(int errorCode, String message);
-
-    private static class TransferRequest {
-        MemorySegment buffer;
-        int result;
-        AsyncIOCompletion completionHandler;
-    }
+    protected abstract void submitTransferOut(Transfer request);
 }

@@ -91,8 +91,13 @@ public class SetupPacket {
     //     uint16_t wIndex;
     //     uint16_t wLength;
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bmRequestType"), JAVA_BYTE.withName(
-            "bRequest"), JAVA_SHORT.withName("wValue"), JAVA_SHORT.withName("wIndex"), JAVA_SHORT.withName("wLength"));
+    public static final GroupLayout LAYOUT = structLayout(
+            JAVA_BYTE.withName("bmRequestType"),
+            JAVA_BYTE.withName("bRequest"),
+            JAVA_SHORT.withName("wValue"),
+            JAVA_SHORT.withName("wIndex"),
+            JAVA_SHORT.withName("wLength")
+    );
 
     private static final VarHandle bmRequestType$VH = LAYOUT.varHandle(groupElement("bmRequestType"));
     private static final VarHandle bRequest$VH = LAYOUT.varHandle(groupElement("bRequest"));

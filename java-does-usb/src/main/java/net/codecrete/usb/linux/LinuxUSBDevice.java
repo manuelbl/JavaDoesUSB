@@ -8,7 +8,7 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.*;
-import net.codecrete.usb.common.AsyncIOCompletion;
+import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.errno.errno;
@@ -75,7 +75,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
                 throwLastError(errnoState, "Cannot open USB device");
-            registry.registerCompletionHandling(this);
+            registry.addForAsyncIOCompletion(this);
         }
     }
 
@@ -84,7 +84,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
-        registry.unregisterCompletionHandling(this);
+        registry.removeFromAsyncIOCompletion(this);
 
         for (var intf : interfaces_)
             ((USBInterfaceImpl) intf).setClaimed(false);
@@ -261,6 +261,16 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
+    protected Transfer createTransfer() {
+        return new LinuxTransfer();
+    }
+
+    @Override
+    protected void throwOSException(int errorCode, String message, Object... args) {
+        throwException(errorCode, message, args);
+    }
+
+    @Override
     public void clearHalt(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
@@ -296,15 +306,13 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         return new LinuxEndpointOutputStream(this, endpointNumber);
     }
 
-    synchronized void submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize,
-                                       AsyncIOCompletion completion) {
+    synchronized void submitTransferIn(int endpointNumber, LinuxTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        registry.submitBulkTransfer(this, endpoint.endpointAddress(), buffer, bufferSize, completion);
+        registry.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 
-    synchronized void submitTransferOut(int endpointNumber, MemorySegment data, int dataSize,
-                                        AsyncIOCompletion completion) {
+    synchronized void submitTransferOut(int endpointNumber, LinuxTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        registry.submitBulkTransfer(this, endpoint.endpointAddress(), data, dataSize, completion);
+        registry.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 }

@@ -7,10 +7,8 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.EndpointInputStream;
-
-import java.lang.foreign.MemorySegment;
+import net.codecrete.usb.common.Transfer;
 
 public class LinuxEndpointInputStream extends EndpointInputStream {
 
@@ -19,12 +17,7 @@ public class LinuxEndpointInputStream extends EndpointInputStream {
     }
 
     @Override
-    protected void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
-        ((LinuxUSBDevice) device).submitTransferIn(endpointNumber, buffer, bufferSize, completion);
-    }
-
-    @Override
-    protected void throwException(int errorCode, String message) {
-        LinuxUSBException.throwException(errorCode, message);
+    protected void submitTransferIn(Transfer transfer) {
+        ((LinuxUSBDevice) device).submitTransferIn(endpointNumber, (LinuxTransfer) transfer);
     }
 }

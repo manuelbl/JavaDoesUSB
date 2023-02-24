@@ -83,13 +83,22 @@ public class DeviceDescriptor {
     //     uint8_t   iSerialNumber;
     //     uint8_t   bNumConfigurations;
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
-            "bDescriptorType"), JAVA_SHORT_UNALIGNED.withName("bcdUSB"), JAVA_BYTE.withName("bDeviceClass"),
-            JAVA_BYTE.withName("bDeviceSubClass"), JAVA_BYTE.withName("bDeviceProtocol"), JAVA_BYTE.withName(
-                    "bMaxPacketSize0"), JAVA_SHORT_UNALIGNED.withName("idVendor"), JAVA_SHORT_UNALIGNED.withName(
-                            "idProduct"), JAVA_SHORT_UNALIGNED.withName("bcdDevice"), JAVA_BYTE.withName(
-                                    "iManufacturer"), JAVA_BYTE.withName("iProduct"), JAVA_BYTE.withName(
-                                            "iSerialNumber"), JAVA_BYTE.withName("bNumConfigurations"));
+    public static final GroupLayout LAYOUT = structLayout(
+            JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"),
+            JAVA_SHORT_UNALIGNED.withName("bcdUSB"),
+            JAVA_BYTE.withName("bDeviceClass"),
+            JAVA_BYTE.withName("bDeviceSubClass"),
+            JAVA_BYTE.withName("bDeviceProtocol"),
+            JAVA_BYTE.withName("bMaxPacketSize0"),
+            JAVA_SHORT_UNALIGNED.withName("idVendor"),
+            JAVA_SHORT_UNALIGNED.withName("idProduct"),
+            JAVA_SHORT_UNALIGNED.withName("bcdDevice"),
+            JAVA_BYTE.withName("iManufacturer"),
+            JAVA_BYTE.withName("iProduct"),
+            JAVA_BYTE.withName("iSerialNumber"),
+            JAVA_BYTE.withName("bNumConfigurations")
+    );
 
     private static final VarHandle bcdUSB$VH = LAYOUT.varHandle(groupElement("bcdUSB"));
     private static final VarHandle bDeviceClass$VH = LAYOUT.varHandle(groupElement("bDeviceClass"));

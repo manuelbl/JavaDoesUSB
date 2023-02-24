@@ -65,10 +65,16 @@ public class InterfaceAssociationDescriptor {
     //     uint8_t  bFunctionProtocol,
     //     uint8_t  iFunction
     // } __attribute__((packed));
-    public static final GroupLayout LAYOUT = structLayout(JAVA_BYTE.withName("bLength"), JAVA_BYTE.withName(
-            "bDescriptorType"), JAVA_BYTE.withName("bFirstInterface"), JAVA_BYTE.withName("bInterfaceCount"),
-            JAVA_BYTE.withName("bFunctionClass"), JAVA_BYTE.withName("bFunctionSubClass"), JAVA_BYTE.withName(
-                    "bFunctionProtocol"), JAVA_BYTE.withName("iFunction"));
+    public static final GroupLayout LAYOUT = structLayout(
+            JAVA_BYTE.withName("bLength"),
+            JAVA_BYTE.withName("bDescriptorType"),
+            JAVA_BYTE.withName("bFirstInterface"),
+            JAVA_BYTE.withName("bInterfaceCount"),
+            JAVA_BYTE.withName("bFunctionClass"),
+            JAVA_BYTE.withName("bFunctionSubClass"),
+            JAVA_BYTE.withName("bFunctionProtocol"),
+            JAVA_BYTE.withName("iFunction")
+    );
 
     private static final VarHandle bFirstInterface$VH = LAYOUT.varHandle(groupElement("bFirstInterface"));
     private static final VarHandle bInterfaceCount$VH = LAYOUT.varHandle(groupElement("bInterfaceCount"));

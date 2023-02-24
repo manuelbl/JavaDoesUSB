@@ -22,20 +22,20 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * Input stream for bulk endpoints – optimized for high throughput.
  *
  * <p>
- * Multiple asynchronous transfer IN requests are submitted to achieve a good
+ * Multiple asynchronous transfer are submitted to achieve a good
  * degree of concurrency between the USB communication handled by the operating
  * system and the consuming application code.
  * </p>
  * <p>
  * For thread synchronization (between the background thread handling IO completion
- * and the consuming application thread) a blocking queue is used. When an transfer IN
- * requests completes, the background thread adds it to the queue. The consuming code
+ * and the consuming application thread) a blocking queue is used. When an transfer
+ * completes, the background thread adds it to the queue. The consuming code
  * waits for the next item in the queue.
  * </p>
  */
 public abstract class EndpointInputStream extends InputStream {
 
-    private static final int MAX_OUTSTANDING_REQUESTS = 8;
+    private static final int MAX_OUTSTANDING_TRANSFERS = 8;
 
     protected USBDeviceImpl device;
     protected final int endpointNumber;
@@ -43,14 +43,14 @@ public abstract class EndpointInputStream extends InputStream {
     protected final Arena arena;
     // Size of buffers (multiple of packet size)
     protected final int bufferSize;
-    // Queue of completed requests
-    private final ArrayBlockingQueue<TransferRequest> completedRequestQueue;
-    // Number of outstanding requests (includes requests pending with the
-    // operating system and requests in the completed queue)
-    private int numOutstandingRequests;
-    // Request and buffer being currently read from
-    private TransferRequest currentRequest;
-    // Read offset within current request
+    // Queue of completed transfers
+    private final ArrayBlockingQueue<Transfer> completedTransferQueue;
+    // Number of outstanding transfers (includes transfers pending with the
+    // operating system and transfers in the completed queue)
+    private int numOutstandingTransfers;
+    // Transfer and associated buffer being currently read from
+    private Transfer currentTransfer;
+    // Read offset within current transfer buffer
     private int readOffset;
 
     /**
@@ -64,26 +64,31 @@ public abstract class EndpointInputStream extends InputStream {
         this.endpointNumber = endpointNumber;
 
         bufferSize = 4 * device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
-        completedRequestQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_REQUESTS);
+        completedTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
 
-        // create all requests and submit all except one
+        // create all transfers, and submit them except one
         arena = Arena.openShared();
         try {
-            for (int i = 0; i < MAX_OUTSTANDING_REQUESTS; i++) {
-                final var request = new TransferRequest();
-                request.buffer = arena.allocate(bufferSize, 8);
-                request.completionHandler = (result, size) -> onCompletion(request, result, size);
+            for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
+                final var transfer = device.createTransfer();
+                transfer.data = arena.allocate(bufferSize, 8);
+                transfer.dataSize = bufferSize;
+                transfer.completionHandler = this::onCompletion;
 
                 if (i == 0) {
-                    currentRequest = request;
+                    currentTransfer = transfer;
                 } else {
-                    submitRequest(request);
+                    submitTransfer(transfer);
                 }
             }
         } catch (Throwable t) {
-            collectOutstandingRequests();
+            collectOutstandingTransfers();
             throw t;
         }
+    }
+
+    private boolean isClosed() {
+        return device == null;
     }
 
     @SuppressWarnings("RedundantThrows")
@@ -95,24 +100,15 @@ public abstract class EndpointInputStream extends InputStream {
         // abort all transfers on endpoint
         try {
             device.abortTransfers(USBDirection.IN, endpointNumber);
+
         } catch (USBException e) {
             // If aborting the transfer is not possible, the device has
             // likely been closed or unplugged. So all outstanding
-            // requests will terminate anyway.
+            // transfers will terminate anyway.
         }
         device = null;
 
-        collectOutstandingRequests();
-    }
-
-    private void collectOutstandingRequests() {
-        // wait until completion handlers have been called
-        while (numOutstandingRequests > 0)
-            waitForRequestCompletion();
-
-        completedRequestQueue.clear();
-        currentRequest = null;
-        arena.close();
+        collectOutstandingTransfers();
     }
 
     @Override
@@ -123,7 +119,7 @@ public abstract class EndpointInputStream extends InputStream {
         if (available() == 0)
             receiveMoreData();
 
-        int b = currentRequest.buffer.get(JAVA_BYTE, readOffset) & 0xff;
+        int b = currentTransfer.data.get(JAVA_BYTE, readOffset) & 0xff;
         readOffset += 1;
         return b;
     }
@@ -137,11 +133,11 @@ public abstract class EndpointInputStream extends InputStream {
             receiveMoreData();
 
         // copy data to receiving buffer
-        int n = Math.min(len, currentRequest.resultSize - readOffset);
-        MemorySegment.copy(currentRequest.buffer, readOffset, MemorySegment.ofArray(b), off, n);
+        int n = Math.min(len, currentTransfer.resultSize - readOffset);
+        MemorySegment.copy(currentTransfer.data, readOffset, MemorySegment.ofArray(b), off, n);
         readOffset += n;
 
-        // TODO: poll for further completed requests if 'n' is less than 'len'
+        // TODO: poll for further completed transfers if 'n' is less than 'len'
 
         return n;
     }
@@ -149,27 +145,26 @@ public abstract class EndpointInputStream extends InputStream {
     @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
-        return currentRequest.resultSize - readOffset;
-    }
-
-    private boolean isClosed() {
-        return device == null;
+        return currentTransfer.resultSize - readOffset;
     }
 
     private void receiveMoreData() throws IOException {
         try {
             // loop until non-ZLP has been received
             do {
-                submitRequest(currentRequest);
+                // the current transfer has no more data to process and
+                // can be submitted to read more data
+                submitTransfer(currentTransfer);
 
-                currentRequest = waitForRequestCompletion();
+                currentTransfer = waitForCompletedTransfer();
                 readOffset = 0;
 
                 // check for error
-                if (currentRequest.result != 0)
-                    throwException(currentRequest.result, "error reading from USB endpoint");
+                if (currentTransfer.resultCode != 0)
+                    device.throwOSException(currentTransfer.resultCode, "error reading from endpoint %d",
+                            endpointNumber);
 
-            } while (currentRequest.resultSize == 0);
+            } while (currentTransfer.resultSize <= 0);
 
         } catch (Throwable t) {
             close();
@@ -177,38 +172,36 @@ public abstract class EndpointInputStream extends InputStream {
         }
     }
 
-    void submitRequest(TransferRequest request) {
-        submitTransferIn(request.buffer, bufferSize, request.completionHandler);
-        numOutstandingRequests += 1;
-    }
-
-    protected abstract void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion);
-
-    protected abstract void throwException(int errorCode, String message);
-
-    void onCompletion(TransferRequest request, int result, int size) {
-        request.result = result;
-        request.resultSize = size;
-        completedRequestQueue.add(request);
-    }
-
-    TransferRequest waitForRequestCompletion() {
+    private Transfer waitForCompletedTransfer() {
         while (true) {
             try {
-                TransferRequest request = completedRequestQueue.take();
-                numOutstandingRequests -= 1;
-                return request;
-
+                Transfer transfer = completedTransferQueue.take();
+                numOutstandingTransfers -= 1;
+                return transfer;
             } catch (InterruptedException e) {
                 // ignore and retry
             }
         }
     }
 
-    private static class TransferRequest {
-        MemorySegment buffer;
-        int result;
-        int resultSize;
-        AsyncIOCompletion completionHandler;
+    private void submitTransfer(Transfer transfer) {
+        submitTransferIn(transfer);
+        numOutstandingTransfers += 1;
     }
+
+    private void onCompletion(Transfer transfer) {
+        completedTransferQueue.add(transfer);
+    }
+
+    private void collectOutstandingTransfers() {
+        // wait until completion handlers have been called
+        while (numOutstandingTransfers > 0)
+            waitForCompletedTransfer();
+
+        completedTransferQueue.clear();
+        currentTransfer = null;
+        arena.close();
+    }
+
+    protected abstract void submitTransferIn(Transfer transfer);
 }

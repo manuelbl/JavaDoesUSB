@@ -7,10 +7,8 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.common.AsyncIOCompletion;
 import net.codecrete.usb.common.EndpointInputStream;
-
-import java.lang.foreign.MemorySegment;
+import net.codecrete.usb.common.Transfer;
 
 public class MacosEndpointInputStream extends EndpointInputStream {
 
@@ -19,12 +17,7 @@ public class MacosEndpointInputStream extends EndpointInputStream {
     }
 
     @Override
-    protected void submitTransferIn(MemorySegment buffer, int bufferSize, AsyncIOCompletion completion) {
-        ((MacosUSBDevice) device).submitTransferIn(endpointNumber, buffer, bufferSize, 0, completion);
-    }
-
-    @Override
-    protected void throwException(int errorCode, String message) {
-        MacosUSBException.throwException(errorCode, message);
+    protected void submitTransferIn(Transfer transfer) {
+        ((MacosUSBDevice) device).submitTransferIn(endpointNumber, (MacosTransfer) transfer, 0);
     }
 }

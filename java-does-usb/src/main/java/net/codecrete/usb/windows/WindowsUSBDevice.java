@@ -8,11 +8,10 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.*;
-import net.codecrete.usb.common.AsyncIOCompletion;
+import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.kernel32.OVERLAPPED;
 import net.codecrete.usb.windows.gen.winusb.WinUSB;
 import net.codecrete.usb.windows.winsdk.Kernel32B;
 import net.codecrete.usb.windows.winsdk.WinUSB2;
@@ -23,7 +22,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,13 +38,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private final WindowsUSBDeviceRegistry registry;
     private List<InterfaceHandle> interfaceHandles_;
     private boolean isOpen_;
-    // Completion handlers of currently outstanding asynchronous IO requests,
-    // indexed by OVERLAPPED pointer.
-    private Map<MemorySegment, AsyncIOCompletion> completionHandlers;
-    // available OVERLAPPED data structures
-    private List<MemorySegment> availableOverlappedStructs;
-    // Arena used to allocate OVERLAPPED data structures
-    private Arena arena;
 
     WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children,
                      int vendorId, int productId, MemorySegment configDesc) {
@@ -89,20 +80,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             throwException("the device is already open");
 
         isOpen_ = true;
-
-        availableOverlappedStructs = new ArrayList<>();
-        arena = Arena.openShared();
-        completionHandlers = new HashMap<>();
     }
 
     @Override
     public synchronized void close() {
         if (!isOpen())
             return;
-
-        availableOverlappedStructs = null;
-        arena.close();
-        completionHandlers = null;
 
         for (var intf : interfaces_) {
             if (intf.isClaimed())
@@ -210,7 +193,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         // close device
         firstIntfHandle.deviceOpenCount -= 1;
         if (firstIntfHandle.deviceOpenCount == 0) {
-            registry.removeFromCompletionPort(firstIntfHandle.deviceHandle);
             Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
         }
@@ -339,45 +321,49 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
-    synchronized long submitTransferOut(int endpointNumber, MemorySegment data, int dataSize,
-                                        AsyncIOCompletion completion) {
+    @Override
+    protected Transfer createTransfer() {
+        return registry.createRequest();
+    }
+
+    @Override
+    protected void throwOSException(int errorCode, String message, Object... args) {
+        throwException(errorCode, message, args);
+    }
+
+    synchronized void submitTransferOut(int endpointNumber, WindowsTransfer request) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            var overlapped = getOverlapped(completion);
+            registry.addOverlapped(request);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), data, dataSize, NULL
-                    , overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), request.data, request.dataSize, NULL
+                    , request.overlapped, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer OUT failed");
             }
-
-            return overlapped.address();
         }
     }
 
-    synchronized long submitTransferIn(int endpointNumber, MemorySegment buffer, int bufferSize,
-                                       AsyncIOCompletion completion) {
+    synchronized void submitTransferIn(int endpointNumber, WindowsTransfer request) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            var overlapped = getOverlapped(completion);
+            registry.addOverlapped(request);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer, bufferSize,
-                    NULL, overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), request.data, request.dataSize,
+                    NULL, request.overlapped, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer IN failed");
             }
-
-            return overlapped.address();
         }
     }
 
@@ -512,24 +498,5 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         throwException("Control transfer failed as no interface has been claimed");
         throw new AssertionError("not reached");
-    }
-
-    synchronized void onAsyncIoCompleted(MemorySegment overlapped) {
-        var handler = completionHandlers.get(overlapped);
-        handler.completed((int) OVERLAPPED.Internal$get(overlapped), (int) OVERLAPPED.InternalHigh$get(overlapped));
-        completionHandlers.remove(overlapped);
-        availableOverlappedStructs.add(overlapped);
-    }
-
-    private MemorySegment getOverlapped(AsyncIOCompletion completionHandler) {
-        MemorySegment overlapped;
-        int size = availableOverlappedStructs.size();
-        if (size == 0) {
-            overlapped = arena.allocate(OVERLAPPED.$LAYOUT());
-        } else {
-            overlapped = availableOverlappedStructs.remove(size - 1);
-        }
-        completionHandlers.put(overlapped, completionHandler);
-        return overlapped;
     }
 }
