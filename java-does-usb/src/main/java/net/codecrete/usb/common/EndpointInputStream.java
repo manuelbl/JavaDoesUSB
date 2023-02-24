@@ -73,7 +73,7 @@ public abstract class EndpointInputStream extends InputStream {
                 final var transfer = device.createTransfer();
                 transfer.data = arena.allocate(bufferSize, 8);
                 transfer.dataSize = bufferSize;
-                transfer.completionHandler = this::onCompletion;
+                transfer.completion = this::onCompletion;
 
                 if (i == 0) {
                     currentTransfer = transfer;

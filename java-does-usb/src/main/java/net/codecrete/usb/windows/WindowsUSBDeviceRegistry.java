@@ -552,7 +552,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                 var request = getRequest(overlappedAddr);
                 if (request != null)
-                    request.completionHandler.completed(request);
+                    request.completion.completed(request);
 
 //                long completionKey = completionKeyHolder.get(JAVA_LONG, 0);
 //                var device = devicesByCompletionKey.get(completionKey);

@@ -179,7 +179,7 @@ class MacosAsyncTask {
 
         transfer.resultCode = result;
         transfer.resultSize = (int) arg0.address();
-        transfer.completionHandler.completed(transfer);
+        transfer.completion.completed(transfer);
     }
 
     /**

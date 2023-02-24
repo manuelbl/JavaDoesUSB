@@ -346,7 +346,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(arena, USBDirection.IN, setup, data);
 
             var transfer = (MacosTransfer) createTransfer();
-            transfer.completionHandler = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = MacosUSBDevice::onTransferCompleted;
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
@@ -367,7 +367,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(arena, USBDirection.OUT, setup, dataSegment);
 
             var transfer = (MacosTransfer) createTransfer();
-            transfer.completionHandler = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = MacosUSBDevice::onTransferCompleted;
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
@@ -389,7 +389,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var transfer = (MacosTransfer) createTransfer();
             transfer.data = nativeData;
             transfer.dataSize = data.length;
-            transfer.completionHandler = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = MacosUSBDevice::onTransferCompleted;
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
@@ -418,7 +418,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var transfer = (MacosTransfer) createTransfer();
             transfer.data = nativeData;
             transfer.dataSize = epInfo.packetSize();
-            transfer.completionHandler = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = MacosUSBDevice::onTransferCompleted;
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {

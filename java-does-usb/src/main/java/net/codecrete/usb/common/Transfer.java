@@ -35,5 +35,5 @@ public class Transfer {
     /**
      * Completion handler to call when the transfer is complete.
      */
-    public TransferCompletion completionHandler;
+    public TransferCompletion completion;
 }

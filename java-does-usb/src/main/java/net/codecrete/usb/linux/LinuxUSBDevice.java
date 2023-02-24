@@ -36,11 +36,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private int fd = -1;
 
-    private final LinuxUSBDeviceRegistry registry;
+    private final LinuxAsyncTask asyncTask;
 
-    LinuxUSBDevice(LinuxUSBDeviceRegistry registry, Object id, int vendorId, int productId) {
+    LinuxUSBDevice(Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
-        this.registry = registry;
+        asyncTask = LinuxAsyncTask.instance();
         loadDescription((String) id);
     }
 
@@ -65,7 +65,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void open() {
+    public synchronized void open() {
         if (isOpen())
             throwException("the device is already open");
 
@@ -75,16 +75,16 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
                 throwLastError(errnoState, "Cannot open USB device");
-            registry.addForAsyncIOCompletion(this);
+            asyncTask.addForAsyncIOCompletion(this);
         }
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (!isOpen())
             return;
 
-        registry.removeFromAsyncIOCompletion(this);
+        asyncTask.removeFromAsyncIOCompletion(this);
 
         for (var intf : interfaces_)
             ((USBInterfaceImpl) intf).setClaimed(false);
@@ -97,7 +97,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         return fd;
     }
 
-    public void claimInterface(int interfaceNumber) {
+    public synchronized void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
         var intf = getInterface(interfaceNumber);
@@ -117,7 +117,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
+    public synchronized void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
         checkIsOpen();
 
         var intf = getInterface(interfaceNumber);
@@ -145,7 +145,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         intf.setAlternate(altSetting);
     }
 
-    public void releaseInterface(int interfaceNumber) {
+    public synchronized void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
         var intf = getInterface(interfaceNumber);
@@ -287,7 +287,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        registry.abortTransfers(this, endpoint.endpointAddress());
+        asyncTask.abortTransfers(this, endpoint.endpointAddress());
     }
 
     @Override
@@ -308,11 +308,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     synchronized void submitTransferIn(int endpointNumber, LinuxTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        registry.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+        asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 
     synchronized void submitTransferOut(int endpointNumber, LinuxTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        registry.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+        asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 }

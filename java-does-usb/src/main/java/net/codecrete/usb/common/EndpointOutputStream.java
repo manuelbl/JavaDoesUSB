@@ -75,7 +75,7 @@ public abstract class EndpointOutputStream extends OutputStream {
         for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
             final var transfer = device.createTransfer();
             transfer.data = arena.allocate(bufferSize, 8);
-            transfer.completionHandler = this::onCompletion;
+            transfer.completion = this::onCompletion;
 
             if (i == 0) {
                 currentTransfer = transfer;
