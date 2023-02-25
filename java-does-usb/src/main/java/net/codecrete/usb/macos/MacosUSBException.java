@@ -8,6 +8,7 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
+import net.codecrete.usb.USBTimeoutException;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.macos.gen.mach.mach;
 
@@ -48,6 +49,8 @@ public class MacosUSBException extends USBException {
         var formattedMessage = String.format(message, args);
         if (errorCode == IOKit.kIOUSBPipeStalled()) {
             throw new USBStallException(formattedMessage);
+        } else if (errorCode == IOKit.kIOUSBTransactionTimeout()) {
+            throw new USBTimeoutException(formattedMessage);
         } else {
             throw new MacosUSBException(formattedMessage, errorCode);
         }

@@ -23,6 +23,14 @@ public class errno  {
     }
     /**
      * {@snippet :
+     * #define EAGAIN 11
+     * }
+     */
+    public static int EAGAIN() {
+        return (int)11L;
+    }
+    /**
+     * {@snippet :
      * #define EPIPE 32
      * }
      */

@@ -17,6 +17,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant ETIMEDOUT \
   --include-constant EPIPE \
   --include-constant EBADF \
+  --include-constant EAGAIN \
   /usr/include/errno.h
 
 # string.h

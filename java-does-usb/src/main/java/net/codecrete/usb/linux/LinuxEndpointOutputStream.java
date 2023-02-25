@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.linux;
 
+import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.common.EndpointOutputStream;
 import net.codecrete.usb.common.Transfer;
 
@@ -18,6 +19,6 @@ public class LinuxEndpointOutputStream extends EndpointOutputStream {
 
     @Override
     protected void submitTransferOut(Transfer transfer) {
-        ((LinuxUSBDevice) device).submitTransferOut(endpointNumber, (LinuxTransfer) transfer);
+        ((LinuxUSBDevice) device).submitBulkTransfer(USBDirection.OUT, endpointNumber, (LinuxTransfer) transfer);
     }
 }

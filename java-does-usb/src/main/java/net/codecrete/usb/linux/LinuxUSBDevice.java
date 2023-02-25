@@ -7,14 +7,15 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBControlTransfer;
+import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBException;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
-import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
-import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_bulktransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
@@ -209,12 +210,12 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private MemorySegment createBulkTransfer(Arena arena, byte endpointAddress, MemorySegment data, int timeout) {
-        var transfer = arena.allocate(usbdevfs_bulktransfer.$LAYOUT());
-        usbdevfs_bulktransfer.ep$set(transfer, 255 & endpointAddress);
-        usbdevfs_bulktransfer.len$set(transfer, (int) data.byteSize());
-        usbdevfs_bulktransfer.data$set(transfer, data);
-        usbdevfs_bulktransfer.timeout$set(transfer, timeout);
+    private LinuxTransfer createSyncTransfer(MemorySegment data) {
+        var transfer = new LinuxTransfer();
+        transfer.data = data;
+        transfer.dataSize = (int) data.byteSize();
+        transfer.resultSize = -1;
+        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
         return transfer;
     }
 
@@ -225,15 +226,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
-            var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
+            var transfer = createSyncTransfer(buffer);
 
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
-            if (res < 0) {
-                int err = Linux.getErrno(errnoState);
-                if (err == errno.ETIMEDOUT())
-                    throw new USBTimeoutException("Transfer out aborted due to timeout");
-                throwLastError(errnoState, "USB OUT transfer on endpoint %d failed", endpointNumber);
+            synchronized (transfer) {
+                asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+                waitForTransfer(transfer, timeout, USBDirection.OUT, endpointNumber);
             }
         }
     }
@@ -244,19 +241,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(endpoint.packetSize());
+            var transfer = createSyncTransfer(buffer);
 
-            var transfer = createBulkTransfer(arena, endpoint.endpointAddress(), buffer, timeout);
-
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            int res = IO.ioctl(fd, USBDevFS.BULK, transfer, errnoState);
-            if (res < 0) {
-                int err = Linux.getErrno(errnoState);
-                if (err == errno.ETIMEDOUT())
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-                throwLastError(errnoState, "USB IN transfer on endpoint %d failed", endpointNumber);
+            synchronized (transfer) {
+                asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+                waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
             }
 
-            return buffer.asSlice(0, res).toArray(JAVA_BYTE);
+            return buffer.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
         }
     }
 
@@ -306,13 +298,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         return new LinuxEndpointOutputStream(this, endpointNumber);
     }
 
-    synchronized void submitTransferIn(int endpointNumber, LinuxTransfer transfer) {
-        var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
-    }
-
-    synchronized void submitTransferOut(int endpointNumber, LinuxTransfer transfer) {
-        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
+    synchronized void submitBulkTransfer(USBDirection direction, int endpointNumber, LinuxTransfer transfer) {
+        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, null);
         asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 }

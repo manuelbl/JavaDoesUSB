@@ -21,6 +21,7 @@ public class USBDevFS {
     public static final long SUBMITURB = 0x8038550AL;
     public static final long DISCARDURB = 0x550BL;
     public static final long REAPURB = 0x4008550CL;
+    public static final long REAPURBNDELAY = 0x4008550DL;
     public static final long RESETEP = 0x80045503L;
 
 }

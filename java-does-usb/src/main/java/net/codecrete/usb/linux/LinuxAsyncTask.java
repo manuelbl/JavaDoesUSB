@@ -70,6 +70,14 @@ public class LinuxAsyncTask {
 
     /**
      * Background task for handling asynchronous IO completions.
+     * <p>
+     * It polls on all registered file descriptors. If a file descriptor is
+     * ready, the URB is "reaped".
+     * </p>
+     * <p>
+     * Using an additional {@code eventfd} file descriptor, this background task
+     * can be woken up to refresh the list of polled file descriptors.
+     * </p>
      */
     private void asyncCompletionTask() {
 
@@ -91,7 +99,7 @@ public class LinuxAsyncTask {
                 var n = fds.length;
                 for (int i = 0; i < n; i++) {
                     pollfd.fd$set(asyncPolls, i, fds[i]);
-                    pollfd.events$set(asyncPolls, i, (short) (poll.POLLIN() | poll.POLLOUT()));
+                    pollfd.events$set(asyncPolls, i, (short) poll.POLLOUT());
                     pollfd.revents$set(asyncPolls, i, (short) 0);
                 }
 
@@ -111,7 +119,10 @@ public class LinuxAsyncTask {
                         continue;
 
                     if ((revent & poll.POLLERR()) != 0) {
-                        // most likely the device has been disconnected; ignore
+                        // most likely the device has been disconnected;
+                        // remove from polled FD list to prevent further problems
+                        int fd = pollfd.fd$get(asyncPolls, i);
+                        removeFdFromAsyncIOCompletion(fd);
                         continue;
                     }
 
@@ -127,16 +138,24 @@ public class LinuxAsyncTask {
                             throwLastError(errnoState, "internal error (eventfd_read)");
                     }
                 }
-
             }
         }
     }
 
+    /**
+     * Reap URB and handle the completed transfer.
+     *
+     * @param fd               file descriptor
+     * @param urbPointerHolder native memory to receive the URB pointer
+     * @param errnoState       native memory to receive the errno
+     */
     private void reapURB(int fd, MemorySegment urbPointerHolder, MemorySegment errnoState) {
         int res;
-        res = IO.ioctl(fd, REAPURB, urbPointerHolder, errnoState);
+        res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
         if (res < 0) {
             var err = Linux.getErrno(errnoState);
+            if (err == errno.EAGAIN())
+                return; // retry
             if (err == errno.EBADF())
                 return; // ignore, device might have been closed
             throwException(err, "internal error (reap URB)");
@@ -188,22 +207,22 @@ public class LinuxAsyncTask {
      * @param device USB device
      */
     synchronized void removeFromAsyncIOCompletion(LinuxUSBDevice device) {
+        removeFdFromAsyncIOCompletion(device.fileDescriptor());
+        notifyAsyncIOTask();
+    }
+
+    private synchronized void removeFdFromAsyncIOCompletion(int fd) {
         // copy file descriptor (except the device's) into new array
         int n = asyncFds.length;
-        if (n == 0) {
-            System.err.println("internal error (file descriptor not found) - ignoring");
+        if (n == 0)
             return;
-        }
 
-        int fd = device.fileDescriptor();
         int[] fds = new int[n - 1];
         int tgt = 0;
         for (int asyncFd : asyncFds) {
             if (asyncFd != fd) {
-                if (tgt == n) {
-                    System.err.println("internal error (file descriptor not found) - ignoring");
+                if (tgt == n)
                     return;
-                }
                 fds[tgt] = asyncFd;
                 tgt += 1;
             }
@@ -211,7 +230,6 @@ public class LinuxAsyncTask {
 
         // make new array to active one
         asyncFds = fds;
-        notifyAsyncIOTask();
     }
 
     synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, LinuxTransfer transfer) {
@@ -252,7 +270,7 @@ public class LinuxAsyncTask {
         if (transfer == null)
             throwException("internal error (unknown URB)");
 
-        transfer.resultCode = usbdevfs_urb.status$get(transfer.urb);
+        transfer.resultCode = -usbdevfs_urb.status$get(transfer.urb);
         transfer.resultSize = usbdevfs_urb.actual_length$get(transfer.urb);
 
         availableURBs.add(transfer.urb);

@@ -307,12 +307,87 @@ public abstract class USBDeviceImpl implements USBDevice {
     @Override
     public abstract byte[] transferIn(int endpointNumber, int timeout);
 
+    protected void waitForTransfer(Transfer transfer, int timeout, USBDirection direction, int endpointNumber) {
+        if (timeout <= 0) {
+            waitNoTimeout(transfer);
+
+        } else {
+            boolean hasTimedOut = waitWithTimeout(transfer, timeout);
+
+            // test for timeout
+            if (hasTimedOut && transfer.resultCode == 0) {
+                abortTransfers(direction, endpointNumber);
+                waitNoTimeout(transfer);
+                throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to " +
+                        "timeout");
+            }
+        }
+
+        // test for error
+        if (transfer.resultCode != 0) {
+            var operation = getOperationDescription(direction, endpointNumber);
+            throwOSException(transfer.resultCode, operation + " failed");
+        }
+    }
+
+    private static void waitNoTimeout(Transfer transfer) {
+        // wait for transfer
+        while (transfer.resultSize == -1) {
+            try {
+                transfer.wait();
+            } catch (InterruptedException e) {
+                // ignore and retry
+            }
+        }
+    }
+
+    private static boolean waitWithTimeout(Transfer transfer, int timeout) {
+        // wait for transfer to complete, or abort when timeout occurs
+        long expiration = System.currentTimeMillis() + timeout;
+        long remainingTimeout = timeout;
+        while (remainingTimeout > 0 && transfer.resultSize == -1) {
+            try {
+                transfer.wait(remainingTimeout);
+                remainingTimeout = expiration - System.currentTimeMillis();
+
+            } catch (InterruptedException e) {
+                // ignore and retry
+            }
+        }
+
+        return remainingTimeout <= 0;
+    }
+
+    protected static String getOperationDescription(USBDirection direction, int endpointNumber) {
+        if (endpointNumber == 0) {
+            return "Control transfer";
+        } else {
+            return String.format("Transfer %s on endpoint %d", direction.name(), endpointNumber);
+        }
+
+    }
+
     /**
      * Create a transfer object suitable for this device.
      *
      * @return transfer object
      */
     protected abstract Transfer createTransfer();
+
+    /**
+     * Completion handler used for synchronous, blocking transfers.
+     * <p>
+     * Calls {@link Object#notify()} so the caller can use
+     * {@link Object#wait()} to wait for completion.
+     * </p>
+     *
+     * @param transfer the transfer that has completed
+     */
+    protected static void onSyncTransferCompleted(Transfer transfer) {
+        synchronized (transfer) {
+            transfer.notify();
+        }
+    }
 
     /**
      * Throws an exception for the specified operating-specific error code.

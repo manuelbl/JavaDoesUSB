@@ -9,7 +9,6 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBTimeoutException;
 import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.common.ScopeCleanup;
@@ -345,12 +344,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var data = arena.allocate(length);
             var deviceRequest = createDeviceRequest(arena, USBDirection.IN, setup, data);
 
-            var transfer = (MacosTransfer) createTransfer();
-            transfer.completion = MacosUSBDevice::onTransferCompleted;
+            var transfer = new MacosTransfer();
+            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
-                waitForTransfer(transfer, USBDirection.IN, 0, false);
+                waitForTransfer(transfer, 0, USBDirection.IN, 0);
             }
 
             return data.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
@@ -366,12 +365,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 dataSegment.copyFrom(MemorySegment.ofArray(data));
             var deviceRequest = createDeviceRequest(arena, USBDirection.OUT, setup, dataSegment);
 
-            var transfer = (MacosTransfer) createTransfer();
-            transfer.completion = MacosUSBDevice::onTransferCompleted;
+            var transfer = new MacosTransfer();
+            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
-                waitForTransfer(transfer, USBDirection.OUT, 0, false);
+                waitForTransfer(transfer, 0, USBDirection.OUT, 0);
             }
         }
     }
@@ -386,21 +385,21 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var nativeData = arena.allocateArray(JAVA_BYTE, data.length);
             nativeData.copyFrom(MemorySegment.ofArray(data));
 
-            var transfer = (MacosTransfer) createTransfer();
+            var transfer = new MacosTransfer();
             transfer.data = nativeData;
             transfer.dataSize = data.length;
-            transfer.completion = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
                     // no timeout or timeout handled by operating system
                     submitTransferOut(endpointNumber, transfer, timeout);
-                    waitForTransfer(transfer, USBDirection.OUT, endpointNumber, false);
+                    waitForTransfer(transfer, 0, USBDirection.OUT, endpointNumber);
 
                 } else {
                     // interrupt transfer with timeout
                     submitTransferOut(endpointNumber, transfer, 0);
-                    waitForTransferTO(transfer, timeout, USBDirection.OUT, endpointNumber);
+                    waitForTransfer(transfer, timeout, USBDirection.OUT, endpointNumber);
                 }
             }
         }
@@ -415,21 +414,21 @@ public class MacosUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.openConfined()) {
             var nativeData = arena.allocateArray(JAVA_BYTE, epInfo.packetSize());
 
-            var transfer = (MacosTransfer) createTransfer();
+            var transfer = new MacosTransfer();
             transfer.data = nativeData;
             transfer.dataSize = epInfo.packetSize();
-            transfer.completion = MacosUSBDevice::onTransferCompleted;
+            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
                     // no timeout, or timeout handled by operating system
                     submitTransferIn(endpointNumber, transfer, timeout);
-                    waitForTransfer(transfer, USBDirection.IN, endpointNumber, false);
+                    waitForTransfer(transfer, 0, USBDirection.IN, endpointNumber);
 
                 } else {
                     // interrupt transfer with timeout
                     submitTransferIn(endpointNumber, transfer, 0);
-                    waitForTransferTO(transfer, timeout, USBDirection.IN, endpointNumber);
+                    waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
                 }
             }
 
@@ -516,74 +515,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException(ret, "failed to execute control transfer");
     }
 
-    private void waitForTransfer(MacosTransfer transfer, USBDirection direction, int endpointNumber,
-                                 boolean ignoreAbort) {
-        // wait for transfer
-        while (transfer.resultSize == -1) {
-            try {
-                transfer.wait();
-            } catch (InterruptedException e) {
-                // ignore and retry
-            }
-        }
-
-        // test for error
-        if (transfer.resultCode != 0) {
-            var operation = getOperationDescription(direction, endpointNumber);
-            if (transfer.resultCode == IOKit.kIOUSBTransactionTimeout())
-                throw new USBTimeoutException(operation + "aborted due to timeout");
-            if (transfer.resultCode != IOKit.kIOReturnAborted() || !ignoreAbort)
-                throwException(transfer.resultCode, operation + " failed");
-        }
-    }
-
-    private void waitForTransferTO(MacosTransfer transfer, int timeout, USBDirection direction, int endpointNumber) {
-        // wait for transfer to complete, or abort when timeout occurs
-        long expiration = System.currentTimeMillis() + timeout;
-        long remainingTimeout = timeout;
-        while (remainingTimeout > 0 && transfer.resultSize == -1) {
-            try {
-                transfer.wait(remainingTimeout);
-                remainingTimeout = expiration - System.currentTimeMillis();
-
-            } catch (InterruptedException e) {
-                // ignore and retry
-            }
-        }
-
-        // test for timeout
-        if (transfer.resultCode == 0 && remainingTimeout <= 0) {
-            abortTransfers(direction, endpointNumber);
-            waitForTransfer(transfer, direction, endpointNumber, true);
-            throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to " +
-                    "timeout");
-        }
-
-        if (transfer.resultCode != 0) {
-            var operation = direction == USBDirection.IN ? "Transfer in" : "Transfer out";
-            throwException(transfer.resultCode, getOperationDescription(direction, endpointNumber) + " failed",
-                    operation);
-        }
-    }
-
-    private static String getOperationDescription(USBDirection direction, int endpointNumber) {
-        if (endpointNumber == 0) {
-            return "Control transfer";
-        } else {
-            return String.format("Transfer %s on endpoint %d", direction.name(), endpointNumber);
-        }
-
-    }
-
     @Override
     protected Transfer createTransfer() {
         return new MacosTransfer();
-    }
-
-    private static void onTransferCompleted(Transfer transfer) {
-        synchronized (transfer) {
-            transfer.notify();
-        }
     }
 
     @Override
