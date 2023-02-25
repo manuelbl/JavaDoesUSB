@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.linux;
 
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.poll.poll;
 import net.codecrete.usb.linux.gen.poll.pollfd;
@@ -26,7 +27,7 @@ import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 import static net.codecrete.usb.linux.USBDevFS.*;
-import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_BULK;
+import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
 
 /**
  * Background task for handling asynchronous transfers.
@@ -35,7 +36,7 @@ import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB
  * </p>
  * <p>
  * The task keeps track of the submitted transfers by remembering the
- * URB address (USB request buffer) in order to match it to the
+ * URB address (USB request block) in order to match it to the
  * completion.
  * </p>
  * <p>
@@ -232,12 +233,12 @@ public class LinuxAsyncTask {
         asyncFds = fds;
     }
 
-    synchronized void submitBulkTransfer(LinuxUSBDevice device, int endpointAddress, LinuxTransfer transfer) {
+    synchronized void submitTransfer(LinuxUSBDevice device, int endpointAddress, USBTransferType transferType, LinuxTransfer transfer) {
 
         addURB(transfer);
         var urb = transfer.urb;
 
-        usbdevfs_urb.type$set(urb, (byte) USBDEVFS_URB_TYPE_BULK());
+        usbdevfs_urb.type$set(urb, (byte) urbTransferType(transferType));
         usbdevfs_urb.endpoint$set(urb, (byte) endpointAddress);
         usbdevfs_urb.buffer$set(urb, transfer.data);
         usbdevfs_urb.buffer_length$set(urb, transfer.dataSize);
@@ -247,9 +248,19 @@ public class LinuxAsyncTask {
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errnoState) < 0) {
                 String action = endpointAddress >= 128 ? "reading from" : "writing to";
-                throwLastError(errnoState, "failed %s endpoint %d", action, endpointAddress);
+                String endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
+                throwLastError(errnoState, "failed %s %s", action, endpoint);
             }
         }
+    }
+
+    private static int urbTransferType(USBTransferType transferType) {
+        return switch (transferType) {
+            case BULK -> USBDEVFS_URB_TYPE_BULK();
+            case INTERRUPT -> USBDEVFS_URB_TYPE_INTERRUPT();
+            case CONTROL -> USBDEVFS_URB_TYPE_CONTROL();
+            case ISOCHRONOUS -> USBDEVFS_URB_TYPE_ISO();
+        };
     }
 
     private void addURB(LinuxTransfer transfer) {

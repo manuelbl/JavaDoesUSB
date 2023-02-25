@@ -31,7 +31,6 @@ usb_registry::usb_registry()
 : monitor_wake_event_fd(-1),
     on_connected_callback(nullptr), on_disconnected_callback(nullptr), is_device_list_ready(false),
     async_io_update_event_fd(-1), async_io_update_request(0), async_io_update_response(0) {
-        std::cout << std::hex << USBDEVFS_REAPURBNDELAY << std::endl;
 }
 
 usb_registry::~usb_registry() {

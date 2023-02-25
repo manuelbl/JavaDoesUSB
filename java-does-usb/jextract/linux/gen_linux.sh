@@ -60,7 +60,10 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant USBDEVFS_SUBMITURB \
   --include-constant USBDEVFS_DISCARDURB \
   --include-constant USBDEVFS_REAPURB \
+  --include-constant USBDEVFS_URB_TYPE_INTERRUPT \
+  --include-constant USBDEVFS_URB_TYPE_CONTROL \
   --include-constant USBDEVFS_URB_TYPE_BULK \
+  --include-constant USBDEVFS_URB_TYPE_ISO \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h

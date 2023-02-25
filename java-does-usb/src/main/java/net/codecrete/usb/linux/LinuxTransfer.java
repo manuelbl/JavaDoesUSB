@@ -14,7 +14,7 @@ import java.lang.foreign.MemorySegment;
 
 public class LinuxTransfer extends Transfer {
     /**
-     * USB request buffer.
+     * USB request block.
      *
      * @see usbdevfs_urb
      */

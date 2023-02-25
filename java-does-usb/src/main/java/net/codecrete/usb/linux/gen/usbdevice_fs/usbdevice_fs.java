@@ -15,6 +15,30 @@ public class usbdevice_fs  {
     public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     /**
      * {@snippet :
+     * #define USBDEVFS_URB_TYPE_ISO 0
+     * }
+     */
+    public static int USBDEVFS_URB_TYPE_ISO() {
+        return (int)0L;
+    }
+    /**
+     * {@snippet :
+     * #define USBDEVFS_URB_TYPE_INTERRUPT 1
+     * }
+     */
+    public static int USBDEVFS_URB_TYPE_INTERRUPT() {
+        return (int)1L;
+    }
+    /**
+     * {@snippet :
+     * #define USBDEVFS_URB_TYPE_CONTROL 2
+     * }
+     */
+    public static int USBDEVFS_URB_TYPE_CONTROL() {
+        return (int)2L;
+    }
+    /**
+     * {@snippet :
      * #define USBDEVFS_URB_TYPE_BULK 3
      * }
      */

@@ -249,7 +249,7 @@ public abstract class USBDeviceImpl implements USBDevice {
                         if (ep.number() == endpointNumber && ep.direction() == direction && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
                             return new EndpointInfo(intf.number(), ep.number(),
                                     (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0)),
-                                    ep.packetSize());
+                                    ep.packetSize(), ep.transferType());
                     }
                 }
             }
@@ -418,6 +418,7 @@ public abstract class USBDeviceImpl implements USBDevice {
         return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " + "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
     }
 
-    public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize) {
+    public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize,
+                               USBTransferType transferType) {
     }
 }

@@ -16,9 +16,9 @@ import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
-import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ctrltransfer;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
+import net.codecrete.usb.usbstandard.SetupPacket;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,71 +165,74 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         }
     }
 
-    private MemorySegment createCtrlTransfer(Arena arena, USBDirection direction, USBControlTransfer setup,
-                                             MemorySegment data) {
-        var ctrlTransfer = arena.allocate(usbdevfs_ctrltransfer.$LAYOUT());
-        var bmRequest =
-                (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        usbdevfs_ctrltransfer.bRequestType$set(ctrlTransfer, (byte) bmRequest);
-        usbdevfs_ctrltransfer.bRequest$set(ctrlTransfer, (byte) setup.request());
-        usbdevfs_ctrltransfer.wValue$set(ctrlTransfer, (short) setup.value());
-        usbdevfs_ctrltransfer.wIndex$set(ctrlTransfer, (short) setup.index());
-        usbdevfs_ctrltransfer.wLength$set(ctrlTransfer, (short) data.byteSize());
-        usbdevfs_ctrltransfer.data$set(ctrlTransfer, data);
-        return ctrlTransfer;
+    @Override
+    public void controlTransferOut(USBControlTransfer setup, byte[] data) {
+        try (var arena = Arena.openConfined()) {
+            int dataLength = data != null ? data.length : 0;
+            var transfer = createSyncCtrlTransfer(arena, USBDirection.OUT, setup, dataLength);
+            if (dataLength != 0)
+                transfer.data.asSlice(8).copyFrom(MemorySegment.ofArray(data));
+
+            synchronized (transfer) {
+                submitTransfer(USBDirection.OUT, 0, transfer);
+                waitForTransfer(transfer, 0, USBDirection.OUT, 0);
+            }
+        }
     }
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
         try (var arena = Arena.openConfined()) {
-            var data = arena.allocate(length);
-            var ctrlTransfer = createCtrlTransfer(arena, USBDirection.IN, setup, data);
+            var transfer = createSyncCtrlTransfer(arena, USBDirection.IN, setup, length);
 
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
-            if (res < 0)
-                throwLastError(errnoState, "Control IN transfer failed");
+            synchronized (transfer) {
+                submitTransfer(USBDirection.IN, 0, transfer);
+                waitForTransfer(transfer, 0, USBDirection.IN, 0);
+            }
 
-            return data.asSlice(0, res).toArray(JAVA_BYTE);
+            return transfer.data.asSlice(8, transfer.resultSize).toArray(JAVA_BYTE);
         }
     }
 
-    @Override
-    public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        try (var arena = Arena.openConfined()) {
-            int dataLength = data != null ? data.length : 0;
-            var buffer = arena.allocate(dataLength);
-            if (dataLength != 0)
-                buffer.copyFrom(MemorySegment.ofArray(data));
-            var ctrlTransfer = createCtrlTransfer(arena, USBDirection.OUT, setup, buffer);
+    /**
+     * Create transfer object for synchronous control request.
+     *
+     * @param arena      arena for allocating memory
+     * @param direction  direction
+     * @param setup      setup data
+     * @param dataLength data length (in addition to setup data)
+     * @return transfer object
+     */
+    private LinuxTransfer createSyncCtrlTransfer(Arena arena, USBDirection direction, USBControlTransfer setup,
+                                                 int dataLength) {
+        var bmRequest =
+                (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
+        var buffer = arena.allocate(8 + dataLength, 8);
+        var setupPacket = new SetupPacket(buffer);
+        setupPacket.setRequestType(bmRequest);
+        setupPacket.setRequest(setup.request());
+        setupPacket.setValue(setup.value());
+        setupPacket.setIndex(setup.index());
+        setupPacket.setLength(dataLength);
 
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            int res = IO.ioctl(fd, USBDevFS.CONTROL, ctrlTransfer, errnoState);
-            if (res < 0)
-                throwLastError(errnoState, "Control OUT transfer failed");
-        }
-    }
-
-    private LinuxTransfer createSyncTransfer(MemorySegment data) {
         var transfer = new LinuxTransfer();
-        transfer.data = data;
-        transfer.dataSize = (int) data.byteSize();
+        transfer.data = buffer;
+        transfer.dataSize = (int) buffer.byteSize();
         transfer.resultSize = -1;
         transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+
         return transfer;
     }
 
     @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
             var transfer = createSyncTransfer(buffer);
 
             synchronized (transfer) {
-                asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+                submitTransfer(USBDirection.OUT, endpointNumber, transfer);
                 waitForTransfer(transfer, timeout, USBDirection.OUT, endpointNumber);
             }
         }
@@ -244,11 +247,29 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var transfer = createSyncTransfer(buffer);
 
             synchronized (transfer) {
-                asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
+                submitTransfer(USBDirection.IN, endpointNumber, transfer);
                 waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
             }
 
             return buffer.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+        }
+    }
+
+    private LinuxTransfer createSyncTransfer(MemorySegment data) {
+        var transfer = new LinuxTransfer();
+        transfer.data = data;
+        transfer.dataSize = (int) data.byteSize();
+        transfer.resultSize = -1;
+        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        return transfer;
+    }
+
+    synchronized void submitTransfer(USBDirection direction, int endpointNumber, LinuxTransfer transfer) {
+        if (endpointNumber != 0) {
+            var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
+            asyncTask.submitTransfer(this, endpoint.endpointAddress(), endpoint.transferType(), transfer);
+        } else {
+            asyncTask.submitTransfer(this, 0, USBTransferType.CONTROL, transfer);
         }
     }
 
@@ -296,10 +317,5 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 
         return new LinuxEndpointOutputStream(this, endpointNumber);
-    }
-
-    synchronized void submitBulkTransfer(USBDirection direction, int endpointNumber, LinuxTransfer transfer) {
-        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, null);
-        asyncTask.submitBulkTransfer(this, endpoint.endpointAddress(), transfer);
     }
 }

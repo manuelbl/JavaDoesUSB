@@ -12,6 +12,10 @@ package net.codecrete.usb;
  */
 public enum USBTransferType {
     /**
+     * Control transfer
+     */
+    CONTROL,
+    /**
      * Bulk transfer
      */
     BULK,

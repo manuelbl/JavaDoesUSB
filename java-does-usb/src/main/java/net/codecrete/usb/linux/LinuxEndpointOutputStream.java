@@ -19,6 +19,6 @@ public class LinuxEndpointOutputStream extends EndpointOutputStream {
 
     @Override
     protected void submitTransferOut(Transfer transfer) {
-        ((LinuxUSBDevice) device).submitBulkTransfer(USBDirection.OUT, endpointNumber, (LinuxTransfer) transfer);
+        ((LinuxUSBDevice) device).submitTransfer(USBDirection.OUT, endpointNumber, (LinuxTransfer) transfer);
     }
 }

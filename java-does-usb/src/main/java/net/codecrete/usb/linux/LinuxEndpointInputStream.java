@@ -19,6 +19,6 @@ public class LinuxEndpointInputStream extends EndpointInputStream {
 
     @Override
     protected void submitTransferIn(Transfer transfer) {
-        ((LinuxUSBDevice) device).submitBulkTransfer(USBDirection.IN, endpointNumber, (LinuxTransfer) transfer);
+        ((LinuxUSBDevice) device).submitTransfer(USBDirection.IN, endpointNumber, (LinuxTransfer) transfer);
     }
 }
