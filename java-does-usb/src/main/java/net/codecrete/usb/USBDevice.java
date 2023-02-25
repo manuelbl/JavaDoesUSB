@@ -280,6 +280,13 @@ public interface USBDevice {
      * Opens a new output stream to send data to a bulk endpoint.
      * <p>
      * All data written to this output stream is sent to the specified bulk endpoint.
+     * Buffering and concurrent IO requests are used to achieve a high throughput.
+     * </p>
+     * <p>
+     * The stream will insert zero-length packets if {@link OutputStream#flush()} is called
+     * and the last packet size was equal to maximum packet size of the endpoint.
+     * </p>
+     * <p>
      * If {@link #transferOut(int, byte[])} and a output stream or multiple output streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
@@ -293,8 +300,10 @@ public interface USBDevice {
      * Opens a new input stream to receive data from a bulk endpoint.
      * <p>
      * All data received from the specified bulk endpoint can be read using this input stream.
+     * Buffering and concurrent IO requests are used to achieve a high throughput.
      * </p>
      * <p>
+     * If the buffers contain data when the stream is closed, this data will be discarded.
      * If {@link #transferIn(int)} and an input stream or multiple input streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
