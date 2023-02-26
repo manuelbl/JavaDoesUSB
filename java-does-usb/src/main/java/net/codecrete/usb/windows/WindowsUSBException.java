@@ -10,6 +10,7 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
 import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
+import net.codecrete.usb.windows.gen.ntdll.NtDll;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -47,7 +48,7 @@ public class WindowsUSBException extends USBException {
      */
     static void throwException(int errorCode, String message, Object... args) {
         var formattedMessage = String.format(message, args);
-        if (errorCode == Kernel32.ERROR_GEN_FAILURE()) {
+        if (errorCode == Kernel32.ERROR_GEN_FAILURE() || errorCode == NtDll.STATUS_UNSUCCESSFUL()) {
             throw new USBStallException(formattedMessage);
         } else {
             throw new WindowsUSBException(formattedMessage, errorCode);

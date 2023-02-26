@@ -139,3 +139,12 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --target-package net.codecrete.usb.windows.gen.ole32 ^
        --include-function CLSIDFromString ^
        windows_headers.h
+
+call %JEXTRACT% --source --output ../../src/main/java ^
+       -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
+       -I "%SDK_DIR%\um" ^
+       -I "%SDK_DIR%\shared" ^
+       --header-class-name NtDll ^
+       --target-package net.codecrete.usb.windows.gen.ntdll ^
+       --include-constant STATUS_UNSUCCESSFUL ^
+       windows_headers.h

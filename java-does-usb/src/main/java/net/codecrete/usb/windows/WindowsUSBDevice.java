@@ -258,32 +258,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data, int timeout) {
-        checkIsOpen();
-
-        var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
-
         try (var arena = Arena.openConfined()) {
-            // set timeout
-            var timeoutHolder = arena.allocate(JAVA_INT, timeout);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
-                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Setting timeout failed");
-
-            // copy data to native heap
             var buffer = arena.allocate(data.length);
             buffer.copyFrom(MemorySegment.ofArray(data));
-            var lengthHolder = arena.allocate(JAVA_INT);
+            var transfer = createSyncTransfer(buffer);
 
-            // send data
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer,
-                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0) {
-                int err = Win.getLastError(lastErrorState);
-                if (err == Kernel32.ERROR_SEM_TIMEOUT())
-                    throw new USBTimeoutException("Transfer out aborted due to timeout");
-                throwException(err, "Bulk/interrupt transfer OUT failed");
+            synchronized (transfer) {
+                submitTransferOut(endpointNumber, transfer);
+                waitForTransfer(transfer, timeout, USBDirection.OUT, endpointNumber);
             }
         }
     }
@@ -291,33 +273,26 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public byte[] transferIn(int endpointNumber, int timeout) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
-            // set timeout
-            var timeoutHolder = arena.allocate(JAVA_INT, timeout);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
-                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Setting timeout failed");
-
-            // create native heap buffer for data
             var buffer = arena.allocate(endpoint.packetSize());
-            var lengthHolder = arena.allocate(JAVA_INT);
+            var transfer = createSyncTransfer(buffer);
 
-            // receive data
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), buffer,
-                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0) {
-                int err = Win.getLastError(lastErrorState);
-                if (err == Kernel32.ERROR_SEM_TIMEOUT())
-                    throw new USBTimeoutException("Transfer in aborted due to timeout");
-                throwException(err, "Bulk/interrupt transfer IN failed");
+            synchronized (transfer) {
+                submitTransferIn(endpointNumber, transfer);
+                waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
             }
 
-            // copy data
-            int len = lengthHolder.get(JAVA_INT, 0);
-            return buffer.asSlice(0, len).toArray(JAVA_BYTE);
+            return buffer.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
         }
+    }
+
+    private WindowsTransfer createSyncTransfer(MemorySegment data) {
+        var transfer = new WindowsTransfer();
+        transfer.data = data;
+        transfer.dataSize = (int) data.byteSize();
+        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        return transfer;
     }
 
     @Override
@@ -386,7 +361,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void clearHalt(USBDirection direction, int endpointNumber) {
+    public synchronized void clearHalt(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
@@ -398,7 +373,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void abortTransfers(USBDirection direction, int endpointNumber) {
+    public synchronized void abortTransfers(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
