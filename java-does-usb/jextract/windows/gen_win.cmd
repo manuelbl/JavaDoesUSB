@@ -12,12 +12,10 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-function GetModuleHandleW ^
   --include-function FormatMessageW ^
   --include-function LocalFree ^
-  --include-constant ERROR_SUCCESS ^
   --include-constant ERROR_NO_MORE_ITEMS ^
   --include-constant ERROR_MORE_DATA ^
   --include-constant ERROR_INSUFFICIENT_BUFFER ^
   --include-constant ERROR_FILE_NOT_FOUND ^
-  --include-constant ERROR_SEM_TIMEOUT ^
   --include-constant ERROR_GEN_FAILURE ^
   --include-constant ERROR_NOT_FOUND ^
   --include-constant ERROR_IO_PENDING ^
@@ -63,13 +61,6 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant DEVPROP_TYPEMOD_LIST ^
   --include-constant DICS_FLAG_GLOBAL ^
   --include-constant DIREG_DEV ^
-  windows_headers.h
-
-call %JEXTRACT% --source --output ../../src/main/java ^
-  -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
-  --header-class-name StdLib ^
-  --target-package net.codecrete.usb.windows.gen.stdlib ^
-  --include-function wcslen ^
   windows_headers.h
 
 call %JEXTRACT% --source --output ../../src/main/java ^

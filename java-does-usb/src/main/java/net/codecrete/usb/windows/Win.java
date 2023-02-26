@@ -8,7 +8,6 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.windows.gen.kernel32.GUID;
-import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
@@ -85,8 +84,12 @@ public class Win {
      * @return copied string
      */
     public static String createStringFromSegment(MemorySegment segment) {
-        long strLen = StdLib.wcslen(segment);
-        return new String(segment.asSlice(0, 2L * strLen).toArray(JAVA_CHAR));
+        int len = 0;
+        while (segment.get(JAVA_CHAR, len) != 0) {
+            len += 2;
+        }
+
+        return new String(segment.asSlice(0, len).toArray(JAVA_CHAR));
     }
 
     /**

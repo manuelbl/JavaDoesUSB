@@ -146,7 +146,7 @@ public class WinUSB2 {
     private static final FunctionDescriptor WinUsb_AbortPipe$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_BYTE);
 
     private static final MethodHandle WinUsb_AbortPipe$MH =
-            LINKER.downcallHandle(LOOKUP.find("WinUsb_AbortPipe").get(), WinUsb_ResetPipe$FUNC, Win.LAST_ERROR_STATE);
+            LINKER.downcallHandle(LOOKUP.find("WinUsb_AbortPipe").get(), WinUsb_AbortPipe$FUNC, Win.LAST_ERROR_STATE);
 
     public static int WinUsb_AbortPipe(MemorySegment InterfaceHandle, byte PipeID, MemorySegment lastErrorState) {
         try {

@@ -178,14 +178,6 @@ public class Kernel32  {
     }
     /**
      * {@snippet :
-     * #define ERROR_SUCCESS 0
-     * }
-     */
-    public static int ERROR_SUCCESS() {
-        return (int)0L;
-    }
-    /**
-     * {@snippet :
      * #define ERROR_FILE_NOT_FOUND 2
      * }
      */
@@ -199,14 +191,6 @@ public class Kernel32  {
      */
     public static int ERROR_GEN_FAILURE() {
         return (int)31L;
-    }
-    /**
-     * {@snippet :
-     * #define ERROR_SEM_TIMEOUT 121
-     * }
-     */
-    public static int ERROR_SEM_TIMEOUT() {
-        return (int)121L;
     }
     /**
      * {@snippet :

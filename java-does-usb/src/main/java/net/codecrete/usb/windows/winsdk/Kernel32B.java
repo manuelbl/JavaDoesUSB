@@ -101,17 +101,4 @@ public class Kernel32B {
             throw new RuntimeException(ex);
         }
     }
-
-    private static final FunctionDescriptor CancelIoEx$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS);
-
-    private static final MethodHandle CancelIoEx$MH = LINKER.downcallHandle(LOOKUP.find("CancelIoEx").get(),
-            CancelIoEx$FUNC, Win.LAST_ERROR_STATE);
-
-    public static int CancelIoEx(MemorySegment hFile, MemorySegment lpOverlapped, MemorySegment lastErrorState) {
-        try {
-            return (int) CancelIoEx$MH.invokeExact(lastErrorState, hFile, lpOverlapped);
-        } catch (Throwable ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 }
