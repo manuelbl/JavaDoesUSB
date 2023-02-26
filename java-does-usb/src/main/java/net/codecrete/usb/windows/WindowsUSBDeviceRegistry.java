@@ -326,7 +326,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, arena);
 
-            var device = new WindowsUSBDevice(this, devicePath, children, vendorId, productId, configDesc);
+            var device = new WindowsUSBDevice(devicePath, children, vendorId, productId, configDesc);
             device.setFromDeviceDescriptor(descriptorSegment);
             device.setProductString(descriptorSegment, (index) -> getStringDescriptor(hubHandle, usbPortNum, index));
 

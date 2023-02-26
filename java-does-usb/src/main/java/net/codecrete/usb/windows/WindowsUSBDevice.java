@@ -38,7 +38,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private List<InterfaceHandle> interfaceHandles_;
     private boolean isOpen_;
 
-    WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children,
+    WindowsUSBDevice(String devicePath, Map<Integer, String> children,
                      int vendorId, int productId, MemorySegment configDesc) {
         super(devicePath, vendorId, productId);
         asyncTask = WindowsAsyncTask.instance();
@@ -199,60 +199,42 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         setClaimed(interfaceNumber, false);
     }
 
-    private MemorySegment createSetupPacket(USBDirection direction, USBControlTransfer setup, MemorySegment data,
-                                            Arena arena) {
-        var setupPacket = new SetupPacket(arena);
-        var bmRequest =
-                (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        setupPacket.setRequestType(bmRequest);
-        setupPacket.setRequest(setup.request());
-        setupPacket.setValue(setup.value());
-        setupPacket.setIndex(setup.index());
-        setupPacket.setLength(data != null ? (int) data.byteSize() : 0);
-        return setupPacket.segment();
-    }
-
     @Override
-    public byte[] controlTransferIn(USBControlTransfer setup, int length) {
-        checkIsOpen();
-        var intfHandle = findControlTransferInterface(setup);
-
+    public void controlTransferOut(USBControlTransfer setup, byte[] data) {
         try (var arena = Arena.openConfined()) {
-            var buffer = arena.allocate(length);
-            var setupPacket = createSetupPacket(USBDirection.IN, setup, buffer, arena);
-            var lengthHolder = arena.allocate(JAVA_INT);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
 
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer,
-                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Control transfer IN failed");
+            // copy data to native memory
+            var transfer = createSyncControlTransfer();
+            int dataLength = data != null ? data.length : 0;
+            transfer.dataSize = dataLength;
+            if (dataLength != 0) {
+                var buffer = arena.allocate(data.length);
+                buffer.copyFrom(MemorySegment.ofArray(data));
+                transfer.data = buffer;
+            } else {
+                transfer.data = NULL;
+            }
 
-            int rxLength = lengthHolder.get(JAVA_INT, 0);
-            return buffer.asSlice(0, rxLength).toArray(JAVA_BYTE);
+            synchronized (transfer) {
+                submitControlTransfer(USBDirection.OUT, setup, transfer);
+                waitForTransfer(transfer, 0, USBDirection.OUT, 0);
+            }
         }
     }
 
     @Override
-    public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        checkIsOpen();
-        var intfHandle = findControlTransferInterface(setup);
-
+    public byte[] controlTransferIn(USBControlTransfer setup, int length) {
         try (var arena = Arena.openConfined()) {
+            var transfer = createSyncControlTransfer();
+            transfer.data = arena.allocate(length);
+            transfer.dataSize = length;
 
-            // copy data to native memory
-            int dataLength = data != null ? data.length : 0;
-            MemorySegment buffer = arena.allocate(dataLength);
-            if (dataLength != 0)
-                buffer.copyFrom(MemorySegment.ofArray(data));
+            synchronized (transfer) {
+                submitControlTransfer(USBDirection.IN, setup, transfer);
+                waitForTransfer(transfer, 0, USBDirection.IN, 0);
+            }
 
-            // create setup packet
-            var setupPacket = createSetupPacket(USBDirection.OUT, setup, buffer, arena);
-            var lengthHolder = arena.allocate(JAVA_INT);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket, buffer,
-                    (int) buffer.byteSize(), lengthHolder, NULL, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Control transfer OUT failed");
+            return transfer.data.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
         }
     }
 
@@ -287,6 +269,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
+    private WindowsTransfer createSyncControlTransfer() {
+        var transfer = new WindowsTransfer();
+        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        return transfer;
+    }
+
     private WindowsTransfer createSyncTransfer(MemorySegment data) {
         var transfer = new WindowsTransfer();
         transfer.data = data;
@@ -303,6 +291,33 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     protected void throwOSException(int errorCode, String message, Object... args) {
         throwException(errorCode, message, args);
+    }
+
+    synchronized void submitControlTransfer(USBDirection direction, USBControlTransfer setup, WindowsTransfer transfer) {
+        checkIsOpen();
+        var intfHandle = findControlTransferInterface(setup);
+
+        try (var arena = Arena.openConfined()) {
+            var setupPacket = new SetupPacket(arena);
+            var bmRequest =
+                    (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
+            setupPacket.setRequestType(bmRequest);
+            setupPacket.setRequest(setup.request());
+            setupPacket.setValue(setup.value());
+            setupPacket.setIndex(setup.index());
+            setupPacket.setLength(transfer.dataSize);
+
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            asyncTask.prepareForSubmission(transfer);
+
+            // submit transfer
+            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket.segment(), transfer.data,
+                    transfer.dataSize, NULL, transfer.overlapped, lastErrorState) == 0) {
+                int err = Win.getLastError(lastErrorState);
+                if (err != Kernel32.ERROR_IO_PENDING())
+                    throwException(err, "Submitting control transfer failed");
+            }
+        }
     }
 
     synchronized void submitTransferOut(int endpointNumber, WindowsTransfer transfer) {
