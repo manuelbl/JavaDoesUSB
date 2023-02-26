@@ -15,11 +15,15 @@ public class WindowsEndpointOutputStream extends EndpointOutputStream {
 
     WindowsEndpointOutputStream(WindowsUSBDevice device, int endpointNumber) {
         super(device, endpointNumber);
-        device.configureForAsyncIo(USBDirection.OUT, endpointNumber);
     }
 
     @Override
     protected void submitTransferOut(Transfer request) {
         ((WindowsUSBDevice) device).submitTransferOut(endpointNumber, (WindowsTransfer) request);
+    }
+
+    @Override
+    protected void configureEndpoint() {
+        ((WindowsUSBDevice) device).configureForAsyncIo(USBDirection.OUT, endpointNumber);
     }
 }

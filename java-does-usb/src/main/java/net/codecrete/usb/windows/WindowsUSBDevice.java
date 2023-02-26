@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,14 +34,14 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  */
 public class WindowsUSBDevice extends USBDeviceImpl {
 
-    private final WindowsUSBDeviceRegistry registry;
+    private final WindowsAsyncTask asyncTask;
     private List<InterfaceHandle> interfaceHandles_;
     private boolean isOpen_;
 
     WindowsUSBDevice(WindowsUSBDeviceRegistry registry, String devicePath, Map<Integer, String> children,
                      int vendorId, int productId, MemorySegment configDesc) {
         super(devicePath, vendorId, productId);
-        this.registry = registry;
+        asyncTask = WindowsAsyncTask.instance();
         readDescription(configDesc, devicePath, children);
     }
 
@@ -124,7 +123,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 if (Win.IsInvalidHandle(deviceHandle))
                     throwLastError(lastErrorState, "Cannot open USB device %s", firstIntfHandle.devicePath);
 
-                registry.addToCompletionPort(deviceHandle, this);
+                asyncTask.addDevice(deviceHandle);
 
             } else {
                 deviceHandle = firstIntfHandle.deviceHandle;
@@ -323,7 +322,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     @Override
     protected Transfer createTransfer() {
-        return registry.createRequest();
+        return new WindowsTransfer();
     }
 
     @Override
@@ -331,17 +330,17 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         throwException(errorCode, message, args);
     }
 
-    synchronized void submitTransferOut(int endpointNumber, WindowsTransfer request) {
+    synchronized void submitTransferOut(int endpointNumber, WindowsTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            registry.addOverlapped(request);
+            asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), request.data, request.dataSize, NULL
-                    , request.overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data, transfer.dataSize, NULL
+                    , transfer.overlapped, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer OUT failed");
@@ -349,47 +348,20 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
     }
 
-    synchronized void submitTransferIn(int endpointNumber, WindowsTransfer request) {
+    synchronized void submitTransferIn(int endpointNumber, WindowsTransfer transfer) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
         var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
 
         try (var arena = Arena.openConfined()) {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            registry.addOverlapped(request);
+            asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), request.data, request.dataSize,
-                    NULL, request.overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data, transfer.dataSize,
+                    NULL, transfer.overlapped, lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer IN failed");
-            }
-        }
-    }
-
-    /**
-     * Cancels an asynchronous IO request.
-     * <p>
-     * If the specific request is not found, the error is silently ignored. Such errors
-     * are likely to happen due to concurrency issues.
-     * </p>
-     *
-     * @param direction      endpoint direction
-     * @param endpointNumber endpoint number
-     * @param cancelHandle   request's cancel handle returned when the request was submitted
-     */
-    synchronized void cancelTransfer(USBDirection direction, int endpointNumber, long cancelHandle) {
-        var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
-        var intfHandle = getInterfaceHandle(endpoint.interfaceNumber());
-
-        try (var arena = Arena.openConfined()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
-            var overlapped = MemorySegment.ofAddress(cancelHandle, 0, SegmentScope.global());
-
-            if (Kernel32B.CancelIoEx(intfHandle.deviceHandle, overlapped, lastErrorState) == 0) {
-                int err = Win.getLastError(lastErrorState);
-                if (err != Kernel32.ERROR_NOT_FOUND())
-                    throwException(err, "Cancelling transfer failed");
             }
         }
     }
@@ -406,7 +378,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Setting timeout failed");
 
-            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 0);
+            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 1);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
                     (int) rawIoHolder.byteSize(), rawIoHolder, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Setting raw IO failed");

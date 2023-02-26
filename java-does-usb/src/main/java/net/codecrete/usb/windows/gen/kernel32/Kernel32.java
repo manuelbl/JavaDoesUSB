@@ -74,6 +74,14 @@ public class Kernel32  {
     }
     /**
      * {@snippet :
+     * #define FORMAT_MESSAGE_FROM_HMODULE 2048
+     * }
+     */
+    public static int FORMAT_MESSAGE_FROM_HMODULE() {
+        return (int)2048L;
+    }
+    /**
+     * {@snippet :
      * #define FORMAT_MESSAGE_FROM_SYSTEM 4096
      * }
      */

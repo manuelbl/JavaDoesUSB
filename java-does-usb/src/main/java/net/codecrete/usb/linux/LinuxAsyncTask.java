@@ -32,12 +32,11 @@ import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
 /**
  * Background task for handling asynchronous transfers.
  * <p>
- * Each USB device must register its file handler with this task.
+ * Each USB device must register its file handle with this task.
  * </p>
  * <p>
- * The task keeps track of the submitted transfers by remembering the
- * URB address (USB request block) in order to match it to the
- * completion.
+ * The task keeps track of the submitted transfers by indexing them
+ * by URB address (USB request block).
  * </p>
  * <p>
  * URBs are allocated but never freed. To limit the memory usage,
@@ -174,7 +173,7 @@ public class LinuxAsyncTask {
     private void notifyAsyncIOTask() {
         // start background process if needed
         if (asyncIOUpdateEventFd == 0) {
-            startAsyncIOHandler();
+            startAsyncIOTask();
             return;
         }
 
@@ -307,7 +306,7 @@ public class LinuxAsyncTask {
         }
     }
 
-    private void startAsyncIOHandler() {
+    private void startAsyncIOTask() {
         try (var arena = Arena.openConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             asyncIOUpdateEventFd = IO.eventfd(0, 0, errnoState);

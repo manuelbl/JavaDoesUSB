@@ -79,13 +79,39 @@ public class WindowsUSBException extends USBException {
         throwException(Win.getLastError(lastErrorState), message, args);
     }
 
+    private static MemorySegment ntModule;
+
+    private static MemorySegment getNtModule() {
+        if (ntModule == null) {
+            try (var arena = Arena.openConfined()) {
+                var moduleName = Win.createSegmentFromString("NTDLL.DLL", arena);
+                ntModule = Kernel32.GetModuleHandleW(moduleName);
+            }
+        }
+
+        return ntModule;
+    }
+
     static String getErrorMessage(int errorCode) {
         try (var arena = Arena.openConfined()) {
             var messagePointerHolder = arena.allocate(ADDRESS);
-            int res =
-                    Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(), NULL, errorCode, 0, messagePointerHolder, 0, NULL);
+
+            // First try: Win32 error code
+            int res = Kernel32.FormatMessageW(
+                    Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+                    NULL, errorCode, 0, messagePointerHolder, 0, NULL);
+
+            // Second try: NTSTATUS error code
+            if (res == 0) {
+                res = Kernel32.FormatMessageW(
+                        Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_HMODULE() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+                        getNtModule(), errorCode, 0, messagePointerHolder, 0, NULL);
+            }
+
+            // Fallback
             if (res == 0)
                 return "unspecified error";
+
             var messagePointer = messagePointerHolder.get(ForeignMemory.UNBOUNDED_ADDRESS, 0);
             String message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);

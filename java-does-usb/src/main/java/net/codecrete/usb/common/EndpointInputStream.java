@@ -62,12 +62,14 @@ public abstract class EndpointInputStream extends InputStream {
     protected EndpointInputStream(USBDeviceImpl device, int endpointNumber) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-
+        arena = Arena.openShared();
         bufferSize = 4 * device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+
+        configureEndpoint();
+
         completedTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
 
         // create all transfers, and submit them except one
-        arena = Arena.openShared();
         try {
             for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
                 final var transfer = device.createTransfer();
@@ -204,4 +206,7 @@ public abstract class EndpointInputStream extends InputStream {
     }
 
     protected abstract void submitTransferIn(Transfer transfer);
+
+    protected void configureEndpoint() {
+    }
 }

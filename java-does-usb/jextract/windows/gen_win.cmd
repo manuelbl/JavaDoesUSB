@@ -31,6 +31,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant FORMAT_MESSAGE_ALLOCATE_BUFFER ^
   --include-constant FORMAT_MESSAGE_FROM_SYSTEM ^
   --include-constant FORMAT_MESSAGE_IGNORE_INSERTS ^
+  --include-constant FORMAT_MESSAGE_FROM_HMODULE ^
   --include-constant INFINITE ^
   --include-struct _GUID ^
   --include-typedef GUID ^

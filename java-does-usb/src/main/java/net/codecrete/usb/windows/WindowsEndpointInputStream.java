@@ -15,11 +15,15 @@ public class WindowsEndpointInputStream extends EndpointInputStream {
 
     WindowsEndpointInputStream(WindowsUSBDevice device, int endpointNumber) {
         super(device, endpointNumber);
-        device.configureForAsyncIo(USBDirection.IN, endpointNumber);
     }
 
     @Override
     protected void submitTransferIn(Transfer transfer) {
         ((WindowsUSBDevice) device).submitTransferIn(endpointNumber, (WindowsTransfer) transfer);
+    }
+
+    @Override
+    protected void configureEndpoint() {
+        ((WindowsUSBDevice) device).configureForAsyncIo(USBDirection.IN, endpointNumber);
     }
 }

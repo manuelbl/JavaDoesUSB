@@ -64,12 +64,13 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected EndpointOutputStream(USBDeviceImpl device, int endpointNumber) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-
         packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
         bufferSize = packetSize;
+        arena = Arena.openShared();
+
+        configureEndpoint();
 
         availableTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
-        arena = Arena.openShared();
 
         // prefill transfer queue
         for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
@@ -245,4 +246,7 @@ public abstract class EndpointOutputStream extends OutputStream {
     }
 
     protected abstract void submitTransferOut(Transfer request);
+
+    protected void configureEndpoint() {
+    }
 }

@@ -45,7 +45,7 @@ public class USBHelper {
     //    USB_PIPE_INFO PipeList[0];/* OUTPUT */
     //} USB_NODE_CONNECTION_INFORMATION_EX, *PUSB_NODE_CONNECTION_INFORMATION_EX;
     public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(JAVA_INT.withName(
-            "ConnectionIndex"), DeviceDescriptor.LAYOUT.withName("DeviceDescriptor"), JAVA_BYTE.withName(
+                    "ConnectionIndex"), DeviceDescriptor.LAYOUT.withName("DeviceDescriptor"), JAVA_BYTE.withName(
                     "CurrentConfigurationValue"), JAVA_BYTE.withName("Speed"), JAVA_BYTE.withName("DeviceIsHub"),
             JAVA_SHORT_UNALIGNED.withName("DeviceAddress"), JAVA_INT.withName("NumberOfOpenPipes"),
             JAVA_INT.withName("ConnectionStatus")
