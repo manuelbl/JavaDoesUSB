@@ -13,8 +13,8 @@ import net.codecrete.usb.common.Transfer;
 
 public class LinuxEndpointInputStream extends EndpointInputStream {
 
-    LinuxEndpointInputStream(LinuxUSBDevice device, int endpointNumber) {
-        super(device, endpointNumber);
+    LinuxEndpointInputStream(LinuxUSBDevice device, int endpointNumber, int bufferSize) {
+        super(device, endpointNumber, bufferSize);
     }
 
     @Override

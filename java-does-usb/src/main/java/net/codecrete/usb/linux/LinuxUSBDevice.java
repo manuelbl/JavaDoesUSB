@@ -304,18 +304,18 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber) {
+    public InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
 
-        return new LinuxEndpointInputStream(this, endpointNumber);
+        return new LinuxEndpointInputStream(this, endpointNumber, bufferSize);
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber) {
+    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 
-        return new LinuxEndpointOutputStream(this, endpointNumber);
+        return new LinuxEndpointOutputStream(this, endpointNumber, bufferSize);
     }
 }

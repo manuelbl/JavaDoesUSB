@@ -400,19 +400,19 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber) {
+    public InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
 
-        return new WindowsEndpointInputStream(this, endpointNumber);
+        return new WindowsEndpointInputStream(this, endpointNumber, bufferSize);
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber) {
+    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 
-        return new WindowsEndpointOutputStream(this, endpointNumber);
+        return new WindowsEndpointOutputStream(this, endpointNumber, bufferSize);
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {

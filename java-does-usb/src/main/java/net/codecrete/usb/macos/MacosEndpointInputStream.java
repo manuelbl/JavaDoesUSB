@@ -12,8 +12,8 @@ import net.codecrete.usb.common.Transfer;
 
 public class MacosEndpointInputStream extends EndpointInputStream {
 
-    MacosEndpointInputStream(MacosUSBDevice device, int endpointNumber) {
-        super(device, endpointNumber);
+    MacosEndpointInputStream(MacosUSBDevice device, int endpointNumber, int bufferSize) {
+        super(device, endpointNumber, bufferSize);
     }
 
     @Override

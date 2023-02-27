@@ -541,19 +541,19 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber) {
+    public InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
 
-        return new MacosEndpointInputStream(this, endpointNumber);
+        return new MacosEndpointInputStream(this, endpointNumber, bufferSize);
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber) {
+    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
 
-        return new MacosEndpointOutputStream(this, endpointNumber);
+        return new MacosEndpointOutputStream(this, endpointNumber, bufferSize);
     }
 
     @Override

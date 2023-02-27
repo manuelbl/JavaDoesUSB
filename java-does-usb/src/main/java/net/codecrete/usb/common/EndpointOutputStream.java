@@ -37,15 +37,14 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  */
 public abstract class EndpointOutputStream extends OutputStream {
 
-    private static final int MAX_OUTSTANDING_TRANSFERS = 4;
 
     protected USBDeviceImpl device;
     protected final int endpointNumber;
     protected final Arena arena;
     // Endpoint's packet size
     private final int packetSize;
-    // Size of buffers (multiple of packet size)
-    private final int bufferSize;
+    // Transfer size (multiple of packet size)
+    private final int transferSize;
     // Blocking queue of available transfers (to limit the number of submitted transfers)
     private final ArrayBlockingQueue<Transfer> availableTransferQueue;
     private boolean needsZlp;
@@ -60,22 +59,27 @@ public abstract class EndpointOutputStream extends OutputStream {
      *
      * @param device         USB device
      * @param endpointNumber endpoint number
+     * @param bufferSize     approximate buffer size (in bytes)
      */
-    protected EndpointOutputStream(USBDeviceImpl device, int endpointNumber) {
+    protected EndpointOutputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-        packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
-        bufferSize = packetSize;
         arena = Arena.openShared();
+
+        packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
+        int n = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        n = Math.min(Math.max(n, 4), 32); // 32 limits packet size to 16KB (for USB HS)
+        transferSize = n * packetSize;
+        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 2);
 
         configureEndpoint();
 
-        availableTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
+        availableTransferQueue = new ArrayBlockingQueue<>(maxOutstandingTransfers);
 
         // prefill transfer queue
-        for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
+        for (int i = 0; i < maxOutstandingTransfers; i++) {
             final var transfer = device.createTransfer();
-            transfer.data = arena.allocate(bufferSize, 8);
+            transfer.data = arena.allocate(transferSize, 8);
             transfer.completion = this::onCompletion;
 
             if (i == 0) {
@@ -113,7 +117,7 @@ public abstract class EndpointOutputStream extends OutputStream {
 
         currentTransfer.data.set(JAVA_BYTE, writeOffset, (byte) b);
         writeOffset += 1;
-        if (writeOffset == bufferSize)
+        if (writeOffset == transferSize)
             submitTransfer(writeOffset);
     }
 
@@ -123,13 +127,13 @@ public abstract class EndpointOutputStream extends OutputStream {
             throw new IOException("Bulk endpoint output stream has been closed");
 
         while (len > 0) {
-            int chunkSize = Math.min(len, bufferSize - writeOffset);
+            int chunkSize = Math.min(len, transferSize - writeOffset);
             MemorySegment.copy(b, off, currentTransfer.data, JAVA_BYTE, writeOffset, chunkSize);
             writeOffset += chunkSize;
             off += chunkSize;
             len -= chunkSize;
 
-            if (writeOffset == bufferSize)
+            if (writeOffset == transferSize)
                 submitTransfer(writeOffset);
         }
     }

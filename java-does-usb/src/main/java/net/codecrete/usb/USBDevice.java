@@ -292,9 +292,23 @@ public interface USBDevice {
      * </p>
      *
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127)
+     * @param bufferSize approximate buffer size (in bytes)
      * @return the new output stream
      */
-    OutputStream openOutputStream(int endpointNumber);
+    OutputStream openOutputStream(int endpointNumber, int bufferSize);
+
+    /**
+     * Opens a new output stream to send data to a bulk endpoint.
+     * <p>
+     * The buffer is configured with minimal size. In all other aspects, this method
+     * works like {@link #openOutputStream(int, int)}.
+     * </p>
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127)
+     * @return the new output stream
+     */
+    default OutputStream openOutputStream(int endpointNumber) {
+        return openOutputStream(endpointNumber, 1);
+    }
 
     /**
      * Opens a new input stream to receive data from a bulk endpoint.
@@ -309,9 +323,24 @@ public interface USBDevice {
      * </p>
      *
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
+     * @param bufferSize approximate buffer size (in bytes)
      * @return the new input stream
      */
-    InputStream openInputStream(int endpointNumber);
+    InputStream openInputStream(int endpointNumber, int bufferSize);
+
+    /**
+     * Opens a new input stream to receive data from a bulk endpoint.
+     * <p>
+     * The buffer is configured with minimal size. In all other aspects, this method
+     * works like {@link #openInputStream(int, int)}.
+     * </p>
+     *
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
+     * @return the new input stream
+     */
+    default InputStream openInputStream(int endpointNumber) {
+        return openInputStream(endpointNumber, 1);
+    }
 
     /**
      * Aborts all transfers on an endpoint.

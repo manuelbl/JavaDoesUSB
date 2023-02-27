@@ -71,6 +71,8 @@ public class LogicAnalyzer implements Closeable {
     private volatile long activityValue;
     /// Indicates a dry run (to suppress output)
     private boolean isDryRun;
+    /// Buffer size for input stream (good for approx. 0.2s of data)
+    private int bufferSize;
 
     public static void main(String[] args) {
         try (var logicAnalyzer = new LogicAnalyzer()) {
@@ -146,6 +148,9 @@ public class LogicAnalyzer implements Closeable {
             period = ticks30Mhz;
             effSampleRate = 30000000 / period;
         }
+
+        bufferSize = (int) Math.round(effSampleRate * 0.2);
+        bufferSize = Math.max(bufferSize, 16 * 4096);
     }
 
     /**
@@ -179,7 +184,7 @@ public class LogicAnalyzer implements Closeable {
         byte[] sampleData = new byte[expectedSize];
 
         int size = 0;
-        try (var is = device.openInputStream(EP)) {
+        try (var is = device.openInputStream(EP, bufferSize)) {
 
             while (size < expectedSize) {
                 int n = is.read(sampleData, size, sampleData.length - size);

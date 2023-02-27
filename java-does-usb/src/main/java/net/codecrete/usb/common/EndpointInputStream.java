@@ -35,14 +35,12 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  */
 public abstract class EndpointInputStream extends InputStream {
 
-    private static final int MAX_OUTSTANDING_TRANSFERS = 8;
-
     protected USBDeviceImpl device;
     protected final int endpointNumber;
     // Arena to allocate buffers and completion handlers
     protected final Arena arena;
-    // Size of buffers (multiple of packet size)
-    protected final int bufferSize;
+    // Transfer size (multiple of packet size)
+    protected final int transferSize;
     // Queue of completed transfers
     private final ArrayBlockingQueue<Transfer> completedTransferQueue;
     // Number of outstanding transfers (includes transfers pending with the
@@ -58,23 +56,29 @@ public abstract class EndpointInputStream extends InputStream {
      *
      * @param device         USB device
      * @param endpointNumber endpoint number
+     * @param bufferSize     approximate buffer size (in bytes)
      */
-    protected EndpointInputStream(USBDeviceImpl device, int endpointNumber) {
+    protected EndpointInputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
         arena = Arena.openShared();
-        bufferSize = 4 * device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+
+        int packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+        int n = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        n = Math.min(Math.max(n, 4), 32); // 32 limits packet size to 16KB (for USB HS)
+        transferSize = n * packetSize;
+        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 2);
 
         configureEndpoint();
 
-        completedTransferQueue = new ArrayBlockingQueue<>(MAX_OUTSTANDING_TRANSFERS);
+        completedTransferQueue = new ArrayBlockingQueue<>(maxOutstandingTransfers);
 
         // create all transfers, and submit them except one
         try {
-            for (int i = 0; i < MAX_OUTSTANDING_TRANSFERS; i++) {
+            for (int i = 0; i < maxOutstandingTransfers; i++) {
                 final var transfer = device.createTransfer();
-                transfer.data = arena.allocate(bufferSize, 8);
-                transfer.dataSize = bufferSize;
+                transfer.data = arena.allocate(transferSize, 8);
+                transfer.dataSize = transferSize;
                 transfer.completion = this::onCompletion;
 
                 if (i == 0) {

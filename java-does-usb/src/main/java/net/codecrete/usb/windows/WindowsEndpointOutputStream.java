@@ -13,8 +13,8 @@ import net.codecrete.usb.common.Transfer;
 
 public class WindowsEndpointOutputStream extends EndpointOutputStream {
 
-    WindowsEndpointOutputStream(WindowsUSBDevice device, int endpointNumber) {
-        super(device, endpointNumber);
+    WindowsEndpointOutputStream(WindowsUSBDevice device, int endpointNumber, int bufferSize) {
+        super(device, endpointNumber, bufferSize);
     }
 
     @Override
