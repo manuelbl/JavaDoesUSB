@@ -4,16 +4,16 @@ This sample shows how to find a device, open it and transfer data from and to bu
 
 ## Prerequisites
 
-- Java 19
+- Java 20
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 - A USB device with bulk IN and OUT endpoints (e.g. the test device, see https://github.com/manuelbl/JavaDoesUSB/tree/main/test-devices/loopback-stm32)
 
 ## How to run
 
-### Install Java 19
+### Install Java 20
 
-Check that *Java 19* is installed:
+Check that *Java 20* is installed:
 
 ```shell
 $ java -version
@@ -39,16 +39,16 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------< net.codecrete.usb.examples:bulk-transfer >--------------
-[INFO] Building bulk-transfer 0.4.0
+[INFO] Building bulk-transfer 0.5.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ bulk-transfer ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /Users/manuel/Documents/Lab/JavaDoesUSB/examples/bulk_transfer/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/me/Documents/JavaDoesUSB/examples/bulk_transfer/src/main/resources
 [INFO] 
 [INFO] --- maven-compiler-plugin:3.8.0:compile (default-compile) @ bulk-transfer ---
 [INFO] Changes detected - recompiling the module!
-[INFO] Compiling 1 source file to /Users/manuel/Documents/Lab/JavaDoesUSB/examples/bulk_transfer/target/classes
+[INFO] Compiling 1 source file to /Users/me/Documents/JavaDoesUSB/examples/bulk_transfer/target/classes
 [INFO] 
 [INFO] --- exec-maven-plugin:3.1.0:exec (default-cli) @ bulk-transfer ---
 6 bytes sent.
@@ -56,7 +56,7 @@ $ mvn compile exec:exec
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  3.830 s
-[INFO] Finished at: 2022-09-09T14:43:10+02:00
+[INFO] Total time:  1.259 s
+[INFO] Finished at: 2023-03-23T14:10:17+01:00
 [INFO] ------------------------------------------------------------------------
 ```

@@ -48,7 +48,7 @@ If you are using Maven, add the below dependency to your pom.xml:
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '0.4.1'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '0.5.0'
 ```
 
 ```java

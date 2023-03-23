@@ -6,22 +6,22 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>monitor</artifactId>
-  <version>0.4.1</version>
+  <version>0.5.0</version>
 
   <name>monitor</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/monitor</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>19</maven.compiler.source>
-    <maven.compiler.target>19</maven.compiler.target>
+    <maven.compiler.source>20</maven.compiler.source>
+    <maven.compiler.target>20</maven.compiler.target>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.4.1</version>
+      <version>0.5.0</version>
     </dependency>
   </dependencies>
 
@@ -42,15 +42,20 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
           <configuration>
-            <release>19</release>
-            <compilerArgs>--enable-preview</compilerArgs>
-            <source>19</source>
-            <target>19</target>
+            <release>20</release>
+            <compilerArgs>
+              <arg>--enable-preview</arg>
+            </compilerArgs>
+            <source>20</source>
+            <target>20</target>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
+          <configuration>
+            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>

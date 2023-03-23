@@ -6,15 +6,15 @@ Even though the DFU
 
 ## Prerequisites
 
-- Java 19
+- Java 20
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 19
+### Install Java 20
 
-Check that *Java 19* is installed:
+Check that *Java 20* is installed:
 
 ```shell
 $ java -version
@@ -57,8 +57,8 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0666"
 Run the command below (adapting the file path depending on your specific board):
 
 ```shell
-$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.4.1.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
-DFU device found with serial 36C730037136.
+$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.5.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
+DFU device found with serial 35A737883336.
 Target memory segment: Internal Flash
 Erasing page at 0x8000000 (size 0x4000)
 Writing data at 0x8000000 (size 0x800)
@@ -66,7 +66,7 @@ Writing data at 0x8000800 (size 0x800)
 Writing data at 0x8001000 (size 0x800)
 Writing data at 0x8001800 (size 0x800)
 Writing data at 0x8002000 (size 0x800)
-Writing data at 0x8002800 (size 0x4cc)
+Writing data at 0x8002800 (size 0x1f4)
 Firmware successfully downloaded and verified
 DFU mode exited and firmware started
 ```

@@ -4,15 +4,15 @@ This sample program monitors USB devices as they are connected and disconnected.
 
 ## Prerequisites
 
-- Java 19
+- Java 20
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 19
+### Install Java 20
 
-Check that *Java 19* is installed:
+Check that *Java 20* is installed:
 
 ```shell
 $ java -version
@@ -38,7 +38,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -----------------< net.codecrete.usb.examples:monitor >-----------------
-[INFO] Building monitor 0.4.1
+[INFO] Building monitor 0.5.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ monitor ---
@@ -46,7 +46,8 @@ $ mvn compile exec:exec
 [INFO] skip non existing resourceDirectory /Users/me/Documents/JavaDoesUSB/examples/monitor/src/main/resources
 [INFO] 
 [INFO] --- maven-compiler-plugin:3.8.0:compile (default-compile) @ monitor ---
-[INFO] Nothing to compile - all classes are up to date
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/me/Documents/JavaDoesUSB/examples/monitor/target/classes
 [INFO] 
 [INFO] --- exec-maven-plugin:3.1.0:exec (default-cli) @ monitor ---
 Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 8D8F515C5456, ID: 4295291950

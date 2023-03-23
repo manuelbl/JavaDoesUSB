@@ -6,7 +6,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>bulk-transfer</artifactId>
-  <version>0.4.1</version>
+  <version>0.5.0</version>
 
   <name>bulk-transfer</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/bulk_transfer</url>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.4.1</version>
+      <version>0.5.0</version>
     </dependency>
   </dependencies>
 
@@ -42,15 +42,20 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
           <configuration>
-            <release>19</release>
-            <compilerArgs>--enable-preview</compilerArgs>
-            <source>19</source>
-            <target>19</target>
+            <release>20</release>
+            <compilerArgs>
+              <arg>--enable-preview</arg>
+            </compilerArgs>
+            <source>20</source>
+            <target>20</target>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
+          <configuration>
+            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
