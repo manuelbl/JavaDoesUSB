@@ -1,12 +1,12 @@
 # Java Does USB: USB Library for Java
 
-> **Development branch for JDK 20**
-
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
-*Java Does USB* is a library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
+*Java Does USB* is a Java library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
-The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is in preview and will be introduced in a future Java version. Currently, it can be used with Java 19 (with preview features enabled).
+The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It only uses Java code and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is in preview and will be introduced in a future Java version. Currently, it can be used with Java 19 or Java 20 (with preview features enabled).
+
+*Note: The main branch and published versions ≥ 0.5.0 work with JDK 20 only. For JDK 19, use version 0.4.x.*
 
 
 ## Features
@@ -16,12 +16,12 @@ The library uses the [Foreign Function & Memory API](https://github.com/openjdk/
 - Control, bulk and interrupt transfers (optionally with timeout)
 - Notifications about connected/disconnected devices
 - Descriptive information about interfaces, settings and endpoints
+- High-throughput input/output streams
 - Support for alternate interface settings, composite devices and interface association
 - Published on Maven Central
 
 ### Planned
 
-- High-throughput input/output streams
 - Isochronous transfer
 
 ### Not planned
@@ -41,7 +41,7 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.4.1</version>
+      <version>0.5.0</version>
 </dependency>
 ```
 
@@ -85,7 +85,7 @@ public class EnumerateDevices {
 - Java 20, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
-For a version compatible with JDK 20, see the branch `jdk20`.
+For JDK 19, use the latest published version 0.4.x.
 
 
 ## Platform-specific Considerations
@@ -126,7 +126,7 @@ The library has not been tested on Windows for ARM64. It might or might not work
 
 ### 32-bit versions
 
-The Foreign Function & Memory API has not been implemented for 32-bit operating systems / JDKs. So it does not support them (and likely never will).
+The Foreign Function & Memory API has not been implemented for 32-bit operating systems / JDKs  (and likely never will be).
 
 
 
