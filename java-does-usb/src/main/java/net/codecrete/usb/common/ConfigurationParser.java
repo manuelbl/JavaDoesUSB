@@ -107,7 +107,7 @@ public class ConfigurationParser {
     }
 
     private USBInterfaceImpl parseInterface(int offset) {
-        var desc = new InterfaceDescriptor(descriptor.asSlice(offset, InterfaceDescriptor.LAYOUT.byteSize()));
+        var desc = new InterfaceDescriptor(descriptor, offset);
         var alternate = new USBAlternateInterfaceImpl(desc.alternateSetting(), desc.interfaceClass(),
                 desc.interfaceSubClass(), desc.interfaceProtocol(), new ArrayList<>());
         var alternates = new ArrayList<USBAlternateInterface>();
@@ -116,15 +116,14 @@ public class ConfigurationParser {
     }
 
     private void parseIAD(int offset) {
-        var desc = new InterfaceAssociationDescriptor(
-                descriptor.asSlice(offset, InterfaceAssociationDescriptor.LAYOUT.byteSize()));
+        var desc = new InterfaceAssociationDescriptor(descriptor, offset);
         var function = new CompositeFunction(desc.firstInterface(), desc.interfaceCount(), desc.functionClass(),
                 desc.functionSubClass(), desc.functionProtocol());
         configuration.addFunction(function);
     }
 
     private USBEndpointImpl parseEndpoint(int offset) {
-        var desc = new EndpointDescriptor(descriptor.asSlice(offset, EndpointDescriptor.LAYOUT.byteSize()));
+        var desc = new EndpointDescriptor(descriptor, offset);
         var address = desc.endpointAddress();
         return new USBEndpointImpl(getEndpointNumber(address), getEndpointDirection(address),
                 getEndpointType(desc.attributes()), desc.maxPacketSize());

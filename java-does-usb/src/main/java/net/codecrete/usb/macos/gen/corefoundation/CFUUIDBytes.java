@@ -4,9 +4,31 @@ package net.codecrete.usb.macos.gen.corefoundation;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct {
+ *     UInt8 byte0;
+ *     UInt8 byte1;
+ *     UInt8 byte2;
+ *     UInt8 byte3;
+ *     UInt8 byte4;
+ *     UInt8 byte5;
+ *     UInt8 byte6;
+ *     UInt8 byte7;
+ *     UInt8 byte8;
+ *     UInt8 byte9;
+ *     UInt8 byte10;
+ *     UInt8 byte11;
+ *     UInt8 byte12;
+ *     UInt8 byte13;
+ *     UInt8 byte14;
+ *     UInt8 byte15;
+ * };
+ * }
+ */
 public class CFUUIDBytes {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_CHAR$LAYOUT.withName("byte0"),
         Constants$root.C_CHAR$LAYOUT.withName("byte1"),
         Constants$root.C_CHAR$LAYOUT.withName("byte2"),
@@ -31,10 +53,22 @@ public class CFUUIDBytes {
     public static VarHandle byte0$VH() {
         return CFUUIDBytes.byte0$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte0;
+     * }
+     */
     public static byte byte0$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte0$VH.get(seg);
     }
-    public static void byte0$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte0;
+     * }
+     */
+    public static void byte0$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte0$VH.set(seg, x);
     }
     public static byte byte0$get(MemorySegment seg, long index) {
@@ -47,10 +81,22 @@ public class CFUUIDBytes {
     public static VarHandle byte1$VH() {
         return CFUUIDBytes.byte1$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte1;
+     * }
+     */
     public static byte byte1$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte1$VH.get(seg);
     }
-    public static void byte1$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte1;
+     * }
+     */
+    public static void byte1$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte1$VH.set(seg, x);
     }
     public static byte byte1$get(MemorySegment seg, long index) {
@@ -63,10 +109,22 @@ public class CFUUIDBytes {
     public static VarHandle byte2$VH() {
         return CFUUIDBytes.byte2$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte2;
+     * }
+     */
     public static byte byte2$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte2$VH.get(seg);
     }
-    public static void byte2$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte2;
+     * }
+     */
+    public static void byte2$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte2$VH.set(seg, x);
     }
     public static byte byte2$get(MemorySegment seg, long index) {
@@ -79,10 +137,22 @@ public class CFUUIDBytes {
     public static VarHandle byte3$VH() {
         return CFUUIDBytes.byte3$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte3;
+     * }
+     */
     public static byte byte3$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte3$VH.get(seg);
     }
-    public static void byte3$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte3;
+     * }
+     */
+    public static void byte3$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte3$VH.set(seg, x);
     }
     public static byte byte3$get(MemorySegment seg, long index) {
@@ -95,10 +165,22 @@ public class CFUUIDBytes {
     public static VarHandle byte4$VH() {
         return CFUUIDBytes.byte4$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte4;
+     * }
+     */
     public static byte byte4$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte4$VH.get(seg);
     }
-    public static void byte4$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte4;
+     * }
+     */
+    public static void byte4$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte4$VH.set(seg, x);
     }
     public static byte byte4$get(MemorySegment seg, long index) {
@@ -111,10 +193,22 @@ public class CFUUIDBytes {
     public static VarHandle byte5$VH() {
         return CFUUIDBytes.byte5$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte5;
+     * }
+     */
     public static byte byte5$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte5$VH.get(seg);
     }
-    public static void byte5$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte5;
+     * }
+     */
+    public static void byte5$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte5$VH.set(seg, x);
     }
     public static byte byte5$get(MemorySegment seg, long index) {
@@ -127,10 +221,22 @@ public class CFUUIDBytes {
     public static VarHandle byte6$VH() {
         return CFUUIDBytes.byte6$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte6;
+     * }
+     */
     public static byte byte6$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte6$VH.get(seg);
     }
-    public static void byte6$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte6;
+     * }
+     */
+    public static void byte6$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte6$VH.set(seg, x);
     }
     public static byte byte6$get(MemorySegment seg, long index) {
@@ -143,10 +249,22 @@ public class CFUUIDBytes {
     public static VarHandle byte7$VH() {
         return CFUUIDBytes.byte7$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte7;
+     * }
+     */
     public static byte byte7$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte7$VH.get(seg);
     }
-    public static void byte7$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte7;
+     * }
+     */
+    public static void byte7$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte7$VH.set(seg, x);
     }
     public static byte byte7$get(MemorySegment seg, long index) {
@@ -159,10 +277,22 @@ public class CFUUIDBytes {
     public static VarHandle byte8$VH() {
         return CFUUIDBytes.byte8$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte8;
+     * }
+     */
     public static byte byte8$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte8$VH.get(seg);
     }
-    public static void byte8$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte8;
+     * }
+     */
+    public static void byte8$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte8$VH.set(seg, x);
     }
     public static byte byte8$get(MemorySegment seg, long index) {
@@ -175,10 +305,22 @@ public class CFUUIDBytes {
     public static VarHandle byte9$VH() {
         return CFUUIDBytes.byte9$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte9;
+     * }
+     */
     public static byte byte9$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte9$VH.get(seg);
     }
-    public static void byte9$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte9;
+     * }
+     */
+    public static void byte9$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte9$VH.set(seg, x);
     }
     public static byte byte9$get(MemorySegment seg, long index) {
@@ -191,10 +333,22 @@ public class CFUUIDBytes {
     public static VarHandle byte10$VH() {
         return CFUUIDBytes.byte10$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte10;
+     * }
+     */
     public static byte byte10$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte10$VH.get(seg);
     }
-    public static void byte10$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte10;
+     * }
+     */
+    public static void byte10$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte10$VH.set(seg, x);
     }
     public static byte byte10$get(MemorySegment seg, long index) {
@@ -207,10 +361,22 @@ public class CFUUIDBytes {
     public static VarHandle byte11$VH() {
         return CFUUIDBytes.byte11$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte11;
+     * }
+     */
     public static byte byte11$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte11$VH.get(seg);
     }
-    public static void byte11$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte11;
+     * }
+     */
+    public static void byte11$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte11$VH.set(seg, x);
     }
     public static byte byte11$get(MemorySegment seg, long index) {
@@ -223,10 +389,22 @@ public class CFUUIDBytes {
     public static VarHandle byte12$VH() {
         return CFUUIDBytes.byte12$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte12;
+     * }
+     */
     public static byte byte12$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte12$VH.get(seg);
     }
-    public static void byte12$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte12;
+     * }
+     */
+    public static void byte12$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte12$VH.set(seg, x);
     }
     public static byte byte12$get(MemorySegment seg, long index) {
@@ -239,10 +417,22 @@ public class CFUUIDBytes {
     public static VarHandle byte13$VH() {
         return CFUUIDBytes.byte13$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte13;
+     * }
+     */
     public static byte byte13$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte13$VH.get(seg);
     }
-    public static void byte13$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte13;
+     * }
+     */
+    public static void byte13$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte13$VH.set(seg, x);
     }
     public static byte byte13$get(MemorySegment seg, long index) {
@@ -255,10 +445,22 @@ public class CFUUIDBytes {
     public static VarHandle byte14$VH() {
         return CFUUIDBytes.byte14$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte14;
+     * }
+     */
     public static byte byte14$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte14$VH.get(seg);
     }
-    public static void byte14$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte14;
+     * }
+     */
+    public static void byte14$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte14$VH.set(seg, x);
     }
     public static byte byte14$get(MemorySegment seg, long index) {
@@ -271,10 +473,22 @@ public class CFUUIDBytes {
     public static VarHandle byte15$VH() {
         return CFUUIDBytes.byte15$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UInt8 byte15;
+     * }
+     */
     public static byte byte15$get(MemorySegment seg) {
         return (byte)CFUUIDBytes.byte15$VH.get(seg);
     }
-    public static void byte15$set( MemorySegment seg, byte x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UInt8 byte15;
+     * }
+     */
+    public static void byte15$set(MemorySegment seg, byte x) {
         CFUUIDBytes.byte15$VH.set(seg, x);
     }
     public static byte byte15$get(MemorySegment seg, long index) {
@@ -285,10 +499,10 @@ public class CFUUIDBytes {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

@@ -2,25 +2,29 @@
 
 package net.codecrete.usb.windows.gen.advapi32;
 
-import java.lang.foreign.Addressable;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class Advapi32  {
 
-    /* package-private */ Advapi32() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
+    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     public static MethodHandle RegCloseKey$MH() {
         return RuntimeHelper.requireNonNull(constants$0.RegCloseKey$MH,"RegCloseKey");
     }
-    public static int RegCloseKey ( Addressable hKey) {
+    /**
+     * {@snippet :
+     * LSTATUS RegCloseKey(HKEY hKey);
+     * }
+     */
+    public static int RegCloseKey(MemorySegment hKey) {
         var mh$ = RegCloseKey$MH();
         try {
             return (int)mh$.invokeExact(hKey);
@@ -31,7 +35,12 @@ public class Advapi32  {
     public static MethodHandle RegQueryValueExW$MH() {
         return RuntimeHelper.requireNonNull(constants$0.RegQueryValueExW$MH,"RegQueryValueExW");
     }
-    public static int RegQueryValueExW ( Addressable hKey,  Addressable lpValueName,  Addressable lpReserved,  Addressable lpType,  Addressable lpData,  Addressable lpcbData) {
+    /**
+     * {@snippet :
+     * LSTATUS RegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+     * }
+     */
+    public static int RegQueryValueExW(MemorySegment hKey, MemorySegment lpValueName, MemorySegment lpReserved, MemorySegment lpType, MemorySegment lpData, MemorySegment lpcbData) {
         var mh$ = RegQueryValueExW$MH();
         try {
             return (int)mh$.invokeExact(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
@@ -39,11 +48,13 @@ public class Advapi32  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
+    /**
+     * {@snippet :
+     * #define KEY_READ 131097
+     * }
+     */
     public static int KEY_READ() {
         return (int)131097L;
-    }
-    public static int REG_MULTI_SZ() {
-        return (int)7L;
     }
 }
 

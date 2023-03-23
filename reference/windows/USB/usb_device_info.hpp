@@ -26,39 +26,39 @@ private:
     /// <summary>
     /// Get a device property of integer type.
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <param name="prop_key">property key</param>
     /// <returns>property integer value</returns>
-    static uint32_t get_device_property_int(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
+    static uint32_t get_device_property_int(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
 
     /// <summary>
     /// Get a device property of string type.
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <param name="prop_key">property key</param>
     /// <returns>property string value</returns>
-    static std::wstring get_device_property_string(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
+    static std::wstring get_device_property_string(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
 
     /// <summary>
     /// Get a device property of variable length.
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <param name="prop_key">property key</param>
     /// <param name="expected_type">expected property type (use DEVPROP_TYPE_xxx constants)</param>
     /// <returns>property value as byte array</returns>
-    static std::vector<uint8_t> get_device_property_variable_length(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key, DEVPROPTYPE expected_type);
+    static std::vector<uint8_t> get_device_property_variable_length(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key, DEVPROPTYPE expected_type);
 
     /// <summary>
     /// Get a device property of string list type.
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <param name="prop_key">property key</param>
     /// <returns>property value as vector of strings</returns>
-    static std::vector<std::wstring> get_device_property_string_list(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
+    static std::vector<std::wstring> get_device_property_string_list(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key);
 
     /// <summary>
     /// Split the string list into a vector of strings
@@ -117,10 +117,10 @@ private:
     /// in Windows. In the Setup API, they are represented as child devices.
     /// </para>
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <returns><c>true</c> if device is a composite device, <c>false</c> otherwise</returns>
-    static bool is_composite_device(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data);
+    static bool is_composite_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data);
 
     /// <summary>
     /// Get the number of the first USB interface.
@@ -128,18 +128,18 @@ private:
     /// The first interface number is relevant for child devices of composite devices.
     /// </para>
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <returns></returns>
-    static int get_first_interface(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data);
+    static int get_first_interface(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data);
 
     /// <summary>
     /// Get the device's interface GUIDs.
     /// </summary>
-    /// <param name="dev_info">handle of device information set containing the device</param>
+    /// <param name="dev_info_set">handle of device information set containing the device</param>
     /// <param name="dev_info_data">pointer to device information structure representing the device</param>
     /// <returns>vector of GUIDs</returns>
-    static std::vector<std::wstring> find_device_interface_guids(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data);
+    static std::vector<std::wstring> find_device_interface_guids(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data);
 
     friend class usb_registry;
 };

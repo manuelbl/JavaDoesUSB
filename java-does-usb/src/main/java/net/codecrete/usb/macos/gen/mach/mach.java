@@ -2,28 +2,32 @@
 
 package net.codecrete.usb.macos.gen.mach;
 
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class mach  {
 
-    /* package-private */ mach() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
+    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     public static MethodHandle mach_error_string$MH() {
         return RuntimeHelper.requireNonNull(constants$0.mach_error_string$MH,"mach_error_string");
     }
-    public static MemoryAddress mach_error_string ( int error_value) {
+    /**
+     * {@snippet :
+     * char* mach_error_string(mach_error_t error_value);
+     * }
+     */
+    public static MemorySegment mach_error_string(int error_value) {
         var mh$ = mach_error_string$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(error_value);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(error_value);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

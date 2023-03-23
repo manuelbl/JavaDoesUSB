@@ -14,7 +14,7 @@ import java.lang.invoke.VarHandle;
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 
 /**
  * USB device descriptor
@@ -86,14 +86,14 @@ public class DeviceDescriptor {
     public static final GroupLayout LAYOUT = structLayout(
             JAVA_BYTE.withName("bLength"),
             JAVA_BYTE.withName("bDescriptorType"),
-            JAVA_SHORT.withName("bcdUSB"),
+            JAVA_SHORT_UNALIGNED.withName("bcdUSB"),
             JAVA_BYTE.withName("bDeviceClass"),
             JAVA_BYTE.withName("bDeviceSubClass"),
             JAVA_BYTE.withName("bDeviceProtocol"),
             JAVA_BYTE.withName("bMaxPacketSize0"),
-            JAVA_SHORT.withName("idVendor"),
-            JAVA_SHORT.withName("idProduct"),
-            JAVA_SHORT.withName("bcdDevice"),
+            JAVA_SHORT_UNALIGNED.withName("idVendor"),
+            JAVA_SHORT_UNALIGNED.withName("idProduct"),
+            JAVA_SHORT_UNALIGNED.withName("bcdDevice"),
             JAVA_BYTE.withName("iManufacturer"),
             JAVA_BYTE.withName("iProduct"),
             JAVA_BYTE.withName("iSerialNumber"),

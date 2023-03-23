@@ -57,18 +57,35 @@ private:
 
     bool handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set_hdl, SP_DEVINFO_DATA* dev_info);
+    std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info);
 
     std::vector<usb_device_ptr> devices;
 
     std::function<void(usb_device_ptr device)> on_connected_callback;
     std::function<void(usb_device_ptr device)> on_disconnected_callback;
 
+    std::shared_ptr<usb_device> get_shared_ptr(usb_device* device);
+
+    void async_io_run();
+    void add_to_completion_port(HANDLE);
+    void add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler);
+    void remove_completion_handler(OVERLAPPED* overlapped);
+    usb_io_callback* get_completion_handler(OVERLAPPED* overlapped);
+
     std::thread monitor_thread;
     
     bool is_device_list_ready;
     std::mutex monitor_mutex;
     std::condition_variable monitor_condition;
-    DWORD background_thread_id_;
+    DWORD monitor_thread_id_;
     HWND message_window;
+
+    std::thread async_io_thread;
+    std::mutex async_io_mutex;
+    HANDLE async_io_completion_port;
+    std::map<OVERLAPPED*, usb_io_callback*> async_io_completion_handlers;
+
+    friend class usb_device;
+    friend class usb_istreambuf;
+    friend class usb_ostreambuf;
 };

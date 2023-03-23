@@ -4,9 +4,18 @@ package net.codecrete.usb.windows.gen.user32;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct _DEV_BROADCAST_HDR {
+ *     DWORD dbch_size;
+ *     DWORD dbch_devicetype;
+ *     DWORD dbch_reserved;
+ * };
+ * }
+ */
 public class _DEV_BROADCAST_HDR {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_LONG$LAYOUT.withName("dbch_size"),
         Constants$root.C_LONG$LAYOUT.withName("dbch_devicetype"),
         Constants$root.C_LONG$LAYOUT.withName("dbch_reserved")
@@ -18,10 +27,22 @@ public class _DEV_BROADCAST_HDR {
     public static VarHandle dbch_size$VH() {
         return _DEV_BROADCAST_HDR.dbch_size$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD dbch_size;
+     * }
+     */
     public static int dbch_size$get(MemorySegment seg) {
         return (int)_DEV_BROADCAST_HDR.dbch_size$VH.get(seg);
     }
-    public static void dbch_size$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD dbch_size;
+     * }
+     */
+    public static void dbch_size$set(MemorySegment seg, int x) {
         _DEV_BROADCAST_HDR.dbch_size$VH.set(seg, x);
     }
     public static int dbch_size$get(MemorySegment seg, long index) {
@@ -34,10 +55,22 @@ public class _DEV_BROADCAST_HDR {
     public static VarHandle dbch_devicetype$VH() {
         return _DEV_BROADCAST_HDR.dbch_devicetype$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD dbch_devicetype;
+     * }
+     */
     public static int dbch_devicetype$get(MemorySegment seg) {
         return (int)_DEV_BROADCAST_HDR.dbch_devicetype$VH.get(seg);
     }
-    public static void dbch_devicetype$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD dbch_devicetype;
+     * }
+     */
+    public static void dbch_devicetype$set(MemorySegment seg, int x) {
         _DEV_BROADCAST_HDR.dbch_devicetype$VH.set(seg, x);
     }
     public static int dbch_devicetype$get(MemorySegment seg, long index) {
@@ -50,10 +83,22 @@ public class _DEV_BROADCAST_HDR {
     public static VarHandle dbch_reserved$VH() {
         return _DEV_BROADCAST_HDR.dbch_reserved$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD dbch_reserved;
+     * }
+     */
     public static int dbch_reserved$get(MemorySegment seg) {
         return (int)_DEV_BROADCAST_HDR.dbch_reserved$VH.get(seg);
     }
-    public static void dbch_reserved$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD dbch_reserved;
+     * }
+     */
+    public static void dbch_reserved$set(MemorySegment seg, int x) {
         _DEV_BROADCAST_HDR.dbch_reserved$VH.set(seg, x);
     }
     public static int dbch_reserved$get(MemorySegment seg, long index) {
@@ -64,10 +109,10 @@ public class _DEV_BROADCAST_HDR {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

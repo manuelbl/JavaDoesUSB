@@ -2,80 +2,85 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-import java.lang.foreign.Addressable;
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class SetupAPI  {
 
-    /* package-private */ SetupAPI() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
+    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    /**
+     * {@snippet :
+     * #define DEVPROP_TYPEMOD_LIST 8192
+     * }
+     */
     public static int DEVPROP_TYPEMOD_LIST() {
         return (int)8192L;
     }
+    /**
+     * {@snippet :
+     * #define DEVPROP_TYPE_UINT32 7
+     * }
+     */
     public static int DEVPROP_TYPE_UINT32() {
         return (int)7L;
     }
+    /**
+     * {@snippet :
+     * #define DEVPROP_TYPE_STRING 18
+     * }
+     */
     public static int DEVPROP_TYPE_STRING() {
         return (int)18L;
     }
+    /**
+     * {@snippet :
+     * #define DICS_FLAG_GLOBAL 1
+     * }
+     */
     public static int DICS_FLAG_GLOBAL() {
         return (int)1L;
     }
+    /**
+     * {@snippet :
+     * #define DIGCF_PRESENT 2
+     * }
+     */
     public static int DIGCF_PRESENT() {
         return (int)2L;
     }
+    /**
+     * {@snippet :
+     * #define DIGCF_DEVICEINTERFACE 16
+     * }
+     */
     public static int DIGCF_DEVICEINTERFACE() {
         return (int)16L;
     }
+    /**
+     * {@snippet :
+     * #define DIREG_DEV 1
+     * }
+     */
     public static int DIREG_DEV() {
         return (int)1L;
-    }
-    public static MethodHandle SetupDiCreateDeviceInfoList$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiCreateDeviceInfoList$MH,"SetupDiCreateDeviceInfoList");
-    }
-    public static MemoryAddress SetupDiCreateDeviceInfoList ( Addressable ClassGuid,  Addressable hwndParent) {
-        var mh$ = SetupDiCreateDeviceInfoList$MH();
-        try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(ClassGuid, hwndParent);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDeviceInfoW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInfoW$MH,"SetupDiOpenDeviceInfoW");
-    }
-    public static int SetupDiOpenDeviceInfoW ( Addressable DeviceInfoSet,  Addressable DeviceInstanceId,  Addressable hwndParent,  int OpenFlags,  Addressable DeviceInfoData) {
-        var mh$ = SetupDiOpenDeviceInfoW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInstanceId, hwndParent, OpenFlags, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiEnumDeviceInfo$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiEnumDeviceInfo$MH,"SetupDiEnumDeviceInfo");
-    }
-    public static int SetupDiEnumDeviceInfo ( Addressable DeviceInfoSet,  int MemberIndex,  Addressable DeviceInfoData) {
-        var mh$ = SetupDiEnumDeviceInfo$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, MemberIndex, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
     }
     public static MethodHandle SetupDiDestroyDeviceInfoList$MH() {
         return RuntimeHelper.requireNonNull(constants$0.SetupDiDestroyDeviceInfoList$MH,"SetupDiDestroyDeviceInfoList");
     }
-    public static int SetupDiDestroyDeviceInfoList ( Addressable DeviceInfoSet) {
+    /**
+     * {@snippet :
+     * BOOL SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet);
+     * }
+     */
+    public static int SetupDiDestroyDeviceInfoList(MemorySegment DeviceInfoSet) {
         var mh$ = SetupDiDestroyDeviceInfoList$MH();
         try {
             return (int)mh$.invokeExact(DeviceInfoSet);
@@ -83,96 +88,21 @@ public class SetupAPI  {
             throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle SetupDiEnumDeviceInterfaces$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiEnumDeviceInterfaces$MH,"SetupDiEnumDeviceInterfaces");
-    }
-    public static int SetupDiEnumDeviceInterfaces ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  Addressable InterfaceClassGuid,  int MemberIndex,  Addressable DeviceInterfaceData) {
-        var mh$ = SetupDiEnumDeviceInterfaces$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, InterfaceClassGuid, MemberIndex, DeviceInterfaceData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDeviceInterfaceW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.SetupDiOpenDeviceInterfaceW$MH,"SetupDiOpenDeviceInterfaceW");
-    }
-    public static int SetupDiOpenDeviceInterfaceW ( Addressable DeviceInfoSet,  Addressable DevicePath,  int OpenFlags,  Addressable DeviceInterfaceData) {
-        var mh$ = SetupDiOpenDeviceInterfaceW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DevicePath, OpenFlags, DeviceInterfaceData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
     public static MethodHandle SetupDiDeleteDeviceInterfaceData$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiDeleteDeviceInterfaceData$MH,"SetupDiDeleteDeviceInterfaceData");
+        return RuntimeHelper.requireNonNull(constants$0.SetupDiDeleteDeviceInterfaceData$MH,"SetupDiDeleteDeviceInterfaceData");
     }
-    public static int SetupDiDeleteDeviceInterfaceData ( Addressable DeviceInfoSet,  Addressable DeviceInterfaceData) {
+    /**
+     * {@snippet :
+     * BOOL SetupDiDeleteDeviceInterfaceData(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
+     * }
+     */
+    public static int SetupDiDeleteDeviceInterfaceData(MemorySegment DeviceInfoSet, MemorySegment DeviceInterfaceData) {
         var mh$ = SetupDiDeleteDeviceInterfaceData$MH();
         try {
             return (int)mh$.invokeExact(DeviceInfoSet, DeviceInterfaceData);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
-    }
-    public static MethodHandle SetupDiGetDeviceInterfaceDetailW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceInterfaceDetailW$MH,"SetupDiGetDeviceInterfaceDetailW");
-    }
-    public static int SetupDiGetDeviceInterfaceDetailW ( Addressable DeviceInfoSet,  Addressable DeviceInterfaceData,  Addressable DeviceInterfaceDetailData,  int DeviceInterfaceDetailDataSize,  Addressable RequiredSize,  Addressable DeviceInfoData) {
-        var mh$ = SetupDiGetDeviceInterfaceDetailW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize, DeviceInfoData);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiGetClassDevsW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetClassDevsW$MH,"SetupDiGetClassDevsW");
-    }
-    public static MemoryAddress SetupDiGetClassDevsW ( Addressable ClassGuid,  Addressable Enumerator,  Addressable hwndParent,  int Flags) {
-        var mh$ = SetupDiGetClassDevsW$MH();
-        try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(ClassGuid, Enumerator, hwndParent, Flags);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiOpenDevRegKey$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiOpenDevRegKey$MH,"SetupDiOpenDevRegKey");
-    }
-    public static MemoryAddress SetupDiOpenDevRegKey ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  int Scope,  int HwProfile,  int KeyType,  int samDesired) {
-        var mh$ = SetupDiOpenDevRegKey$MH();
-        try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, Scope, HwProfile, KeyType, samDesired);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiGetDevicePropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDevicePropertyW$MH,"SetupDiGetDevicePropertyW");
-    }
-    public static int SetupDiGetDevicePropertyW ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  Addressable PropertyKey,  Addressable PropertyType,  Addressable PropertyBuffer,  int PropertyBufferSize,  Addressable RequiredSize,  int Flags) {
-        var mh$ = SetupDiGetDevicePropertyW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, Flags);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle SetupDiGetDeviceRegistryPropertyW$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.SetupDiGetDeviceRegistryPropertyW$MH,"SetupDiGetDeviceRegistryPropertyW");
-    }
-    public static int SetupDiGetDeviceRegistryPropertyW ( Addressable DeviceInfoSet,  Addressable DeviceInfoData,  int Property,  Addressable PropertyRegDataType,  Addressable PropertyBuffer,  int PropertyBufferSize,  Addressable RequiredSize) {
-        var mh$ = SetupDiGetDeviceRegistryPropertyW$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceInfoSet, DeviceInfoData, Property, PropertyRegDataType, PropertyBuffer, PropertyBufferSize, RequiredSize);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static int SPDRP_ADDRESS() {
-        return (int)28L;
     }
 }
 

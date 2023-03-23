@@ -4,9 +4,19 @@ package net.codecrete.usb.windows.gen.kernel32;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct _GUID {
+ *     unsigned long Data1;
+ *     unsigned short Data2;
+ *     unsigned short Data3;
+ *     unsigned char Data4[8];
+ * };
+ * }
+ */
 public class _GUID {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_LONG$LAYOUT.withName("Data1"),
         Constants$root.C_SHORT$LAYOUT.withName("Data2"),
         Constants$root.C_SHORT$LAYOUT.withName("Data3"),
@@ -19,10 +29,22 @@ public class _GUID {
     public static VarHandle Data1$VH() {
         return _GUID.Data1$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned long Data1;
+     * }
+     */
     public static int Data1$get(MemorySegment seg) {
         return (int)_GUID.Data1$VH.get(seg);
     }
-    public static void Data1$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned long Data1;
+     * }
+     */
+    public static void Data1$set(MemorySegment seg, int x) {
         _GUID.Data1$VH.set(seg, x);
     }
     public static int Data1$get(MemorySegment seg, long index) {
@@ -35,10 +57,22 @@ public class _GUID {
     public static VarHandle Data2$VH() {
         return _GUID.Data2$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned short Data2;
+     * }
+     */
     public static short Data2$get(MemorySegment seg) {
         return (short)_GUID.Data2$VH.get(seg);
     }
-    public static void Data2$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned short Data2;
+     * }
+     */
+    public static void Data2$set(MemorySegment seg, short x) {
         _GUID.Data2$VH.set(seg, x);
     }
     public static short Data2$get(MemorySegment seg, long index) {
@@ -51,10 +85,22 @@ public class _GUID {
     public static VarHandle Data3$VH() {
         return _GUID.Data3$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * unsigned short Data3;
+     * }
+     */
     public static short Data3$get(MemorySegment seg) {
         return (short)_GUID.Data3$VH.get(seg);
     }
-    public static void Data3$set( MemorySegment seg, short x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * unsigned short Data3;
+     * }
+     */
+    public static void Data3$set(MemorySegment seg, short x) {
         _GUID.Data3$VH.set(seg, x);
     }
     public static short Data3$get(MemorySegment seg, long index) {
@@ -68,10 +114,10 @@ public class _GUID {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

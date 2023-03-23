@@ -36,6 +36,14 @@ public:
      */
     static void throw_error(const char* message);
     
+    /**
+     * Throws a USB error exception if the code indicates an error.
+     *
+     * @param code error code
+     * @param message additional information for the error message
+     */
+    static void check(int code, const char* message);
+
 private:
     static std::string full_message(const char* message, int code);
 

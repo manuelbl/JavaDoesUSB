@@ -2,28 +2,32 @@
 
 package net.codecrete.usb.linux.gen.string;
 
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class string  {
 
-    /* package-private */ string() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
+    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     public static MethodHandle strerror$MH() {
         return RuntimeHelper.requireNonNull(constants$0.strerror$MH,"strerror");
     }
-    public static MemoryAddress strerror ( int __errnum) {
+    /**
+     * {@snippet :
+     * char* strerror(int __errnum);
+     * }
+     */
+    public static MemorySegment strerror(int __errnum) {
         var mh$ = strerror$MH();
         try {
-            return (java.lang.foreign.MemoryAddress)mh$.invokeExact(__errnum);
+            return (java.lang.foreign.MemorySegment)mh$.invokeExact(__errnum);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

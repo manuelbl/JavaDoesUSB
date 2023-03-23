@@ -4,9 +4,21 @@ package net.codecrete.usb.windows.gen.user32;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct tagMSG {
+ *     HWND hwnd;
+ *     UINT message;
+ *     WPARAM wParam;
+ *     LPARAM lParam;
+ *     DWORD time;
+ *     POINT pt;
+ * };
+ * }
+ */
 public class tagMSG {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_POINTER$LAYOUT.withName("hwnd"),
         Constants$root.C_LONG$LAYOUT.withName("message"),
         MemoryLayout.paddingLayout(32),
@@ -26,26 +38,50 @@ public class tagMSG {
     public static VarHandle hwnd$VH() {
         return tagMSG.hwnd$VH;
     }
-    public static MemoryAddress hwnd$get(MemorySegment seg) {
-        return (java.lang.foreign.MemoryAddress)tagMSG.hwnd$VH.get(seg);
+    /**
+     * Getter for field:
+     * {@snippet :
+     * HWND hwnd;
+     * }
+     */
+    public static MemorySegment hwnd$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)tagMSG.hwnd$VH.get(seg);
     }
-    public static void hwnd$set( MemorySegment seg, MemoryAddress x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * HWND hwnd;
+     * }
+     */
+    public static void hwnd$set(MemorySegment seg, MemorySegment x) {
         tagMSG.hwnd$VH.set(seg, x);
     }
-    public static MemoryAddress hwnd$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemoryAddress)tagMSG.hwnd$VH.get(seg.asSlice(index*sizeof()));
+    public static MemorySegment hwnd$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)tagMSG.hwnd$VH.get(seg.asSlice(index*sizeof()));
     }
-    public static void hwnd$set(MemorySegment seg, long index, MemoryAddress x) {
+    public static void hwnd$set(MemorySegment seg, long index, MemorySegment x) {
         tagMSG.hwnd$VH.set(seg.asSlice(index*sizeof()), x);
     }
     static final VarHandle message$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("message"));
     public static VarHandle message$VH() {
         return tagMSG.message$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * UINT message;
+     * }
+     */
     public static int message$get(MemorySegment seg) {
         return (int)tagMSG.message$VH.get(seg);
     }
-    public static void message$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * UINT message;
+     * }
+     */
+    public static void message$set(MemorySegment seg, int x) {
         tagMSG.message$VH.set(seg, x);
     }
     public static int message$get(MemorySegment seg, long index) {
@@ -58,10 +94,22 @@ public class tagMSG {
     public static VarHandle wParam$VH() {
         return tagMSG.wParam$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * WPARAM wParam;
+     * }
+     */
     public static long wParam$get(MemorySegment seg) {
         return (long)tagMSG.wParam$VH.get(seg);
     }
-    public static void wParam$set( MemorySegment seg, long x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * WPARAM wParam;
+     * }
+     */
+    public static void wParam$set(MemorySegment seg, long x) {
         tagMSG.wParam$VH.set(seg, x);
     }
     public static long wParam$get(MemorySegment seg, long index) {
@@ -74,10 +122,22 @@ public class tagMSG {
     public static VarHandle lParam$VH() {
         return tagMSG.lParam$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * LPARAM lParam;
+     * }
+     */
     public static long lParam$get(MemorySegment seg) {
         return (long)tagMSG.lParam$VH.get(seg);
     }
-    public static void lParam$set( MemorySegment seg, long x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * LPARAM lParam;
+     * }
+     */
+    public static void lParam$set(MemorySegment seg, long x) {
         tagMSG.lParam$VH.set(seg, x);
     }
     public static long lParam$get(MemorySegment seg, long index) {
@@ -90,10 +150,22 @@ public class tagMSG {
     public static VarHandle time$VH() {
         return tagMSG.time$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD time;
+     * }
+     */
     public static int time$get(MemorySegment seg) {
         return (int)tagMSG.time$VH.get(seg);
     }
-    public static void time$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD time;
+     * }
+     */
+    public static void time$set(MemorySegment seg, int x) {
         tagMSG.time$VH.set(seg, x);
     }
     public static int time$get(MemorySegment seg, long index) {
@@ -107,10 +179,10 @@ public class tagMSG {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract-19/bin/jextract
+JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 # If SDK_DIR is changed, it needs to be changed in compile_flags.txt as well.
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -23,9 +23,10 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function CFNumberGetValue \
   --include-function CFRunLoopGetCurrent \
   --include-function CFRunLoopAddSource \
+  --include-function CFRunLoopRemoveSource \
   --include-function CFRunLoopRun \
   --include-function CFUUIDGetUUIDBytes \
-  --include-macro kCFNumberSInt32Type \
+  --include-constant kCFNumberSInt32Type \
   cf_helper.h
 
 # IOKit
@@ -35,9 +36,9 @@ $JEXTRACT --source --output ../../src/main/java \
   --header-class-name IOKit \
   --target-package net.codecrete.usb.macos.gen.iokit \
   --include-var kIOMasterPortDefault \
-  --include-macro kIOUSBDeviceClassName \
-  --include-macro kIOFirstMatchNotification \
-  --include-macro kIOTerminatedNotification \
+  --include-constant kIOUSBDeviceClassName \
+  --include-constant kIOFirstMatchNotification \
+  --include-constant kIOTerminatedNotification \
   --include-var kCFRunLoopDefaultMode \
   --include-struct IOCFPlugInInterfaceStruct \
   --include-typedef IOCFPlugInInterface \
@@ -52,14 +53,14 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function IOServiceMatching \
   --include-struct IOUSBDeviceStruct100 \
   --include-typedef IOUSBDeviceInterface100 \
-  --include-macro kIOUSBFindInterfaceDontCare \
+  --include-constant kIOUSBFindInterfaceDontCare \
   --include-typedef IOUSBFindInterfaceRequest \
   --include-typedef IOUSBDevRequest \
   --include-struct IOUSBInterfaceStruct190 \
   --include-typedef IOUSBInterfaceInterface190 \
-  --include-macro kIOUSBTransactionTimeout \
-  --include-macro kIOReturnAborted \
-  --include-macro kIOUSBPipeStalled \
+  --include-constant kIOUSBTransactionTimeout \
+  --include-constant kIOReturnAborted \
+  --include-constant kIOUSBPipeStalled \
   iokit_helper.h
 
 # mach.h

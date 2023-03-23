@@ -10,11 +10,11 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.macos.gen.corefoundation.CFRange;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 
-import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
+import java.lang.foreign.SegmentAllocator;
 
-import static java.lang.foreign.MemoryAddress.NULL;
+import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 
 /**
@@ -26,23 +26,18 @@ public class CoreFoundationHelper {
      * Gets Java string as a copy of the {@code CFStringRef}.
      *
      * @param string the string to copy ({@code CFStringRef})
+     * @param arena  the arena to allocate memory
      * @return copied string
      */
-    public static String stringFromCFStringRef(MemoryAddress string) {
+    public static String stringFromCFStringRef(MemorySegment string, Arena arena) {
 
-        try (var session = MemorySession.openConfined()) {
-
-            long strLen = CoreFoundation.CFStringGetLength(string);
-            var buffer = session.allocateArray(JAVA_CHAR, strLen);
-            var range = session.allocate(CFRange.$LAYOUT());
-            CFRange.location$set(range, 0);
-            CFRange.length$set(range, strLen);
-            CoreFoundation.CFStringGetCharacters(string, range, buffer);
-            return new String(buffer.toArray(JAVA_CHAR));
-
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        long strLen = CoreFoundation.CFStringGetLength(string);
+        var buffer = arena.allocateArray(JAVA_CHAR, strLen);
+        var range = arena.allocate(CFRange.$LAYOUT());
+        CFRange.location$set(range, 0);
+        CFRange.length$set(range, strLen);
+        CoreFoundation.CFStringGetCharacters(string, range, buffer);
+        return new String(buffer.toArray(JAVA_CHAR));
     }
 
     /**
@@ -52,15 +47,14 @@ public class CoreFoundationHelper {
      * ownership without incrementing the reference count.
      * </p>
      *
-     * @param string the string
+     * @param string    the string
+     * @param allocator the allocator for allocating memory
      * @return {@code CFStringRef}
      */
-    public static MemoryAddress createCFStringRef(String string) {
-        try (var session = MemorySession.openConfined()) {
-            char[] charArray = string.toCharArray();
-            var chars = session.allocateArray(JAVA_CHAR, charArray.length);
-            chars.copyFrom(MemorySegment.ofArray(charArray));
-            return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
-        }
+    public static MemorySegment createCFStringRef(String string, SegmentAllocator allocator) {
+        char[] charArray = string.toCharArray();
+        var chars = allocator.allocateArray(JAVA_CHAR, charArray.length);
+        chars.copyFrom(MemorySegment.ofArray(charArray));
+        return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
     }
 }

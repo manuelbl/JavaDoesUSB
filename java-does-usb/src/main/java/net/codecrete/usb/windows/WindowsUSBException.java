@@ -8,12 +8,14 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
+import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
+import net.codecrete.usb.windows.gen.ntdll.NtDll;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
 
-import static java.lang.foreign.MemoryAddress.NULL;
+import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 
 /**
@@ -26,7 +28,8 @@ public class WindowsUSBException extends USBException {
      * <p>
      * The message for the Windows error code is looked up and appended to the message.
      * </p>
-     * @param message exception message
+     *
+     * @param message   exception message
      * @param errorCode Windows error code (usually returned from {@code GetLastError()})
      */
     public WindowsUSBException(String message, int errorCode) {
@@ -38,13 +41,14 @@ public class WindowsUSBException extends USBException {
      * <p>
      * The message for the Windows error code is looked up and appended to the message.
      * </p>
+     *
      * @param errorCode Windows error code (usually returned from {@code GetLastError()})
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param message   exception message format ({@link String#format(String, Object...)} style)
+     * @param args      arguments for exception message
      */
     static void throwException(int errorCode, String message, Object... args) {
         var formattedMessage = String.format(message, args);
-        if (errorCode == Kernel32.ERROR_GEN_FAILURE()) {
+        if (errorCode == Kernel32.ERROR_GEN_FAILURE() || errorCode == NtDll.STATUS_UNSUCCESSFUL()) {
             throw new USBStallException(formattedMessage);
         } else {
             throw new WindowsUSBException(formattedMessage, errorCode);
@@ -53,8 +57,9 @@ public class WindowsUSBException extends USBException {
 
     /**
      * Throws a USB exception.
+     *
      * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param args    arguments for exception message
      */
     static void throwException(String message, Object... args) {
         throw new USBException(String.format(message, args));
@@ -63,25 +68,53 @@ public class WindowsUSBException extends USBException {
     /**
      * Throws an exception for the last error.
      * <p>
-     * The message of the last Windows error code is looked up and appended to the message.
+     * The last Windows error code is taken from the call capture state
+     * {@link Win.LAST_ERROR_STATE} provided as the first parameter.
      * </p>
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     *
+     * @param lastErrorState call capture state containing last error code
+     * @param message        exception message format ({@link String#format(String, Object...)} style)
+     * @param args           arguments for exception message
      */
-    static void throwLastError(String message, Object... args) {
-        throwException(Kernel32.GetLastError(), message, args);
+    static void throwLastError(MemorySegment lastErrorState, String message, Object... args) {
+        throwException(Win.getLastError(lastErrorState), message, args);
     }
 
-    private static String getErrorMessage(int errorCode) {
-        try (var session = MemorySession.openConfined()) {
-            var messagePointerHolder = session.allocate(ADDRESS);
-            int res = Kernel32.FormatMessageW(Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER()
-                            | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+    private static MemorySegment ntModule;
+
+    private static MemorySegment getNtModule() {
+        if (ntModule == null) {
+            try (var arena = Arena.openConfined()) {
+                var moduleName = Win.createSegmentFromString("NTDLL.DLL", arena);
+                ntModule = Kernel32.GetModuleHandleW(moduleName);
+            }
+        }
+
+        return ntModule;
+    }
+
+    static String getErrorMessage(int errorCode) {
+        try (var arena = Arena.openConfined()) {
+            var messagePointerHolder = arena.allocate(ADDRESS);
+
+            // First try: Win32 error code
+            int res = Kernel32.FormatMessageW(
+                    Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
                     NULL, errorCode, 0, messagePointerHolder, 0, NULL);
+
+            // Second try: NTSTATUS error code
+            if (res == 0) {
+                res = Kernel32.FormatMessageW(
+                        Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_HMODULE() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+                        getNtModule(), errorCode, 0, messagePointerHolder, 0, NULL);
+            }
+
+            // Fallback
             if (res == 0)
                 return "unspecified error";
-            var messagePointer = messagePointerHolder.get(ADDRESS, 0);
-            String message = Win.createStringFromSegment(MemorySegment.ofAddress(messagePointer, 4000, session));
+
+            var messagePointer = messagePointerHolder.get(ForeignMemory.UNBOUNDED_ADDRESS, 0);
+            String message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);
             return message.trim();
         }

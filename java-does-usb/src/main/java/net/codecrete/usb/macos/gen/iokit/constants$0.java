@@ -9,12 +9,14 @@ import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.ValueLayout.OfAddress;
 import static java.lang.foreign.ValueLayout.OfInt;
-class constants$0 {
+final class constants$0 {
 
-    static final  OfAddress kCFRunLoopDefaultMode$LAYOUT = Constants$root.C_POINTER$LAYOUT;
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$0() {}
+    static final OfAddress kCFRunLoopDefaultMode$LAYOUT = Constants$root.C_POINTER$LAYOUT;
     static final VarHandle kCFRunLoopDefaultMode$VH = constants$0.kCFRunLoopDefaultMode$LAYOUT.varHandle();
     static final MemorySegment kCFRunLoopDefaultMode$SEGMENT = RuntimeHelper.lookupGlobalVariable("kCFRunLoopDefaultMode", constants$0.kCFRunLoopDefaultMode$LAYOUT);
-    static final  OfInt kIOMasterPortDefault$LAYOUT = Constants$root.C_INT$LAYOUT;
+    static final OfInt kIOMasterPortDefault$LAYOUT = Constants$root.C_INT$LAYOUT;
     static final VarHandle kIOMasterPortDefault$VH = constants$0.kIOMasterPortDefault$LAYOUT.varHandle();
     static final MemorySegment kIOMasterPortDefault$SEGMENT = RuntimeHelper.lookupGlobalVariable("kIOMasterPortDefault", constants$0.kIOMasterPortDefault$LAYOUT);
     static final FunctionDescriptor IONotificationPortCreate$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,

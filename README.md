@@ -1,5 +1,7 @@
 # Java Does USB: USB Library for Java
 
+> **Development branch for JDK 20**
+
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
 *Java Does USB* is a library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
@@ -80,7 +82,7 @@ public class EnumerateDevices {
 
 ## Prerequisite
 
-- Java 19, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
+- Java 20, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
 For a version compatible with JDK 20, see the branch `jdk20`.
@@ -118,8 +120,6 @@ The Windows driver model is more rigid than the ones of macOS or Linux. It's not
 USB devices can implement certain control requests to instruct Windows to automatically install the WinUSB driver (search for WCID or Microsoft OS Compatibility Descriptors). The driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
 The test devices implement the required control requests. So the driver is installed automatically.
-
-This library does not yet run reliably on Windows as the Java VM sometimes overwrites the last error code, which is needed for proper function, not just in error cases. It works incorrectly when run in the debugger and sometimes even without the debugger. A future version of the Foreign Function & Memory API will hopefully provide a way to save the last error code. The developers are aware of the issue.
 
 The library has not been tested on Windows for ARM64. It might or might not work.
 

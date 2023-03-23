@@ -46,7 +46,9 @@ public class Configuration {
         return interfaces_;
     }
 
-    public List<CompositeFunction> functions() { return functions_; }
+    public List<CompositeFunction> functions() {
+        return functions_;
+    }
 
     public void addInterface(USBInterface intf) {
         interfaces_.add(intf);
@@ -61,9 +63,6 @@ public class Configuration {
     }
 
     public CompositeFunction findFunction(int interfaceNumber) {
-        return functions_.stream()
-                .filter((f) -> interfaceNumber >= f.firstInterfaceNumber()
-                        && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces())
-                .findFirst().orElse(null);
+        return functions_.stream().filter((f) -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
     }
 }

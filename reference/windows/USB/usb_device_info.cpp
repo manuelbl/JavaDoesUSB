@@ -19,18 +19,18 @@
 std::wstring usb_device_info::get_device_path(const std::wstring& instance_id, const GUID* interface_guid) {
 
     // get device info set for instance
-    HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(interface_guid, instance_id.c_str(), nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+    HDEVINFO dev_info_set = SetupDiGetClassDevsW(interface_guid, instance_id.c_str(), nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    if (dev_info_set == INVALID_HANDLE_VALUE)
         usb_error::throw_error("internal error (SetupDiGetClassDevsW)");
 
     // ensure the result is destroyed when the scope is left
-    auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-        SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+    auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+        SetupDiDestroyDeviceInfoList(dev_info_set);
     });
 
     // retrieve first element of enumeration
     SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
-    if (!SetupDiEnumDeviceInterfaces(dev_info_set_hdl, nullptr, interface_guid, 0, &dev_intf_data))
+    if (!SetupDiEnumDeviceInterfaces(dev_info_set, nullptr, interface_guid, 0, &dev_intf_data))
         usb_error::throw_error("internal error (SetupDiEnumDeviceInterfaces)");
 
     // retrieve path
@@ -38,17 +38,17 @@ std::wstring usb_device_info::get_device_path(const std::wstring& instance_id, c
     memset(dev_path_buf, 0, sizeof(dev_path_buf));
     PSP_DEVICE_INTERFACE_DETAIL_DATA_W intf_detail_data = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(dev_path_buf);
     intf_detail_data->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
-    if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, intf_detail_data, sizeof(dev_path_buf), nullptr, nullptr))
+    if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set, &dev_intf_data, intf_detail_data, sizeof(dev_path_buf), nullptr, nullptr))
         throw usb_error("Internal error (SetupDiGetDeviceInterfaceDetailA)", GetLastError());
 
     return intf_detail_data->DevicePath;
 }
 
-uint32_t usb_device_info::get_device_property_int(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
+uint32_t usb_device_info::get_device_property_int(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
     // query property value
     DEVPROPTYPE property_type;
     uint32_t property_value = -1;
-    if (!SetupDiGetDevicePropertyW(dev_info, dev_info_data, prop_key, &property_type, reinterpret_cast<PBYTE>(&property_value), sizeof(property_value), nullptr, 0))
+    if (!SetupDiGetDevicePropertyW(dev_info_set, dev_info_data, prop_key, &property_type, reinterpret_cast<PBYTE>(&property_value), sizeof(property_value), nullptr, 0))
         usb_error::throw_error("internal error (SetupDiGetDevicePropertyW)");
 
     // check property type
@@ -58,12 +58,12 @@ uint32_t usb_device_info::get_device_property_int(HDEVINFO dev_info, SP_DEVINFO_
     return property_value;
 }
 
-std::vector<uint8_t> usb_device_info::get_device_property_variable_length(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key, DEVPROPTYPE expected_type) {
+std::vector<uint8_t> usb_device_info::get_device_property_variable_length(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key, DEVPROPTYPE expected_type) {
 
     // query length
     DWORD required_size = 0;
     DEVPROPTYPE property_type;
-    if (!SetupDiGetDevicePropertyW(dev_info, dev_info_data, prop_key, &property_type, nullptr, 0, &required_size, 0)) {
+    if (!SetupDiGetDevicePropertyW(dev_info_set, dev_info_data, prop_key, &property_type, nullptr, 0, &required_size, 0)) {
         DWORD err = GetLastError();
         if (err == ERROR_NOT_FOUND)
             return {};
@@ -78,22 +78,22 @@ std::vector<uint8_t> usb_device_info::get_device_property_variable_length(HDEVIN
     // query property value
     std::vector<uint8_t> property_value;
     property_value.resize(required_size);
-    if (!SetupDiGetDevicePropertyW(dev_info, dev_info_data, prop_key, &property_type, &property_value[0], required_size, nullptr, 0))
+    if (!SetupDiGetDevicePropertyW(dev_info_set, dev_info_data, prop_key, &property_type, &property_value[0], required_size, nullptr, 0))
         usb_error::throw_error("internal error (SetupDiGetDevicePropertyW)");
 
     return property_value;
 }
 
-std::wstring usb_device_info::get_device_property_string(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
+std::wstring usb_device_info::get_device_property_string(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
 
-    auto property_value = get_device_property_variable_length(dev_info, dev_info_data, prop_key, DEVPROP_TYPE_STRING);
+    auto property_value = get_device_property_variable_length(dev_info_set, dev_info_data, prop_key, DEVPROP_TYPE_STRING);
     if (property_value.size() == 0)
         return L"";
     return std::wstring(reinterpret_cast<const WCHAR*>(&property_value[0]));
 }
 
-std::vector<std::wstring> usb_device_info::get_device_property_string_list(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
-    auto property_value = get_device_property_variable_length(dev_info, dev_info_data, prop_key, DEVPROP_TYPE_STRING | DEVPROP_TYPEMOD_LIST);
+std::vector<std::wstring> usb_device_info::get_device_property_string_list(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data, const DEVPROPKEY* prop_key) {
+    auto property_value = get_device_property_variable_length(dev_info_set, dev_info_data, prop_key, DEVPROP_TYPE_STRING | DEVPROP_TYPEMOD_LIST);
     if (property_value.size() == 0)
         return {};
     return split_string_list(reinterpret_cast<const WCHAR*>(&property_value[0]));
@@ -174,17 +174,17 @@ std::string usb_device_info::get_string(HANDLE hub_handle, ULONG usb_port_num, i
     return result;
 }
 
-bool usb_device_info::is_composite_device(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data) {
-    std::wstring device_service = usb_device_info::get_device_property_string(dev_info, dev_info_data, &DEVPKEY_Device_Service);
+bool usb_device_info::is_composite_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
+    std::wstring device_service = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_Service);
     return lstrcmpiW(device_service.c_str(), L"usbccgp") == 0;
 }
 
 static const std::wregex multiple_interface_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
 
-int usb_device_info::get_first_interface(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data) {
+int usb_device_info::get_first_interface(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
     // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
 
-    auto hardware_ids = usb_device_info::get_device_property_string_list(dev_info, dev_info_data, &DEVPKEY_Device_HardwareIds);
+    auto hardware_ids = usb_device_info::get_device_property_string_list(dev_info_set, dev_info_data, &DEVPKEY_Device_HardwareIds);
 
     for (const std::wstring& id : hardware_ids) {
         auto matches = std::wsmatch{};
@@ -195,8 +195,8 @@ int usb_device_info::get_first_interface(HDEVINFO dev_info, SP_DEVINFO_DATA* dev
     return -1;
 }
 
-std::vector<std::wstring> usb_device_info::find_device_interface_guids(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data) {
-    HKEY reg_key = SetupDiOpenDevRegKey(dev_info, dev_info_data, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+std::vector<std::wstring> usb_device_info::find_device_interface_guids(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
+    HKEY reg_key = SetupDiOpenDevRegKey(dev_info_set, dev_info_data, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
     if (reg_key == INVALID_HANDLE_VALUE)
         throw usb_error("Cannot open device registry key", GetLastError());
 

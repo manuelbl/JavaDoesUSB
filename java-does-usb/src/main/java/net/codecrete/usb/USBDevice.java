@@ -134,7 +134,7 @@ public interface USBDevice {
     /**
      * Gets the endpoint with the specified number.
      *
-     * @param direction the endpoint direction
+     * @param direction      the endpoint direction
      * @param endpointNumber the endpoint number (between 1 and 127)
      * @return the endpoint, or {@code null} if no endpoint with the given direction and number exists
      */
@@ -152,6 +152,7 @@ public interface USBDevice {
      * <p>
      * The device must be open and the interface must be claimed for exclusive access.
      * </p>
+     *
      * @param interfaceNumber interface number
      * @param alternateNumber alternate setting number
      */
@@ -279,28 +280,78 @@ public interface USBDevice {
      * Opens a new output stream to send data to a bulk endpoint.
      * <p>
      * All data written to this output stream is sent to the specified bulk endpoint.
+     * Buffering and concurrent IO requests are used to achieve a high throughput.
+     * </p>
+     * <p>
+     * The stream will insert zero-length packets if {@link OutputStream#flush()} is called
+     * and the last packet size was equal to maximum packet size of the endpoint.
+     * </p>
+     * <p>
      * If {@link #transferOut(int, byte[])} and a output stream or multiple output streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
      *
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127)
+     * @param bufferSize approximate buffer size (in bytes)
      * @return the new output stream
      */
-    OutputStream openOutputStream(int endpointNumber);
+    OutputStream openOutputStream(int endpointNumber, int bufferSize);
+
+    /**
+     * Opens a new output stream to send data to a bulk endpoint.
+     * <p>
+     * The buffer is configured with minimal size. In all other aspects, this method
+     * works like {@link #openOutputStream(int, int)}.
+     * </p>
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127)
+     * @return the new output stream
+     */
+    default OutputStream openOutputStream(int endpointNumber) {
+        return openOutputStream(endpointNumber, 1);
+    }
 
     /**
      * Opens a new input stream to receive data from a bulk endpoint.
      * <p>
      * All data received from the specified bulk endpoint can be read using this input stream.
+     * Buffering and concurrent IO requests are used to achieve a high throughput.
      * </p>
      * <p>
+     * If the buffers contain data when the stream is closed, this data will be discarded.
      * If {@link #transferIn(int)} and an input stream or multiple input streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
+     *
+     * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
+     * @param bufferSize approximate buffer size (in bytes)
+     * @return the new input stream
+     */
+    InputStream openInputStream(int endpointNumber, int bufferSize);
+
+    /**
+     * Opens a new input stream to receive data from a bulk endpoint.
+     * <p>
+     * The buffer is configured with minimal size. In all other aspects, this method
+     * works like {@link #openInputStream(int, int)}.
+     * </p>
+     *
      * @param endpointNumber bulk endpoint number (in the range between 1 and 127, i.e. without the direction bit)
      * @return the new input stream
      */
-    InputStream openInputStream(int endpointNumber);
+    default InputStream openInputStream(int endpointNumber) {
+        return openInputStream(endpointNumber, 1);
+    }
+
+    /**
+     * Aborts all transfers on an endpoint.
+     * <p>
+     * This operation is not valid on the control endpoint 0.
+     * </p>
+     *
+     * @param direction      endpoint direction
+     * @param endpointNumber endpoint number (in the range between 1 and 127)
+     */
+    void abortTransfers(USBDirection direction, int endpointNumber);
 
     /**
      * Clears an endpoint's halt condition.
@@ -312,7 +363,8 @@ public interface USBDevice {
      * <p>
      * Control endpoint 0 will never be halted.
      * </p>
-     * @param direction endpoint direction
+     *
+     * @param direction      endpoint direction
      * @param endpointNumber endpoint number (in the range between 1 and 127)
      */
     void clearHalt(USBDirection direction, int endpointNumber);

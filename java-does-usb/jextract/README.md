@@ -92,7 +92,7 @@ The known limitations are:
 
 *jextract* generates a comprehensive set of methods for each function, struct, struct member etc. Most of it will not be used as a typical application just uses a subset of struct members, might only read or write them etc. So a considerable amount of code is generated. For some types, it's a bit excessive.
 
-The worst example is [`IOUSBInterfaceStruct942`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBDeviceStruct942.java) (macOS). This is a `struct` consisting of about 75 member functions. It's bascially a vtable of a C++ class. *jextract* generates the same number of classes plus a huge class for the struct itself. The total code size (compiled) for this single `struct` is over 300 kByte.
+The worst example is [`IOUSBInterfaceStruct100`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBDeviceStruct100.java) (macOS). This is a `struct` consisting of about 75 member functions. It's bascially a vtable of a C++ class. *jextract* generates the same number of classes plus a huge class for the struct itself. The total code size (compiled) for this single `struct` is over 300 kByte.
 
 The table below shows statictics for version 0.2.0 of the library:
 

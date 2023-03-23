@@ -26,6 +26,10 @@ public class InterfaceAssociationDescriptor {
         this.descriptor = descriptor;
     }
 
+    public InterfaceAssociationDescriptor(MemorySegment segment, long offset) {
+        this(segment.asSlice(offset, LAYOUT.byteSize()));
+    }
+
     public int firstInterface() {
         return 0xff & (byte) bFirstInterface$VH.get(descriptor);
     }

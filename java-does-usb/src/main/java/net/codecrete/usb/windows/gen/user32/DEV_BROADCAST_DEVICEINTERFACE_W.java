@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-public class DEV_BROADCAST_DEVICEINTERFACE_W extends _DEV_BROADCAST_DEVICEINTERFACE_W {
+/**
+ * {@snippet :
+ * typedef struct _DEV_BROADCAST_DEVICEINTERFACE_W DEV_BROADCAST_DEVICEINTERFACE_W;
+ * }
+ */
+public final class DEV_BROADCAST_DEVICEINTERFACE_W extends _DEV_BROADCAST_DEVICEINTERFACE_W {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private DEV_BROADCAST_DEVICEINTERFACE_W() {}
 }
 
 

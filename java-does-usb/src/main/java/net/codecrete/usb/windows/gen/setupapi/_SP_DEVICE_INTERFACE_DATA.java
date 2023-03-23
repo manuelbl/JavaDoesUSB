@@ -4,9 +4,19 @@ package net.codecrete.usb.windows.gen.setupapi;
 
 import java.lang.foreign.*;
 import java.lang.invoke.VarHandle;
+/**
+ * {@snippet :
+ * struct _SP_DEVICE_INTERFACE_DATA {
+ *     DWORD cbSize;
+ *     GUID InterfaceClassGuid;
+ *     DWORD Flags;
+ *     ULONG_PTR Reserved;
+ * };
+ * }
+ */
 public class _SP_DEVICE_INTERFACE_DATA {
 
-    static final  GroupLayout $struct$LAYOUT = MemoryLayout.structLayout(
+    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_LONG$LAYOUT.withName("cbSize"),
         MemoryLayout.structLayout(
             Constants$root.C_LONG$LAYOUT.withName("Data1"),
@@ -24,10 +34,22 @@ public class _SP_DEVICE_INTERFACE_DATA {
     public static VarHandle cbSize$VH() {
         return _SP_DEVICE_INTERFACE_DATA.cbSize$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD cbSize;
+     * }
+     */
     public static int cbSize$get(MemorySegment seg) {
         return (int)_SP_DEVICE_INTERFACE_DATA.cbSize$VH.get(seg);
     }
-    public static void cbSize$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD cbSize;
+     * }
+     */
+    public static void cbSize$set(MemorySegment seg, int x) {
         _SP_DEVICE_INTERFACE_DATA.cbSize$VH.set(seg, x);
     }
     public static int cbSize$get(MemorySegment seg, long index) {
@@ -43,10 +65,22 @@ public class _SP_DEVICE_INTERFACE_DATA {
     public static VarHandle Flags$VH() {
         return _SP_DEVICE_INTERFACE_DATA.Flags$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * DWORD Flags;
+     * }
+     */
     public static int Flags$get(MemorySegment seg) {
         return (int)_SP_DEVICE_INTERFACE_DATA.Flags$VH.get(seg);
     }
-    public static void Flags$set( MemorySegment seg, int x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * DWORD Flags;
+     * }
+     */
+    public static void Flags$set(MemorySegment seg, int x) {
         _SP_DEVICE_INTERFACE_DATA.Flags$VH.set(seg, x);
     }
     public static int Flags$get(MemorySegment seg, long index) {
@@ -59,10 +93,22 @@ public class _SP_DEVICE_INTERFACE_DATA {
     public static VarHandle Reserved$VH() {
         return _SP_DEVICE_INTERFACE_DATA.Reserved$VH;
     }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * ULONG_PTR Reserved;
+     * }
+     */
     public static long Reserved$get(MemorySegment seg) {
         return (long)_SP_DEVICE_INTERFACE_DATA.Reserved$VH.get(seg);
     }
-    public static void Reserved$set( MemorySegment seg, long x) {
+    /**
+     * Setter for field:
+     * {@snippet :
+     * ULONG_PTR Reserved;
+     * }
+     */
+    public static void Reserved$set(MemorySegment seg, long x) {
         _SP_DEVICE_INTERFACE_DATA.Reserved$VH.set(seg, x);
     }
     public static long Reserved$get(MemorySegment seg, long index) {
@@ -73,10 +119,10 @@ public class _SP_DEVICE_INTERFACE_DATA {
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
+    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
+    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

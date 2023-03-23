@@ -1,8 +1,8 @@
 package net.codecrete.usb.usbstandard;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
 import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
@@ -29,10 +29,10 @@ public class SetupPacket {
     /**
      * Creates a setup packet by allocating a native memory segment.
      *
-     * @param session memory session
+     * @param arena arena
      */
-    public SetupPacket(MemorySession session) {
-        this.descriptor = session.allocate(LAYOUT);
+    public SetupPacket(Arena arena) {
+        this.descriptor = arena.allocate(LAYOUT);
     }
 
     /**

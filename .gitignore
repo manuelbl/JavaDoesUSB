@@ -1,3 +1,5 @@
+java-does-usb/sample.bin
+
 # Maven
 target/
 *.ser

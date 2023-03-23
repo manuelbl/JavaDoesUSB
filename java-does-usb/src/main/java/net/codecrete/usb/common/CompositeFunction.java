@@ -36,7 +36,8 @@ public class CompositeFunction {
      * @param subclassCode         the function subclass
      * @param protocolCode         the function protocol
      */
-    public CompositeFunction(int firstInterfaceNumber, int numInterfaces, int classCode, int subclassCode, int protocolCode) {
+    public CompositeFunction(int firstInterfaceNumber, int numInterfaces, int classCode, int subclassCode,
+                             int protocolCode) {
         firstInterfaceNumber_ = firstInterfaceNumber;
         numInterfaces_ = numInterfaces;
         classCode_ = classCode;

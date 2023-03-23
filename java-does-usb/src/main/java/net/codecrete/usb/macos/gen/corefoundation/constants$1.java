@@ -3,10 +3,11 @@
 package net.codecrete.usb.macos.gen.corefoundation;
 
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemoryLayout;
 import java.lang.invoke.MethodHandle;
-class constants$1 {
+final class constants$1 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$1() {}
     static final FunctionDescriptor CFNumberGetTypeID$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT);
     static final MethodHandle CFNumberGetTypeID$MH = RuntimeHelper.downcallHandle(
         "CFNumberGetTypeID",
@@ -40,29 +41,14 @@ class constants$1 {
         "CFRunLoopAddSource",
         constants$1.CFRunLoopAddSource$FUNC
     );
-    static final FunctionDescriptor CFUUIDGetUUIDBytes$FUNC = FunctionDescriptor.of(MemoryLayout.structLayout(
-        Constants$root.C_CHAR$LAYOUT.withName("byte0"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte1"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte2"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte3"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte4"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte5"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte6"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte7"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte8"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte9"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte10"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte11"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte12"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte13"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte14"),
-        Constants$root.C_CHAR$LAYOUT.withName("byte15")
-    ),
+    static final FunctionDescriptor CFRunLoopRemoveSource$FUNC = FunctionDescriptor.ofVoid(
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle CFUUIDGetUUIDBytes$MH = RuntimeHelper.downcallHandle(
-        "CFUUIDGetUUIDBytes",
-        constants$1.CFUUIDGetUUIDBytes$FUNC
+    static final MethodHandle CFRunLoopRemoveSource$MH = RuntimeHelper.downcallHandle(
+        "CFRunLoopRemoveSource",
+        constants$1.CFRunLoopRemoveSource$FUNC
     );
 }
 

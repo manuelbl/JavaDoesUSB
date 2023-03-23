@@ -2,131 +2,48 @@
 
 package net.codecrete.usb.windows.gen.winusb;
 
-import java.lang.foreign.Addressable;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class WinUSB  {
 
-    /* package-private */ WinUSB() {}
-    public static OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
+    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
+    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
+    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
+    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
+    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
+    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
+    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    /**
+     * {@snippet :
+     * #define PIPE_TRANSFER_TIMEOUT 3
+     * }
+     */
     public static int PIPE_TRANSFER_TIMEOUT() {
         return (int)3L;
     }
-    public static MethodHandle WinUsb_Initialize$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_Initialize$MH,"WinUsb_Initialize");
-    }
-    public static int WinUsb_Initialize ( Addressable DeviceHandle,  Addressable InterfaceHandle) {
-        var mh$ = WinUsb_Initialize$MH();
-        try {
-            return (int)mh$.invokeExact(DeviceHandle, InterfaceHandle);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
+    /**
+     * {@snippet :
+     * #define RAW_IO 7
+     * }
+     */
+    public static int RAW_IO() {
+        return (int)7L;
     }
     public static MethodHandle WinUsb_Free$MH() {
         return RuntimeHelper.requireNonNull(constants$0.WinUsb_Free$MH,"WinUsb_Free");
     }
-    public static int WinUsb_Free ( Addressable InterfaceHandle) {
+    /**
+     * {@snippet :
+     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle);
+     * }
+     */
+    public static int WinUsb_Free(MemorySegment InterfaceHandle) {
         var mh$ = WinUsb_Free$MH();
         try {
             return (int)mh$.invokeExact(InterfaceHandle);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_GetAssociatedInterface$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetAssociatedInterface$MH,"WinUsb_GetAssociatedInterface");
-    }
-    public static int WinUsb_GetAssociatedInterface ( Addressable InterfaceHandle,  byte AssociatedInterfaceIndex,  Addressable AssociatedInterfaceHandle) {
-        var mh$ = WinUsb_GetAssociatedInterface$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, AssociatedInterfaceIndex, AssociatedInterfaceHandle);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_GetDescriptor$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_GetDescriptor$MH,"WinUsb_GetDescriptor");
-    }
-    public static int WinUsb_GetDescriptor ( Addressable InterfaceHandle,  byte DescriptorType,  byte Index,  short LanguageID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred) {
-        var mh$ = WinUsb_GetDescriptor$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, DescriptorType, Index, LanguageID, Buffer, BufferLength, LengthTransferred);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_SetCurrentAlternateSetting$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetCurrentAlternateSetting$MH,"WinUsb_SetCurrentAlternateSetting");
-    }
-    public static int WinUsb_SetCurrentAlternateSetting ( Addressable InterfaceHandle,  byte SettingNumber) {
-        var mh$ = WinUsb_SetCurrentAlternateSetting$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, SettingNumber);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_SetPipePolicy$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.WinUsb_SetPipePolicy$MH,"WinUsb_SetPipePolicy");
-    }
-    public static int WinUsb_SetPipePolicy ( Addressable InterfaceHandle,  byte PipeID,  int PolicyType,  int ValueLength,  Addressable Value) {
-        var mh$ = WinUsb_SetPipePolicy$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, PipeID, PolicyType, ValueLength, Value);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_ReadPipe$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ReadPipe$MH,"WinUsb_ReadPipe");
-    }
-    public static int WinUsb_ReadPipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
-        var mh$ = WinUsb_ReadPipe$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, PipeID, Buffer, BufferLength, LengthTransferred, Overlapped);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_WritePipe$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.WinUsb_WritePipe$MH,"WinUsb_WritePipe");
-    }
-    public static int WinUsb_WritePipe ( Addressable InterfaceHandle,  byte PipeID,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
-        var mh$ = WinUsb_WritePipe$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, PipeID, Buffer, BufferLength, LengthTransferred, Overlapped);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_ControlTransfer$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ControlTransfer$MH,"WinUsb_ControlTransfer");
-    }
-    public static int WinUsb_ControlTransfer ( Addressable InterfaceHandle,  MemorySegment SetupPacket,  Addressable Buffer,  int BufferLength,  Addressable LengthTransferred,  Addressable Overlapped) {
-        var mh$ = WinUsb_ControlTransfer$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, SetupPacket, Buffer, BufferLength, LengthTransferred, Overlapped);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-    public static MethodHandle WinUsb_ResetPipe$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.WinUsb_ResetPipe$MH,"WinUsb_ResetPipe");
-    }
-    public static int WinUsb_ResetPipe ( Addressable InterfaceHandle,  byte PipeID) {
-        var mh$ = WinUsb_ResetPipe$MH();
-        try {
-            return (int)mh$.invokeExact(InterfaceHandle, PipeID);
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

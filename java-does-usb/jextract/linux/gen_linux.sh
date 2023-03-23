@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract-19/bin/jextract
+JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 
 # sd-device.h (install libsystemd-dev if file is missing)
 # Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'
@@ -14,9 +14,10 @@ JEXTRACT=../../../../jextract-19/bin/jextract
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
-  --include-function __errno_location \
-  --include-macro ETIMEDOUT \
-  --include-macro EPIPE \
+  --include-constant ETIMEDOUT \
+  --include-constant EPIPE \
+  --include-constant EBADF \
+  --include-constant EAGAIN \
   /usr/include/errno.h
 
 # string.h
@@ -26,20 +27,12 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function strerror \
   /usr/include/string.h
 
-# ioctl.h
-$JEXTRACT --source --output ../../src/main/java \
-  --header-class-name ioctl \
-  --target-package net.codecrete.usb.linux.gen.ioctl \
-  --include-function ioctl \
-  /usr/include/x86_64-linux-gnu/sys/ioctl.h
-
 # fcntl.h
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name fcntl \
   --target-package net.codecrete.usb.linux.gen.fcntl \
-  --include-function open \
-  --include-macro O_CLOEXEC \
-  --include-macro O_RDWR \
+  --include-constant O_CLOEXEC \
+  --include-constant O_RDWR \
   /usr/include/fcntl.h
 
 # unistd.h
@@ -57,12 +50,20 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct usbdevfs_bulktransfer \
   --include-struct usbdevfs_ctrltransfer \
   --include-struct usbdevfs_setinterface \
-  --include-macro USBDEVFS_CONTROL \
-  --include-macro USBDEVFS_BULK \
-  --include-macro USBDEVFS_CLAIMINTERFACE \
-  --include-macro USBDEVFS_RELEASEINTERFACE \
-  --include-macro USBDEVFS_SETINTERFACE \
-  --include-macro USBDEVFS_CLEAR_HALT \
+  --include-struct usbdevfs_urb \
+  --include-constant USBDEVFS_CONTROL \
+  --include-constant USBDEVFS_BULK \
+  --include-constant USBDEVFS_CLAIMINTERFACE \
+  --include-constant USBDEVFS_RELEASEINTERFACE \
+  --include-constant USBDEVFS_SETINTERFACE \
+  --include-constant USBDEVFS_CLEAR_HALT \
+  --include-constant USBDEVFS_SUBMITURB \
+  --include-constant USBDEVFS_DISCARDURB \
+  --include-constant USBDEVFS_REAPURB \
+  --include-constant USBDEVFS_URB_TYPE_INTERRUPT \
+  --include-constant USBDEVFS_URB_TYPE_CONTROL \
+  --include-constant USBDEVFS_URB_TYPE_BULK \
+  --include-constant USBDEVFS_URB_TYPE_ISO \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h
@@ -98,6 +99,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --target-package net.codecrete.usb.linux.gen.poll \
   --include-function poll \
   --include-struct pollfd \
-  --include-macro POLLIN \
+  --include-constant POLLIN \
+  --include-constant POLLOUT \
+  --include-constant POLLERR \
   /usr/include/poll.h
 

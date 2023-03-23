@@ -4,8 +4,10 @@ package net.codecrete.usb.macos.gen.mach;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$0 {
+final class constants$0 {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$0() {}
     static final FunctionDescriptor mach_error_string$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_INT$LAYOUT
     );

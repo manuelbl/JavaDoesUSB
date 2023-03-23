@@ -9,6 +9,7 @@ find_package(Threads REQUIRED)
 
 set(SOURCES
     assertion.cpp assertion.hpp
+    blocking_queue.hpp
     config_parser.cpp config_parser.hpp
     configuration.cpp configuration.hpp
     main.cpp
@@ -18,6 +19,7 @@ set(SOURCES
     tests.cpp tests.hpp
     usb_device.cpp usb_device.hpp
     usb_error.cpp usb_error.hpp
+    usb_iostream.cpp usb_iostream.hpp
     usb_registry.cpp usb_registry.hpp
 )
 

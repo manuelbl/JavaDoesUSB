@@ -8,12 +8,9 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.windows.gen.kernel32.GUID;
-import net.codecrete.usb.windows.gen.stdlib.StdLib;
 
-import java.lang.foreign.MemoryAddress;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.MemorySession;
-import java.lang.foreign.ValueLayout;
+import java.lang.foreign.*;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,13 +23,37 @@ import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 public class Win {
 
     /**
+     * Global native memory segment allocator.
+     */
+    public static final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
+
+    /**
+     * Call state for capturing the {@code GetLastError()} value.
+     */
+    public static final Linker.Option.CaptureCallState LAST_ERROR_STATE = Linker.Option.captureCallState(
+            "GetLastError");
+
+    private static final VarHandle callState_GetLastError$VH =
+            LAST_ERROR_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("GetLastError"));
+
+    /**
+     * Returns the error code captured using the call state {@link #LAST_ERROR_STATE}.
+     *
+     * @param callState the call state
+     * @return the error code
+     */
+    public static int getLastError(MemorySegment callState) {
+        return (int) callState_GetLastError$VH.get(callState);
+    }
+
+    /**
      * Checks if a Windows handle is invalid.
      *
      * @param handle Windows handle
      * @return {@code true} if the handle is invalid, {@code false} otherwise
      */
-    public static boolean IsInvalidHandle(MemoryAddress handle) {
-        return handle.toRawLongValue() == -1L;
+    public static boolean IsInvalidHandle(MemorySegment handle) {
+        return handle.address() == -1L;
     }
 
     /**
@@ -41,13 +62,13 @@ public class Win {
      * The memory segment contains a copy of the string (null-terminated, UTF-16/wide characters).
      * </p>
      *
-     * @param str     the string to copy
-     * @param session the memory session for the memory segment
+     * @param str   the string to copy
+     * @param arena the arena for the memory segment
      * @return the resulting memory segment
      */
-    public static MemorySegment createSegmentFromString(String str, MemorySession session) {
+    public static MemorySegment createSegmentFromString(String str, Arena arena) {
         // allocate segment (including space for terminating null)
-        var segment = session.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1);
+        var segment = arena.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1);
         // copy characters
         segment.copyFrom(MemorySegment.ofArray(str.toCharArray()));
         return segment;
@@ -63,8 +84,12 @@ public class Win {
      * @return copied string
      */
     public static String createStringFromSegment(MemorySegment segment) {
-        long strLen = StdLib.wcslen(segment);
-        return new String(segment.asSlice(0, 2L * strLen).toArray(JAVA_CHAR));
+        int len = 0;
+        while (segment.get(JAVA_CHAR, len) != 0) {
+            len += 2;
+        }
+
+        return new String(segment.asSlice(0, len).toArray(JAVA_CHAR));
     }
 
     /**
@@ -107,7 +132,7 @@ public class Win {
     public static MemorySegment CreateGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
                                            byte data4_7) {
-        var guid = MemorySegment.allocateNative(GUID.$LAYOUT(), MemorySession.global());
+        var guid = GLOBAL_ALLOCATOR.allocate(GUID.$LAYOUT());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
     }

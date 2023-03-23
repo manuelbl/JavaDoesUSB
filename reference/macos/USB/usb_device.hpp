@@ -12,6 +12,8 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/usb/IOUSBLib.h>
 
+#include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -19,6 +21,8 @@
 #include <stdint.h>
 
 #include "configuration.hpp"
+
+class usb_registry;
 
 
 /**
@@ -215,6 +219,37 @@ public:
      * @return received data
      */
     std::vector<uint8_t> control_transfer_in(const usb_control_request& request, int timeout = 0);
+    
+    /**
+     * Open a new input stream for a bulk endpoint.
+     *
+     * The input stream is optimized for maximum throughput.
+     *
+     * Do not use the input stream concurrently with other transfer operations on the same endpoint. The input stream
+     * buffers data for high throughput. When the stream is closed, any data in the buffers will be lost.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::istream> open_input_stream(int endpoint_number);
+    
+    /**
+     * Open a new output stream for a bulk endpoint.
+     *
+     * The output stream is optimized for maximum throughput.
+     *
+     * Do not use the output stream concurrently with other transfer operations on the same endpoint.
+     *
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    std::unique_ptr<std::ostream> open_output_stream(int endpoint_number);
+
+    /**
+     * Aborts all transfer on the specified endpoint.
+     *
+     * @param direction endpoint direction
+     * @param endpoint_number endpoint number (between 1 and 127)
+     */
+    void abort_transfer(usb_direction direction, int endpoint_number);
 
 private:
     struct pipe_info {
@@ -225,7 +260,7 @@ private:
         int interface_number;
     };
 
-    usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id);
+    usb_device(usb_registry* registry, io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id);
     uint64_t entry_id() const { return entry_id_; }
     void build_pipe_info();
     const pipe_info* get_pipe(int endpoint_address);
@@ -236,6 +271,15 @@ private:
     usb_interface* get_intf_ptr(int interface_number);
     int get_alternate_index(int interface_number, int alternate_setting);
     
+    // Submits async request (completion handler is not copied; lifetime must be managed by caller)
+    void submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_size, const std::function<void(IOReturn, int)>& completion);
+    // Submits async request (completion handler is not copied; lifetime must be managed by caller)
+    void submit_transfer_out(int endpoint_number, const uint8_t* data, int data_size, const std::function<void(IOReturn, int)>& completion);
+    // Create event source for asynchronous communication (if needed)
+    void create_event_source(IOUSBInterfaceInterface** interface);
+    static void async_io_completed(void* refcon, IOReturn result, void* arg0);
+    
+    usb_registry* registry_;
     uint64_t entry_id_;
     IOUSBDeviceInterface** device_;
     bool is_open_;
@@ -250,6 +294,8 @@ private:
     std::string serial_number_;
     
     friend class usb_registry;
+    friend class usb_istreambuf;
+    friend class usb_ostreambuf;
 };
 
 typedef std::shared_ptr<usb_device> usb_device_ptr;

@@ -102,7 +102,8 @@ public abstract class USBDeviceRegistry {
             onDeviceDisconnectedHandler.accept(device);
 
         } catch (Throwable e) {
-            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - ignoring");
+            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - " +
+                    "ignoring");
             e.printStackTrace(System.err);
         }
     }

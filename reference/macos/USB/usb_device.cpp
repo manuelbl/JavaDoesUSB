@@ -9,6 +9,8 @@
 
 #include "usb_device.hpp"
 #include "usb_error.hpp"
+#include "usb_iostream.hpp"
+#include "usb_registry.hpp"
 #include "scope.hpp"
 #include "iokit_helper.hpp"
 #include "config_parser.hpp"
@@ -17,10 +19,11 @@
 
 #include <chrono>
 #include <cstdio>
+#include <memory>
 #include <thread>
 
-usb_device::usb_device(io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id)
-: entry_id_(entry_id), device_(device), vendor_id_(vendor_id), product_id_(product_id), is_open_(false) {
+usb_device::usb_device(usb_registry* registry, io_service_t service, IOUSBDeviceInterface** device, uint64_t entry_id, int vendor_id, int product_id)
+: registry_(registry), entry_id_(entry_id), device_(device), vendor_id_(vendor_id), product_id_(product_id), is_open_(false) {
     
     manufacturer_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBVendorString));
     product_ = iokit_helper::ioreg_get_property_as_string(service, CFSTR(kUSBProductString));
@@ -188,9 +191,13 @@ void usb_device::release_interface(int interface_number) {
     
     auto iter = claimed_interfaces_.find(interface_number);
     if (iter == claimed_interfaces_.end())
-        throw usb_error("interface has been claimed");
+        throw usb_error("interface has not been claimed");
     
     IOUSBInterfaceInterface** interface = (*iter).second;
+    auto source = (*interface)->GetInterfaceAsyncEventSource(interface);
+    if (source != nullptr)
+        registry_->remove_event_source(source);
+    
     claimed_interfaces_.erase(iter);
     uintf->set_claimed(false);
     
@@ -351,6 +358,22 @@ std::vector<uint8_t> usb_device::control_transfer_in(const usb_control_request& 
     return data;
 }
 
+std::unique_ptr<std::istream> usb_device::open_input_stream(int endpoint_number) {
+    return std::unique_ptr<std::istream>(new usb_istream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+std::unique_ptr<std::ostream> usb_device::open_output_stream(int endpoint_number) {
+    return std::unique_ptr<std::ostream>(new usb_ostream(registry_->get_shared_ptr(this), endpoint_number));
+}
+
+void usb_device::abort_transfer(usb_direction direction, int endpoint_number) {
+    auto pipe = get_pipe(direction == usb_direction::in ? endpoint_number + 128 : endpoint_number);
+    IOUSBInterfaceInterface** interface = claimed_interfaces_[pipe->interface_number];
+
+    IOReturn ret = (*interface)->AbortPipe(interface, pipe->pipe_index);
+    usb_error::check(ret, "failed to abort transfer");
+}
+
 const usb_device::pipe_info* usb_device::get_pipe(int endpoint_address) {
     auto it = std::find_if(pipes_.begin(), pipes_.end(),
                            [endpoint_address](const pipe_info& pipe){ return pipe.endpoint_address == endpoint_address; });
@@ -402,4 +425,42 @@ int usb_device::get_alternate_index(int interface_number, int alternate_setting)
     }
     
     return -1;
+}
+
+void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_size, const std::function<void(IOReturn, int)>& completion) {
+    auto pipe = ep_in_pipe(endpoint_number);
+    IOUSBInterfaceInterface** interface = claimed_interfaces_[pipe->interface_number];
+    create_event_source(interface);
+
+    // submit request
+    IOReturn ret = (*interface)->ReadPipeAsync(interface, pipe->pipe_index, buffer, buffer_size, async_io_completed,
+                                      const_cast<std::function<void(IOReturn, int)>*>(&completion));
+    usb_error::check(ret, "failed to submit async transfer");
+}
+
+void usb_device::submit_transfer_out(int endpoint_number, const uint8_t* data, int data_size, const std::function<void(IOReturn, int)>& completion) {
+    auto pipe = ep_out_pipe(endpoint_number);
+    IOUSBInterfaceInterface** interface = claimed_interfaces_[pipe->interface_number];
+    create_event_source(interface);
+    
+    // submit request
+    IOReturn ret = (*interface)->WritePipeAsync(interface, pipe->pipe_index, const_cast<uint8_t*>(data), data_size, async_io_completed,
+                                      const_cast<std::function<void(IOReturn, int)>*>(&completion));
+    usb_error::check(ret, "failed to submit async transfer");
+}
+
+void usb_device::create_event_source(IOUSBInterfaceInterface** interface) {
+    auto source = (*interface)->GetInterfaceAsyncEventSource(interface);
+    if (source == nullptr) {
+        IOReturn ret = (*interface)->CreateInterfaceAsyncEventSource(interface, &source);
+        usb_error::check(ret, "failed to create event source for interface");
+        registry_->add_event_source(source);
+    }
+}
+
+void usb_device::async_io_completed(void* refcon, IOReturn result, void* arg0) {
+    // 'refcon' is lambda function for completion, 'arg0' is the number of read bytes
+    int size = static_cast<int>(reinterpret_cast<uintptr_t>(arg0));
+    auto completion = reinterpret_cast<const std::function<void(IOReturn, int)>*>(refcon);
+    (*completion)(result, size);
 }

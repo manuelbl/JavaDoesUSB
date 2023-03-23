@@ -4,36 +4,10 @@ package net.codecrete.usb.windows.gen.setupapi;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-class constants$0 {
+final class constants$0 {
 
-    static final FunctionDescriptor SetupDiCreateDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiCreateDeviceInfoList$MH = RuntimeHelper.downcallHandle(
-        "SetupDiCreateDeviceInfoList",
-        constants$0.SetupDiCreateDeviceInfoList$FUNC
-    );
-    static final FunctionDescriptor SetupDiOpenDeviceInfoW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiOpenDeviceInfoW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiOpenDeviceInfoW",
-        constants$0.SetupDiOpenDeviceInfoW$FUNC
-    );
-    static final FunctionDescriptor SetupDiEnumDeviceInfo$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiEnumDeviceInfo$MH = RuntimeHelper.downcallHandle(
-        "SetupDiEnumDeviceInfo",
-        constants$0.SetupDiEnumDeviceInfo$FUNC
-    );
+    // Suppresses default constructor, ensuring non-instantiability.
+    private constants$0() {}
     static final FunctionDescriptor SetupDiDestroyDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
@@ -41,26 +15,13 @@ class constants$0 {
         "SetupDiDestroyDeviceInfoList",
         constants$0.SetupDiDestroyDeviceInfoList$FUNC
     );
-    static final FunctionDescriptor SetupDiEnumDeviceInterfaces$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
+    static final FunctionDescriptor SetupDiDeleteDeviceInterfaceData$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
         Constants$root.C_POINTER$LAYOUT
     );
-    static final MethodHandle SetupDiEnumDeviceInterfaces$MH = RuntimeHelper.downcallHandle(
-        "SetupDiEnumDeviceInterfaces",
-        constants$0.SetupDiEnumDeviceInterfaces$FUNC
-    );
-    static final FunctionDescriptor SetupDiOpenDeviceInterfaceW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiOpenDeviceInterfaceW$MH = RuntimeHelper.downcallHandle(
-        "SetupDiOpenDeviceInterfaceW",
-        constants$0.SetupDiOpenDeviceInterfaceW$FUNC
+    static final MethodHandle SetupDiDeleteDeviceInterfaceData$MH = RuntimeHelper.downcallHandle(
+        "SetupDiDeleteDeviceInterfaceData",
+        constants$0.SetupDiDeleteDeviceInterfaceData$FUNC
     );
 }
 

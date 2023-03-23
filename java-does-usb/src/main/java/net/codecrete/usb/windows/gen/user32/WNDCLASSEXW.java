@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-public class WNDCLASSEXW extends tagWNDCLASSEXW {
+/**
+ * {@snippet :
+ * typedef struct tagWNDCLASSEXW WNDCLASSEXW;
+ * }
+ */
+public final class WNDCLASSEXW extends tagWNDCLASSEXW {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private WNDCLASSEXW() {}
 }
 
 

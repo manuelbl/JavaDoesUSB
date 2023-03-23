@@ -29,10 +29,12 @@
     <ClCompile Include="usb_device.cpp" />
     <ClCompile Include="usb_device_info.cpp" />
     <ClCompile Include="usb_error.cpp" />
+    <ClCompile Include="usb_iostream.cpp" />
     <ClCompile Include="usb_registry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assertion.hpp" />
+    <ClInclude Include="blocking_queue.hpp" />
     <ClInclude Include="configuration.hpp" />
     <ClInclude Include="config_parser.hpp" />
     <ClInclude Include="prng.hpp" />
@@ -42,6 +44,7 @@
     <ClInclude Include="usb_device.hpp" />
     <ClInclude Include="usb_device_info.hpp" />
     <ClInclude Include="usb_error.hpp" />
+    <ClInclude Include="usb_iostream.hpp" />
     <ClInclude Include="usb_registry.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -132,6 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

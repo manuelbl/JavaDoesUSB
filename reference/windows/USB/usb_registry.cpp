@@ -29,14 +29,19 @@
 
 usb_registry::usb_registry()
 : on_connected_callback(nullptr), on_disconnected_callback(nullptr),
-    is_device_list_ready(false), background_thread_id_(0), message_window(nullptr) {
+    is_device_list_ready(false), monitor_thread_id_(0), message_window(nullptr),
+    async_io_completion_port(nullptr) {
 }
 
 usb_registry::~usb_registry() {
-
     SendMessage(message_window, WM_CLOSE, 0, 0);
     monitor_thread.join();
     
+    if (async_io_completion_port != nullptr) {
+        PostQueuedCompletionStatus(async_io_completion_port, 0, -1, nullptr);
+        async_io_thread.join();
+        CloseHandle(async_io_completion_port);
+    }
 }
 
 std::vector<usb_device_ptr> usb_registry::get_devices() {
@@ -54,7 +59,7 @@ void usb_registry::set_on_device_disconnected(std::function<void(usb_device_ptr 
 void usb_registry::start() {
     monitor_thread = std::thread(&usb_registry::monitor, this);
     
-    std::unique_lock<std::mutex> wait_lock(monitor_mutex);
+    std::unique_lock wait_lock(monitor_mutex);
     monitor_condition.wait(wait_lock, [this] { return is_device_list_ready; });
 }
 
@@ -63,7 +68,7 @@ static const LPCWSTR WINDOW_NAME = L"USB device monitor";
 
 void usb_registry::monitor() {
 
-    background_thread_id_ = GetCurrentThreadId();
+    monitor_thread_id_ = GetCurrentThreadId();
     HMODULE instance = GetModuleHandleW(nullptr);
 
     WNDCLASSEXW wx = { 0 };
@@ -121,20 +126,20 @@ void usb_registry::monitor() {
 void usb_registry::detect_present_devices() {
 
     // get device information set of all USB devices present
-    HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
+    HDEVINFO dev_info_set = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    if (dev_info_set == INVALID_HANDLE_VALUE)
         throw usb_error("internal error (SetupDiGetClassDevsA)", GetLastError());
 
     // ensure the result id destroyed when the scope is left
-    auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-        SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+    auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+        SetupDiDestroyDeviceInfoList(dev_info_set);
     });
 
-    SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
+    SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
 
     // iterate over the set
     for (int i = 0; ; i++) {
-        if (!SetupDiEnumDeviceInfo(dev_info_set_hdl, i, &dev_info)) {
+        if (!SetupDiEnumDeviceInfo(dev_info_set, i, &dev_info_data)) {
             DWORD err = GetLastError();
             if (err == ERROR_NO_MORE_ITEMS)
                 break;
@@ -142,16 +147,16 @@ void usb_registry::detect_present_devices() {
         }
 
         // create new device
-        auto device = create_device(dev_info_set_hdl, &dev_info);
+        auto device = create_device(dev_info_set, &dev_info_data);
         devices.push_back(device);
     }
 }
 
-std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hdl, SP_DEVINFO_DATA* dev_info) {
+std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
 
-    DWORD usb_port_num = usb_device_info::get_device_property_int(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Address);
-    std::wstring instance_id = usb_device_info::get_device_property_string(dev_info_set_hdl, dev_info, &DEVPKEY_Device_InstanceId);
-    std::wstring parent_instance_id = usb_device_info::get_device_property_string(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Parent);
+    DWORD usb_port_num = usb_device_info::get_device_property_int(dev_info_set, dev_info_data, &DEVPKEY_Device_Address);
+    std::wstring instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_InstanceId);
+    std::wstring parent_instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_Parent);
 
     std::wstring hub_path = usb_device_info::get_device_path(parent_instance_id, &GUID_DEVINTERFACE_USB_HUB);
 
@@ -166,8 +171,8 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hd
 
     // check for composite device
     std::map<int, std::wstring> children{};
-    if (usb_device_info::is_composite_device(dev_info_set_hdl, dev_info))
-        children = enumerate_child_devices(usb_device_info::get_device_property_string_list(dev_info_set_hdl, dev_info, &DEVPKEY_Device_Children));
+    if (usb_device_info::is_composite_device(dev_info_set, dev_info_data))
+        children = enumerate_child_devices(usb_device_info::get_device_property_string_list(dev_info_set, dev_info_data, &DEVPKEY_Device_Children));
 
     auto path = usb_device_info::get_device_path(instance_id, &GUID_DEVINTERFACE_USB_DEVICE);
 
@@ -182,7 +187,7 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set_hd
     auto config_desc = usb_device_info::get_descriptor(hub_handle, usb_port_num, USB_CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
 
     // Create new device
-    std::shared_ptr<usb_device> device(new usb_device(std::move(path), conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct, config_desc, std::move(children)));
+    std::shared_ptr<usb_device> device(new usb_device(this, std::move(path), conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct, config_desc, std::move(children)));
     device->set_product_names(
         usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
         usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
@@ -196,27 +201,27 @@ std::map<int, std::wstring> usb_registry::enumerate_child_devices(const std::vec
     std::map<int, std::wstring> children{};
 
     for (const std::wstring& child_instance_id : child_ids) {
-        HDEVINFO dev_info_set_hdl = SetupDiCreateDeviceInfoList(NULL, NULL);
-        if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
-            throw usb_error("internal error (SetupDiGetClassDevsA)", GetLastError());
+        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
+        if (dev_info_set == INVALID_HANDLE_VALUE)
+            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result id destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+            SetupDiDestroyDeviceInfoList(dev_info_set);
         });
 
         // get device info for child
-        SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
-        if (!SetupDiOpenDeviceInfoW(dev_info_set_hdl, child_instance_id.c_str(), nullptr, 0, &dev_info))
+        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
+        if (!SetupDiOpenDeviceInfoW(dev_info_set, child_instance_id.c_str(), nullptr, 0, &dev_info_data))
             throw usb_error("internal error (SetupDiOpenDeviceInfoW)", GetLastError());
         
         // get first interface number
-        int interface_number = usb_device_info::get_first_interface(dev_info_set_hdl, &dev_info);
+        int interface_number = usb_device_info::get_first_interface(dev_info_set, &dev_info_data);
         if (interface_number == -1)
             continue;
 
         // get device interface GUIDs
-        auto device_guids = usb_device_info::find_device_interface_guids(dev_info_set_hdl, &dev_info);
+        auto device_guids = usb_device_info::find_device_interface_guids(dev_info_set, &dev_info_data);
 
         CLSID clsid{};
         // use GUIDs to get device path
@@ -287,33 +292,35 @@ void usb_registry::on_device_connected(const WCHAR* path) {
 
     usb_device_ptr device;
     try {
-        // get as set of all USB devices present
-        HDEVINFO dev_info_set_hdl = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-        if (dev_info_set_hdl == INVALID_HANDLE_VALUE)
-            usb_error::throw_error("internal error (SetupDiGetClassDevsW)");
+        // create empty device information set
+        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
+        if (dev_info_set == INVALID_HANDLE_VALUE)
+            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
 
         // ensure the result is destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set_hdl]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set_hdl);
+        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
+            SetupDiDestroyDeviceInfoList(dev_info_set);
         });
 
+        // load device information into dev info set
         SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
-        if (!SetupDiOpenDeviceInterfaceW(dev_info_set_hdl, path, 0, &dev_intf_data))
+        if (!SetupDiOpenDeviceInterfaceW(dev_info_set, path, 0, &dev_intf_data))
             usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
 
-        auto dev_intf_data_guard = make_scope_exit([dev_info_set_hdl, &dev_intf_data]() {
-            SetupDiDeleteDeviceInterfaceData(dev_info_set_hdl, &dev_intf_data);
+        auto dev_intf_data_guard = make_scope_exit([dev_info_set, &dev_intf_data]() {
+            SetupDiDeleteDeviceInterfaceData(dev_info_set, &dev_intf_data);
         });
 
-        SP_DEVINFO_DATA dev_info = { sizeof(dev_info) };
-        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set_hdl, &dev_intf_data, nullptr, 0, nullptr, &dev_info)) {
+        // load device info data
+        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
+        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set, &dev_intf_data, nullptr, 0, nullptr, &dev_info_data)) {
             DWORD err = GetLastError();
             if (err != ERROR_INSUFFICIENT_BUFFER)
                 throw usb_error("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
         }
 
         // create new device
-        device = create_device(dev_info_set_hdl, &dev_info);
+        device = create_device(dev_info_set, &dev_info_data);
         devices.push_back(device);
     }
     catch (const std::exception& e) {
@@ -367,4 +374,65 @@ void usb_registry::on_device_disconnected(const WCHAR* path) {
             std::cerr << "Unhandled exception (not derived from std::exception)" << std::endl;
         }
     }
+}
+
+std::shared_ptr<usb_device> usb_registry::get_shared_ptr(usb_device* device) {
+    auto it = std::find_if(devices.cbegin(), devices.cend(), [device](auto dev) { return dev.get() == device; });
+    if (it == devices.cend())
+        return nullptr;
+
+    return *it;
+}
+
+void usb_registry::async_io_run() {
+
+    while (true) {
+        OVERLAPPED* overlapped = nullptr;
+        DWORD num_bytes = 0;
+        ULONG_PTR completion_key = 0;
+        if (!GetQueuedCompletionStatus(async_io_completion_port, &num_bytes, &completion_key, &overlapped, INFINITE) && overlapped == nullptr)
+            usb_error::throw_error("internal error (GetQueuedCompletionStatus)");
+
+        if (overlapped == nullptr)
+            return; // registry is closing
+
+        usb_io_callback* completion_handler = get_completion_handler(overlapped);
+        if (overlapped == nullptr)
+            continue; // might be completion from synchronous operation
+
+        (*completion_handler)();
+    }
+}
+
+void usb_registry::add_to_completion_port(HANDLE handle) {
+    HANDLE port_handle = CreateIoCompletionPort(handle, async_io_completion_port, 0xd03fbc01, 0);
+    if (port_handle == nullptr)
+        usb_error::throw_error("internal error (CreateIoCompletionPort)");
+
+    if (async_io_completion_port == nullptr) {
+        async_io_completion_port = port_handle;
+        async_io_thread = std::thread(&usb_registry::async_io_run, this);
+    }
+}
+
+void usb_registry::add_completion_handler(OVERLAPPED* overlapped, usb_io_callback* completion_handler) {
+    std::lock_guard lock(async_io_mutex);
+
+    async_io_completion_handlers.insert(std::pair(overlapped, completion_handler));
+}
+
+void usb_registry::remove_completion_handler(OVERLAPPED* overlapped) {
+    std::lock_guard lock(async_io_mutex);
+
+    async_io_completion_handlers.erase(overlapped);
+}
+
+usb_io_callback* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
+    std::lock_guard lock(async_io_mutex);
+
+    auto it = async_io_completion_handlers.find(overlapped);
+    if (it == async_io_completion_handlers.end())
+        return nullptr;
+
+    return it->second;
 }

@@ -10,6 +10,8 @@ import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
 import net.codecrete.usb.linux.gen.errno.errno;
 
+import java.lang.foreign.MemorySegment;
+
 /**
  * Exception thrown if a Linux specific error occurs.
  */
@@ -20,7 +22,8 @@ public class LinuxUSBException extends USBException {
      * <p>
      * The message for the Linux error code is looked up and appended to the message.
      * </p>
-     * @param message exception message
+     *
+     * @param message   exception message
      * @param errorCode Linux error code (returned by {@code errno})
      */
     public LinuxUSBException(String message, int errorCode) {
@@ -32,9 +35,10 @@ public class LinuxUSBException extends USBException {
      * <p>
      * The message for the Linux error code is looked up and appended to the message.
      * </p>
+     *
      * @param errorCode Linux error code (returned by {@code errno})
-     * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param message   exception message format ({@link String#format(String, Object...)} style)
+     * @param args      arguments for exception message
      */
     static void throwException(int errorCode, String message, Object... args) {
         var formattedMessage = String.format(message, args);
@@ -47,8 +51,9 @@ public class LinuxUSBException extends USBException {
 
     /**
      * Throws a USB exception.
+     *
      * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param args    arguments for exception message
      */
     static void throwException(String message, Object... args) {
         throw new USBException(String.format(message, args));
@@ -57,13 +62,16 @@ public class LinuxUSBException extends USBException {
     /**
      * Throws an exception for the last error.
      * <p>
-     * The message of the last Linux error code is looked ({@code errno}) up and appended to the message.
+     * The message of the last Linux error code is provided in a memory segment with the layout
+     * {@link Linux#ERRNO_STATE}.
      * </p>
+     *
+     * @param errno   segment with lat error code
      * @param message exception message format ({@link String#format(String, Object...)} style)
-     * @param args arguments for exception message
+     * @param args    arguments for exception message
      */
-    static void throwLastError(String message, Object... args) {
-        throwException(IO.getErrno(), message, args);
+    static void throwLastError(MemorySegment errno, String message, Object... args) {
+        throwException(Linux.getErrno(errno), message, args);
     }
 
 }

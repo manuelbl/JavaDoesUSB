@@ -2,8 +2,15 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-public class SP_DEVICE_INTERFACE_DETAIL_DATA_W extends _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
+/**
+ * {@snippet :
+ * typedef struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W SP_DEVICE_INTERFACE_DETAIL_DATA_W;
+ * }
+ */
+public final class SP_DEVICE_INTERFACE_DETAIL_DATA_W extends _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
 
+    // Suppresses default constructor, ensuring non-instantiability.
+    private SP_DEVICE_INTERFACE_DETAIL_DATA_W() {}
 }
 
 
