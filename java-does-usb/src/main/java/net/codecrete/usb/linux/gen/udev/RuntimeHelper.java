@@ -22,7 +22,7 @@ final class RuntimeHelper {
     static {
 //        System.loadLibrary("udev");
 //        SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
-        SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", SegmentScope.global());
+        SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so.1", SegmentScope.global());
         SYMBOL_LOOKUP = name -> loaderLookup.find(name).or(() -> LINKER.defaultLookup().find(name));
     }
 
