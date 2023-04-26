@@ -2,14 +2,6 @@
 
 JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 
-# sd-device.h (install libsystemd-dev if file is missing)
-# Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'
-#$JEXTRACT --source --output ../src/main/java \
-#$JEXTRACT --source --output ../src/main/java \
-#  --header-class-name sd_device \
-#  --target-package net.codecrete.usb.linux.gen.sd-device
-#  /usr/include/systemd/sd-device.h
-
 # errno.h
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
@@ -51,6 +43,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct usbdevfs_ctrltransfer \
   --include-struct usbdevfs_setinterface \
   --include-struct usbdevfs_urb \
+  --include-struct usbdevfs_disconnect_claim \
+  --include-struct usbdevfs_ioctl \
   --include-constant USBDEVFS_CONTROL \
   --include-constant USBDEVFS_BULK \
   --include-constant USBDEVFS_CLAIMINTERFACE \
@@ -60,10 +54,12 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant USBDEVFS_SUBMITURB \
   --include-constant USBDEVFS_DISCARDURB \
   --include-constant USBDEVFS_REAPURB \
+  --include-constant USBDEVFS_DISCONNECT_CLAIM \
   --include-constant USBDEVFS_URB_TYPE_INTERRUPT \
   --include-constant USBDEVFS_URB_TYPE_CONTROL \
   --include-constant USBDEVFS_URB_TYPE_BULK \
   --include-constant USBDEVFS_URB_TYPE_ISO \
+  --include-constant USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER \
   /usr/include/linux/usbdevice_fs.h
 
 # libudev.h

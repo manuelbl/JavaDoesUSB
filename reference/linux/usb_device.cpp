@@ -142,8 +142,14 @@ void usb_device::claim_interface(int interface_number) {
 
     if (intf->is_claimed())
         throw usb_error("interface has already been claimed");
+
+    usbdevfs_disconnect_claim dc = {
+        .interface = static_cast<unsigned int>(interface_number),
+        .flags = USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER,
+        .driver = "usbfs"
+    };
     
-    int result = ioctl(fd_, USBDEVFS_CLAIMINTERFACE, &interface_number);
+    int result = ioctl(fd_, USBDEVFS_DISCONNECT_CLAIM, &dc);
     if (result < 0)
         usb_error::throw_error("Failed to claim interface");
 
@@ -169,6 +175,13 @@ void usb_device::release_interface(int interface_number) {
 
     intf->set_claimed(false);
     claimed_interfaces_.erase(interface_number);
+
+    usbdevfs_ioctl cmd = {
+        .ifno = interface_number,
+        .ioctl_code = USBDEVFS_CONNECT,
+        .data = nullptr
+    };
+    ioctl(fd_, USBDEVFS_IOCTL, &cmd);
 }
 
 std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {

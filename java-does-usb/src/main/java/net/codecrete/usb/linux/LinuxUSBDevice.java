@@ -16,7 +16,10 @@ import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.common.USBInterfaceImpl;
 import net.codecrete.usb.linux.gen.fcntl.fcntl;
 import net.codecrete.usb.linux.gen.unistd.unistd;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_disconnect_claim;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_ioctl;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_setinterface;
+import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.usbstandard.SetupPacket;
 
@@ -110,9 +113,18 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.openConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            int ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errnoState);
+
+            // claim interface (possibly disconnecting kernel driver)
+            var disconnectClaim = usbdevfs_disconnect_claim.allocate(arena);
+            usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
+            usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
+            byte[] driverName = { 'u', 's', 'b', 'f', 's', 0 };
+            usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(MemorySegment.ofArray(driverName));
+            int ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errnoState);
+
             if (ret != 0)
                 throwLastError(errnoState, "Cannot claim USB interface");
+
             setClaimed(interfaceNumber, true);
         }
     }
@@ -161,7 +173,15 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Cannot release USB interface");
+
             setClaimed(interfaceNumber, false);
+
+            // reattach kernel driver
+            var request = usbdevfs_ioctl.allocate(arena);
+            usbdevfs_ioctl.ifno$set(request, interfaceNumber);
+            usbdevfs_ioctl.ioctl_code$set(request, USBDevFS.CONNECT);
+            usbdevfs_ioctl.data$set(request, MemorySegment.NULL);
+            IO.ioctl(fd, USBDevFS.IOCTL, request, errnoState);
         }
     }
 

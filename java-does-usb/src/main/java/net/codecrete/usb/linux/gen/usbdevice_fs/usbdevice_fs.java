@@ -45,6 +45,14 @@ public class usbdevice_fs  {
     public static int USBDEVFS_URB_TYPE_BULK() {
         return (int)3L;
     }
+    /**
+     * {@snippet :
+     * #define USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER 2
+     * }
+     */
+    public static int USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER() {
+        return (int)2L;
+    }
 }
 
 

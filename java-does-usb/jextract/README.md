@@ -62,7 +62,7 @@ SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
 with:
 
 ```
-SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", MemorySession.openImplicit());
+SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so.1", MemorySession.openImplicit());
 ```
 
 
