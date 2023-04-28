@@ -98,7 +98,7 @@ void usb_device::open() {
     int tries = 0;
     IOReturn ret = 0;
     while (tries < 3) {
-        ret = (*device_)->USBDeviceOpen(device_);
+        ret = (*device_)->USBDeviceOpenSeize(device_);
         if (ret != kIOReturnExclusiveAccess)
             break;
         
@@ -152,7 +152,7 @@ void usb_device::claim_interface(int interface_number) {
         
         auto service_guard = make_scope_exit([service]() { IOObjectRelease(service); });
 
-        IOUSBInterfaceInterface** intf = iokit_helper::get_interface<IOUSBInterfaceInterface>(service, kIOUSBInterfaceUserClientTypeID, kIOUSBInterfaceInterfaceID);
+        IOUSBInterfaceInterface** intf = iokit_helper::get_interface<IOUSBInterfaceInterface>(service, kIOUSBInterfaceUserClientTypeID, kIOUSBInterfaceInterfaceID190);
         if (intf == nullptr)
             throw usb_error("internal error (failed to create interface interface)");
         

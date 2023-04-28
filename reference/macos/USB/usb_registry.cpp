@@ -130,7 +130,7 @@ void usb_registry::device_connected(io_iterator_t iterator) {
         auto service_guard = make_scope_exit([service]() { IOObjectRelease(service); });
 
         // Test if the device has a client interface (otherwise it's likely a controller)
-        IOUSBDeviceInterface** dev = iokit_helper::get_interface<IOUSBDeviceInterface>(service, kIOUSBDeviceUserClientTypeID, kIOUSBDeviceInterfaceID);
+        IOUSBDeviceInterface** dev = iokit_helper::get_interface<IOUSBDeviceInterface>(service, kIOUSBDeviceUserClientTypeID, kIOUSBDeviceInterfaceID182);
         if (dev == nullptr)
             continue;
         
