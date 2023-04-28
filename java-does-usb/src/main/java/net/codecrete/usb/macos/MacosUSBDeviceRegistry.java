@@ -118,7 +118,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     cleanup.add(() -> IOKit.IOObjectRelease(service));
 
                     var device = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBDeviceUserClientTypeID,
-                            IoKitHelper.kIOUSBDeviceInterfaceID100);
+                            IoKitHelper.kIOUSBDeviceInterfaceID182);
                     if (device != null)
                         cleanup.add(() -> IoKitUSB.Release(device));
 

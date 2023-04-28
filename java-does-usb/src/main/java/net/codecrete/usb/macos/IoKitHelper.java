@@ -28,12 +28,12 @@ public class IoKitHelper {
     public static final MemorySegment kIOUSBInterfaceUserClientTypeID = UUID.CreateCFUUID(new byte[]{(byte) 0x2d,
             (byte) 0x97, (byte) 0x86, (byte) 0xc6, (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4, (byte) 0xad,
             (byte) 0x51, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61});
-    public static final MemorySegment kIOUSBDeviceInterfaceID100 = UUID.CreateCFUUID(new byte[]{(byte) 0x5c,
-            (byte) 0x81, (byte) 0x87, (byte) 0xd0, (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4, (byte) 0x8b,
-            (byte) 0x45, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61});
-    public static final MemorySegment kIOUSBInterfaceInterfaceID100 = UUID.CreateCFUUID(new byte[]{(byte) 0x73,
-            (byte) 0xc9, (byte) 0x7a, (byte) 0xe8, (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4, (byte) 0xb1,
-            (byte) 0xd0, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61});
+    public static final MemorySegment kIOUSBDeviceInterfaceID182 = UUID.CreateCFUUID(new byte[]{(byte) 0x15,
+            (byte) 0x2f, (byte) 0xc4, (byte) 0x96, (byte) 0x48, (byte) 0x91, (byte) 0x11, (byte) 0xD5, (byte) 0x9d,
+            (byte) 0x52, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x80, (byte) 0x1e, (byte) 0x86});
+    public static final MemorySegment kIOUSBInterfaceInterfaceID190 = UUID.CreateCFUUID(new byte[]{(byte) 0x8f,
+            (byte) 0xdb, (byte) 0x84, (byte) 0x55, (byte) 0x74, (byte) 0xa6, (byte) 0x11, (byte) 0xD6, (byte) 0x97,
+            (byte) 0xb1, (byte) 0x00, (byte) 0x30, (byte) 0x65, (byte) 0xd3, (byte) 0x60, (byte) 0x8e});
     public static final MemorySegment kIOCFPlugInInterfaceID = UUID.CreateCFUUID(new byte[]{(byte) 0xC2, (byte) 0x44,
             (byte) 0xE8, (byte) 0x58, (byte) 0x10, (byte) 0x9C, (byte) 0x11, (byte) 0xD4, (byte) 0x91, (byte) 0xD4,
             (byte) 0x00, (byte) 0x50, (byte) 0xE4, (byte) 0xC6, (byte) 0x42, (byte) 0x6F});

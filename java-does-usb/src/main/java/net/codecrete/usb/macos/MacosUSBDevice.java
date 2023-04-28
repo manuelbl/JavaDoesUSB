@@ -76,7 +76,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException("the device is already open");
 
         // open device
-        int ret = IoKitUSB.USBDeviceOpen(device);
+        int ret = IoKitUSB.USBDeviceOpenSeize(device);
         if (ret != 0)
             throwException(ret, "unable to open USB device");
 
@@ -166,7 +166,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     cleanup.add(() -> IOKit.IOObjectRelease(service_final));
 
                     final var intf = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBInterfaceUserClientTypeID,
-                            IoKitHelper.kIOUSBInterfaceInterfaceID100);
+                            IoKitHelper.kIOUSBInterfaceInterfaceID190);
                     if (intf == null)
                         continue;
 

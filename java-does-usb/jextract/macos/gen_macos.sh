@@ -51,8 +51,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function IORegistryEntryGetRegistryEntryID \
   --include-function IOServiceAddMatchingNotification \
   --include-function IOServiceMatching \
-  --include-struct IOUSBDeviceStruct100 \
-  --include-typedef IOUSBDeviceInterface100 \
+  --include-struct IOUSBDeviceStruct182 \
+  --include-typedef IOUSBDeviceInterface182 \
   --include-constant kIOUSBFindInterfaceDontCare \
   --include-typedef IOUSBFindInterfaceRequest \
   --include-typedef IOUSBDevRequest \

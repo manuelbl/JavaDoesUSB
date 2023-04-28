@@ -7,7 +7,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
- * struct IOUSBDeviceStruct100 {
+ * struct IOUSBDeviceStruct182 {
  *     void* _reserved;
  *     HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
  *     ULONG (*AddRef)(void*);
@@ -37,10 +37,18 @@ import java.lang.invoke.VarHandle;
  *     IOReturn (*DeviceRequest)(void*,IOUSBDevRequest*);
  *     IOReturn (*DeviceRequestAsync)(void*,IOUSBDevRequest*,IOAsyncCallback1,void*);
  *     IOReturn (*CreateInterfaceIterator)(void*,IOUSBFindInterfaceRequest*,io_iterator_t*);
+ *     IOReturn (*USBDeviceOpenSeize)(void*);
+ *     IOReturn (*DeviceRequestTO)(void*,IOUSBDevRequestTO*);
+ *     IOReturn (*DeviceRequestAsyncTO)(void*,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+ *     IOReturn (*USBDeviceSuspend)(void*,Boolean);
+ *     IOReturn (*USBDeviceAbortPipeZero)(void*);
+ *     IOReturn (*USBGetManufacturerStringIndex)(void*,UInt8*);
+ *     IOReturn (*USBGetProductStringIndex)(void*,UInt8*);
+ *     IOReturn (*USBGetSerialNumberStringIndex)(void*,UInt8*);
  * };
  * }
  */
-public class IOUSBDeviceStruct100 {
+public class IOUSBDeviceStruct182 {
 
     static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
         Constants$root.C_POINTER$LAYOUT.withName("_reserved"),
@@ -71,14 +79,22 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT.withName("ResetDevice"),
         Constants$root.C_POINTER$LAYOUT.withName("DeviceRequest"),
         Constants$root.C_POINTER$LAYOUT.withName("DeviceRequestAsync"),
-        Constants$root.C_POINTER$LAYOUT.withName("CreateInterfaceIterator")
-    ).withName("IOUSBDeviceStruct100");
+        Constants$root.C_POINTER$LAYOUT.withName("CreateInterfaceIterator"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBDeviceOpenSeize"),
+        Constants$root.C_POINTER$LAYOUT.withName("DeviceRequestTO"),
+        Constants$root.C_POINTER$LAYOUT.withName("DeviceRequestAsyncTO"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBDeviceSuspend"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBDeviceAbortPipeZero"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBGetManufacturerStringIndex"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBGetProductStringIndex"),
+        Constants$root.C_POINTER$LAYOUT.withName("USBGetSerialNumberStringIndex")
+    ).withName("IOUSBDeviceStruct182");
     public static MemoryLayout $LAYOUT() {
-        return IOUSBDeviceStruct100.$struct$LAYOUT;
+        return IOUSBDeviceStruct182.$struct$LAYOUT;
     }
     static final VarHandle _reserved$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("_reserved"));
     public static VarHandle _reserved$VH() {
-        return IOUSBDeviceStruct100._reserved$VH;
+        return IOUSBDeviceStruct182._reserved$VH;
     }
     /**
      * Getter for field:
@@ -87,7 +103,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment _reserved$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100._reserved$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182._reserved$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -96,13 +112,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void _reserved$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100._reserved$VH.set(seg, x);
+        IOUSBDeviceStruct182._reserved$VH.set(seg, x);
     }
     public static MemorySegment _reserved$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100._reserved$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182._reserved$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void _reserved$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100._reserved$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182._reserved$VH.set(seg.asSlice(index*sizeof()), x);
     }
     static final FunctionDescriptor QueryInterface$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -127,7 +143,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle QueryInterface$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.QueryInterface$FUNC
+        IOUSBDeviceStruct182.QueryInterface$FUNC
     );
     /**
      * {@snippet :
@@ -138,13 +154,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
         static MemorySegment allocate(QueryInterface fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(QueryInterface.class, fi, IOUSBDeviceStruct100.QueryInterface$FUNC, scope);
+            return RuntimeHelper.upcallStub(QueryInterface.class, fi, IOUSBDeviceStruct182.QueryInterface$FUNC, scope);
         }
         static QueryInterface ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.QueryInterface$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)IOUSBDeviceStruct182.QueryInterface$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -154,7 +170,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle QueryInterface$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("QueryInterface"));
     public static VarHandle QueryInterface$VH() {
-        return IOUSBDeviceStruct100.QueryInterface$VH;
+        return IOUSBDeviceStruct182.QueryInterface$VH;
     }
     /**
      * Getter for field:
@@ -163,7 +179,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment QueryInterface$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.QueryInterface$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.QueryInterface$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -172,13 +188,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void QueryInterface$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.QueryInterface$VH.set(seg, x);
+        IOUSBDeviceStruct182.QueryInterface$VH.set(seg, x);
     }
     public static MemorySegment QueryInterface$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.QueryInterface$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.QueryInterface$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void QueryInterface$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.QueryInterface$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.QueryInterface$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static QueryInterface QueryInterface(MemorySegment segment, SegmentScope scope) {
         return QueryInterface.ofAddress(QueryInterface$get(segment), scope);
@@ -187,7 +203,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle AddRef$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.AddRef$FUNC
+        IOUSBDeviceStruct182.AddRef$FUNC
     );
     /**
      * {@snippet :
@@ -198,13 +214,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(AddRef fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(AddRef.class, fi, IOUSBDeviceStruct100.AddRef$FUNC, scope);
+            return RuntimeHelper.upcallStub(AddRef.class, fi, IOUSBDeviceStruct182.AddRef$FUNC, scope);
         }
         static AddRef ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.AddRef$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.AddRef$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -214,7 +230,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle AddRef$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("AddRef"));
     public static VarHandle AddRef$VH() {
-        return IOUSBDeviceStruct100.AddRef$VH;
+        return IOUSBDeviceStruct182.AddRef$VH;
     }
     /**
      * Getter for field:
@@ -223,7 +239,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment AddRef$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.AddRef$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.AddRef$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -232,13 +248,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void AddRef$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.AddRef$VH.set(seg, x);
+        IOUSBDeviceStruct182.AddRef$VH.set(seg, x);
     }
     public static MemorySegment AddRef$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.AddRef$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.AddRef$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void AddRef$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.AddRef$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.AddRef$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static AddRef AddRef(MemorySegment segment, SegmentScope scope) {
         return AddRef.ofAddress(AddRef$get(segment), scope);
@@ -247,7 +263,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle Release$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.Release$FUNC
+        IOUSBDeviceStruct182.Release$FUNC
     );
     /**
      * {@snippet :
@@ -258,13 +274,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(Release fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(Release.class, fi, IOUSBDeviceStruct100.Release$FUNC, scope);
+            return RuntimeHelper.upcallStub(Release.class, fi, IOUSBDeviceStruct182.Release$FUNC, scope);
         }
         static Release ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.Release$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.Release$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -274,7 +290,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle Release$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Release"));
     public static VarHandle Release$VH() {
-        return IOUSBDeviceStruct100.Release$VH;
+        return IOUSBDeviceStruct182.Release$VH;
     }
     /**
      * Getter for field:
@@ -283,7 +299,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment Release$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.Release$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.Release$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -292,13 +308,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void Release$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.Release$VH.set(seg, x);
+        IOUSBDeviceStruct182.Release$VH.set(seg, x);
     }
     public static MemorySegment Release$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.Release$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.Release$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void Release$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.Release$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.Release$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static Release Release(MemorySegment segment, SegmentScope scope) {
         return Release.ofAddress(Release$get(segment), scope);
@@ -308,7 +324,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle CreateDeviceAsyncEventSource$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$FUNC
+        IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$FUNC
     );
     /**
      * {@snippet :
@@ -319,13 +335,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(CreateDeviceAsyncEventSource fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(CreateDeviceAsyncEventSource.class, fi, IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$FUNC, scope);
+            return RuntimeHelper.upcallStub(CreateDeviceAsyncEventSource.class, fi, IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$FUNC, scope);
         }
         static CreateDeviceAsyncEventSource ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -335,7 +351,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle CreateDeviceAsyncEventSource$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("CreateDeviceAsyncEventSource"));
     public static VarHandle CreateDeviceAsyncEventSource$VH() {
-        return IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$VH;
+        return IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$VH;
     }
     /**
      * Getter for field:
@@ -344,7 +360,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment CreateDeviceAsyncEventSource$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -353,13 +369,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void CreateDeviceAsyncEventSource$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$VH.set(seg, x);
+        IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$VH.set(seg, x);
     }
     public static MemorySegment CreateDeviceAsyncEventSource$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void CreateDeviceAsyncEventSource$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateDeviceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.CreateDeviceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static CreateDeviceAsyncEventSource CreateDeviceAsyncEventSource(MemorySegment segment, SegmentScope scope) {
         return CreateDeviceAsyncEventSource.ofAddress(CreateDeviceAsyncEventSource$get(segment), scope);
@@ -368,7 +384,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceAsyncEventSource$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceAsyncEventSource$FUNC
+        IOUSBDeviceStruct182.GetDeviceAsyncEventSource$FUNC
     );
     /**
      * {@snippet :
@@ -379,13 +395,13 @@ public class IOUSBDeviceStruct100 {
 
         java.lang.foreign.MemorySegment apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(GetDeviceAsyncEventSource fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceAsyncEventSource.class, fi, IOUSBDeviceStruct100.GetDeviceAsyncEventSource$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceAsyncEventSource.class, fi, IOUSBDeviceStruct182.GetDeviceAsyncEventSource$FUNC, scope);
         }
         static GetDeviceAsyncEventSource ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAsyncEventSource$MH.invokeExact(symbol, __x0);
+                    return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAsyncEventSource$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -395,7 +411,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceAsyncEventSource$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceAsyncEventSource"));
     public static VarHandle GetDeviceAsyncEventSource$VH() {
-        return IOUSBDeviceStruct100.GetDeviceAsyncEventSource$VH;
+        return IOUSBDeviceStruct182.GetDeviceAsyncEventSource$VH;
     }
     /**
      * Getter for field:
@@ -404,7 +420,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceAsyncEventSource$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAsyncEventSource$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAsyncEventSource$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -413,13 +429,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceAsyncEventSource$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAsyncEventSource$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceAsyncEventSource$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceAsyncEventSource$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAsyncEventSource$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceAsyncEventSource$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceAsyncEventSource$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceAsyncEventSource GetDeviceAsyncEventSource(MemorySegment segment, SegmentScope scope) {
         return GetDeviceAsyncEventSource.ofAddress(GetDeviceAsyncEventSource$get(segment), scope);
@@ -429,7 +445,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle CreateDeviceAsyncPort$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.CreateDeviceAsyncPort$FUNC
+        IOUSBDeviceStruct182.CreateDeviceAsyncPort$FUNC
     );
     /**
      * {@snippet :
@@ -440,13 +456,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(CreateDeviceAsyncPort fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(CreateDeviceAsyncPort.class, fi, IOUSBDeviceStruct100.CreateDeviceAsyncPort$FUNC, scope);
+            return RuntimeHelper.upcallStub(CreateDeviceAsyncPort.class, fi, IOUSBDeviceStruct182.CreateDeviceAsyncPort$FUNC, scope);
         }
         static CreateDeviceAsyncPort ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.CreateDeviceAsyncPort$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.CreateDeviceAsyncPort$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -456,7 +472,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle CreateDeviceAsyncPort$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("CreateDeviceAsyncPort"));
     public static VarHandle CreateDeviceAsyncPort$VH() {
-        return IOUSBDeviceStruct100.CreateDeviceAsyncPort$VH;
+        return IOUSBDeviceStruct182.CreateDeviceAsyncPort$VH;
     }
     /**
      * Getter for field:
@@ -465,7 +481,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment CreateDeviceAsyncPort$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateDeviceAsyncPort$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateDeviceAsyncPort$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -474,13 +490,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void CreateDeviceAsyncPort$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateDeviceAsyncPort$VH.set(seg, x);
+        IOUSBDeviceStruct182.CreateDeviceAsyncPort$VH.set(seg, x);
     }
     public static MemorySegment CreateDeviceAsyncPort$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateDeviceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateDeviceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void CreateDeviceAsyncPort$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateDeviceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.CreateDeviceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static CreateDeviceAsyncPort CreateDeviceAsyncPort(MemorySegment segment, SegmentScope scope) {
         return CreateDeviceAsyncPort.ofAddress(CreateDeviceAsyncPort$get(segment), scope);
@@ -489,7 +505,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceAsyncPort$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceAsyncPort$FUNC
+        IOUSBDeviceStruct182.GetDeviceAsyncPort$FUNC
     );
     /**
      * {@snippet :
@@ -500,13 +516,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(GetDeviceAsyncPort fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceAsyncPort.class, fi, IOUSBDeviceStruct100.GetDeviceAsyncPort$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceAsyncPort.class, fi, IOUSBDeviceStruct182.GetDeviceAsyncPort$FUNC, scope);
         }
         static GetDeviceAsyncPort ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceAsyncPort$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.GetDeviceAsyncPort$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -516,7 +532,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceAsyncPort$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceAsyncPort"));
     public static VarHandle GetDeviceAsyncPort$VH() {
-        return IOUSBDeviceStruct100.GetDeviceAsyncPort$VH;
+        return IOUSBDeviceStruct182.GetDeviceAsyncPort$VH;
     }
     /**
      * Getter for field:
@@ -525,7 +541,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceAsyncPort$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAsyncPort$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAsyncPort$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -534,13 +550,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceAsyncPort$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAsyncPort$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceAsyncPort$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceAsyncPort$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAsyncPort$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceAsyncPort$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceAsyncPort$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceAsyncPort GetDeviceAsyncPort(MemorySegment segment, SegmentScope scope) {
         return GetDeviceAsyncPort.ofAddress(GetDeviceAsyncPort$get(segment), scope);
@@ -549,7 +565,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle USBDeviceOpen$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.USBDeviceOpen$FUNC
+        IOUSBDeviceStruct182.USBDeviceOpen$FUNC
     );
     /**
      * {@snippet :
@@ -560,13 +576,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(USBDeviceOpen fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(USBDeviceOpen.class, fi, IOUSBDeviceStruct100.USBDeviceOpen$FUNC, scope);
+            return RuntimeHelper.upcallStub(USBDeviceOpen.class, fi, IOUSBDeviceStruct182.USBDeviceOpen$FUNC, scope);
         }
         static USBDeviceOpen ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.USBDeviceOpen$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.USBDeviceOpen$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -576,7 +592,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle USBDeviceOpen$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBDeviceOpen"));
     public static VarHandle USBDeviceOpen$VH() {
-        return IOUSBDeviceStruct100.USBDeviceOpen$VH;
+        return IOUSBDeviceStruct182.USBDeviceOpen$VH;
     }
     /**
      * Getter for field:
@@ -585,7 +601,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment USBDeviceOpen$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.USBDeviceOpen$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceOpen$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -594,13 +610,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void USBDeviceOpen$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.USBDeviceOpen$VH.set(seg, x);
+        IOUSBDeviceStruct182.USBDeviceOpen$VH.set(seg, x);
     }
     public static MemorySegment USBDeviceOpen$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.USBDeviceOpen$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceOpen$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void USBDeviceOpen$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.USBDeviceOpen$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.USBDeviceOpen$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static USBDeviceOpen USBDeviceOpen(MemorySegment segment, SegmentScope scope) {
         return USBDeviceOpen.ofAddress(USBDeviceOpen$get(segment), scope);
@@ -609,7 +625,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle USBDeviceClose$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.USBDeviceClose$FUNC
+        IOUSBDeviceStruct182.USBDeviceClose$FUNC
     );
     /**
      * {@snippet :
@@ -620,13 +636,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(USBDeviceClose fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(USBDeviceClose.class, fi, IOUSBDeviceStruct100.USBDeviceClose$FUNC, scope);
+            return RuntimeHelper.upcallStub(USBDeviceClose.class, fi, IOUSBDeviceStruct182.USBDeviceClose$FUNC, scope);
         }
         static USBDeviceClose ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.USBDeviceClose$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.USBDeviceClose$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -636,7 +652,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle USBDeviceClose$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBDeviceClose"));
     public static VarHandle USBDeviceClose$VH() {
-        return IOUSBDeviceStruct100.USBDeviceClose$VH;
+        return IOUSBDeviceStruct182.USBDeviceClose$VH;
     }
     /**
      * Getter for field:
@@ -645,7 +661,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment USBDeviceClose$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.USBDeviceClose$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceClose$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -654,13 +670,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void USBDeviceClose$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.USBDeviceClose$VH.set(seg, x);
+        IOUSBDeviceStruct182.USBDeviceClose$VH.set(seg, x);
     }
     public static MemorySegment USBDeviceClose$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.USBDeviceClose$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceClose$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void USBDeviceClose$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.USBDeviceClose$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.USBDeviceClose$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static USBDeviceClose USBDeviceClose(MemorySegment segment, SegmentScope scope) {
         return USBDeviceClose.ofAddress(USBDeviceClose$get(segment), scope);
@@ -670,7 +686,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceClass$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceClass$FUNC
+        IOUSBDeviceStruct182.GetDeviceClass$FUNC
     );
     /**
      * {@snippet :
@@ -681,13 +697,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceClass fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceClass.class, fi, IOUSBDeviceStruct100.GetDeviceClass$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceClass.class, fi, IOUSBDeviceStruct182.GetDeviceClass$FUNC, scope);
         }
         static GetDeviceClass ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceClass$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceClass$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -697,7 +713,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceClass$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceClass"));
     public static VarHandle GetDeviceClass$VH() {
-        return IOUSBDeviceStruct100.GetDeviceClass$VH;
+        return IOUSBDeviceStruct182.GetDeviceClass$VH;
     }
     /**
      * Getter for field:
@@ -706,7 +722,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceClass$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceClass$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceClass$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -715,13 +731,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceClass$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceClass$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceClass$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceClass$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceClass$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceClass$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceClass$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceClass$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceClass$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceClass GetDeviceClass(MemorySegment segment, SegmentScope scope) {
         return GetDeviceClass.ofAddress(GetDeviceClass$get(segment), scope);
@@ -731,7 +747,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceSubClass$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceSubClass$FUNC
+        IOUSBDeviceStruct182.GetDeviceSubClass$FUNC
     );
     /**
      * {@snippet :
@@ -742,13 +758,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceSubClass fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceSubClass.class, fi, IOUSBDeviceStruct100.GetDeviceSubClass$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceSubClass.class, fi, IOUSBDeviceStruct182.GetDeviceSubClass$FUNC, scope);
         }
         static GetDeviceSubClass ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceSubClass$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceSubClass$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -758,7 +774,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceSubClass$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceSubClass"));
     public static VarHandle GetDeviceSubClass$VH() {
-        return IOUSBDeviceStruct100.GetDeviceSubClass$VH;
+        return IOUSBDeviceStruct182.GetDeviceSubClass$VH;
     }
     /**
      * Getter for field:
@@ -767,7 +783,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceSubClass$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceSubClass$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceSubClass$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -776,13 +792,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceSubClass$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceSubClass$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceSubClass$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceSubClass$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceSubClass$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceSubClass$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceSubClass$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceSubClass$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceSubClass$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceSubClass GetDeviceSubClass(MemorySegment segment, SegmentScope scope) {
         return GetDeviceSubClass.ofAddress(GetDeviceSubClass$get(segment), scope);
@@ -792,7 +808,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceProtocol$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceProtocol$FUNC
+        IOUSBDeviceStruct182.GetDeviceProtocol$FUNC
     );
     /**
      * {@snippet :
@@ -803,13 +819,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceProtocol fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceProtocol.class, fi, IOUSBDeviceStruct100.GetDeviceProtocol$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceProtocol.class, fi, IOUSBDeviceStruct182.GetDeviceProtocol$FUNC, scope);
         }
         static GetDeviceProtocol ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceProtocol$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceProtocol$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -819,7 +835,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceProtocol$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceProtocol"));
     public static VarHandle GetDeviceProtocol$VH() {
-        return IOUSBDeviceStruct100.GetDeviceProtocol$VH;
+        return IOUSBDeviceStruct182.GetDeviceProtocol$VH;
     }
     /**
      * Getter for field:
@@ -828,7 +844,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceProtocol$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceProtocol$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceProtocol$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -837,13 +853,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceProtocol$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceProtocol$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceProtocol$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceProtocol$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceProtocol$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceProtocol$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceProtocol$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceProtocol$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceProtocol$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceProtocol GetDeviceProtocol(MemorySegment segment, SegmentScope scope) {
         return GetDeviceProtocol.ofAddress(GetDeviceProtocol$get(segment), scope);
@@ -853,7 +869,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceVendor$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceVendor$FUNC
+        IOUSBDeviceStruct182.GetDeviceVendor$FUNC
     );
     /**
      * {@snippet :
@@ -864,13 +880,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceVendor fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceVendor.class, fi, IOUSBDeviceStruct100.GetDeviceVendor$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceVendor.class, fi, IOUSBDeviceStruct182.GetDeviceVendor$FUNC, scope);
         }
         static GetDeviceVendor ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceVendor$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceVendor$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -880,7 +896,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceVendor$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceVendor"));
     public static VarHandle GetDeviceVendor$VH() {
-        return IOUSBDeviceStruct100.GetDeviceVendor$VH;
+        return IOUSBDeviceStruct182.GetDeviceVendor$VH;
     }
     /**
      * Getter for field:
@@ -889,7 +905,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceVendor$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceVendor$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceVendor$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -898,13 +914,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceVendor$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceVendor$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceVendor$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceVendor$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceVendor$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceVendor$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceVendor$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceVendor$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceVendor$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceVendor GetDeviceVendor(MemorySegment segment, SegmentScope scope) {
         return GetDeviceVendor.ofAddress(GetDeviceVendor$get(segment), scope);
@@ -914,7 +930,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceProduct$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceProduct$FUNC
+        IOUSBDeviceStruct182.GetDeviceProduct$FUNC
     );
     /**
      * {@snippet :
@@ -925,13 +941,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceProduct fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceProduct.class, fi, IOUSBDeviceStruct100.GetDeviceProduct$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceProduct.class, fi, IOUSBDeviceStruct182.GetDeviceProduct$FUNC, scope);
         }
         static GetDeviceProduct ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceProduct$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceProduct$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -941,7 +957,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceProduct$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceProduct"));
     public static VarHandle GetDeviceProduct$VH() {
-        return IOUSBDeviceStruct100.GetDeviceProduct$VH;
+        return IOUSBDeviceStruct182.GetDeviceProduct$VH;
     }
     /**
      * Getter for field:
@@ -950,7 +966,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceProduct$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceProduct$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceProduct$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -959,13 +975,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceProduct$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceProduct$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceProduct$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceProduct$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceProduct$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceProduct$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceProduct$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceProduct$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceProduct$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceProduct GetDeviceProduct(MemorySegment segment, SegmentScope scope) {
         return GetDeviceProduct.ofAddress(GetDeviceProduct$get(segment), scope);
@@ -975,7 +991,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceReleaseNumber$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceReleaseNumber$FUNC
+        IOUSBDeviceStruct182.GetDeviceReleaseNumber$FUNC
     );
     /**
      * {@snippet :
@@ -986,13 +1002,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceReleaseNumber fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceReleaseNumber.class, fi, IOUSBDeviceStruct100.GetDeviceReleaseNumber$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceReleaseNumber.class, fi, IOUSBDeviceStruct182.GetDeviceReleaseNumber$FUNC, scope);
         }
         static GetDeviceReleaseNumber ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceReleaseNumber$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceReleaseNumber$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1002,7 +1018,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceReleaseNumber$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceReleaseNumber"));
     public static VarHandle GetDeviceReleaseNumber$VH() {
-        return IOUSBDeviceStruct100.GetDeviceReleaseNumber$VH;
+        return IOUSBDeviceStruct182.GetDeviceReleaseNumber$VH;
     }
     /**
      * Getter for field:
@@ -1011,7 +1027,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceReleaseNumber$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceReleaseNumber$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceReleaseNumber$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1020,13 +1036,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceReleaseNumber$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceReleaseNumber$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceReleaseNumber$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceReleaseNumber$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceReleaseNumber$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceReleaseNumber$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceReleaseNumber$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceReleaseNumber$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceReleaseNumber$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceReleaseNumber GetDeviceReleaseNumber(MemorySegment segment, SegmentScope scope) {
         return GetDeviceReleaseNumber.ofAddress(GetDeviceReleaseNumber$get(segment), scope);
@@ -1036,7 +1052,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceAddress$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceAddress$FUNC
+        IOUSBDeviceStruct182.GetDeviceAddress$FUNC
     );
     /**
      * {@snippet :
@@ -1047,13 +1063,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceAddress fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceAddress.class, fi, IOUSBDeviceStruct100.GetDeviceAddress$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceAddress.class, fi, IOUSBDeviceStruct182.GetDeviceAddress$FUNC, scope);
         }
         static GetDeviceAddress ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceAddress$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceAddress$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1063,7 +1079,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceAddress$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceAddress"));
     public static VarHandle GetDeviceAddress$VH() {
-        return IOUSBDeviceStruct100.GetDeviceAddress$VH;
+        return IOUSBDeviceStruct182.GetDeviceAddress$VH;
     }
     /**
      * Getter for field:
@@ -1072,7 +1088,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceAddress$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAddress$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAddress$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1081,13 +1097,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceAddress$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAddress$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceAddress$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceAddress$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceAddress$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceAddress$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceAddress$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceAddress$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceAddress$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceAddress GetDeviceAddress(MemorySegment segment, SegmentScope scope) {
         return GetDeviceAddress.ofAddress(GetDeviceAddress$get(segment), scope);
@@ -1097,7 +1113,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceBusPowerAvailable$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$FUNC
+        IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$FUNC
     );
     /**
      * {@snippet :
@@ -1108,13 +1124,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceBusPowerAvailable fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceBusPowerAvailable.class, fi, IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceBusPowerAvailable.class, fi, IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$FUNC, scope);
         }
         static GetDeviceBusPowerAvailable ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1124,7 +1140,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceBusPowerAvailable$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceBusPowerAvailable"));
     public static VarHandle GetDeviceBusPowerAvailable$VH() {
-        return IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$VH;
+        return IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$VH;
     }
     /**
      * Getter for field:
@@ -1133,7 +1149,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceBusPowerAvailable$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1142,13 +1158,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceBusPowerAvailable$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceBusPowerAvailable$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceBusPowerAvailable$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceBusPowerAvailable$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceBusPowerAvailable$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceBusPowerAvailable GetDeviceBusPowerAvailable(MemorySegment segment, SegmentScope scope) {
         return GetDeviceBusPowerAvailable.ofAddress(GetDeviceBusPowerAvailable$get(segment), scope);
@@ -1158,7 +1174,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetDeviceSpeed$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetDeviceSpeed$FUNC
+        IOUSBDeviceStruct182.GetDeviceSpeed$FUNC
     );
     /**
      * {@snippet :
@@ -1169,13 +1185,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetDeviceSpeed fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetDeviceSpeed.class, fi, IOUSBDeviceStruct100.GetDeviceSpeed$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetDeviceSpeed.class, fi, IOUSBDeviceStruct182.GetDeviceSpeed$FUNC, scope);
         }
         static GetDeviceSpeed ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetDeviceSpeed$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetDeviceSpeed$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1185,7 +1201,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetDeviceSpeed$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetDeviceSpeed"));
     public static VarHandle GetDeviceSpeed$VH() {
-        return IOUSBDeviceStruct100.GetDeviceSpeed$VH;
+        return IOUSBDeviceStruct182.GetDeviceSpeed$VH;
     }
     /**
      * Getter for field:
@@ -1194,7 +1210,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetDeviceSpeed$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceSpeed$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceSpeed$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1203,13 +1219,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetDeviceSpeed$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceSpeed$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetDeviceSpeed$VH.set(seg, x);
     }
     public static MemorySegment GetDeviceSpeed$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetDeviceSpeed$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetDeviceSpeed$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetDeviceSpeed$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetDeviceSpeed$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetDeviceSpeed$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetDeviceSpeed GetDeviceSpeed(MemorySegment segment, SegmentScope scope) {
         return GetDeviceSpeed.ofAddress(GetDeviceSpeed$get(segment), scope);
@@ -1219,7 +1235,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetNumberOfConfigurations$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetNumberOfConfigurations$FUNC
+        IOUSBDeviceStruct182.GetNumberOfConfigurations$FUNC
     );
     /**
      * {@snippet :
@@ -1230,13 +1246,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetNumberOfConfigurations fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetNumberOfConfigurations.class, fi, IOUSBDeviceStruct100.GetNumberOfConfigurations$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetNumberOfConfigurations.class, fi, IOUSBDeviceStruct182.GetNumberOfConfigurations$FUNC, scope);
         }
         static GetNumberOfConfigurations ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetNumberOfConfigurations$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetNumberOfConfigurations$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1246,7 +1262,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetNumberOfConfigurations$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetNumberOfConfigurations"));
     public static VarHandle GetNumberOfConfigurations$VH() {
-        return IOUSBDeviceStruct100.GetNumberOfConfigurations$VH;
+        return IOUSBDeviceStruct182.GetNumberOfConfigurations$VH;
     }
     /**
      * Getter for field:
@@ -1255,7 +1271,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetNumberOfConfigurations$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetNumberOfConfigurations$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetNumberOfConfigurations$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1264,13 +1280,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetNumberOfConfigurations$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetNumberOfConfigurations$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetNumberOfConfigurations$VH.set(seg, x);
     }
     public static MemorySegment GetNumberOfConfigurations$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetNumberOfConfigurations$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetNumberOfConfigurations$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetNumberOfConfigurations$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetNumberOfConfigurations$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetNumberOfConfigurations$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetNumberOfConfigurations GetNumberOfConfigurations(MemorySegment segment, SegmentScope scope) {
         return GetNumberOfConfigurations.ofAddress(GetNumberOfConfigurations$get(segment), scope);
@@ -1280,7 +1296,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetLocationID$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetLocationID$FUNC
+        IOUSBDeviceStruct182.GetLocationID$FUNC
     );
     /**
      * {@snippet :
@@ -1291,13 +1307,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetLocationID fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetLocationID.class, fi, IOUSBDeviceStruct100.GetLocationID$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetLocationID.class, fi, IOUSBDeviceStruct182.GetLocationID$FUNC, scope);
         }
         static GetLocationID ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetLocationID$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetLocationID$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1307,7 +1323,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetLocationID$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetLocationID"));
     public static VarHandle GetLocationID$VH() {
-        return IOUSBDeviceStruct100.GetLocationID$VH;
+        return IOUSBDeviceStruct182.GetLocationID$VH;
     }
     /**
      * Getter for field:
@@ -1316,7 +1332,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetLocationID$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetLocationID$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetLocationID$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1325,13 +1341,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetLocationID$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetLocationID$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetLocationID$VH.set(seg, x);
     }
     public static MemorySegment GetLocationID$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetLocationID$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetLocationID$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetLocationID$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetLocationID$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetLocationID$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetLocationID GetLocationID(MemorySegment segment, SegmentScope scope) {
         return GetLocationID.ofAddress(GetLocationID$get(segment), scope);
@@ -1342,7 +1358,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetConfigurationDescriptorPtr$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$FUNC
+        IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$FUNC
     );
     /**
      * {@snippet :
@@ -1353,13 +1369,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, byte _x1, java.lang.foreign.MemorySegment _x2);
         static MemorySegment allocate(GetConfigurationDescriptorPtr fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetConfigurationDescriptorPtr.class, fi, IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetConfigurationDescriptorPtr.class, fi, IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$FUNC, scope);
         }
         static GetConfigurationDescriptorPtr ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, byte __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1369,7 +1385,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetConfigurationDescriptorPtr$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetConfigurationDescriptorPtr"));
     public static VarHandle GetConfigurationDescriptorPtr$VH() {
-        return IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$VH;
+        return IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$VH;
     }
     /**
      * Getter for field:
@@ -1378,7 +1394,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetConfigurationDescriptorPtr$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1387,13 +1403,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetConfigurationDescriptorPtr$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$VH.set(seg, x);
     }
     public static MemorySegment GetConfigurationDescriptorPtr$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetConfigurationDescriptorPtr$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetConfigurationDescriptorPtr$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetConfigurationDescriptorPtr$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetConfigurationDescriptorPtr GetConfigurationDescriptorPtr(MemorySegment segment, SegmentScope scope) {
         return GetConfigurationDescriptorPtr.ofAddress(GetConfigurationDescriptorPtr$get(segment), scope);
@@ -1403,7 +1419,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetConfiguration$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetConfiguration$FUNC
+        IOUSBDeviceStruct182.GetConfiguration$FUNC
     );
     /**
      * {@snippet :
@@ -1414,13 +1430,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(GetConfiguration fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetConfiguration.class, fi, IOUSBDeviceStruct100.GetConfiguration$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetConfiguration.class, fi, IOUSBDeviceStruct182.GetConfiguration$FUNC, scope);
         }
         static GetConfiguration ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetConfiguration$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.GetConfiguration$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1430,7 +1446,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetConfiguration$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetConfiguration"));
     public static VarHandle GetConfiguration$VH() {
-        return IOUSBDeviceStruct100.GetConfiguration$VH;
+        return IOUSBDeviceStruct182.GetConfiguration$VH;
     }
     /**
      * Getter for field:
@@ -1439,7 +1455,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetConfiguration$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetConfiguration$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetConfiguration$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1448,13 +1464,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetConfiguration$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetConfiguration$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetConfiguration$VH.set(seg, x);
     }
     public static MemorySegment GetConfiguration$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetConfiguration$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetConfiguration$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetConfiguration$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetConfiguration$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetConfiguration$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetConfiguration GetConfiguration(MemorySegment segment, SegmentScope scope) {
         return GetConfiguration.ofAddress(GetConfiguration$get(segment), scope);
@@ -1464,7 +1480,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_CHAR$LAYOUT
     );
     static final MethodHandle SetConfiguration$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.SetConfiguration$FUNC
+        IOUSBDeviceStruct182.SetConfiguration$FUNC
     );
     /**
      * {@snippet :
@@ -1475,13 +1491,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
         static MemorySegment allocate(SetConfiguration fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(SetConfiguration.class, fi, IOUSBDeviceStruct100.SetConfiguration$FUNC, scope);
+            return RuntimeHelper.upcallStub(SetConfiguration.class, fi, IOUSBDeviceStruct182.SetConfiguration$FUNC, scope);
         }
         static SetConfiguration ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.SetConfiguration$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.SetConfiguration$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1491,7 +1507,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle SetConfiguration$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("SetConfiguration"));
     public static VarHandle SetConfiguration$VH() {
-        return IOUSBDeviceStruct100.SetConfiguration$VH;
+        return IOUSBDeviceStruct182.SetConfiguration$VH;
     }
     /**
      * Getter for field:
@@ -1500,7 +1516,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment SetConfiguration$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.SetConfiguration$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.SetConfiguration$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1509,13 +1525,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void SetConfiguration$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.SetConfiguration$VH.set(seg, x);
+        IOUSBDeviceStruct182.SetConfiguration$VH.set(seg, x);
     }
     public static MemorySegment SetConfiguration$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.SetConfiguration$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.SetConfiguration$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void SetConfiguration$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.SetConfiguration$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.SetConfiguration$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static SetConfiguration SetConfiguration(MemorySegment segment, SegmentScope scope) {
         return SetConfiguration.ofAddress(SetConfiguration$get(segment), scope);
@@ -1526,7 +1542,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle GetBusFrameNumber$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.GetBusFrameNumber$FUNC
+        IOUSBDeviceStruct182.GetBusFrameNumber$FUNC
     );
     /**
      * {@snippet :
@@ -1537,13 +1553,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
         static MemorySegment allocate(GetBusFrameNumber fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(GetBusFrameNumber.class, fi, IOUSBDeviceStruct100.GetBusFrameNumber$FUNC, scope);
+            return RuntimeHelper.upcallStub(GetBusFrameNumber.class, fi, IOUSBDeviceStruct182.GetBusFrameNumber$FUNC, scope);
         }
         static GetBusFrameNumber ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.GetBusFrameNumber$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)IOUSBDeviceStruct182.GetBusFrameNumber$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1553,7 +1569,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle GetBusFrameNumber$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("GetBusFrameNumber"));
     public static VarHandle GetBusFrameNumber$VH() {
-        return IOUSBDeviceStruct100.GetBusFrameNumber$VH;
+        return IOUSBDeviceStruct182.GetBusFrameNumber$VH;
     }
     /**
      * Getter for field:
@@ -1562,7 +1578,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment GetBusFrameNumber$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetBusFrameNumber$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetBusFrameNumber$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1571,13 +1587,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void GetBusFrameNumber$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.GetBusFrameNumber$VH.set(seg, x);
+        IOUSBDeviceStruct182.GetBusFrameNumber$VH.set(seg, x);
     }
     public static MemorySegment GetBusFrameNumber$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.GetBusFrameNumber$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.GetBusFrameNumber$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void GetBusFrameNumber$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.GetBusFrameNumber$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.GetBusFrameNumber$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static GetBusFrameNumber GetBusFrameNumber(MemorySegment segment, SegmentScope scope) {
         return GetBusFrameNumber.ofAddress(GetBusFrameNumber$get(segment), scope);
@@ -1586,7 +1602,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle ResetDevice$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.ResetDevice$FUNC
+        IOUSBDeviceStruct182.ResetDevice$FUNC
     );
     /**
      * {@snippet :
@@ -1597,13 +1613,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0);
         static MemorySegment allocate(ResetDevice fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(ResetDevice.class, fi, IOUSBDeviceStruct100.ResetDevice$FUNC, scope);
+            return RuntimeHelper.upcallStub(ResetDevice.class, fi, IOUSBDeviceStruct182.ResetDevice$FUNC, scope);
         }
         static ResetDevice ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.ResetDevice$MH.invokeExact(symbol, __x0);
+                    return (int)IOUSBDeviceStruct182.ResetDevice$MH.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1613,7 +1629,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle ResetDevice$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("ResetDevice"));
     public static VarHandle ResetDevice$VH() {
-        return IOUSBDeviceStruct100.ResetDevice$VH;
+        return IOUSBDeviceStruct182.ResetDevice$VH;
     }
     /**
      * Getter for field:
@@ -1622,7 +1638,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment ResetDevice$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.ResetDevice$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.ResetDevice$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1631,13 +1647,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void ResetDevice$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.ResetDevice$VH.set(seg, x);
+        IOUSBDeviceStruct182.ResetDevice$VH.set(seg, x);
     }
     public static MemorySegment ResetDevice$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.ResetDevice$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.ResetDevice$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void ResetDevice$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.ResetDevice$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.ResetDevice$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static ResetDevice ResetDevice(MemorySegment segment, SegmentScope scope) {
         return ResetDevice.ofAddress(ResetDevice$get(segment), scope);
@@ -1647,7 +1663,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle DeviceRequest$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.DeviceRequest$FUNC
+        IOUSBDeviceStruct182.DeviceRequest$FUNC
     );
     /**
      * {@snippet :
@@ -1658,13 +1674,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
         static MemorySegment allocate(DeviceRequest fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(DeviceRequest.class, fi, IOUSBDeviceStruct100.DeviceRequest$FUNC, scope);
+            return RuntimeHelper.upcallStub(DeviceRequest.class, fi, IOUSBDeviceStruct182.DeviceRequest$FUNC, scope);
         }
         static DeviceRequest ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.DeviceRequest$MH.invokeExact(symbol, __x0, __x1);
+                    return (int)IOUSBDeviceStruct182.DeviceRequest$MH.invokeExact(symbol, __x0, __x1);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1674,7 +1690,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle DeviceRequest$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("DeviceRequest"));
     public static VarHandle DeviceRequest$VH() {
-        return IOUSBDeviceStruct100.DeviceRequest$VH;
+        return IOUSBDeviceStruct182.DeviceRequest$VH;
     }
     /**
      * Getter for field:
@@ -1683,7 +1699,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment DeviceRequest$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.DeviceRequest$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequest$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1692,13 +1708,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void DeviceRequest$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.DeviceRequest$VH.set(seg, x);
+        IOUSBDeviceStruct182.DeviceRequest$VH.set(seg, x);
     }
     public static MemorySegment DeviceRequest$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.DeviceRequest$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequest$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void DeviceRequest$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.DeviceRequest$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.DeviceRequest$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static DeviceRequest DeviceRequest(MemorySegment segment, SegmentScope scope) {
         return DeviceRequest.ofAddress(DeviceRequest$get(segment), scope);
@@ -1710,7 +1726,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle DeviceRequestAsync$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.DeviceRequestAsync$FUNC
+        IOUSBDeviceStruct182.DeviceRequestAsync$FUNC
     );
     /**
      * {@snippet :
@@ -1721,13 +1737,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3);
         static MemorySegment allocate(DeviceRequestAsync fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(DeviceRequestAsync.class, fi, IOUSBDeviceStruct100.DeviceRequestAsync$FUNC, scope);
+            return RuntimeHelper.upcallStub(DeviceRequestAsync.class, fi, IOUSBDeviceStruct182.DeviceRequestAsync$FUNC, scope);
         }
         static DeviceRequestAsync ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.DeviceRequestAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
+                    return (int)IOUSBDeviceStruct182.DeviceRequestAsync$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1737,7 +1753,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle DeviceRequestAsync$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("DeviceRequestAsync"));
     public static VarHandle DeviceRequestAsync$VH() {
-        return IOUSBDeviceStruct100.DeviceRequestAsync$VH;
+        return IOUSBDeviceStruct182.DeviceRequestAsync$VH;
     }
     /**
      * Getter for field:
@@ -1746,7 +1762,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment DeviceRequestAsync$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.DeviceRequestAsync$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestAsync$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1755,13 +1771,13 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void DeviceRequestAsync$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.DeviceRequestAsync$VH.set(seg, x);
+        IOUSBDeviceStruct182.DeviceRequestAsync$VH.set(seg, x);
     }
     public static MemorySegment DeviceRequestAsync$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.DeviceRequestAsync$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestAsync$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void DeviceRequestAsync$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.DeviceRequestAsync$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.DeviceRequestAsync$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static DeviceRequestAsync DeviceRequestAsync(MemorySegment segment, SegmentScope scope) {
         return DeviceRequestAsync.ofAddress(DeviceRequestAsync$get(segment), scope);
@@ -1772,7 +1788,7 @@ public class IOUSBDeviceStruct100 {
         Constants$root.C_POINTER$LAYOUT
     );
     static final MethodHandle CreateInterfaceIterator$MH = RuntimeHelper.downcallHandle(
-        IOUSBDeviceStruct100.CreateInterfaceIterator$FUNC
+        IOUSBDeviceStruct182.CreateInterfaceIterator$FUNC
     );
     /**
      * {@snippet :
@@ -1783,13 +1799,13 @@ public class IOUSBDeviceStruct100 {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
         static MemorySegment allocate(CreateInterfaceIterator fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(CreateInterfaceIterator.class, fi, IOUSBDeviceStruct100.CreateInterfaceIterator$FUNC, scope);
+            return RuntimeHelper.upcallStub(CreateInterfaceIterator.class, fi, IOUSBDeviceStruct182.CreateInterfaceIterator$FUNC, scope);
         }
         static CreateInterfaceIterator ofAddress(MemorySegment addr, SegmentScope scope) {
             MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOUSBDeviceStruct100.CreateInterfaceIterator$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)IOUSBDeviceStruct182.CreateInterfaceIterator$MH.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -1799,7 +1815,7 @@ public class IOUSBDeviceStruct100 {
 
     static final VarHandle CreateInterfaceIterator$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("CreateInterfaceIterator"));
     public static VarHandle CreateInterfaceIterator$VH() {
-        return IOUSBDeviceStruct100.CreateInterfaceIterator$VH;
+        return IOUSBDeviceStruct182.CreateInterfaceIterator$VH;
     }
     /**
      * Getter for field:
@@ -1808,7 +1824,7 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static MemorySegment CreateInterfaceIterator$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateInterfaceIterator$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateInterfaceIterator$VH.get(seg);
     }
     /**
      * Setter for field:
@@ -1817,16 +1833,504 @@ public class IOUSBDeviceStruct100 {
      * }
      */
     public static void CreateInterfaceIterator$set(MemorySegment seg, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateInterfaceIterator$VH.set(seg, x);
+        IOUSBDeviceStruct182.CreateInterfaceIterator$VH.set(seg, x);
     }
     public static MemorySegment CreateInterfaceIterator$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct100.CreateInterfaceIterator$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.CreateInterfaceIterator$VH.get(seg.asSlice(index*sizeof()));
     }
     public static void CreateInterfaceIterator$set(MemorySegment seg, long index, MemorySegment x) {
-        IOUSBDeviceStruct100.CreateInterfaceIterator$VH.set(seg.asSlice(index*sizeof()), x);
+        IOUSBDeviceStruct182.CreateInterfaceIterator$VH.set(seg.asSlice(index*sizeof()), x);
     }
     public static CreateInterfaceIterator CreateInterfaceIterator(MemorySegment segment, SegmentScope scope) {
         return CreateInterfaceIterator.ofAddress(CreateInterfaceIterator$get(segment), scope);
+    }
+    static final FunctionDescriptor USBDeviceOpenSeize$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle USBDeviceOpenSeize$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBDeviceOpenSeize$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBDeviceOpenSeize)(void*);
+     * }
+     */
+    public interface USBDeviceOpenSeize {
+
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(USBDeviceOpenSeize fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBDeviceOpenSeize.class, fi, IOUSBDeviceStruct182.USBDeviceOpenSeize$FUNC, scope);
+        }
+        static USBDeviceOpenSeize ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBDeviceOpenSeize$MH.invokeExact(symbol, __x0);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBDeviceOpenSeize$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBDeviceOpenSeize"));
+    public static VarHandle USBDeviceOpenSeize$VH() {
+        return IOUSBDeviceStruct182.USBDeviceOpenSeize$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceOpenSeize)(void*);
+     * }
+     */
+    public static MemorySegment USBDeviceOpenSeize$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceOpenSeize$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceOpenSeize)(void*);
+     * }
+     */
+    public static void USBDeviceOpenSeize$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceOpenSeize$VH.set(seg, x);
+    }
+    public static MemorySegment USBDeviceOpenSeize$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceOpenSeize$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBDeviceOpenSeize$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceOpenSeize$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBDeviceOpenSeize USBDeviceOpenSeize(MemorySegment segment, SegmentScope scope) {
+        return USBDeviceOpenSeize.ofAddress(USBDeviceOpenSeize$get(segment), scope);
+    }
+    static final FunctionDescriptor DeviceRequestTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle DeviceRequestTO$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.DeviceRequestTO$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*DeviceRequestTO)(void*,IOUSBDevRequestTO*);
+     * }
+     */
+    public interface DeviceRequestTO {
+
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(DeviceRequestTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(DeviceRequestTO.class, fi, IOUSBDeviceStruct182.DeviceRequestTO$FUNC, scope);
+        }
+        static DeviceRequestTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.DeviceRequestTO$MH.invokeExact(symbol, __x0, __x1);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle DeviceRequestTO$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("DeviceRequestTO"));
+    public static VarHandle DeviceRequestTO$VH() {
+        return IOUSBDeviceStruct182.DeviceRequestTO$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*DeviceRequestTO)(void*,IOUSBDevRequestTO*);
+     * }
+     */
+    public static MemorySegment DeviceRequestTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestTO$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*DeviceRequestTO)(void*,IOUSBDevRequestTO*);
+     * }
+     */
+    public static void DeviceRequestTO$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.DeviceRequestTO$VH.set(seg, x);
+    }
+    public static MemorySegment DeviceRequestTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestTO$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void DeviceRequestTO$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.DeviceRequestTO$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static DeviceRequestTO DeviceRequestTO(MemorySegment segment, SegmentScope scope) {
+        return DeviceRequestTO.ofAddress(DeviceRequestTO$get(segment), scope);
+    }
+    static final FunctionDescriptor DeviceRequestAsyncTO$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle DeviceRequestAsyncTO$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.DeviceRequestAsyncTO$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*DeviceRequestAsyncTO)(void*,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
+    public interface DeviceRequestAsyncTO {
+
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2, java.lang.foreign.MemorySegment _x3);
+        static MemorySegment allocate(DeviceRequestAsyncTO fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(DeviceRequestAsyncTO.class, fi, IOUSBDeviceStruct182.DeviceRequestAsyncTO$FUNC, scope);
+        }
+        static DeviceRequestAsyncTO ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2, java.lang.foreign.MemorySegment __x3) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.DeviceRequestAsyncTO$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle DeviceRequestAsyncTO$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("DeviceRequestAsyncTO"));
+    public static VarHandle DeviceRequestAsyncTO$VH() {
+        return IOUSBDeviceStruct182.DeviceRequestAsyncTO$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*DeviceRequestAsyncTO)(void*,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static MemorySegment DeviceRequestAsyncTO$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestAsyncTO$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*DeviceRequestAsyncTO)(void*,IOUSBDevRequestTO*,IOAsyncCallback1,void*);
+     * }
+     */
+    public static void DeviceRequestAsyncTO$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.DeviceRequestAsyncTO$VH.set(seg, x);
+    }
+    public static MemorySegment DeviceRequestAsyncTO$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.DeviceRequestAsyncTO$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void DeviceRequestAsyncTO$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.DeviceRequestAsyncTO$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static DeviceRequestAsyncTO DeviceRequestAsyncTO(MemorySegment segment, SegmentScope scope) {
+        return DeviceRequestAsyncTO.ofAddress(DeviceRequestAsyncTO$get(segment), scope);
+    }
+    static final FunctionDescriptor USBDeviceSuspend$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_CHAR$LAYOUT
+    );
+    static final MethodHandle USBDeviceSuspend$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBDeviceSuspend$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBDeviceSuspend)(void*,Boolean);
+     * }
+     */
+    public interface USBDeviceSuspend {
+
+        int apply(java.lang.foreign.MemorySegment _x0, byte _x1);
+        static MemorySegment allocate(USBDeviceSuspend fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBDeviceSuspend.class, fi, IOUSBDeviceStruct182.USBDeviceSuspend$FUNC, scope);
+        }
+        static USBDeviceSuspend ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, byte __x1) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBDeviceSuspend$MH.invokeExact(symbol, __x0, __x1);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBDeviceSuspend$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBDeviceSuspend"));
+    public static VarHandle USBDeviceSuspend$VH() {
+        return IOUSBDeviceStruct182.USBDeviceSuspend$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceSuspend)(void*,Boolean);
+     * }
+     */
+    public static MemorySegment USBDeviceSuspend$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceSuspend$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceSuspend)(void*,Boolean);
+     * }
+     */
+    public static void USBDeviceSuspend$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceSuspend$VH.set(seg, x);
+    }
+    public static MemorySegment USBDeviceSuspend$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceSuspend$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBDeviceSuspend$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceSuspend$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBDeviceSuspend USBDeviceSuspend(MemorySegment segment, SegmentScope scope) {
+        return USBDeviceSuspend.ofAddress(USBDeviceSuspend$get(segment), scope);
+    }
+    static final FunctionDescriptor USBDeviceAbortPipeZero$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle USBDeviceAbortPipeZero$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBDeviceAbortPipeZero$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBDeviceAbortPipeZero)(void*);
+     * }
+     */
+    public interface USBDeviceAbortPipeZero {
+
+        int apply(java.lang.foreign.MemorySegment _x0);
+        static MemorySegment allocate(USBDeviceAbortPipeZero fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBDeviceAbortPipeZero.class, fi, IOUSBDeviceStruct182.USBDeviceAbortPipeZero$FUNC, scope);
+        }
+        static USBDeviceAbortPipeZero ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBDeviceAbortPipeZero$MH.invokeExact(symbol, __x0);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBDeviceAbortPipeZero$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBDeviceAbortPipeZero"));
+    public static VarHandle USBDeviceAbortPipeZero$VH() {
+        return IOUSBDeviceStruct182.USBDeviceAbortPipeZero$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceAbortPipeZero)(void*);
+     * }
+     */
+    public static MemorySegment USBDeviceAbortPipeZero$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceAbortPipeZero$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBDeviceAbortPipeZero)(void*);
+     * }
+     */
+    public static void USBDeviceAbortPipeZero$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceAbortPipeZero$VH.set(seg, x);
+    }
+    public static MemorySegment USBDeviceAbortPipeZero$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBDeviceAbortPipeZero$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBDeviceAbortPipeZero$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBDeviceAbortPipeZero$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBDeviceAbortPipeZero USBDeviceAbortPipeZero(MemorySegment segment, SegmentScope scope) {
+        return USBDeviceAbortPipeZero.ofAddress(USBDeviceAbortPipeZero$get(segment), scope);
+    }
+    static final FunctionDescriptor USBGetManufacturerStringIndex$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle USBGetManufacturerStringIndex$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBGetManufacturerStringIndex$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBGetManufacturerStringIndex)(void*,UInt8*);
+     * }
+     */
+    public interface USBGetManufacturerStringIndex {
+
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(USBGetManufacturerStringIndex fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBGetManufacturerStringIndex.class, fi, IOUSBDeviceStruct182.USBGetManufacturerStringIndex$FUNC, scope);
+        }
+        static USBGetManufacturerStringIndex ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBGetManufacturerStringIndex$MH.invokeExact(symbol, __x0, __x1);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBGetManufacturerStringIndex$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBGetManufacturerStringIndex"));
+    public static VarHandle USBGetManufacturerStringIndex$VH() {
+        return IOUSBDeviceStruct182.USBGetManufacturerStringIndex$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBGetManufacturerStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment USBGetManufacturerStringIndex$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetManufacturerStringIndex$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBGetManufacturerStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static void USBGetManufacturerStringIndex$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetManufacturerStringIndex$VH.set(seg, x);
+    }
+    public static MemorySegment USBGetManufacturerStringIndex$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetManufacturerStringIndex$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBGetManufacturerStringIndex$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetManufacturerStringIndex$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBGetManufacturerStringIndex USBGetManufacturerStringIndex(MemorySegment segment, SegmentScope scope) {
+        return USBGetManufacturerStringIndex.ofAddress(USBGetManufacturerStringIndex$get(segment), scope);
+    }
+    static final FunctionDescriptor USBGetProductStringIndex$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle USBGetProductStringIndex$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBGetProductStringIndex$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBGetProductStringIndex)(void*,UInt8*);
+     * }
+     */
+    public interface USBGetProductStringIndex {
+
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(USBGetProductStringIndex fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBGetProductStringIndex.class, fi, IOUSBDeviceStruct182.USBGetProductStringIndex$FUNC, scope);
+        }
+        static USBGetProductStringIndex ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBGetProductStringIndex$MH.invokeExact(symbol, __x0, __x1);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBGetProductStringIndex$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBGetProductStringIndex"));
+    public static VarHandle USBGetProductStringIndex$VH() {
+        return IOUSBDeviceStruct182.USBGetProductStringIndex$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBGetProductStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment USBGetProductStringIndex$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetProductStringIndex$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBGetProductStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static void USBGetProductStringIndex$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetProductStringIndex$VH.set(seg, x);
+    }
+    public static MemorySegment USBGetProductStringIndex$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetProductStringIndex$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBGetProductStringIndex$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetProductStringIndex$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBGetProductStringIndex USBGetProductStringIndex(MemorySegment segment, SegmentScope scope) {
+        return USBGetProductStringIndex.ofAddress(USBGetProductStringIndex$get(segment), scope);
+    }
+    static final FunctionDescriptor USBGetSerialNumberStringIndex$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT,
+        Constants$root.C_POINTER$LAYOUT
+    );
+    static final MethodHandle USBGetSerialNumberStringIndex$MH = RuntimeHelper.downcallHandle(
+        IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$FUNC
+    );
+    /**
+     * {@snippet :
+ * IOReturn (*USBGetSerialNumberStringIndex)(void*,UInt8*);
+     * }
+     */
+    public interface USBGetSerialNumberStringIndex {
+
+        int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1);
+        static MemorySegment allocate(USBGetSerialNumberStringIndex fi, SegmentScope scope) {
+            return RuntimeHelper.upcallStub(USBGetSerialNumberStringIndex.class, fi, IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$FUNC, scope);
+        }
+        static USBGetSerialNumberStringIndex ofAddress(MemorySegment addr, SegmentScope scope) {
+            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+            return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1) -> {
+                try {
+                    return (int)IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$MH.invokeExact(symbol, __x0, __x1);
+                } catch (Throwable ex$) {
+                    throw new AssertionError("should not reach here", ex$);
+                }
+            };
+        }
+    }
+
+    static final VarHandle USBGetSerialNumberStringIndex$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("USBGetSerialNumberStringIndex"));
+    public static VarHandle USBGetSerialNumberStringIndex$VH() {
+        return IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$VH;
+    }
+    /**
+     * Getter for field:
+     * {@snippet :
+     * IOReturn (*USBGetSerialNumberStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static MemorySegment USBGetSerialNumberStringIndex$get(MemorySegment seg) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$VH.get(seg);
+    }
+    /**
+     * Setter for field:
+     * {@snippet :
+     * IOReturn (*USBGetSerialNumberStringIndex)(void*,UInt8*);
+     * }
+     */
+    public static void USBGetSerialNumberStringIndex$set(MemorySegment seg, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$VH.set(seg, x);
+    }
+    public static MemorySegment USBGetSerialNumberStringIndex$get(MemorySegment seg, long index) {
+        return (java.lang.foreign.MemorySegment)IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$VH.get(seg.asSlice(index*sizeof()));
+    }
+    public static void USBGetSerialNumberStringIndex$set(MemorySegment seg, long index, MemorySegment x) {
+        IOUSBDeviceStruct182.USBGetSerialNumberStringIndex$VH.set(seg.asSlice(index*sizeof()), x);
+    }
+    public static USBGetSerialNumberStringIndex USBGetSerialNumberStringIndex(MemorySegment segment, SegmentScope scope) {
+        return USBGetSerialNumberStringIndex.ofAddress(USBGetSerialNumberStringIndex$get(segment), scope);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }

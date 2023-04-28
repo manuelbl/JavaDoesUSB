@@ -10,14 +10,14 @@ package net.codecrete.usb.sample;
 import net.codecrete.usb.*;
 
 /**
- * Interacts with a USB CDC device (serial device) directly,without using the
+ * Interacts with a USB CDC device (serial device) directly, without using the
  * standard USB CDC driver.
  *
  * <p>
  * This test is aimed at Linux, which requires to unload and restore the
- * kernel driver. It also works on macOS (without the needed to unload a
- * driver). It will fail on Windows as the standard driver is in the way and
- * cannot be quickly replaced.
+ * kernel driver. It will neither work on macOS (the USB CDC driver claims the
+ * interface with exclusive access) nor on Windows (only devices with the
+ * WinUSB driver can be opened).
  * </p>
  * <p>
  * For the test to work on Linux, the user must have sufficient permission to
