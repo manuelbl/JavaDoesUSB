@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "tusb_option.h": "c",
+        "tusb_config.h": "c",
+        "cdc_device.h": "c",
+        "usbd_pvt.h": "c",
+        "usbd.h": "c"
+    }
+}

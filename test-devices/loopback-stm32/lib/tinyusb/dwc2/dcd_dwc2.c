@@ -529,8 +529,10 @@ void dcd_init (uint8_t rhport)
   dwc2->dcfg |= DCFG_NZLSOHSK;
 
   // Clear all interrupts
-  dwc2->gintsts |= dwc2->gintsts;
-  dwc2->gotgint |= dwc2->gotgint;
+  uint32_t int_mask = dwc2->gintsts;
+  dwc2->gintsts |= int_mask;
+  int_mask = dwc2->gotgint;
+  dwc2->gotgint |= int_mask;
 
   // Required as part of core initialization.
   // TODO: How should mode mismatch be handled? It will cause
@@ -931,8 +933,8 @@ static void read_fifo_packet(uint8_t rhport, uint8_t * dst, uint16_t len)
   volatile const uint32_t * rx_fifo = dwc2->fifo[0];
 
   // Reading full available 32 bit words from fifo
-  uint8_t * dst_end = dst + (len & 0xfffc);
-  while(dst < dst_end)
+  uint16_t full_words = len >> 2;
+  while(full_words--)
   {
     tu_unaligned_write32(dst, *rx_fifo);
     dst += 4;
@@ -958,8 +960,8 @@ static void write_fifo_packet(uint8_t rhport, uint8_t fifo_num, uint8_t const * 
   volatile uint32_t * tx_fifo = dwc2->fifo[fifo_num];
 
   // Pushing full available 32 bit words to fifo
-  const uint8_t * src_end = src + (len & 0xfffc);
-  while(src < src_end)
+  uint16_t full_words = len >> 2;
+  while(full_words--)
   {
     *tx_fifo = tu_unaligned_read32(src);
     src += 4;
@@ -1003,7 +1005,7 @@ static void handle_rxflvl_irq(uint8_t rhport)
 
   switch ( pktsts )
   {
-    // Global OUT NAK: do nothign
+    // Global OUT NAK: do nothing
     case GRXSTS_PKTSTS_GLOBALOUTNAK: break;
 
     case GRXSTS_PKTSTS_SETUPRX:
@@ -1219,7 +1221,8 @@ void dcd_int_handler(uint8_t rhport)
 {
   dwc2_regs_t *dwc2 = DWC2_REG(rhport);
 
-  uint32_t const int_status = dwc2->gintsts & dwc2->gintmsk;
+  uint32_t const int_mask = dwc2->gintmsk;
+  uint32_t const int_status = dwc2->gintsts & int_mask;
 
   if(int_status & GINTSTS_USBRST)
   {
