@@ -118,7 +118,7 @@ public class LogicAnalyzer implements Closeable {
         this.filename = filename;
         prepareSampling(sampleRate, duration);
         var acquirer = CompletableFuture.runAsync(this::saveSamples);
-        sleep(20); // give thread time to start
+        sleep(50); // give thread time to start
         startAcquisition();
         var watchdog = CompletableFuture.runAsync(this::detectBufferOverrun);
         CompletableFuture.allOf(acquirer, watchdog).join();
@@ -232,11 +232,12 @@ public class LogicAnalyzer implements Closeable {
     }
 
     void detectBufferOverrun() {
+        sleep(10);
         // if the 'activityValue' hasn't changed within 20ms, the logic analyzer
         // has stopped sending data (likely due to a buffer overrun)
         long lastValue = 0;
         while (true) {
-            sleep(20);
+            sleep(5);
 
             if (stopped)
                 break;

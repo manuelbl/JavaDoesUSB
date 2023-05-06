@@ -68,7 +68,7 @@ SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so.1", MemorySes
 
 ## MacOS
 
-Most of the required native functions on macOS are part of a framework. Frameworks internally have a more complex file organization of header and binary files than appears from the outside. Thus they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
+Most of the required native functions on macOS are part of a framework. Frameworks internally have a more complex file organization of header and binary files than appears from the outside. Thus, they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
 
 The generated code has the same problem as the Linux code for *udev*. It must be manually changed to use `SymbolLookup.libraryLookup()` for the libraries `CoreFoundation.framework/CoreFoundation` and `IOKit.framework/IOKit` respectively.
 
@@ -102,12 +102,12 @@ The worst example is [`IOUSBInterfaceStruct100`](https://github.com/manuelbl/Jav
 
 The table below shows statictics for version 0.2.0 of the library:
 
-| Operating Systems | Manually Created | % | Generated | % | Total | % |
-| - | -:| -:| -:| -:| -:| -:|
-| Linux       |  24,140 |  1.96% |   182,774 | 14.84% |   206,914 |  16.80% |
-| macOS       |  57,788 |  4.69% |   666,037 | 54.08% |   723,825 |  58.77% |
-| Windows     |  46,085 |  3.74% |   201,000 | 16.32% |   247,085 |  20.06% |
-| Common      |  53,774 |  4.37% |    53,774 |  0.00% |           |   4.37% |
-| Grand Total | 181,787 | 14.76% | 1,049,811 | 85.24% | 1,231,598 | 100.00% |
+| Operating Systems | Manually Created |      % | Generated |      % |     Total |       % |
+|-------------------|-----------------:|-------:|----------:|-------:|----------:|--------:|
+| Linux             |           24,140 |  1.96% |   182,774 | 14.84% |   206,914 |  16.80% |
+| macOS             |           57,788 |  4.69% |   666,037 | 54.08% |   723,825 |  58.77% |
+| Windows           |           46,085 |  3.74% |   201,000 | 16.32% |   247,085 |  20.06% |
+| Common            |           53,774 |  4.37% |    53,774 |  0.00% |           |   4.37% |
+| Grand Total       |          181,787 | 14.76% | 1,049,811 | 85.24% | 1,231,598 | 100.00% |
 
 *Code Size (compiled), in bytes and percentage of total size*

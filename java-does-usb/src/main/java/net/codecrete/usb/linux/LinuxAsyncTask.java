@@ -15,10 +15,8 @@ import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,15 +56,15 @@ public class LinuxAsyncTask {
         return singletonInstance;
     }
 
-    private final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
+    private final Arena urbArena = Arena.openShared();
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
     /// map of URB addresses to transfer (for outstanding transfers)
-    private final Map<Long, LinuxTransfer> transfersByURB = new HashMap<>();
+    private final Map<MemorySegment, LinuxTransfer> transfersByURB = new LinkedHashMap<>();
     /// array of file descriptors using asynchronous completion
     private int[] asyncFds;
     /// file descriptor to notify async IO background thread about an update
-    private int asyncIOUpdateEventFd;
+    private int asyncIOWakeUpEventFd;
 
     /**
      * Background task for handling asynchronous IO completions.
@@ -103,7 +101,8 @@ public class LinuxAsyncTask {
                     pollfd.revents$set(asyncPolls, i, (short) 0);
                 }
 
-                pollfd.fd$set(asyncPolls, n, asyncIOUpdateEventFd);
+                // entry n is the wake-up event file descriptor
+                pollfd.fd$set(asyncPolls, n, asyncIOWakeUpEventFd);
                 pollfd.events$set(asyncPolls, n, (short) poll.POLLIN());
                 pollfd.revents$set(asyncPolls, n, (short) 0);
 
@@ -112,30 +111,34 @@ public class LinuxAsyncTask {
                 if (res < 0)
                     throwException("internal error (poll)");
 
-                // check for events
-                for (int i = 0; i < n + 1; i++) {
-                    var revent = pollfd.revents$get(asyncPolls, i);
-                    if (revent == 0)
-                        continue;
+                // acquire lock
+                synchronized (this) {
 
-                    if ((revent & poll.POLLERR()) != 0) {
-                        // most likely the device has been disconnected;
-                        // remove from polled FD list to prevent further problems
-                        int fd = pollfd.fd$get(asyncPolls, i);
-                        removeFdFromAsyncIOCompletion(fd);
+                    if ((pollfd.revents$get(asyncPolls, n) & poll.POLLIN()) != 0) {
+                        // wakeup to refresh list of file descriptors
+                        res = IO.eventfd_read(asyncIOWakeUpEventFd, eventfdValueHolder, errnoState);
+                        if (res < 0)
+                            throwLastError(errnoState, "internal error (eventfd_read)");
                         continue;
                     }
 
-                    if (i != n) {
+                    // check for events
+                    for (int i = 0; i < n + 1; i++) {
+                        var revent = pollfd.revents$get(asyncPolls, i);
+                        if (revent == 0)
+                            continue;
+
+                        if ((revent & poll.POLLERR()) != 0) {
+                            // most likely the device has been disconnected;
+                            // remove from polled FD list to prevent further problems
+                            int fd = pollfd.fd$get(asyncPolls, i);
+                            removeFdFromAsyncIOCompletion(fd);
+                            continue;
+                        }
+
                         // reap URB
                         int fd = pollfd.fd$get(asyncPolls, i);
-                        reapURB(fd, urbPointerHolder, errnoState);
-
-                    } else {
-                        // wakeup to refresh list of file descriptors
-                        res = IO.eventfd_read(asyncIOUpdateEventFd, eventfdValueHolder, errnoState);
-                        if (res < 0)
-                            throwLastError(errnoState, "internal error (eventfd_read)");
+                        reapURBs(fd, urbPointerHolder, errnoState);
                     }
                 }
             }
@@ -143,28 +146,29 @@ public class LinuxAsyncTask {
     }
 
     /**
-     * Reap URB and handle the completed transfer.
+     * Reap all pending URBs and handle the completed transfers.
      *
      * @param fd               file descriptor
      * @param urbPointerHolder native memory to receive the URB pointer
      * @param errnoState       native memory to receive the errno
      */
-    private void reapURB(int fd, MemorySegment urbPointerHolder, MemorySegment errnoState) {
-        int res;
-        res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
-        if (res < 0) {
-            var err = Linux.getErrno(errnoState);
-            if (err == errno.EAGAIN())
-                return; // retry
-            if (err == errno.EBADF())
-                return; // ignore, device might have been closed
-            throwException(err, "internal error (reap URB)");
-        }
+    private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errnoState) {
+        while (true) {
+            int res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
+            if (res < 0) {
+                var err = Linux.getErrno(errnoState);
+                if (err == errno.EAGAIN())
+                    return; // no more pending URBs
+                if (err == errno.EBADF())
+                    return; // ignore, device might have been closed
+                throwException(err, "internal error (reap URB)");
+            }
 
-        // call completion handler
-        var urbAddr = urbPointerHolder.get(JAVA_LONG, 0);
-        var transfer = getTransferResult(urbAddr);
-        transfer.completion.completed(transfer);
+            // call completion handler
+            var urb = urbPointerHolder.get(ADDRESS, 0);
+            var transfer = getTransferResult(urb);
+            transfer.completion.completed(transfer);
+        }
     }
 
     /**
@@ -172,14 +176,14 @@ public class LinuxAsyncTask {
      */
     private void notifyAsyncIOTask() {
         // start background process if needed
-        if (asyncIOUpdateEventFd == 0) {
+        if (asyncIOWakeUpEventFd == 0) {
             startAsyncIOTask();
             return;
         }
 
         try (var arena = Arena.openConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            if (IO.eventfd_write(asyncIOUpdateEventFd, 1, errnoState) < 0)
+            if (IO.eventfd_write(asyncIOWakeUpEventFd, 1, errnoState) < 0)
                 throwLastError(errnoState, "internal error (eventfd_write)");
         }
     }
@@ -268,15 +272,15 @@ public class LinuxAsyncTask {
         if (size > 0) {
             urb = availableURBs.remove(size - 1);
         } else {
-            urb = usbdevfs_urb.allocate(GLOBAL_ALLOCATOR);
+            urb = usbdevfs_urb.allocate(urbArena);
         }
 
         transfer.urb = urb;
-        transfersByURB.put(urb.address(), transfer);
+        transfersByURB.put(urb, transfer);
     }
 
-    private synchronized LinuxTransfer getTransferResult(long urbAddr) {
-        var transfer = transfersByURB.remove(urbAddr);
+    private synchronized LinuxTransfer getTransferResult(MemorySegment urb) {
+        var transfer = transfersByURB.remove(urb);
         if (transfer == null)
             throwException("internal error (unknown URB)");
 
@@ -291,17 +295,21 @@ public class LinuxAsyncTask {
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
         int fd = device.fileDescriptor();
         try (var arena = Arena.openConfined()) {
+
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
 
-            for (var urbAddress : transfersByURB.keySet()) {
-                var urb = usbdevfs_urb.ofAddress(MemorySegment.ofAddress(urbAddress), SegmentScope.global());
+            // iterate all URBs and discard the ones for the specified endpoint
+            for (var urb : transfersByURB.keySet()) {
                 if (fd != (int) usbdevfs_urb.usercontext$get(urb).address())
                     continue;
                 if (endpointAddress != usbdevfs_urb.endpoint$get(urb))
                     continue;
 
-                if (IO.ioctl(fd, DISCARDURB, urb, errnoState) < 0)
-                    throwLastError(errnoState, "failed to cancel transfer");
+                if (IO.ioctl(fd, DISCARDURB, urb, errnoState) < 0) {
+                    // ignore EINVAL; it occurs if the URB has completed at the same time
+                    if (Linux.getErrno(errnoState) != errno.EINVAL())
+                        throwLastError(errnoState, "failed to abort transfer");
+                }
             }
         }
     }
@@ -309,9 +317,9 @@ public class LinuxAsyncTask {
     private void startAsyncIOTask() {
         try (var arena = Arena.openConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
-            asyncIOUpdateEventFd = IO.eventfd(0, 0, errnoState);
-            if (asyncIOUpdateEventFd == -1) {
-                asyncIOUpdateEventFd = 0;
+            asyncIOWakeUpEventFd = IO.eventfd(0, 0, errnoState);
+            if (asyncIOWakeUpEventFd == -1) {
+                asyncIOWakeUpEventFd = 0;
                 throwLastError(errnoState, "internal error (eventfd)");
             }
         }

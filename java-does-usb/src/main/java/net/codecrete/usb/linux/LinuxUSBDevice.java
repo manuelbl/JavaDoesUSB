@@ -111,7 +111,6 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             throwException("Interface %d has already been claimed", interfaceNumber);
 
         try (var arena = Arena.openConfined()) {
-            var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
 
             // claim interface (possibly disconnecting kernel driver)
@@ -324,7 +323,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber, int bufferSize) {
+    public synchronized InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
 
@@ -332,7 +331,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
+    public synchronized OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 

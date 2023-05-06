@@ -31,19 +31,19 @@ public class errno  {
     }
     /**
      * {@snippet :
+     * #define EINVAL 22
+     * }
+     */
+    public static int EINVAL() {
+        return (int)22L;
+    }
+    /**
+     * {@snippet :
      * #define EPIPE 32
      * }
      */
     public static int EPIPE() {
         return (int)32L;
-    }
-    /**
-     * {@snippet :
-     * #define ETIMEDOUT 110
-     * }
-     */
-    public static int ETIMEDOUT() {
-        return (int)110L;
     }
 }
 

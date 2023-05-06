@@ -6,10 +6,10 @@ JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
-  --include-constant ETIMEDOUT \
   --include-constant EPIPE \
   --include-constant EBADF \
   --include-constant EAGAIN \
+  --include-constant EINVAL \
   /usr/include/errno.h
 
 # string.h

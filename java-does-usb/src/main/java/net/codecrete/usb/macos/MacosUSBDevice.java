@@ -97,10 +97,10 @@ public class MacosUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
-        for (InterfaceInfo interfaceInfo : claimedInterfaces) {
-            IoKitUSB.USBInterfaceClose(interfaceInfo.iokitInterface());
-            IoKitUSB.Release(interfaceInfo.iokitInterface());
-            setClaimed(interfaceInfo.interfaceNumber, false);
+        for (InterfaceInfo(MemorySegment iokitInterface, int interfaceNumber) : claimedInterfaces) {
+            IoKitUSB.USBInterfaceClose(iokitInterface);
+            IoKitUSB.Release(iokitInterface);
+            setClaimed(interfaceNumber, false);
         }
 
         claimedInterfaces = null;
