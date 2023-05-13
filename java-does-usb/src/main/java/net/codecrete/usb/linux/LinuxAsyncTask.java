@@ -159,7 +159,7 @@ public class LinuxAsyncTask {
                 var err = Linux.getErrno(errnoState);
                 if (err == errno.EAGAIN())
                     return; // no more pending URBs
-                if (err == errno.EBADF())
+                if (err == errno.ENODEV())
                     return; // ignore, device might have been closed
                 throwException(err, "internal error (reap URB)");
             }

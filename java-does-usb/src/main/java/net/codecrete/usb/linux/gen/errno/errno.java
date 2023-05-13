@@ -15,19 +15,19 @@ public class errno  {
     public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
     /**
      * {@snippet :
-     * #define EBADF 9
-     * }
-     */
-    public static int EBADF() {
-        return (int)9L;
-    }
-    /**
-     * {@snippet :
      * #define EAGAIN 11
      * }
      */
     public static int EAGAIN() {
         return (int)11L;
+    }
+    /**
+     * {@snippet :
+     * #define ENODEV 19
+     * }
+     */
+    public static int ENODEV() {
+        return (int)19L;
     }
     /**
      * {@snippet :

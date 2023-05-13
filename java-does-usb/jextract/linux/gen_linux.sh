@@ -7,9 +7,9 @@ $JEXTRACT --source --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-constant EPIPE \
-  --include-constant EBADF \
   --include-constant EAGAIN \
   --include-constant EINVAL \
+  --include-constant ENODEV \
   /usr/include/errno.h
 
 # string.h
