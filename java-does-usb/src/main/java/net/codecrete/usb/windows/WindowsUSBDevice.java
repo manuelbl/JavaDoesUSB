@@ -400,7 +400,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber, int bufferSize) {
+    public synchronized InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, null);
 
@@ -408,7 +408,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
+    public synchronized OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpoint(USBDirection.OUT, endpointNumber, USBTransferType.BULK, null);
 
