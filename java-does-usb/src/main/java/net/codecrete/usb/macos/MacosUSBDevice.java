@@ -55,8 +55,11 @@ public class MacosUSBDevice extends USBDeviceImpl {
     // Details about endpoints of current alternate settings (for claimed interfaces)
     private Map<Byte, EndpointInfo> endpoints;
 
+    private final long discoveryTime;
+
     MacosUSBDevice(MemorySegment device, Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
+        discoveryTime = System.currentTimeMillis();
         asyncTask = MacosAsyncTask.instance();
 
         loadDescription(device);
@@ -75,13 +78,27 @@ public class MacosUSBDevice extends USBDeviceImpl {
         if (isOpen())
             throwException("the device is already open");
 
-        // open device
-        int ret = IoKitUSB.USBDeviceOpenSeize(device);
+        // open device (several retries if device has just been connected/discovered)
+        long duration = System.currentTimeMillis() - discoveryTime;
+        int numTries = duration < 1000 ? 4 : 1;
+        int ret = 0;
+        while (numTries > 0) {
+            numTries -= 1;
+            ret = IoKitUSB.USBDeviceOpenSeize(device);
+            if (ret != IOKit.kIOReturnExclusiveAccess())
+                break;
+
+            // sleep and retry
+            try {
+                Thread.sleep(90);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
         if (ret != 0)
             throwException(ret, "unable to open USB device");
 
         claimedInterfaces = new ArrayList<>();
-
         addDeviceEventSource();
 
         // set configuration
@@ -541,7 +558,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public InputStream openInputStream(int endpointNumber, int bufferSize) {
+    public synchronized InputStream openInputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK, null);
 
@@ -549,7 +566,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public OutputStream openOutputStream(int endpointNumber, int bufferSize) {
+    public synchronized OutputStream openOutputStream(int endpointNumber, int bufferSize) {
         // check that endpoint number is valid
         getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK, null);
 

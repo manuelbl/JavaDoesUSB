@@ -8,7 +8,7 @@
 // and licensed under GNU GPL (version 2, or later).
 //
 
-package net.codecrete.usb.sample;
+package net.codecrete.usb.special;
 
 import net.codecrete.usb.*;
 

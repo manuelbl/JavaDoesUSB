@@ -39,6 +39,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant kIOUSBDeviceClassName \
   --include-constant kIOFirstMatchNotification \
   --include-constant kIOTerminatedNotification \
+  --include-constant kIOReturnExclusiveAccess \
   --include-var kCFRunLoopDefaultMode \
   --include-struct IOCFPlugInInterfaceStruct \
   --include-typedef IOCFPlugInInterface \

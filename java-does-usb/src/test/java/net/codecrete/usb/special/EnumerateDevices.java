@@ -5,7 +5,7 @@
 // https://opensource.org/licenses/MIT
 //
 
-package net.codecrete.usb.sample;
+package net.codecrete.usb.special;
 
 import net.codecrete.usb.USB;
 

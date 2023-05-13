@@ -226,6 +226,14 @@ public class IOKit  {
     }
     /**
      * {@snippet :
+     * #define kIOReturnExclusiveAccess -536870203
+     * }
+     */
+    public static int kIOReturnExclusiveAccess() {
+        return (int)-536870203L;
+    }
+    /**
+     * {@snippet :
      * #define kIOReturnAborted -536870165
      * }
      */
