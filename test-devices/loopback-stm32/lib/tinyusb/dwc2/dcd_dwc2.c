@@ -222,6 +222,8 @@ static void edpt_schedule_packets(uint8_t rhport, uint8_t const epnum, uint8_t c
 {
   (void) rhport;
 
+  TU_ASSERT(epnum < DWC2_EP_MAX, );
+
   dwc2_regs_t * dwc2 = DWC2_REG(rhport);
 
   // EP0 is limited to one packet each xfer
@@ -743,6 +745,9 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
   uint8_t const epnum = tu_edpt_number(ep_addr);
   uint8_t const dir   = tu_edpt_dir(ep_addr);
 
+  uint8_t const ep_count = _dwc2_controller[rhport].ep_count;
+  TU_ASSERT(epnum < ep_count);
+
   xfer_ctl_t * xfer = XFER_CTL_BASE(epnum, dir);
   xfer->buffer      = buffer;
   xfer->ff          = NULL;
@@ -782,6 +787,9 @@ bool dcd_edpt_xfer_fifo (uint8_t rhport, uint8_t ep_addr, tu_fifo_t * ff, uint16
 
   uint8_t const epnum = tu_edpt_number(ep_addr);
   uint8_t const dir   = tu_edpt_dir(ep_addr);
+
+  uint8_t const ep_count = _dwc2_controller[rhport].ep_count;
+  TU_ASSERT(epnum < ep_count);
 
   xfer_ctl_t * xfer = XFER_CTL_BASE(epnum, dir);
   xfer->buffer      = NULL;
@@ -1024,6 +1032,9 @@ static void handle_rxflvl_irq(uint8_t rhport)
 
     case GRXSTS_PKTSTS_OUTRX:
     {
+      uint8_t const ep_count = _dwc2_controller[rhport].ep_count;
+      TU_ASSERT(epnum < ep_count, );
+      
       // Out packet received
       xfer_ctl_t *xfer = XFER_CTL_BASE(epnum, TUSB_DIR_OUT);
 
@@ -1288,7 +1299,7 @@ void dcd_int_handler(uint8_t rhport)
 
   if(int_status & GINTSTS_SOF)
   {
-    dwc2->gotgint = GINTSTS_SOF;
+    dwc2->gintsts = GINTSTS_SOF;
 
     if (_sof_en)
     {

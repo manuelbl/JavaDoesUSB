@@ -64,10 +64,14 @@ public abstract class EndpointInputStream extends InputStream {
         arena = Arena.openShared();
 
         int packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
-        int n = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
-        n = Math.min(Math.max(n, 4), 32); // 32 limits packet size to 16KB (for USB HS)
-        transferSize = n * packetSize;
-        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 2);
+
+        // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
+        int numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        numPacketsPerTransfer = Math.min(Math.max(numPacketsPerTransfer, 4), 32);
+        transferSize = numPacketsPerTransfer * packetSize;
+
+        // use at least 2 outstanding transfers (3 in total)
+        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
 
         configureEndpoint();
 

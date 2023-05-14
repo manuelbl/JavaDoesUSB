@@ -40,14 +40,16 @@ public class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
-        // The test device has an internal buffer of about 500 bytes.
-        // So the first transfer should not time out.
+        // The test device has an internal buffer of about 2KB for full-speed
+        // and 16KB for high-speed. The first transfer should not time-out.
+        final int bufferSize = 32 * testDevice
+                .getEndpoint(USBDirection.OUT, LOOPBACK_EP_OUT).packetSize();
 
         byte[] data = generateRandomBytes(100, 9383073929L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
 
         assertThrows(USBTimeoutException.class, () -> {
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < bufferSize / data.length; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
         });

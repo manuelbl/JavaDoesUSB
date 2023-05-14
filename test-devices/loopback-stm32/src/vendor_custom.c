@@ -58,7 +58,7 @@ void cv_reset(uint8_t rhport) {
     // nothing to do
 }
 
-// Open interface is the descriptor matches this class
+// Open interface if the descriptor matches this class
 uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const * desc_intf, uint16_t max_len) {
 
     cv_num_eps_open = 0;
@@ -185,8 +185,7 @@ void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len) {
 
     uint8_t const rhport = BOARD_TUD_RHPORT;
 
-    if (usbd_edpt_busy(rhport, ep_addr))
-        return;
+    TU_ASSERT(!usbd_edpt_busy(rhport, ep_addr), );
 
     usbd_edpt_xfer(rhport, ep_addr, buf, buf_len);
 }
@@ -194,8 +193,7 @@ void cust_vendor_prepare_recv(uint8_t ep_addr, void* buf, uint32_t buf_len) {
 void cust_vendor_prepare_recv_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t buf_len) {
     uint8_t const rhport = BOARD_TUD_RHPORT;
 
-    if (usbd_edpt_busy(rhport, ep_addr))
-        return;
+    TU_ASSERT(!usbd_edpt_busy(rhport, ep_addr), );
 
     usbd_edpt_xfer_fifo(rhport, ep_addr, fifo, buf_len);
 }
@@ -205,8 +203,7 @@ void cust_vendor_start_transmit(uint8_t ep_addr, void const * data, uint32_t dat
 
     uint8_t const rhport = BOARD_TUD_RHPORT;
 
-    if (usbd_edpt_busy(rhport, ep_addr))
-        return;
+    TU_ASSERT(!usbd_edpt_busy(rhport, ep_addr), );
 
     usbd_edpt_xfer(rhport, ep_addr, (void*) data, data_len);
 }
@@ -215,8 +212,7 @@ void cust_vendor_start_transmit_fifo(uint8_t ep_addr, tu_fifo_t * fifo, uint32_t
 
     uint8_t const rhport = BOARD_TUD_RHPORT;
 
-    if (usbd_edpt_busy(rhport, ep_addr))
-        return;
+    TU_ASSERT(!usbd_edpt_busy(rhport, ep_addr), );
 
     usbd_edpt_xfer_fifo(rhport, ep_addr, (void*) fifo, data_len);
 }

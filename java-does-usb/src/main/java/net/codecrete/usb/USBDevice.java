@@ -216,6 +216,11 @@ public interface USBDevice {
      * <p>
      * This method can send data to bulk and interrupt endpoints.
      * </p>
+     * <p>
+     * If the sent data length is a multiple of the packet size, it is often
+     * required to send an additional zero-length packet (ZLP) for the device
+     * to actually process the data. This method will not do it automatically.
+     * </p>
      *
      * @param endpointNumber endpoint number (in the range between 1 and 127)
      * @param data           data to send
@@ -230,6 +235,11 @@ public interface USBDevice {
      * </p>
      * <p>
      * This method can send data to bulk and interrupt endpoints.
+     * </p>
+     * <p>
+     * If the sent data length is a multiple of the packet size, it is often
+     * required to send an additional zero-length packet (ZLP) for the device
+     * to actually process the data. This method will not do it automatically.
      * </p>
      *
      * @param endpointNumber the endpoint number (in the range between 1 and 127)

@@ -18,11 +18,19 @@
 #include "usb_descriptors.h"
 #include "vendor_custom.h"
 
+#if BOARD_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED
+  #define BUFFER_SIZE 16384
+#else
+  #define BUFFER_SIZE 2048
+#endif
+
 // FIFO buffer for loopback data
 tu_fifo_t loopback_fifo;
-uint8_t loopback_buffer[2048] __attribute__ ((aligned(4)));
+uint8_t loopback_buffer[BUFFER_SIZE] __attribute__ ((aligned(4)));
 
 uint16_t bulk_packet_size = 64;
+const int num_rx_packets = 2;
+const int num_tx_packets = 4;
 
 // buffer for echoed packet
 uint8_t echo_buffer[16];
@@ -81,7 +89,7 @@ void loopback_check_tx(void) {
     uint16_t n = tu_fifo_count(&loopback_fifo);
 
     if (n > 0 && !cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
-        uint16_t max_size = 2 * bulk_packet_size;
+        uint16_t max_size = num_tx_packets * bulk_packet_size;
         if (n > max_size)
             n = max_size;
         
@@ -93,8 +101,8 @@ void loopback_check_tx(void) {
 void loopback_check_rx(void) {
 
     uint16_t n = tu_fifo_remaining(&loopback_fifo);
-    if (n >= bulk_packet_size && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
-        cust_vendor_prepare_recv_fifo(EP_LOOPBACK_RX, &loopback_fifo, bulk_packet_size);
+    if (n >= num_rx_packets * bulk_packet_size && !cust_vendor_is_receiving(EP_LOOPBACK_RX))
+        cust_vendor_prepare_recv_fifo(EP_LOOPBACK_RX, &loopback_fifo, num_rx_packets * bulk_packet_size);
 }
 
 
