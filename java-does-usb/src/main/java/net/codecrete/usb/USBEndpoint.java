@@ -24,7 +24,7 @@ public interface USBEndpoint {
      * </p>
      * <p>
      * Use this number when calling any of the transfer methods of a
-     * {@link USBDevice} instace.
+     * {@link USBDevice} instance.
      * </p>
      *
      * @return the endpoint number

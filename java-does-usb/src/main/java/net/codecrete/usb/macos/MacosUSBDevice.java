@@ -43,6 +43,7 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  * asynchronous transfer and waiting for the completion.
  * </p>
  */
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public class MacosUSBDevice extends USBDeviceImpl {
 
     private final MacosAsyncTask asyncTask;
