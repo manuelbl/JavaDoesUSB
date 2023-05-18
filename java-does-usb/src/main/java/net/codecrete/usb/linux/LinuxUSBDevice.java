@@ -36,6 +36,7 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public class LinuxUSBDevice extends USBDeviceImpl {
 
     private int fd = -1;

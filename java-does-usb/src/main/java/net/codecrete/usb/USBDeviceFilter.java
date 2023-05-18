@@ -7,8 +7,6 @@
 
 package net.codecrete.usb;
 
-import java.util.List;
-
 /**
  * Filter condition for matching USB devices.
  * <p>

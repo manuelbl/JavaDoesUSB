@@ -17,6 +17,7 @@ import java.util.function.Function;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public abstract class USBDeviceImpl implements USBDevice {
 
     /**

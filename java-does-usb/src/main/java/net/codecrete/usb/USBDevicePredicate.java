@@ -32,7 +32,7 @@ public interface USBDevicePredicate {
      * @param predicates a list of filter predicates
      * @return {@code true} if it matches, {@code false} otherwise
      */
-    public static boolean matchesAny(USBDevice device, List<USBDevicePredicate> predicates) {
+    static boolean matchesAny(USBDevice device, List<USBDevicePredicate> predicates) {
         return predicates.stream().anyMatch(predicate -> predicate.matches(device));
     }
 }
