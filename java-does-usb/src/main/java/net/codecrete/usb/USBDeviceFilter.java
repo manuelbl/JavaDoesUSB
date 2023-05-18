@@ -20,13 +20,13 @@ import java.util.List;
  * product ID and serial number is globally unique.
  * </p>
  */
-public class USBDeviceFilter {
-    private Integer vendorId_;
-    private Integer productId_;
-    private Integer classCode_;
-    private Integer subclassCode_;
-    private Integer protocolCode_;
-    private String serialNumber_;
+public class USBDeviceFilter implements USBDevicePredicate {
+    private Integer vid;
+    private Integer pid;
+    private Integer deviceClass;
+    private Integer deviceSubclass;
+    private Integer deviceProtocol;
+    private String serialString;
 
     /**
      * Creates a new instance.
@@ -41,8 +41,8 @@ public class USBDeviceFilter {
      * @param productId product ID
      */
     public USBDeviceFilter(int vendorId, int productId) {
-        vendorId_ = vendorId;
-        productId_ = productId;
+        vid = vendorId;
+        pid = productId;
     }
 
     /**
@@ -53,9 +53,9 @@ public class USBDeviceFilter {
      * @param serialNumber serial number
      */
     public USBDeviceFilter(int vendorId, int productId, String serialNumber) {
-        vendorId_ = vendorId;
-        productId_ = productId;
-        serialNumber_ = serialNumber;
+        vid = vendorId;
+        pid = productId;
+        serialString = serialNumber;
     }
 
     /**
@@ -64,7 +64,7 @@ public class USBDeviceFilter {
      * @return vendor ID, or {@code null} if the vendor ID is not relevant for matching
      */
     public Integer vendorId() {
-        return vendorId_;
+        return vid;
     }
 
     /**
@@ -73,7 +73,7 @@ public class USBDeviceFilter {
      * @param vendorId vendor ID, or {@code null} if the vendor ID is not relevant for matching
      */
     public void setVendorId(Integer vendorId) {
-        vendorId_ = vendorId;
+        vid = vendorId;
     }
 
     /**
@@ -82,7 +82,7 @@ public class USBDeviceFilter {
      * @return product ID, or {@code null} if the product ID is not relevant for matching
      */
     public Integer productId() {
-        return productId_;
+        return pid;
     }
 
     /**
@@ -91,7 +91,7 @@ public class USBDeviceFilter {
      * @param productId product ID, or {@code null} if the product ID is not relevant for matching
      */
     public void setProductId(Integer productId) {
-        productId_ = productId;
+        pid = productId;
     }
 
     /**
@@ -100,7 +100,7 @@ public class USBDeviceFilter {
      * @return class code, or {@code null} if the class code is not relevant for matching
      */
     public Integer classCode() {
-        return classCode_;
+        return deviceClass;
     }
 
     /**
@@ -109,7 +109,7 @@ public class USBDeviceFilter {
      * @param classCode class code, or {@code null} if the class code is not relevant for matching
      */
     public void setClassCode(Integer classCode) {
-        classCode_ = classCode;
+        deviceClass = classCode;
     }
 
     /**
@@ -118,7 +118,7 @@ public class USBDeviceFilter {
      * @return subclass code, or {@code null} if the subclass code is not relevant for matching
      */
     public Integer subclassCode() {
-        return subclassCode_;
+        return deviceSubclass;
     }
 
     /**
@@ -127,7 +127,7 @@ public class USBDeviceFilter {
      * @param subclassCode subclass code, or {@code null} if the subclass code is not relevant for matching
      */
     public void setSubclassCode(Integer subclassCode) {
-        subclassCode_ = subclassCode;
+        deviceSubclass = subclassCode;
     }
 
     /**
@@ -136,7 +136,7 @@ public class USBDeviceFilter {
      * @return protocol code, or {@code null} if the protocol code is not relevant for matching
      */
     public Integer protocolCode() {
-        return protocolCode_;
+        return deviceProtocol;
     }
 
     /**
@@ -144,8 +144,8 @@ public class USBDeviceFilter {
      *
      * @param protocolCode protocol code, or {@code null} if the protocol code is not relevant for matching
      */
-    public void setProtocolCode_(Integer protocolCode) {
-        protocolCode_ = protocolCode;
+    public void setProtocolCode(Integer protocolCode) {
+        deviceProtocol = protocolCode;
     }
 
     /**
@@ -154,7 +154,7 @@ public class USBDeviceFilter {
      * @return serial number, or {@code null} if the serial number is not relevant for matching
      */
     public String serialNumber() {
-        return serialNumber_;
+        return serialString;
     }
 
     /**
@@ -163,7 +163,7 @@ public class USBDeviceFilter {
      * @param serialNumber serial number, or {@code null} if the serial number is not relevant for matching
      */
     public void setSerialNumber(String serialNumber) {
-        serialNumber_ = serialNumber;
+        serialString = serialNumber;
     }
 
     /**
@@ -173,27 +173,16 @@ public class USBDeviceFilter {
      * @return {@code true} if it matches, {@code false} otherwise
      */
     public boolean matches(USBDevice device) {
-        if (vendorId_ != null && device.vendorId() != vendorId_)
+        if (vid != null && device.vendorId() != vid)
             return false;
-        if (productId_ != null && device.productId() != productId_)
+        if (pid != null && device.productId() != pid)
             return false;
-        if (serialNumber_ != null && !serialNumber_.equals(device.serialNumber()))
+        if (serialString != null && !serialString.equals(device.serialNumber()))
             return false;
-        if (classCode_ != null && device.classCode() != classCode_)
+        if (deviceClass != null && device.classCode() != deviceClass)
             return false;
-        if (subclassCode_ != null && device.subclassCode() != subclassCode_)
+        if (deviceSubclass != null && device.subclassCode() != deviceSubclass)
             return false;
-        return protocolCode_ == null || device.protocolCode() == protocolCode_;
-    }
-
-    /**
-     * Test if the USB devices matches any of the filter conditions.
-     *
-     * @param device  the USB device
-     * @param filters a list of filter conditions
-     * @return {@code true} if it matches, {@code false} otherwise
-     */
-    public static boolean matchesAny(USBDevice device, List<USBDeviceFilter> filters) {
-        return filters.stream().anyMatch(filter -> filter.matches(device));
+        return deviceProtocol == null || device.protocolCode() == deviceProtocol;
     }
 }

@@ -32,11 +32,16 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 /**
  * Windows implementation for USB device.
  */
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public class WindowsUSBDevice extends USBDeviceImpl {
 
     private final WindowsAsyncTask asyncTask;
-    private List<InterfaceHandle> interfaceHandles_;
-    private boolean isOpen_;
+    private List<InterfaceHandle> interfaceHandles;
+    /**
+     * Indicates if {@link #open()} has been called. Since separate interfaces can have separate underlying
+     * Windows device, {@link #claimInterface(int)} instead of {@link #open()} will open the Windows device.
+     */
+    private boolean showAsOpen;
 
     WindowsUSBDevice(String devicePath, Map<Integer, String> children,
                      int vendorId, int productId, MemorySegment configDesc) {
@@ -49,7 +54,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         var configuration = setConfigurationDescriptor(configDesc);
 
         // build list of interface handles
-        interfaceHandles_ = new ArrayList<>();
+        interfaceHandles = new ArrayList<>();
         for (var intf : configuration.interfaces()) {
             var interfaceNumber = intf.number();
             var function = configuration.findFunction(interfaceNumber);
@@ -64,13 +69,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 }
             }
             intfHandle.firstInterfaceNumber = function.firstInterfaceNumber();
-            interfaceHandles_.add(intfHandle);
+            interfaceHandles.add(intfHandle);
         }
     }
 
     @Override
     public boolean isOpen() {
-        return isOpen_;
+        return showAsOpen;
     }
 
     @Override
@@ -78,7 +83,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         if (isOpen())
             throwException("the device is already open");
 
-        isOpen_ = true;
+        showAsOpen = true;
     }
 
     @Override
@@ -86,12 +91,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
-        for (var intf : interfaces_) {
+        for (var intf : interfaceList) {
             if (intf.isClaimed())
                 releaseInterface(intf.number());
         }
 
-        isOpen_ = false;
+        showAsOpen = false;
     }
 
     public synchronized void claimInterface(int interfaceNumber) {
@@ -416,7 +421,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private InterfaceHandle getInterfaceHandle(int interfaceNumber) {
-        for (var intfHandle : interfaceHandles_) {
+        for (var intfHandle : interfaceHandles) {
             if (intfHandle.interfaceNumber == interfaceNumber)
                 return intfHandle;
         }
@@ -453,7 +458,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
 
         // for control transfer to device, use any claimed interface
-        for (var intfHandle : interfaceHandles_) {
+        for (var intfHandle : interfaceHandles) {
             if (intfHandle.interfaceHandle != null)
                 return intfHandle;
         }

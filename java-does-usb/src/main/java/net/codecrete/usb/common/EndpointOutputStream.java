@@ -37,7 +37,6 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  */
 public abstract class EndpointOutputStream extends OutputStream {
 
-
     protected USBDeviceImpl device;
     protected final int endpointNumber;
     protected final Arena arena;

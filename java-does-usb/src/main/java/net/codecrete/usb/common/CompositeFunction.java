@@ -21,11 +21,11 @@ package net.codecrete.usb.common;
  * </p>
  */
 public class CompositeFunction {
-    private final int firstInterfaceNumber_;
-    private final int numInterfaces_;
-    private final int classCode_;
-    private final int subclassCode_;
-    private final int protocolCode_;
+    private final int firstIntfNumber;
+    private final int interfaceCount;
+    private final int functionCode;
+    private final int functionSubclass;
+    private final int functionProtocol;
 
     /**
      * Creates a new instance.
@@ -38,30 +38,30 @@ public class CompositeFunction {
      */
     public CompositeFunction(int firstInterfaceNumber, int numInterfaces, int classCode, int subclassCode,
                              int protocolCode) {
-        firstInterfaceNumber_ = firstInterfaceNumber;
-        numInterfaces_ = numInterfaces;
-        classCode_ = classCode;
-        subclassCode_ = subclassCode;
-        protocolCode_ = protocolCode;
+        firstIntfNumber = firstInterfaceNumber;
+        interfaceCount = numInterfaces;
+        functionCode = classCode;
+        functionSubclass = subclassCode;
+        functionProtocol = protocolCode;
     }
 
     public int firstInterfaceNumber() {
-        return firstInterfaceNumber_;
+        return firstIntfNumber;
     }
 
     public int numInterfaces() {
-        return numInterfaces_;
+        return interfaceCount;
     }
 
     public int classCode() {
-        return classCode_;
+        return functionCode;
     }
 
     public int subclassCode() {
-        return subclassCode_;
+        return functionSubclass;
     }
 
     public int protocolCode() {
-        return protocolCode_;
+        return functionProtocol;
     }
 }

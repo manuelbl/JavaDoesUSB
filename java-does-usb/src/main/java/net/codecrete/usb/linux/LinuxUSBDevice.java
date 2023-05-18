@@ -74,7 +74,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             throwException("the device is already open");
 
         try (var arena = Arena.openConfined()) {
-            var pathUtf8 = arena.allocateUtf8String(id_.toString());
+            var pathUtf8 = arena.allocateUtf8String(uniqueDeviceId.toString());
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
@@ -90,7 +90,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         asyncTask.removeFromAsyncIOCompletion(this);
 
-        for (var intf : interfaces_)
+        for (var intf : interfaceList)
             ((USBInterfaceImpl) intf).setClaimed(false);
 
         unistd.close(fd);

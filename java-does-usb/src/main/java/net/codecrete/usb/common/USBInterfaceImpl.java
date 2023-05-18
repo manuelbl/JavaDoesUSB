@@ -15,52 +15,52 @@ import java.util.List;
 
 public class USBInterfaceImpl implements USBInterface {
 
-    private final int number_;
-    private USBAlternateInterface alternate_;
-    private final List<USBAlternateInterface> alternates_;
+    private final int interfaceNumber;
+    private USBAlternateInterface currentAlternate;
+    private final List<USBAlternateInterface> alternateInterfaces;
 
-    private boolean isClaimed_;
+    private boolean claimed;
 
     public USBInterfaceImpl(int number, List<USBAlternateInterface> alternates) {
-        number_ = number;
-        alternates_ = alternates;
-        alternate_ = alternates.get(0);
+        interfaceNumber = number;
+        alternateInterfaces = alternates;
+        currentAlternate = alternates.get(0);
     }
 
     @Override
     public int number() {
-        return number_;
+        return interfaceNumber;
     }
 
     @Override
     public boolean isClaimed() {
-        return isClaimed_;
+        return claimed;
     }
 
     public void setClaimed(boolean claimed) {
-        isClaimed_ = claimed;
+        this.claimed = claimed;
     }
 
     @Override
     public USBAlternateInterface alternate() {
-        return alternate_;
+        return currentAlternate;
     }
 
     @Override
     public USBAlternateInterface getAlternate(int alternateNumber) {
-        return alternates_.stream().filter((alt) -> alt.number() == alternateNumber).findFirst().orElse(null);
+        return alternateInterfaces.stream().filter((alt) -> alt.number() == alternateNumber).findFirst().orElse(null);
     }
 
     @Override
     public List<USBAlternateInterface> alternates() {
-        return Collections.unmodifiableList(alternates_);
+        return Collections.unmodifiableList(alternateInterfaces);
     }
 
     void addAlternate(USBAlternateInterface alt) {
-        alternates_.add(alt);
+        alternateInterfaces.add(alt);
     }
 
     public void setAlternate(USBAlternateInterface alternate) {
-        alternate_ = alternate;
+        currentAlternate = alternate;
     }
 }

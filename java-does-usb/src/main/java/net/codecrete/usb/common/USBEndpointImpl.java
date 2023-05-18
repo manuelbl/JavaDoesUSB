@@ -16,35 +16,35 @@ import net.codecrete.usb.USBTransferType;
  */
 public class USBEndpointImpl implements USBEndpoint {
 
-    private final int number_;
-    private final USBDirection direction_;
-    private final USBTransferType type_;
-    private final int packetSize_;
+    private final int endpointNumber;
+    private final USBDirection transferDirection;
+    private final USBTransferType type;
+    private final int maxPacketSize;
 
     public USBEndpointImpl(int number, USBDirection direction, USBTransferType type, int packetSize) {
-        number_ = number;
-        direction_ = direction;
-        type_ = type;
-        packetSize_ = packetSize;
+        endpointNumber = number;
+        transferDirection = direction;
+        this.type = type;
+        maxPacketSize = packetSize;
     }
 
     @Override
     public int number() {
-        return number_;
+        return endpointNumber;
     }
 
     @Override
     public USBDirection direction() {
-        return direction_;
+        return transferDirection;
     }
 
     @Override
     public USBTransferType transferType() {
-        return type_;
+        return type;
     }
 
     @Override
     public int packetSize() {
-        return packetSize_;
+        return maxPacketSize;
     }
 }

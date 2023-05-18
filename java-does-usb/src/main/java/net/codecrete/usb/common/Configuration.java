@@ -16,53 +16,53 @@ import java.util.List;
  * Describes a device configuration.
  */
 public class Configuration {
-    private final List<CompositeFunction> functions_;
-    private final List<USBInterface> interfaces_;
-    private final int configValue_;
-    private final int attributes_;
-    private final int maxPower_;
+    private final List<CompositeFunction> functionList;
+    private final List<USBInterface> interfaceList;
+    private final int configuration;
+    private final int configurationAttributes;
+    private final int configurationMaxPower;
 
     public Configuration(int configValue, int attributes, int maxPower) {
-        configValue_ = configValue;
-        attributes_ = attributes;
-        maxPower_ = maxPower;
-        functions_ = new ArrayList<>();
-        interfaces_ = new ArrayList<>();
+        configuration = configValue;
+        configurationAttributes = attributes;
+        configurationMaxPower = maxPower;
+        functionList = new ArrayList<>();
+        interfaceList = new ArrayList<>();
     }
 
     public int configValue() {
-        return configValue_;
+        return configuration;
     }
 
     public int attributes() {
-        return attributes_;
+        return configurationAttributes;
     }
 
     public int maxPower() {
-        return maxPower_;
+        return configurationMaxPower;
     }
 
     public List<USBInterface> interfaces() {
-        return interfaces_;
+        return interfaceList;
     }
 
     public List<CompositeFunction> functions() {
-        return functions_;
+        return functionList;
     }
 
     public void addInterface(USBInterface intf) {
-        interfaces_.add(intf);
+        interfaceList.add(intf);
     }
 
     public USBInterfaceImpl findInterfaceByNumber(int number) {
-        return (USBInterfaceImpl) interfaces_.stream().filter((intf) -> intf.number() == number).findFirst().orElse(null);
+        return (USBInterfaceImpl) interfaceList.stream().filter((intf) -> intf.number() == number).findFirst().orElse(null);
     }
 
     public void addFunction(CompositeFunction function) {
-        functions_.add(function);
+        functionList.add(function);
     }
 
     public CompositeFunction findFunction(int interfaceNumber) {
-        return functions_.stream().filter((f) -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
+        return functionList.stream().filter((f) -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
     }
 }

@@ -11,57 +11,58 @@ import net.codecrete.usb.USBAlternateInterface;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBEndpoint;
 
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
 
 public class USBAlternateInterfaceImpl implements USBAlternateInterface {
 
-    private final int number_;
-    private final int classCode_;
-    private final int subclassCode_;
-    private final int protocolCode_;
-    private final List<USBEndpoint> endpoints_;
+    private final int alternateInterfaceNumber;
+    private final int alternateInterfaceClass;
+    private final int alternateInterfaceSubclass;
+    private final int alternateInterfaceProtocol;
+    private final List<USBEndpoint> endpointList;
 
     public USBAlternateInterfaceImpl(int number, int classCode, int subclassCode, int protocolCode,
                                      List<USBEndpoint> endpoints) {
-        number_ = number;
-        classCode_ = classCode;
-        subclassCode_ = subclassCode;
-        protocolCode_ = protocolCode;
-        endpoints_ = endpoints;
+        alternateInterfaceNumber = number;
+        alternateInterfaceClass = classCode;
+        alternateInterfaceSubclass = subclassCode;
+        alternateInterfaceProtocol = protocolCode;
+        endpointList = endpoints;
     }
 
     @Override
     public int number() {
-        return number_;
+        return alternateInterfaceNumber;
     }
 
     @Override
     public int classCode() {
-        return classCode_;
+        return alternateInterfaceClass;
     }
 
     @Override
     public int subclassCode() {
-        return subclassCode_;
+        return alternateInterfaceSubclass;
     }
 
     @Override
     public int protocolCode() {
-        return protocolCode_;
+        return alternateInterfaceProtocol;
     }
 
     @Override
     public List<USBEndpoint> endpoints() {
-        return Collections.unmodifiableList(endpoints_);
+        return unmodifiableList(endpointList);
     }
 
     void addEndpoint(USBEndpoint endpoint) {
-        endpoints_.add(endpoint);
+        endpointList.add(endpoint);
     }
 
     @Override
     public USBEndpoint getEndpoint(int endpointNumber, USBDirection direction) {
-        return endpoints_.stream().filter((ep) -> ep.number() == endpointNumber && ep.direction() == direction).findFirst().orElse(null);
+        return endpointList.stream().filter((ep) -> ep.number() == endpointNumber && ep.direction() == direction).findFirst().orElse(null);
     }
 }

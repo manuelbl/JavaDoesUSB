@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "usbd.h": "c",
-        "usbd_pvt.h": "c"
+        "usbd_pvt.h": "c",
+        "dwc2_stm32.h": "c",
+        "stm32f7xx.h": "c"
     }
 }

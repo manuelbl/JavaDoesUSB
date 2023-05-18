@@ -14,7 +14,8 @@ import net.codecrete.usb.windows.WindowsUSBDeviceRegistry;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Provides access to USB devices.
@@ -38,14 +39,14 @@ public class USB {
         return impl;
     }
 
-    private static USBDeviceRegistry _instance = null;
+    private static USBDeviceRegistry singletonInstance = null;
 
     private static synchronized USBDeviceRegistry instance() {
-        if (_instance == null) {
-            _instance = createInstance();
-            _instance.start();
+        if (singletonInstance == null) {
+            singletonInstance = createInstance();
+            singletonInstance.start();
         }
-        return _instance;
+        return singletonInstance;
     }
 
     // Private, so no instance can be created
@@ -67,43 +68,43 @@ public class USB {
     }
 
     /**
-     * Gets a list of connected USB devices matching the specified filter.
+     * Gets a list of connected USB devices matching the specified predicate.
      *
-     * @param filter device filter
+     * @param predicate device predicate/filter
      * @return list of USB devices
      */
-    public static List<USBDevice> getDevices(USBDeviceFilter filter) {
-        return instance().getAllDevices().stream().filter(filter::matches).collect(Collectors.toList());
+    public static List<USBDevice> getDevices(USBDevicePredicate predicate) {
+        return instance().getAllDevices().stream().filter(predicate::matches).collect(toList());
     }
 
     /**
-     * Gets a list of connected USB devices matching any of the specified filters.
+     * Gets a list of connected USB devices matching any of the specified predicates/filters.
      *
-     * @param filters list of device filters
+     * @param predicates list of device predicates/filters
      * @return list of USB devices
      */
-    public static List<USBDevice> getDevices(List<USBDeviceFilter> filters) {
-        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters)).collect(Collectors.toList());
+    public static List<USBDevice> getDevices(List<USBDevicePredicate> predicates) {
+        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).collect(toList());
     }
 
     /**
-     * Gets the first connected USB device matching the specified filter.
+     * Gets the first connected USB device matching the specified predicate.
      *
-     * @param filter device filter
+     * @param predicate device predicate/filter
      * @return USB device, or {@code null} if no device matches
      */
-    public static USBDevice getDevice(USBDeviceFilter filter) {
-        return instance().getAllDevices().stream().filter(filter::matches).findFirst().orElse(null);
+    public static USBDevice getDevice(USBDevicePredicate predicate) {
+        return instance().getAllDevices().stream().filter(predicate::matches).findFirst().orElse(null);
     }
 
     /**
-     * Gets the first connected USB device matching any of the specified filters.
+     * Gets the first connected USB device matching any of the specified predicates.
      *
-     * @param filters list of device filters
+     * @param predicates list of device predicates/filters
      * @return USB device, or {@code null} if no device matches
      */
-    public static USBDevice getDevice(List<USBDeviceFilter> filters) {
-        return instance().getAllDevices().stream().filter(dev -> USBDeviceFilter.matchesAny(dev, filters)).findFirst().orElse(null);
+    public static USBDevice getDevice(List<USBDevicePredicate> predicates) {
+        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).findFirst().orElse(null);
     }
 
     /**

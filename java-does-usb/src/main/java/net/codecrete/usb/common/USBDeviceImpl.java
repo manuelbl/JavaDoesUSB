@@ -19,20 +19,30 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 public abstract class USBDeviceImpl implements USBDevice {
 
-    protected final Object id_;
-    protected final int vendorId_;
-    protected final int productId_;
-    protected String manufacturer_;
-    protected String product_;
-    protected String serialNumber_;
-    protected int classCode_;
-    protected int subclassCode_;
-    protected int protocolCode_;
-    protected Version usbVersion_;
-    protected Version deviceVersion_;
+    /**
+     * Operation-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
+     * <p>
+     * Can be a String instance (such as a file path) or a Long instance (such as an internal ID).
+     * It only needs to be valid for the duration the device is connected.
+     * </p>
+     */
+    protected final Object uniqueDeviceId;
 
-    protected List<USBInterface> interfaces_;
-    protected byte[] configurationDescriptor_;
+    protected List<USBInterface> interfaceList;
+
+    protected byte[] rawConfigurationDescriptor;
+
+    // Information from the device descriptor
+    protected final int vid;
+    protected final int pid;
+    protected String manufacturerString;
+    protected String productString;
+    protected String serialString;
+    protected int deviceClass;
+    protected int deviceSubclass;
+    protected int deviceProtocol;
+    protected Version versionUSB;
+    protected Version versionDevice;
 
     /**
      * Creates a new instance.
@@ -45,9 +55,9 @@ public abstract class USBDeviceImpl implements USBDevice {
 
         assert id != null;
 
-        id_ = id;
-        vendorId_ = vendorId;
-        productId_ = productId;
+        uniqueDeviceId = id;
+        vid = vendorId;
+        pid = productId;
     }
 
     @Override
@@ -66,61 +76,61 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public int productId() {
-        return productId_;
+        return pid;
     }
 
     @Override
     public int vendorId() {
-        return vendorId_;
+        return vid;
     }
 
     @Override
     public String product() {
-        return product_;
+        return productString;
     }
 
     @Override
     public String manufacturer() {
-        return manufacturer_;
+        return manufacturerString;
     }
 
     @Override
     public String serialNumber() {
-        return serialNumber_;
+        return serialString;
     }
 
     @Override
     public int classCode() {
-        return classCode_;
+        return deviceClass;
     }
 
     @Override
     public int subclassCode() {
-        return subclassCode_;
+        return deviceSubclass;
     }
 
     @Override
     public int protocolCode() {
-        return protocolCode_;
+        return deviceProtocol;
     }
 
     @Override
     public Version usbVersion() {
-        return usbVersion_;
+        return versionUSB;
     }
 
     @Override
     public Version deviceVersion() {
-        return deviceVersion_;
+        return versionDevice;
     }
 
     @Override
     public byte[] configurationDescriptor() {
-        return configurationDescriptor_;
+        return rawConfigurationDescriptor;
     }
 
     public Object getUniqueId() {
-        return id_;
+        return uniqueDeviceId;
     }
 
     /**
@@ -130,11 +140,11 @@ public abstract class USBDeviceImpl implements USBDevice {
      */
     public void setFromDeviceDescriptor(MemorySegment descriptor) {
         var deviceDescriptor = new DeviceDescriptor(descriptor);
-        classCode_ = deviceDescriptor.deviceClass() & 255;
-        subclassCode_ = deviceDescriptor.deviceSubClass() & 255;
-        protocolCode_ = deviceDescriptor.deviceProtocol() & 255;
-        usbVersion_ = new Version(deviceDescriptor.usbVersion());
-        deviceVersion_ = new Version(deviceDescriptor.deviceVersion());
+        deviceClass = deviceDescriptor.deviceClass() & 255;
+        deviceSubclass = deviceDescriptor.deviceSubClass() & 255;
+        deviceProtocol = deviceDescriptor.deviceProtocol() & 255;
+        versionUSB = new Version(deviceDescriptor.usbVersion());
+        versionDevice = new Version(deviceDescriptor.deviceVersion());
     }
 
     /**
@@ -144,9 +154,9 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @return parsed configuration
      */
     protected Configuration setConfigurationDescriptor(MemorySegment descriptor) {
-        configurationDescriptor_ = descriptor.toArray(JAVA_BYTE);
+        rawConfigurationDescriptor = descriptor.toArray(JAVA_BYTE);
         var configuration = ConfigurationParser.parseConfigurationDescriptor(descriptor);
-        interfaces_ = configuration.interfaces();
+        interfaceList = configuration.interfaces();
         return configuration;
     }
 
@@ -158,9 +168,9 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param serialNumber serial number
      */
     public void setProductStrings(String manufacturer, String product, String serialNumber) {
-        manufacturer_ = manufacturer;
-        product_ = product;
-        serialNumber_ = serialNumber;
+        manufacturerString = manufacturer;
+        productString = product;
+        serialString = serialNumber;
     }
 
     /**
@@ -175,25 +185,25 @@ public abstract class USBDeviceImpl implements USBDevice {
      */
     public void setProductString(MemorySegment descriptor, Function<Integer, String> stringLookup) {
         var deviceDescriptor = new DeviceDescriptor(descriptor);
-        manufacturer_ = stringLookup.apply(deviceDescriptor.iManufacturer());
-        product_ = stringLookup.apply(deviceDescriptor.iProduct());
-        serialNumber_ = stringLookup.apply(deviceDescriptor.iSerialNumber());
+        manufacturerString = stringLookup.apply(deviceDescriptor.iManufacturer());
+        productString = stringLookup.apply(deviceDescriptor.iProduct());
+        serialString = stringLookup.apply(deviceDescriptor.iSerialNumber());
     }
 
     public void setClassCodes(int classCode, int subclassCode, int protocolCode) {
-        classCode_ = classCode;
-        subclassCode_ = subclassCode;
-        protocolCode_ = protocolCode;
+        deviceClass = classCode;
+        deviceSubclass = subclassCode;
+        deviceProtocol = protocolCode;
     }
 
     public void setVersions(int usbVersion, int deviceVersion) {
-        usbVersion_ = new Version(usbVersion);
-        deviceVersion_ = new Version(deviceVersion);
+        versionUSB = new Version(usbVersion);
+        versionDevice = new Version(deviceVersion);
     }
 
     @Override
     public List<USBInterface> interfaces() {
-        return Collections.unmodifiableList(interfaces_);
+        return Collections.unmodifiableList(interfaceList);
     }
 
     @Override
@@ -203,7 +213,7 @@ public abstract class USBDeviceImpl implements USBDevice {
     public abstract void releaseInterface(int interfaceNumber);
 
     public void setClaimed(int interfaceNumber, boolean claimed) {
-        for (var intf : interfaces_) {
+        for (var intf : interfaceList) {
             if (intf.number() == interfaceNumber) {
                 ((USBInterfaceImpl) intf).setClaimed(claimed);
                 return;
@@ -214,12 +224,12 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public USBInterfaceImpl getInterface(int interfaceNumber) {
-        return (USBInterfaceImpl) interfaces_.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
+        return (USBInterfaceImpl) interfaceList.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
     }
 
     @Override
     public USBEndpoint getEndpoint(USBDirection direction, int endpointNumber) {
-        for (var intf : interfaces_) {
+        for (var intf : interfaceList) {
             for (var endpoint : intf.alternate().endpoints()) {
                 if (endpoint.direction() == direction && endpoint.number() == endpointNumber)
                     return endpoint;
@@ -243,7 +253,7 @@ public abstract class USBDeviceImpl implements USBDevice {
         checkIsOpen();
 
         if (endpointNumber >= 1 && endpointNumber <= 127) {
-            for (var intf : interfaces_) {
+            for (var intf : interfaceList) {
                 if (intf.isClaimed()) {
                     for (var ep : intf.alternate().endpoints()) {
                         if (ep.number() == endpointNumber && ep.direction() == direction && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
@@ -273,7 +283,7 @@ public abstract class USBDeviceImpl implements USBDevice {
         if (endpointNumber < 1 || endpointNumber > 127)
             return -1;
 
-        for (var intf : interfaces_) {
+        for (var intf : interfaceList) {
             if (intf.isClaimed()) {
                 for (var ep : intf.alternate().endpoints()) {
                     if (ep.number() == endpointNumber && ep.direction() == direction)
@@ -405,17 +415,17 @@ public abstract class USBDeviceImpl implements USBDevice {
         if (o == null || getClass() != o.getClass())
             return false;
         USBDeviceImpl that = (USBDeviceImpl) o;
-        return id_.equals(that.id_);
+        return uniqueDeviceId.equals(that.uniqueDeviceId);
     }
 
     @Override
     public int hashCode() {
-        return id_.hashCode();
+        return uniqueDeviceId.hashCode();
     }
 
     @Override
     public String toString() {
-        return "VID: 0x" + String.format("%04x", vendorId_) + ", PID: 0x" + String.format("%04x", productId_) + ", " + "manufacturer: " + manufacturer_ + ", product: " + product_ + ", serial: " + serialNumber_ + ", ID: " + id_;
+        return "VID: 0x" + String.format("%04x", vid) + ", PID: 0x" + String.format("%04x", pid) + ", " + "manufacturer: " + manufacturerString + ", product: " + productString + ", serial: " + serialString + ", ID: " + uniqueDeviceId;
     }
 
     public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize,

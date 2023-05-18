@@ -60,4 +60,11 @@ public class DeviceEnumerationTest extends TestDeviceBase {
         assertEquals(vid, device.vendorId());
         assertEquals(pid, device.productId());
     }
+
+    @Test
+    void getDeviceWithPredicate_returnsLoopback() {
+        var device = USB.getDevice(dev -> dev.vendorId() == vid && dev.productId() == pid);
+        assertEquals(vid, device.vendorId());
+        assertEquals(pid, device.productId());
+    }
 }
