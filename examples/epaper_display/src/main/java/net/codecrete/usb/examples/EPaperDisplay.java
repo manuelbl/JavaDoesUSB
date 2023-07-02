@@ -39,7 +39,7 @@ public class EPaperDisplay {
         Graphics2D g = (Graphics2D) image.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g.setFont(new Font("Arial", Font.BOLD, 40));
-        g.drawString("Java Does USB", 20, height - 40);
+        g.drawString("Java Does USB", 30, height - 40);
         g.dispose();
 
         // display image
