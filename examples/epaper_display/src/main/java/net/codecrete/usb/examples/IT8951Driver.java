@@ -182,7 +182,7 @@ public class IT8951Driver {
         writeCommand(DPY_AREA_CMD, area.toByteArray());
     }
 
-    private byte[] pixelsFromImage(BufferedImage image, int x, int y, int w, int h) {
+    private static byte[] pixelsFromImage(BufferedImage image, int x, int y, int w, int h) {
         var buffer = (DataBufferByte) image.getRaster().getDataBuffer();
         var data = buffer.getData();
         var stride = buffer.getSize() / image.getHeight();
@@ -199,7 +199,7 @@ public class IT8951Driver {
      * @param width image width (in pixels)
      * @return initial errors
      */
-    private int[] createInitialDitheringErrors(int width) {
+    private static int[] createInitialDitheringErrors(int width) {
         // initialize errors with random values in the range [-127, 128].
         int[] errors = new int[width + 2];
         var random = new Random();
@@ -227,7 +227,7 @@ public class IT8951Driver {
      * @param errors errors carried forward from the previous band
      * @return errors to be carried forward to the next band
      */
-    private int[] dither(byte[] pixels, int stride, int[] errors) {
+    private static int[] dither(byte[] pixels, int stride, int[] errors) {
         int[] currentErrors = errors;
         int[] nextErrors = new int[errors.length];
 
@@ -244,12 +244,20 @@ public class IT8951Driver {
         return currentErrors;
     }
 
-    private void ditherRow(byte[] pixels, int offset, int[] currentErrors, int[] nextErrors) {
+    private static void ditherRow(byte[] pixels, int offset, int[] currentErrors, int[] nextErrors) {
         int w = currentErrors.length - 2;
         for (int i = 0; i < w; i += 1) {
-            int targetValue = (pixels[offset + i] & 0xff) + (currentErrors[i + 1] + 7) / 16;
-            int quantizedValue = targetValue < 0 ? 0 : (targetValue > 0xf0 ? 0xf0 : (targetValue + 7) & 0xf0);
+            // scale range from [0, 255] to [0, 240]
+            int targetValue = (((pixels[offset + i] & 0xff) * 16 + currentErrors[i + 1]) * 15 + 127) / 255;
+            int quantizedValue;
+            if (targetValue <= 0)
+                quantizedValue = 0;
+            else if (targetValue >= 240)
+                quantizedValue = 240;
+            else
+                quantizedValue = (targetValue + 8) & 0xf0;
             pixels[offset + i] = (byte) quantizedValue;
+
             int quantizationError = targetValue - quantizedValue;
             currentErrors[i + 2] += quantizationError * 7;
             nextErrors[i] += quantizationError * 3;

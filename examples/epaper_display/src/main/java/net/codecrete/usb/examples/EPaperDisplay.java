@@ -32,8 +32,7 @@ public class EPaperDisplay {
         System.out.printf("Display size: %d x %d%n", width, height);
 
         // resize image to fit display (converting it to grayscale)
-        var image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        image = resizedImage(tigerImage, width, height);
+        var image = resizedImage(tigerImage, width, height);
 
         // add text to image
         Graphics2D g = (Graphics2D) image.getGraphics();
