@@ -26,6 +26,22 @@ public class IOKit  {
     public static int kIOUSBFindInterfaceDontCare() {
         return (int)65535L;
     }
+    /**
+     * {@snippet :
+     * enum .kUSBReEnumerateCaptureDeviceMask = 1073741824;
+     * }
+     */
+    public static int kUSBReEnumerateCaptureDeviceMask() {
+        return (int)1073741824L;
+    }
+    /**
+     * {@snippet :
+     * enum .kUSBReEnumerateReleaseDeviceMask = 536870912;
+     * }
+     */
+    public static int kUSBReEnumerateReleaseDeviceMask() {
+        return (int)536870912L;
+    }
     public static MemoryLayout kCFRunLoopDefaultMode$LAYOUT() {
         return constants$0.kCFRunLoopDefaultMode$LAYOUT;
     }

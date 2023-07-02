@@ -12,6 +12,7 @@ package net.codecrete.usb.linux;
  */
 public class USBDevFS {
 
+    public static final long CLAIMINTERFACE = 0x8004550FL;
     public static final long RELEASEINTERFACE = 0x80045510L;
     public static final long SETINTERFACE = 0x80085504L;
     public static final long CLEAR_HALT = 0x80045515L;

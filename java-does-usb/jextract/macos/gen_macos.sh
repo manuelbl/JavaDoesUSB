@@ -52,8 +52,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function IORegistryEntryGetRegistryEntryID \
   --include-function IOServiceAddMatchingNotification \
   --include-function IOServiceMatching \
-  --include-struct IOUSBDeviceStruct182 \
-  --include-typedef IOUSBDeviceInterface182 \
+  --include-struct IOUSBDeviceStruct187 \
+  --include-typedef IOUSBDeviceInterface187 \
   --include-constant kIOUSBFindInterfaceDontCare \
   --include-typedef IOUSBFindInterfaceRequest \
   --include-typedef IOUSBDevRequest \
@@ -62,6 +62,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant kIOUSBTransactionTimeout \
   --include-constant kIOReturnAborted \
   --include-constant kIOUSBPipeStalled \
+  --include-constant kUSBReEnumerateCaptureDeviceMask \
+  --include-constant kUSBReEnumerateReleaseDeviceMask \
   iokit_helper.h
 
 # mach.h

@@ -100,6 +100,56 @@ public interface USBDevice {
     Version deviceVersion();
 
     /**
+     * Detaches the standard operating-system drivers of this device.
+     * <p>
+     * By detaching the standard drivers, the operating system releases the exclusive access to the device
+     * and/or some or all of the device's interfaces. This allows the application to open the device and claim
+     * interfaces. It is relevant for device and interfaces implementing standard USB classes, such as HID, CDC
+     * and mass storage.
+     * </p>
+     * <p>
+     * This method should be called before the device is opened. After the device has been closed,
+     * {@link #attachStandardDrivers()} should be called to restore the previous state.
+     * </p>
+     * <p>
+     * On macOS, all device drivers are immediately detached from the device. To execute it, the application must
+     * be run as <i>root</i>. Without <i>root</i> privileges, the method does nothing.
+     * </p>
+     * <p>
+     * On Linux, this method changes the behavior of {@link #claimInterface(int)} for this device. The standard drivers
+     * will be detached interface by interface when the interface is claimed.
+     * </p>
+     * <p>
+     * On Windows, this method does nothing. It is not possible to temporarily change the drivers.
+     * </p>
+     */
+    void detachStandardDrivers();
+
+    /**
+     * Reattaches the standard operating-system drivers to this device.
+     * <p>
+     * By attaching the standard drivers, the operating system claims the device and/or its interfaces if they
+     * implement standard USB classes, such as HID, CDC and mass storage. It is used to restore the state before
+     * calling {@link #detachStandardDrivers()}.
+     * </p>
+     * <p>
+     * This method should be called after the device has been closed.
+     * </p>
+     * <p>
+     * On macOS, the application must be run as <i>root</i>. Without <i>root</i> privileges, the method does nothing.
+     * </p>
+     * <p>
+     * On Linux, this method changes the behavior of {@link #claimInterface(int)}. Standard drivers will no longer be
+     * detached when the interface is claimed. Standard drivers are automatically reattached when the interfaces
+     * are released, at the lasted when the device is closed.
+     * </p>
+     * <p>
+     * On Windows, this method does nothing.
+     * </p>
+     */
+    void attachStandardDrivers();
+
+    /**
      * Opens the device for communication.
      */
     void open();

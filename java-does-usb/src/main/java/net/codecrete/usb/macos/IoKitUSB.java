@@ -8,7 +8,7 @@
 package net.codecrete.usb.macos;
 
 import net.codecrete.usb.common.ForeignMemory;
-import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface182;
+import net.codecrete.usb.macos.gen.iokit.IOUSBDeviceInterface187;
 import net.codecrete.usb.macos.gen.iokit.IOUSBInterfaceInterface190;
 
 import java.lang.foreign.MemorySegment;
@@ -29,60 +29,65 @@ public class IoKitUSB {
 
     // HRESULT (STDMETHODCALLTYPE *QueryInterface)(void *thisPointer, REFIID iid, LPVOID *ppv);
     public static int QueryInterface(MemorySegment self, MemorySegment iid, MemorySegment ppv) {
-        return IOUSBDeviceInterface182.QueryInterface(getVtable(self), SegmentScope.global()).apply(self, iid, ppv);
+        return IOUSBDeviceInterface187.QueryInterface(getVtable(self), SegmentScope.global()).apply(self, iid, ppv);
     }
 
     // ULONG (STDMETHODCALLTYPE *AddRef)(void *thisPointer);
     public static int AddRef(MemorySegment self) {
-        return IOUSBDeviceInterface182.AddRef(getVtable(self), SegmentScope.global()).apply(self);
+        return IOUSBDeviceInterface187.AddRef(getVtable(self), SegmentScope.global()).apply(self);
     }
 
     // ULONG (STDMETHODCALLTYPE *Release)(void *thisPointer)
     public static int Release(MemorySegment self) {
-        return IOUSBDeviceInterface182.Release(getVtable(self), SegmentScope.global()).apply(self);
+        return IOUSBDeviceInterface187.Release(getVtable(self), SegmentScope.global()).apply(self);
     }
 
     // IOReturn (* CreateDeviceAsyncEventSource)(void* self, CFRunLoopSourceRef* source);
     public static int CreateDeviceAsyncEventSource(MemorySegment self, MemorySegment source) {
-        return IOUSBDeviceInterface182.CreateDeviceAsyncEventSource(getVtable(self), SegmentScope.global()).apply(self, source);
+        return IOUSBDeviceInterface187.CreateDeviceAsyncEventSource(getVtable(self), SegmentScope.global()).apply(self, source);
     }
 
     // CFRunLoopSourceRef (* GetDeviceAsyncEventSource)(void* self);
     public static MemorySegment GetDeviceAsyncEventSource(MemorySegment self) {
-        return IOUSBDeviceInterface182.GetDeviceAsyncEventSource(getVtable(self), SegmentScope.global()).apply(self);
+        return IOUSBDeviceInterface187.GetDeviceAsyncEventSource(getVtable(self), SegmentScope.global()).apply(self);
     }
 
     // IOReturn (*USBDeviceOpenSeize)(void *self);
     public static int USBDeviceOpenSeize(MemorySegment self) {
-        return IOUSBDeviceInterface182.USBDeviceOpenSeize(getVtable(self), SegmentScope.global()).apply(self);
+        return IOUSBDeviceInterface187.USBDeviceOpenSeize(getVtable(self), SegmentScope.global()).apply(self);
     }
 
     // IOReturn (*USBDeviceClose)(void *self);
     public static int USBDeviceClose(MemorySegment self) {
-        return IOUSBDeviceInterface182.USBDeviceClose(getVtable(self), SegmentScope.global()).apply(self);
+        return IOUSBDeviceInterface187.USBDeviceClose(getVtable(self), SegmentScope.global()).apply(self);
+    }
+
+    // IOReturn (* USBDeviceReEnumerate)(void* self, UInt32 options);
+    public static int USBDeviceReEnumerate(MemorySegment self, int options) {
+        return IOUSBDeviceInterface187.USBDeviceReEnumerate(getVtable(self), SegmentScope.global()).apply(self, options);
     }
 
     // IOReturn (*GetConfigurationDescriptorPtr)(void *self, UInt8 configIndex, IOUSBConfigurationDescriptorPtr *desc);
     public static int GetConfigurationDescriptorPtr(MemorySegment self, byte configIndex, MemorySegment descHolder) {
-        return IOUSBDeviceInterface182.GetConfigurationDescriptorPtr(getVtable(self), SegmentScope.global()).apply(self, configIndex, descHolder);
+        return IOUSBDeviceInterface187.GetConfigurationDescriptorPtr(getVtable(self), SegmentScope.global()).apply(self, configIndex, descHolder);
     }
 
     // IOReturn (*SetConfiguration)(void *self, UInt8 configNum);
     public static int SetConfiguration(MemorySegment self, byte configValue) {
-        return IOUSBDeviceInterface182.SetConfiguration(getVtable(self), SegmentScope.global()).apply(self,
+        return IOUSBDeviceInterface187.SetConfiguration(getVtable(self), SegmentScope.global()).apply(self,
                 configValue);
     }
 
     // IOReturn (*CreateInterfaceIterator)(void *self, IOUSBFindInterfaceRequest *req, io_iterator_t *iter);
     public static int CreateInterfaceIterator(MemorySegment self, MemorySegment req, MemorySegment iter) {
-        return IOUSBDeviceInterface182.CreateInterfaceIterator(getVtable(self), SegmentScope.global()).apply(self,
+        return IOUSBDeviceInterface187.CreateInterfaceIterator(getVtable(self), SegmentScope.global()).apply(self,
                 req, iter);
     }
 
     // IOReturn (* DeviceRequestAsync)(void* self, IOUSBDevRequest* req, IOAsyncCallback1 callback, void* refCon);
     public static int DeviceRequestAsync(MemorySegment self, MemorySegment deviceRequest, MemorySegment callback,
                                          MemorySegment refCon) {
-        return IOUSBDeviceInterface182.DeviceRequestAsync(getVtable(self), SegmentScope.global()).apply(self,
+        return IOUSBDeviceInterface187.DeviceRequestAsync(getVtable(self), SegmentScope.global()).apply(self,
                 deviceRequest, callback, refCon);
     }
 

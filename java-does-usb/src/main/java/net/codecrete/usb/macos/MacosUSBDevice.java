@@ -70,6 +70,20 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
+    public void detachStandardDrivers() {
+        int ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateCaptureDeviceMask());
+        if (ret != 0)
+            throwException(ret, "failed to detach kernel drivers");
+    }
+
+    @Override
+    public void attachStandardDrivers() {
+        int ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateReleaseDeviceMask());
+        if (ret != 0)
+            throwException(ret, "failed to attach kernel drivers");
+    }
+
+    @Override
     public boolean isOpen() {
         return claimedInterfaces != null;
     }

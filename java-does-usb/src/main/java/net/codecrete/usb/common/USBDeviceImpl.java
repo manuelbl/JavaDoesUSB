@@ -62,6 +62,16 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     @Override
+    public void detachStandardDrivers() {
+        // Default implementation: do nothing
+    }
+
+    @Override
+    public void attachStandardDrivers() {
+        // Default implementation: do nothing
+    }
+
+    @Override
     public abstract void open();
 
     @Override

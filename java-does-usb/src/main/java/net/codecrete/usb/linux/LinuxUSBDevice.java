@@ -43,6 +43,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     private final LinuxAsyncTask asyncTask;
 
+    private boolean detachDrivers = false;
+
     LinuxUSBDevice(Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
         asyncTask = LinuxAsyncTask.instance();
@@ -62,6 +64,16 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         var descriptorsSegment = MemorySegment.ofArray(descriptors);
         setFromDeviceDescriptor(descriptorsSegment);
         setConfigurationDescriptor(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
+    }
+
+    @Override
+    public void detachStandardDrivers() {
+        detachDrivers = true;
+    }
+
+    @Override
+    public void attachStandardDrivers() {
+        detachDrivers = false;
     }
 
     @Override
@@ -113,14 +125,22 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.openConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            int ret;
 
-            // claim interface (possibly disconnecting kernel driver)
-            var disconnectClaim = usbdevfs_disconnect_claim.allocate(arena);
-            usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
-            usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
-            byte[] driverName = { 'u', 's', 'b', 'f', 's', 0 };
-            usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(MemorySegment.ofArray(driverName));
-            int ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errnoState);
+            if (detachDrivers) {
+                // claim interface (detaching kernel driver)
+                var disconnectClaim = usbdevfs_disconnect_claim.allocate(arena);
+                usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
+                usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
+                byte[] driverName = {'u', 's', 'b', 'f', 's', 0};
+                usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(MemorySegment.ofArray(driverName));
+                ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errnoState);
+
+            } else {
+                // claim interface (without detaching kernel driver)
+                var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
+                ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errnoState);
+            }
 
             if (ret != 0)
                 throwLastError(errnoState, "Cannot claim USB interface");
@@ -176,12 +196,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
             setClaimed(interfaceNumber, false);
 
-            // reattach kernel driver
-            var request = usbdevfs_ioctl.allocate(arena);
-            usbdevfs_ioctl.ifno$set(request, interfaceNumber);
-            usbdevfs_ioctl.ioctl_code$set(request, USBDevFS.CONNECT);
-            usbdevfs_ioctl.data$set(request, MemorySegment.NULL);
-            IO.ioctl(fd, USBDevFS.IOCTL, request, errnoState);
+            if (detachDrivers) {
+                // reattach kernel driver
+                var request = usbdevfs_ioctl.allocate(arena);
+                usbdevfs_ioctl.ifno$set(request, interfaceNumber);
+                usbdevfs_ioctl.ioctl_code$set(request, USBDevFS.CONNECT);
+                usbdevfs_ioctl.data$set(request, MemorySegment.NULL);
+                IO.ioctl(fd, USBDevFS.IOCTL, request, errnoState);
+            }
         }
     }
 
