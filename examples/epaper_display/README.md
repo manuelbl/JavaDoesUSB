@@ -66,7 +66,7 @@ Display size: 1200 x 825
 [INFO] ------------------------------------------------------------------------
 ```
 
-### Run the sample on macOS
+### Run on macOS
 
 In order to run the sample with root privileges, the best approach is to build it first without
 root privileges and then run it as root without Maven:
@@ -81,6 +81,6 @@ $ sudo -i
 Password:
 $ cd /Users/me/Documents/JavaDoesUSB/examples/epaper_display
 $ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-20.jdk/Contents/Home
-$ JAVA_HOME/bin/java --enable-preview --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/0.5.1/java-does-usb-0.5.1.jar net.codecrete.usb.examples.EPaperDisplay
+$ $JAVA_HOME/bin/java --enable-preview --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/0.5.1/java-does-usb-0.5.1.jar net.codecrete.usb.examples.EPaperDisplay
 Display size: 1200 x 825
 ```
