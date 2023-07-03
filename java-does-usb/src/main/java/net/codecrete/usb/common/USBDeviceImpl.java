@@ -63,12 +63,18 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     @Override
     public void detachStandardDrivers() {
-        // Default implementation: do nothing
+        if (isOpen())
+            throw new USBException("detachStandardDrivers() must not be called while the device is open");
+
+        // default implementation: do nothing
     }
 
     @Override
     public void attachStandardDrivers() {
-        // Default implementation: do nothing
+        if (isOpen())
+            throw new USBException("attachStandardDrivers() must not be called while the device is open");
+
+        // default implementation: do nothing
     }
 
     @Override

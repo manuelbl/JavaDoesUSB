@@ -71,6 +71,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void detachStandardDrivers() {
+        if (isOpen())
+            throwException("detachStandardDrivers() must not be called while the device is open");
         int ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateCaptureDeviceMask());
         if (ret != 0)
             throwException(ret, "failed to detach kernel drivers");
@@ -78,6 +80,8 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void attachStandardDrivers() {
+        if (isOpen())
+            throwException("attachStandardDrivers() must not be called while the device is open");
         int ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateReleaseDeviceMask());
         if (ret != 0)
             throwException(ret, "failed to attach kernel drivers");

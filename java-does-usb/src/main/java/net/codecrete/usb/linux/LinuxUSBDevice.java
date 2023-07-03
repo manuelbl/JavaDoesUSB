@@ -68,11 +68,15 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void detachStandardDrivers() {
+        if (isOpen())
+            throwException("detachStandardDrivers() must not be called while the device is open");
         detachDrivers = true;
     }
 
     @Override
     public void attachStandardDrivers() {
+        if (isOpen())
+            throwException("attachStandardDrivers() must not be called while the device is open");
         detachDrivers = false;
     }
 
