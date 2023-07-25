@@ -133,10 +133,10 @@ public class MacosUSBDevice extends USBDeviceImpl {
         if (!isOpen())
             return;
 
-        for (InterfaceInfo(MemorySegment iokitInterface, int interfaceNumber) : claimedInterfaces) {
-            IoKitUSB.USBInterfaceClose(iokitInterface);
-            IoKitUSB.Release(iokitInterface);
-            setClaimed(interfaceNumber, false);
+        for (var interfaceInfo : claimedInterfaces) {
+            IoKitUSB.USBInterfaceClose(interfaceInfo.iokitInterface);
+            IoKitUSB.Release(interfaceInfo.iokitInterface);
+            setClaimed(interfaceInfo.interfaceNumber, false);
         }
 
         claimedInterfaces = null;
@@ -156,7 +156,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     private void loadDescription(MemorySegment device) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             configurationValue = 0;
 
@@ -177,7 +177,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     private InterfaceInfo findInterface(int interfaceNumber) {
 
-        try (var arena = Arena.openConfined(); var outerCleanup = new ScopeCleanup()) {
+        try (var arena = Arena.ofConfined(); var outerCleanup = new ScopeCleanup()) {
             var request = arena.allocate(IOUSBFindInterfaceRequest.$LAYOUT());
             IOUSBFindInterfaceRequest.bInterfaceClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
             IOUSBFindInterfaceRequest.bInterfaceSubClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
@@ -303,7 +303,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private void updateEndpointList() {
         endpoints = new HashMap<>();
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             var directionHolder = arena.allocate(JAVA_BYTE);
             var numberHolder = arena.allocate(JAVA_BYTE);
@@ -376,7 +376,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var data = arena.allocate(length);
             var deviceRequest = createDeviceRequest(arena, USBDirection.IN, setup, data);
 
@@ -394,7 +394,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             int dataLength = data != null ? data.length : 0;
             var dataSegment = arena.allocate(dataLength);
             if (dataLength > 0)
@@ -417,7 +417,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK,
                 USBTransferType.INTERRUPT);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var nativeData = arena.allocateArray(JAVA_BYTE, length);
             nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
 
@@ -447,7 +447,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.IN, USBTransferType.BULK,
                 USBTransferType.INTERRUPT);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var nativeData = arena.allocateArray(JAVA_BYTE, epInfo.packetSize());
 
             var transfer = new MacosTransfer();
@@ -607,7 +607,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     private synchronized void addDeviceEventSource() {
-        try (Arena innerArena = Arena.openConfined()) {
+        try (Arena innerArena = Arena.ofConfined()) {
             var sourceHolder = innerArena.allocate(ADDRESS);
             int ret = IoKitUSB.CreateDeviceAsyncEventSource(device, sourceHolder);
             if (ret != 0)
@@ -618,7 +618,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     private synchronized void addInterfaceEventSource(InterfaceInfo interfaceInfo) {
-        try (Arena innerArena = Arena.openConfined()) {
+        try (Arena innerArena = Arena.ofConfined()) {
             var sourceHolder = innerArena.allocate(ADDRESS);
             int ret = IoKitUSB.CreateInterfaceAsyncEventSource(interfaceInfo.iokitInterface(), sourceHolder);
             if (ret != 0)

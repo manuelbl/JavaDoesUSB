@@ -2,62 +2,26 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.StructLayout;
+import java.lang.invoke.VarHandle;
+
+import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 final class constants$1 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$1() {}
-    static final FunctionDescriptor IOServiceAddMatchingNotification$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle IOServiceAddMatchingNotification$MH = RuntimeHelper.downcallHandle(
-        "IOServiceAddMatchingNotification",
-        constants$1.IOServiceAddMatchingNotification$FUNC
-    );
-    static final FunctionDescriptor IORegistryEntryGetRegistryEntryID$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle IORegistryEntryGetRegistryEntryID$MH = RuntimeHelper.downcallHandle(
-        "IORegistryEntryGetRegistryEntryID",
-        constants$1.IORegistryEntryGetRegistryEntryID$FUNC
-    );
-    static final FunctionDescriptor IORegistryEntryCreateCFProperty$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle IORegistryEntryCreateCFProperty$MH = RuntimeHelper.downcallHandle(
-        "IORegistryEntryCreateCFProperty",
-        constants$1.IORegistryEntryCreateCFProperty$FUNC
-    );
-    static final FunctionDescriptor IOServiceMatching$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle IOServiceMatching$MH = RuntimeHelper.downcallHandle(
-        "IOServiceMatching",
-        constants$1.IOServiceMatching$FUNC
-    );
-    static final FunctionDescriptor IOCreatePlugInInterfaceForService$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle IOCreatePlugInInterfaceForService$MH = RuntimeHelper.downcallHandle(
-        "IOCreatePlugInInterfaceForService",
-        constants$1.IOCreatePlugInInterfaceForService$FUNC
-    );
-    static final MemorySegment kIOFirstMatchNotification$SEGMENT = RuntimeHelper.CONSTANT_ALLOCATOR.allocateUtf8String("IOServiceFirstMatch");
+    static final VarHandle const$0 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("pData"));
+    static final VarHandle const$1 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("wLenDone"));
+    static final StructLayout const$2 = MemoryLayout.structLayout(
+        JAVA_SHORT.withName("bInterfaceClass"),
+        JAVA_SHORT.withName("bInterfaceSubClass"),
+        JAVA_SHORT.withName("bInterfaceProtocol"),
+        JAVA_SHORT.withName("bAlternateSetting")
+    ).withName("");
+    static final VarHandle const$3 = constants$1.const$2.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceClass"));
+    static final VarHandle const$4 = constants$1.const$2.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceSubClass"));
+    static final VarHandle const$5 = constants$1.const$2.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceProtocol"));
 }
 
 

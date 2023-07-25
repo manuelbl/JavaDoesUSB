@@ -3,52 +3,43 @@
 package net.codecrete.usb.macos.gen.corefoundation;
 
 import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.MemoryLayout;
 import java.lang.invoke.MethodHandle;
+
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 final class constants$1 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$1() {}
-    static final FunctionDescriptor CFNumberGetTypeID$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT);
-    static final MethodHandle CFNumberGetTypeID$MH = RuntimeHelper.downcallHandle(
-        "CFNumberGetTypeID",
-        constants$1.CFNumberGetTypeID$FUNC
+    static final FunctionDescriptor const$0 = FunctionDescriptor.of(JAVA_LONG);
+    static final MethodHandle const$1 = RuntimeHelper.downcallHandle(
+        "CFStringGetTypeID",
+        constants$1.const$0
     );
-    static final FunctionDescriptor CFNumberGetValue$FUNC = FunctionDescriptor.of(Constants$root.C_CHAR$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
+    static final FunctionDescriptor const$2 = FunctionDescriptor.of(RuntimeHelper.POINTER,
+        RuntimeHelper.POINTER,
+        RuntimeHelper.POINTER,
+        JAVA_LONG
     );
-    static final MethodHandle CFNumberGetValue$MH = RuntimeHelper.downcallHandle(
-        "CFNumberGetValue",
-        constants$1.CFNumberGetValue$FUNC
+    static final MethodHandle const$3 = RuntimeHelper.downcallHandle(
+        "CFStringCreateWithCharacters",
+        constants$1.const$2
     );
-    static final FunctionDescriptor CFRunLoopGetCurrent$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT);
-    static final MethodHandle CFRunLoopGetCurrent$MH = RuntimeHelper.downcallHandle(
-        "CFRunLoopGetCurrent",
-        constants$1.CFRunLoopGetCurrent$FUNC
+    static final MethodHandle const$4 = RuntimeHelper.downcallHandle(
+        "CFStringGetLength",
+        constants$0.const$3
     );
-    static final FunctionDescriptor CFRunLoopRun$FUNC = FunctionDescriptor.ofVoid();
-    static final MethodHandle CFRunLoopRun$MH = RuntimeHelper.downcallHandle(
-        "CFRunLoopRun",
-        constants$1.CFRunLoopRun$FUNC
+    static final FunctionDescriptor const$5 = FunctionDescriptor.ofVoid(
+        RuntimeHelper.POINTER,
+        MemoryLayout.structLayout(
+            JAVA_LONG.withName("location"),
+            JAVA_LONG.withName("length")
+        ).withName(""),
+        RuntimeHelper.POINTER
     );
-    static final FunctionDescriptor CFRunLoopAddSource$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle CFRunLoopAddSource$MH = RuntimeHelper.downcallHandle(
-        "CFRunLoopAddSource",
-        constants$1.CFRunLoopAddSource$FUNC
-    );
-    static final FunctionDescriptor CFRunLoopRemoveSource$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle CFRunLoopRemoveSource$MH = RuntimeHelper.downcallHandle(
-        "CFRunLoopRemoveSource",
-        constants$1.CFRunLoopRemoveSource$FUNC
+    static final MethodHandle const$6 = RuntimeHelper.downcallHandle(
+        "CFStringGetCharacters",
+        constants$1.const$5
     );
 }
 

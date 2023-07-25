@@ -12,7 +12,6 @@ import net.codecrete.usb.macos.gen.iokit.IOKit;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentScope;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
@@ -51,7 +50,7 @@ public class IoKitHelper {
      * @return the interface, or {@code null} if the plugin type or interface is not available
      */
     public static MemorySegment getInterface(int service, MemorySegment pluginType, MemorySegment interfaceId) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             // MemorySegment for holding IOCFPlugInInterface**
             var plugHolder = arena.allocate(ADDRESS, NULL);
             // MemorySegment for holding score
@@ -133,9 +132,9 @@ public class IoKitHelper {
 
     // debugging aid
     public static int getRefCount(MemorySegment self) {
-        var object = MemorySegment.ofAddress(self.address(), 16, SegmentScope.global());
+        var object = MemorySegment.ofAddress(self.address()).reinterpret(16);
         var dataAddr = object.get(ADDRESS, ADDRESS.byteSize());
-        var data = MemorySegment.ofAddress(dataAddr.address(), 12, SegmentScope.global());
+        var data = MemorySegment.ofAddress(dataAddr.address()).reinterpret(12);
         return data.get(JAVA_INT, 8);
     }
 }

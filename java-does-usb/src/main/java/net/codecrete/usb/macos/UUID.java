@@ -26,7 +26,7 @@ public class UUID {
      * @return the CFUUID
      */
     public static MemorySegment CreateCFUUID(byte[] bytes) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var uuidBytes = arena.allocate(16);
             uuidBytes.copyFrom(MemorySegment.ofArray(bytes));
             return CoreFoundation.CFUUIDCreateFromUUIDBytes(NULL, uuidBytes);

@@ -29,7 +29,7 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  */
 public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
+    private final SegmentAllocator GLOBAL_ALLOCATOR = Arena.global();
 
     private final MemorySegment KEY_ID_VENDOR = CoreFoundationHelper.createCFStringRef("idVendor", GLOBAL_ALLOCATOR);
     private final MemorySegment KEY_ID_PRODUCT = CoreFoundationHelper.createCFStringRef("idProduct", GLOBAL_ALLOCATOR);
@@ -59,7 +59,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     protected void monitorDevices() {
 
         // as the method runs forever, there is no need to clean up one-time allocations
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             try {
 
@@ -107,7 +107,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      */
     private void iterateDevices(int iterator, IOKitDeviceConsumer consumer) {
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var entryIdHolder = arena.allocate(JAVA_LONG);
 
             int svc;
@@ -166,7 +166,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         if (deviceIntf == null)
             return null;
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             Integer vendorId = IoKitHelper.getPropertyInt(service, KEY_ID_VENDOR, arena);
             Integer productId = IoKitHelper.getPropertyInt(service, KEY_ID_PRODUCT, arena);
@@ -208,7 +208,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
         // create callback stub
         var onDeviceCallbackStub = Linker.nativeLinker().upcallStub(callback.bindTo(this),
-                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT), SegmentScope.global());
+                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT), Arena.global());
 
         // Set up a notification to be called when a device is first matched / terminated by I/O Kit.
         // This method consumes the matchingDict reference.

@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -16,18 +19,11 @@ import java.lang.invoke.VarHandle;
  */
 public class IOUSBFindInterfaceRequest {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_SHORT$LAYOUT.withName("bInterfaceClass"),
-        Constants$root.C_SHORT$LAYOUT.withName("bInterfaceSubClass"),
-        Constants$root.C_SHORT$LAYOUT.withName("bInterfaceProtocol"),
-        Constants$root.C_SHORT$LAYOUT.withName("bAlternateSetting")
-    );
     public static MemoryLayout $LAYOUT() {
-        return IOUSBFindInterfaceRequest.$struct$LAYOUT;
+        return constants$1.const$2;
     }
-    static final VarHandle bInterfaceClass$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceClass"));
     public static VarHandle bInterfaceClass$VH() {
-        return IOUSBFindInterfaceRequest.bInterfaceClass$VH;
+        return constants$1.const$3;
     }
     /**
      * Getter for field:
@@ -36,7 +32,7 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static short bInterfaceClass$get(MemorySegment seg) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceClass$VH.get(seg);
+        return (short)constants$1.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -45,17 +41,16 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static void bInterfaceClass$set(MemorySegment seg, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceClass$VH.set(seg, x);
+        constants$1.const$3.set(seg, x);
     }
     public static short bInterfaceClass$get(MemorySegment seg, long index) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceClass$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$1.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void bInterfaceClass$set(MemorySegment seg, long index, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceClass$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle bInterfaceSubClass$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceSubClass"));
     public static VarHandle bInterfaceSubClass$VH() {
-        return IOUSBFindInterfaceRequest.bInterfaceSubClass$VH;
+        return constants$1.const$4;
     }
     /**
      * Getter for field:
@@ -64,7 +59,7 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static short bInterfaceSubClass$get(MemorySegment seg) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceSubClass$VH.get(seg);
+        return (short)constants$1.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -73,17 +68,16 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static void bInterfaceSubClass$set(MemorySegment seg, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceSubClass$VH.set(seg, x);
+        constants$1.const$4.set(seg, x);
     }
     public static short bInterfaceSubClass$get(MemorySegment seg, long index) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceSubClass$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$1.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void bInterfaceSubClass$set(MemorySegment seg, long index, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceSubClass$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$4.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle bInterfaceProtocol$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bInterfaceProtocol"));
     public static VarHandle bInterfaceProtocol$VH() {
-        return IOUSBFindInterfaceRequest.bInterfaceProtocol$VH;
+        return constants$1.const$5;
     }
     /**
      * Getter for field:
@@ -92,7 +86,7 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static short bInterfaceProtocol$get(MemorySegment seg) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceProtocol$VH.get(seg);
+        return (short)constants$1.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -101,17 +95,16 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static void bInterfaceProtocol$set(MemorySegment seg, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceProtocol$VH.set(seg, x);
+        constants$1.const$5.set(seg, x);
     }
     public static short bInterfaceProtocol$get(MemorySegment seg, long index) {
-        return (short)IOUSBFindInterfaceRequest.bInterfaceProtocol$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$1.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void bInterfaceProtocol$set(MemorySegment seg, long index, short x) {
-        IOUSBFindInterfaceRequest.bInterfaceProtocol$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle bAlternateSetting$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bAlternateSetting"));
     public static VarHandle bAlternateSetting$VH() {
-        return IOUSBFindInterfaceRequest.bAlternateSetting$VH;
+        return constants$2.const$0;
     }
     /**
      * Getter for field:
@@ -120,7 +113,7 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static short bAlternateSetting$get(MemorySegment seg) {
-        return (short)IOUSBFindInterfaceRequest.bAlternateSetting$VH.get(seg);
+        return (short)constants$2.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -129,20 +122,20 @@ public class IOUSBFindInterfaceRequest {
      * }
      */
     public static void bAlternateSetting$set(MemorySegment seg, short x) {
-        IOUSBFindInterfaceRequest.bAlternateSetting$VH.set(seg, x);
+        constants$2.const$0.set(seg, x);
     }
     public static short bAlternateSetting$get(MemorySegment seg, long index) {
-        return (short)IOUSBFindInterfaceRequest.bAlternateSetting$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$2.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void bAlternateSetting$set(MemorySegment seg, long index, short x) {
-        IOUSBFindInterfaceRequest.bAlternateSetting$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$2.const$0.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

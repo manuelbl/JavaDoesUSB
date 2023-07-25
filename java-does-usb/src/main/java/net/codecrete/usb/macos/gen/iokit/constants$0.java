@@ -2,51 +2,30 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.StructLayout;
 import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.ValueLayout.OfAddress;
-import static java.lang.foreign.ValueLayout.OfInt;
+import static java.lang.foreign.ValueLayout.*;
 final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final OfAddress kCFRunLoopDefaultMode$LAYOUT = Constants$root.C_POINTER$LAYOUT;
-    static final VarHandle kCFRunLoopDefaultMode$VH = constants$0.kCFRunLoopDefaultMode$LAYOUT.varHandle();
-    static final MemorySegment kCFRunLoopDefaultMode$SEGMENT = RuntimeHelper.lookupGlobalVariable("kCFRunLoopDefaultMode", constants$0.kCFRunLoopDefaultMode$LAYOUT);
-    static final OfInt kIOMasterPortDefault$LAYOUT = Constants$root.C_INT$LAYOUT;
-    static final VarHandle kIOMasterPortDefault$VH = constants$0.kIOMasterPortDefault$LAYOUT.varHandle();
-    static final MemorySegment kIOMasterPortDefault$SEGMENT = RuntimeHelper.lookupGlobalVariable("kIOMasterPortDefault", constants$0.kIOMasterPortDefault$LAYOUT);
-    static final FunctionDescriptor IONotificationPortCreate$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle IONotificationPortCreate$MH = RuntimeHelper.downcallHandle(
-        "IONotificationPortCreate",
-        constants$0.IONotificationPortCreate$FUNC
-    );
-    static final FunctionDescriptor IONotificationPortGetRunLoopSource$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle IONotificationPortGetRunLoopSource$MH = RuntimeHelper.downcallHandle(
-        "IONotificationPortGetRunLoopSource",
-        constants$0.IONotificationPortGetRunLoopSource$FUNC
-    );
-    static final FunctionDescriptor IOObjectRelease$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle IOObjectRelease$MH = RuntimeHelper.downcallHandle(
-        "IOObjectRelease",
-        constants$0.IOObjectRelease$FUNC
-    );
-    static final FunctionDescriptor IOIteratorNext$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle IOIteratorNext$MH = RuntimeHelper.downcallHandle(
-        "IOIteratorNext",
-        constants$0.IOIteratorNext$FUNC
-    );
+    static final StructLayout const$0 = MemoryLayout.structLayout(
+        JAVA_BYTE.withName("bmRequestType"),
+        JAVA_BYTE.withName("bRequest"),
+        JAVA_SHORT.withName("wValue"),
+        JAVA_SHORT.withName("wIndex"),
+        JAVA_SHORT.withName("wLength"),
+        RuntimeHelper.POINTER.withName("pData"),
+        JAVA_INT.withName("wLenDone"),
+        MemoryLayout.paddingLayout(4)
+    ).withName("");
+    static final VarHandle const$1 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("bmRequestType"));
+    static final VarHandle const$2 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("bRequest"));
+    static final VarHandle const$3 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("wValue"));
+    static final VarHandle const$4 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("wIndex"));
+    static final VarHandle const$5 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("wLength"));
 }
 
 

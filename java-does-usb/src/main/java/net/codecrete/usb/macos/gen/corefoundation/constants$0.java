@@ -4,57 +4,34 @@ package net.codecrete.usb.macos.gen.corefoundation;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.StructLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
+
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor CFGetTypeID$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
+    static final StructLayout const$0 = MemoryLayout.structLayout(
+        JAVA_LONG.withName("location"),
+        JAVA_LONG.withName("length")
+    ).withName("");
+    static final VarHandle const$1 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("location"));
+    static final VarHandle const$2 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("length"));
+    static final FunctionDescriptor const$3 = FunctionDescriptor.of(JAVA_LONG,
+        RuntimeHelper.POINTER
     );
-    static final MethodHandle CFGetTypeID$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$4 = RuntimeHelper.downcallHandle(
         "CFGetTypeID",
-        constants$0.CFGetTypeID$FUNC
+        constants$0.const$3
     );
-    static final FunctionDescriptor CFRelease$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT
+    static final FunctionDescriptor const$5 = FunctionDescriptor.ofVoid(
+        RuntimeHelper.POINTER
     );
-    static final MethodHandle CFRelease$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$6 = RuntimeHelper.downcallHandle(
         "CFRelease",
-        constants$0.CFRelease$FUNC
-    );
-    static final FunctionDescriptor CFStringGetTypeID$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT);
-    static final MethodHandle CFStringGetTypeID$MH = RuntimeHelper.downcallHandle(
-        "CFStringGetTypeID",
-        constants$0.CFStringGetTypeID$FUNC
-    );
-    static final FunctionDescriptor CFStringCreateWithCharacters$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle CFStringCreateWithCharacters$MH = RuntimeHelper.downcallHandle(
-        "CFStringCreateWithCharacters",
-        constants$0.CFStringCreateWithCharacters$FUNC
-    );
-    static final FunctionDescriptor CFStringGetLength$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle CFStringGetLength$MH = RuntimeHelper.downcallHandle(
-        "CFStringGetLength",
-        constants$0.CFStringGetLength$FUNC
-    );
-    static final FunctionDescriptor CFStringGetCharacters$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        MemoryLayout.structLayout(
-            Constants$root.C_LONG_LONG$LAYOUT.withName("location"),
-            Constants$root.C_LONG_LONG$LAYOUT.withName("length")
-        ),
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle CFStringGetCharacters$MH = RuntimeHelper.downcallHandle(
-        "CFStringGetCharacters",
-        constants$0.CFStringGetCharacters$FUNC
+        constants$0.const$5
     );
 }
 

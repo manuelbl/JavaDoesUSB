@@ -10,10 +10,10 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentScope;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
@@ -113,7 +113,7 @@ class MacosAsyncTask {
 
             var methodHandle = asyncIOCompletedMH.bindTo(this);
             completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc,
-                    SegmentScope.global());
+                    Arena.global());
 
         } catch (IllegalAccessException | NoSuchMethodException e) {
             throw new RuntimeException(e);

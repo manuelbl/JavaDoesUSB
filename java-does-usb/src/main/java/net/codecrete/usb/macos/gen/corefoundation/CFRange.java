@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.macos.gen.corefoundation;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -14,16 +17,11 @@ import java.lang.invoke.VarHandle;
  */
 public class CFRange {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG_LONG$LAYOUT.withName("location"),
-        Constants$root.C_LONG_LONG$LAYOUT.withName("length")
-    );
     public static MemoryLayout $LAYOUT() {
-        return CFRange.$struct$LAYOUT;
+        return constants$0.const$0;
     }
-    static final VarHandle location$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("location"));
     public static VarHandle location$VH() {
-        return CFRange.location$VH;
+        return constants$0.const$1;
     }
     /**
      * Getter for field:
@@ -32,7 +30,7 @@ public class CFRange {
      * }
      */
     public static long location$get(MemorySegment seg) {
-        return (long)CFRange.location$VH.get(seg);
+        return (long)constants$0.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -41,17 +39,16 @@ public class CFRange {
      * }
      */
     public static void location$set(MemorySegment seg, long x) {
-        CFRange.location$VH.set(seg, x);
+        constants$0.const$1.set(seg, x);
     }
     public static long location$get(MemorySegment seg, long index) {
-        return (long)CFRange.location$VH.get(seg.asSlice(index*sizeof()));
+        return (long)constants$0.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void location$set(MemorySegment seg, long index, long x) {
-        CFRange.location$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle length$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("length"));
     public static VarHandle length$VH() {
-        return CFRange.length$VH;
+        return constants$0.const$2;
     }
     /**
      * Getter for field:
@@ -60,7 +57,7 @@ public class CFRange {
      * }
      */
     public static long length$get(MemorySegment seg) {
-        return (long)CFRange.length$VH.get(seg);
+        return (long)constants$0.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -69,20 +66,20 @@ public class CFRange {
      * }
      */
     public static void length$set(MemorySegment seg, long x) {
-        CFRange.length$VH.set(seg, x);
+        constants$0.const$2.set(seg, x);
     }
     public static long length$get(MemorySegment seg, long index) {
-        return (long)CFRange.length$VH.get(seg.asSlice(index*sizeof()));
+        return (long)constants$0.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void length$set(MemorySegment seg, long index, long x) {
-        CFRange.length$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$2.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 
