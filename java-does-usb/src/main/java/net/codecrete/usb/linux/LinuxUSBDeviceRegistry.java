@@ -17,7 +17,6 @@ import net.codecrete.usb.linux.gen.udev.udev;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ import static net.codecrete.usb.linux.LinuxUSBException.throwException;
  */
 public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
+    private final SegmentAllocator GLOBAL_ALLOCATOR = Arena.global();
     private final MemorySegment SUBSYSTEM_USB = GLOBAL_ALLOCATOR.allocateUtf8String("usb");
     private final MemorySegment MONITOR_NAME = GLOBAL_ALLOCATOR.allocateUtf8String("udev");
     private final MemorySegment DEVTYPE_USB_DEVICE = GLOBAL_ALLOCATOR.allocateUtf8String("usb_device");
@@ -77,7 +76,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         // monitor device changes
         //noinspection InfiniteLoopStatement
         while (true) {
-            try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
+            try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
 
                 // wait for next change
                 waitForFileDescriptor(fd, arena);

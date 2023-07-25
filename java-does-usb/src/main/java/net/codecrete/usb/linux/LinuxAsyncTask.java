@@ -56,7 +56,7 @@ public class LinuxAsyncTask {
         return singletonInstance;
     }
 
-    private final Arena urbArena = Arena.openShared();
+    private final Arena urbArena = Arena.ofShared();
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
     /// map of URB addresses to transfer (for outstanding transfers)
@@ -79,8 +79,8 @@ public class LinuxAsyncTask {
      */
     private void asyncCompletionTask() {
 
-        try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             var asyncPolls = pollfd.allocateArray(100, arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
             var eventfdValueHolder = arena.allocate(JAVA_LONG);
@@ -181,8 +181,8 @@ public class LinuxAsyncTask {
             return;
         }
 
-        try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             if (IO.eventfd_write(asyncIOWakeUpEventFd, 1, errnoState) < 0)
                 throwLastError(errnoState, "internal error (eventfd_write)");
         }
@@ -247,8 +247,8 @@ public class LinuxAsyncTask {
         usbdevfs_urb.buffer_length$set(urb, transfer.dataSize);
         usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
-        try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errnoState) < 0) {
                 String action = endpointAddress >= 128 ? "reading from" : "writing to";
                 String endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
@@ -294,9 +294,9 @@ public class LinuxAsyncTask {
 
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
         int fd = device.fileDescriptor();
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
 
             // iterate all URBs and discard the ones for the specified endpoint
             for (var urb : transfersByURB.keySet()) {
@@ -315,8 +315,8 @@ public class LinuxAsyncTask {
     }
 
     private void startAsyncIOTask() {
-        try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             asyncIOWakeUpEventFd = IO.eventfd(0, 0, errnoState);
             if (asyncIOWakeUpEventFd == -1) {
                 asyncIOWakeUpEventFd = 0;

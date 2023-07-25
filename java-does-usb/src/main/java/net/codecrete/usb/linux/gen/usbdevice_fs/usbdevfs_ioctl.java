@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.linux.gen.usbdevice_fs;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -15,17 +18,11 @@ import java.lang.invoke.VarHandle;
  */
 public class usbdevfs_ioctl {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_INT$LAYOUT.withName("ifno"),
-        Constants$root.C_INT$LAYOUT.withName("ioctl_code"),
-        Constants$root.C_POINTER$LAYOUT.withName("data")
-    ).withName("usbdevfs_ioctl");
     public static MemoryLayout $LAYOUT() {
-        return usbdevfs_ioctl.$struct$LAYOUT;
+        return constants$5.const$0;
     }
-    static final VarHandle ifno$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("ifno"));
     public static VarHandle ifno$VH() {
-        return usbdevfs_ioctl.ifno$VH;
+        return constants$5.const$1;
     }
     /**
      * Getter for field:
@@ -34,7 +31,7 @@ public class usbdevfs_ioctl {
      * }
      */
     public static int ifno$get(MemorySegment seg) {
-        return (int)usbdevfs_ioctl.ifno$VH.get(seg);
+        return (int)constants$5.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -43,17 +40,16 @@ public class usbdevfs_ioctl {
      * }
      */
     public static void ifno$set(MemorySegment seg, int x) {
-        usbdevfs_ioctl.ifno$VH.set(seg, x);
+        constants$5.const$1.set(seg, x);
     }
     public static int ifno$get(MemorySegment seg, long index) {
-        return (int)usbdevfs_ioctl.ifno$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$5.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void ifno$set(MemorySegment seg, long index, int x) {
-        usbdevfs_ioctl.ifno$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$5.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle ioctl_code$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("ioctl_code"));
     public static VarHandle ioctl_code$VH() {
-        return usbdevfs_ioctl.ioctl_code$VH;
+        return constants$5.const$2;
     }
     /**
      * Getter for field:
@@ -62,7 +58,7 @@ public class usbdevfs_ioctl {
      * }
      */
     public static int ioctl_code$get(MemorySegment seg) {
-        return (int)usbdevfs_ioctl.ioctl_code$VH.get(seg);
+        return (int)constants$5.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -71,17 +67,16 @@ public class usbdevfs_ioctl {
      * }
      */
     public static void ioctl_code$set(MemorySegment seg, int x) {
-        usbdevfs_ioctl.ioctl_code$VH.set(seg, x);
+        constants$5.const$2.set(seg, x);
     }
     public static int ioctl_code$get(MemorySegment seg, long index) {
-        return (int)usbdevfs_ioctl.ioctl_code$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$5.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void ioctl_code$set(MemorySegment seg, long index, int x) {
-        usbdevfs_ioctl.ioctl_code$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$5.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle data$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("data"));
     public static VarHandle data$VH() {
-        return usbdevfs_ioctl.data$VH;
+        return constants$5.const$3;
     }
     /**
      * Getter for field:
@@ -90,7 +85,7 @@ public class usbdevfs_ioctl {
      * }
      */
     public static MemorySegment data$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)usbdevfs_ioctl.data$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$5.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -99,20 +94,20 @@ public class usbdevfs_ioctl {
      * }
      */
     public static void data$set(MemorySegment seg, MemorySegment x) {
-        usbdevfs_ioctl.data$VH.set(seg, x);
+        constants$5.const$3.set(seg, x);
     }
     public static MemorySegment data$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)usbdevfs_ioctl.data$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$5.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void data$set(MemorySegment seg, long index, MemorySegment x) {
-        usbdevfs_ioctl.data$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$5.const$3.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

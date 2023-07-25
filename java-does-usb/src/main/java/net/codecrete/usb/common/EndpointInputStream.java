@@ -61,7 +61,7 @@ public abstract class EndpointInputStream extends InputStream {
     protected EndpointInputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-        arena = Arena.openShared();
+        arena = Arena.ofShared();
 
         int packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
 

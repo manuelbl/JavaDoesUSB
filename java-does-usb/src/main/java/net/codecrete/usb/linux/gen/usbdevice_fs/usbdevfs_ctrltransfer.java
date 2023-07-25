@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.linux.gen.usbdevice_fs;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -19,22 +22,11 @@ import java.lang.invoke.VarHandle;
  */
 public class usbdevfs_ctrltransfer {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_CHAR$LAYOUT.withName("bRequestType"),
-        Constants$root.C_CHAR$LAYOUT.withName("bRequest"),
-        Constants$root.C_SHORT$LAYOUT.withName("wValue"),
-        Constants$root.C_SHORT$LAYOUT.withName("wIndex"),
-        Constants$root.C_SHORT$LAYOUT.withName("wLength"),
-        Constants$root.C_INT$LAYOUT.withName("timeout"),
-        MemoryLayout.paddingLayout(32),
-        Constants$root.C_POINTER$LAYOUT.withName("data")
-    ).withName("usbdevfs_ctrltransfer");
     public static MemoryLayout $LAYOUT() {
-        return usbdevfs_ctrltransfer.$struct$LAYOUT;
+        return constants$0.const$0;
     }
-    static final VarHandle bRequestType$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bRequestType"));
     public static VarHandle bRequestType$VH() {
-        return usbdevfs_ctrltransfer.bRequestType$VH;
+        return constants$0.const$1;
     }
     /**
      * Getter for field:
@@ -43,7 +35,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static byte bRequestType$get(MemorySegment seg) {
-        return (byte)usbdevfs_ctrltransfer.bRequestType$VH.get(seg);
+        return (byte)constants$0.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -52,17 +44,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void bRequestType$set(MemorySegment seg, byte x) {
-        usbdevfs_ctrltransfer.bRequestType$VH.set(seg, x);
+        constants$0.const$1.set(seg, x);
     }
     public static byte bRequestType$get(MemorySegment seg, long index) {
-        return (byte)usbdevfs_ctrltransfer.bRequestType$VH.get(seg.asSlice(index*sizeof()));
+        return (byte)constants$0.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void bRequestType$set(MemorySegment seg, long index, byte x) {
-        usbdevfs_ctrltransfer.bRequestType$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle bRequest$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("bRequest"));
     public static VarHandle bRequest$VH() {
-        return usbdevfs_ctrltransfer.bRequest$VH;
+        return constants$0.const$2;
     }
     /**
      * Getter for field:
@@ -71,7 +62,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static byte bRequest$get(MemorySegment seg) {
-        return (byte)usbdevfs_ctrltransfer.bRequest$VH.get(seg);
+        return (byte)constants$0.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -80,17 +71,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void bRequest$set(MemorySegment seg, byte x) {
-        usbdevfs_ctrltransfer.bRequest$VH.set(seg, x);
+        constants$0.const$2.set(seg, x);
     }
     public static byte bRequest$get(MemorySegment seg, long index) {
-        return (byte)usbdevfs_ctrltransfer.bRequest$VH.get(seg.asSlice(index*sizeof()));
+        return (byte)constants$0.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void bRequest$set(MemorySegment seg, long index, byte x) {
-        usbdevfs_ctrltransfer.bRequest$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle wValue$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("wValue"));
     public static VarHandle wValue$VH() {
-        return usbdevfs_ctrltransfer.wValue$VH;
+        return constants$0.const$3;
     }
     /**
      * Getter for field:
@@ -99,7 +89,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static short wValue$get(MemorySegment seg) {
-        return (short)usbdevfs_ctrltransfer.wValue$VH.get(seg);
+        return (short)constants$0.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -108,17 +98,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void wValue$set(MemorySegment seg, short x) {
-        usbdevfs_ctrltransfer.wValue$VH.set(seg, x);
+        constants$0.const$3.set(seg, x);
     }
     public static short wValue$get(MemorySegment seg, long index) {
-        return (short)usbdevfs_ctrltransfer.wValue$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$0.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void wValue$set(MemorySegment seg, long index, short x) {
-        usbdevfs_ctrltransfer.wValue$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle wIndex$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("wIndex"));
     public static VarHandle wIndex$VH() {
-        return usbdevfs_ctrltransfer.wIndex$VH;
+        return constants$0.const$4;
     }
     /**
      * Getter for field:
@@ -127,7 +116,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static short wIndex$get(MemorySegment seg) {
-        return (short)usbdevfs_ctrltransfer.wIndex$VH.get(seg);
+        return (short)constants$0.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -136,17 +125,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void wIndex$set(MemorySegment seg, short x) {
-        usbdevfs_ctrltransfer.wIndex$VH.set(seg, x);
+        constants$0.const$4.set(seg, x);
     }
     public static short wIndex$get(MemorySegment seg, long index) {
-        return (short)usbdevfs_ctrltransfer.wIndex$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$0.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void wIndex$set(MemorySegment seg, long index, short x) {
-        usbdevfs_ctrltransfer.wIndex$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$4.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle wLength$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("wLength"));
     public static VarHandle wLength$VH() {
-        return usbdevfs_ctrltransfer.wLength$VH;
+        return constants$0.const$5;
     }
     /**
      * Getter for field:
@@ -155,7 +143,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static short wLength$get(MemorySegment seg) {
-        return (short)usbdevfs_ctrltransfer.wLength$VH.get(seg);
+        return (short)constants$0.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -164,17 +152,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void wLength$set(MemorySegment seg, short x) {
-        usbdevfs_ctrltransfer.wLength$VH.set(seg, x);
+        constants$0.const$5.set(seg, x);
     }
     public static short wLength$get(MemorySegment seg, long index) {
-        return (short)usbdevfs_ctrltransfer.wLength$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$0.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void wLength$set(MemorySegment seg, long index, short x) {
-        usbdevfs_ctrltransfer.wLength$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle timeout$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("timeout"));
     public static VarHandle timeout$VH() {
-        return usbdevfs_ctrltransfer.timeout$VH;
+        return constants$1.const$0;
     }
     /**
      * Getter for field:
@@ -183,7 +170,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static int timeout$get(MemorySegment seg) {
-        return (int)usbdevfs_ctrltransfer.timeout$VH.get(seg);
+        return (int)constants$1.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -192,17 +179,16 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void timeout$set(MemorySegment seg, int x) {
-        usbdevfs_ctrltransfer.timeout$VH.set(seg, x);
+        constants$1.const$0.set(seg, x);
     }
     public static int timeout$get(MemorySegment seg, long index) {
-        return (int)usbdevfs_ctrltransfer.timeout$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$1.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void timeout$set(MemorySegment seg, long index, int x) {
-        usbdevfs_ctrltransfer.timeout$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$0.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle data$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("data"));
     public static VarHandle data$VH() {
-        return usbdevfs_ctrltransfer.data$VH;
+        return constants$1.const$1;
     }
     /**
      * Getter for field:
@@ -211,7 +197,7 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static MemorySegment data$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)usbdevfs_ctrltransfer.data$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -220,20 +206,20 @@ public class usbdevfs_ctrltransfer {
      * }
      */
     public static void data$set(MemorySegment seg, MemorySegment x) {
-        usbdevfs_ctrltransfer.data$VH.set(seg, x);
+        constants$1.const$1.set(seg, x);
     }
     public static MemorySegment data$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)usbdevfs_ctrltransfer.data$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void data$set(MemorySegment seg, long index, MemorySegment x) {
-        usbdevfs_ctrltransfer.data$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$1.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

@@ -90,9 +90,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (isOpen())
             throwException("the device is already open");
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var pathUtf8 = arena.allocateUtf8String(uniqueDeviceId.toString());
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
             if (fd == -1)
                 throwLastError(errnoState, "Cannot open USB device");
@@ -127,8 +127,8 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (intf.isClaimed())
             throwException("Interface %d has already been claimed", interfaceNumber);
 
-        try (var arena = Arena.openConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             int ret;
 
             if (detachDrivers) {
@@ -169,11 +169,11 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
                     alternateNumber);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             int ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Failed to set alternate interface");
@@ -191,9 +191,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         if (!intf.isClaimed())
             throwException("Interface %d has not been claimed", interfaceNumber);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Cannot release USB interface");
@@ -213,7 +213,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             int dataLength = data != null ? data.length : 0;
             var transfer = createSyncCtrlTransfer(arena, USBDirection.OUT, setup, dataLength);
             if (dataLength != 0)
@@ -228,7 +228,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var transfer = createSyncCtrlTransfer(arena, USBDirection.IN, setup, length);
 
             synchronized (transfer) {
@@ -272,7 +272,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte[] data, int offset, int length, int timeout) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var buffer = arena.allocate(length);
             buffer.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
             var transfer = createSyncTransfer(buffer);
@@ -288,7 +288,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public byte[] transferIn(int endpointNumber, int timeout) {
         var endpoint = getEndpoint(USBDirection.IN, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var buffer = arena.allocate(endpoint.packetSize());
             var transfer = createSyncTransfer(buffer);
 
@@ -333,9 +333,9 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public void clearHalt(USBDirection direction, int endpointNumber) {
         var endpoint = getEndpoint(direction, endpointNumber, USBTransferType.BULK, USBTransferType.INTERRUPT);
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE.layout());
+            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             int res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
             if (res < 0)
                 throwLastError(errnoState, "Clearing halt failed");

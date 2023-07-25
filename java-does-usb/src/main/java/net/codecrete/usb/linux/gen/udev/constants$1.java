@@ -8,49 +8,29 @@ final class constants$1 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$1() {}
-    static final FunctionDescriptor udev_device_get_devnode$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
+    static final FunctionDescriptor const$0 = FunctionDescriptor.of(RuntimeHelper.POINTER,
+        RuntimeHelper.POINTER,
+        RuntimeHelper.POINTER
     );
-    static final MethodHandle udev_device_get_devnode$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$1 = RuntimeHelper.downcallHandle(
+        "udev_device_new_from_syspath",
+        constants$1.const$0
+    );
+    static final MethodHandle const$2 = RuntimeHelper.downcallHandle(
+        "udev_device_get_devtype",
+        constants$0.const$2
+    );
+    static final MethodHandle const$3 = RuntimeHelper.downcallHandle(
         "udev_device_get_devnode",
-        constants$1.udev_device_get_devnode$FUNC
+        constants$0.const$2
     );
-    static final FunctionDescriptor udev_device_get_action$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_device_get_action$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$4 = RuntimeHelper.downcallHandle(
         "udev_device_get_action",
-        constants$1.udev_device_get_action$FUNC
+        constants$0.const$2
     );
-    static final FunctionDescriptor udev_device_get_sysattr_value$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_device_get_sysattr_value$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$5 = RuntimeHelper.downcallHandle(
         "udev_device_get_sysattr_value",
-        constants$1.udev_device_get_sysattr_value$FUNC
-    );
-    static final FunctionDescriptor udev_monitor_new_from_netlink$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_monitor_new_from_netlink$MH = RuntimeHelper.downcallHandle(
-        "udev_monitor_new_from_netlink",
-        constants$1.udev_monitor_new_from_netlink$FUNC
-    );
-    static final FunctionDescriptor udev_monitor_enable_receiving$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_monitor_enable_receiving$MH = RuntimeHelper.downcallHandle(
-        "udev_monitor_enable_receiving",
-        constants$1.udev_monitor_enable_receiving$FUNC
-    );
-    static final FunctionDescriptor udev_monitor_get_fd$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_monitor_get_fd$MH = RuntimeHelper.downcallHandle(
-        "udev_monitor_get_fd",
-        constants$1.udev_monitor_get_fd$FUNC
+        constants$1.const$0
     );
 }
 

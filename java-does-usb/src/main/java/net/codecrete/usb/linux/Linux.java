@@ -10,8 +10,9 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.linux.gen.string.string;
 
 import java.lang.foreign.Linker;
-import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
 import java.lang.invoke.VarHandle;
 
 /**
@@ -22,9 +23,10 @@ public class Linux {
     /**
      * Call state for capturing the {@code errno} value.
      */
-    public static final Linker.Option.CaptureCallState ERRNO_STATE = Linker.Option.captureCallState("errno");
+    public static final Linker.Option ERRNO_STATE = Linker.Option.captureCallState("errno");
+    public static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
     private static final VarHandle callState_errno$VH =
-            ERRNO_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("errno"));
+            ERRNO_STATE_LAYOUT.varHandle(PathElement.groupElement("errno"));
 
     /**
      * Gets the error message for the specified error code (returned by {@code errno}).
