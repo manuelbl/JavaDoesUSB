@@ -109,6 +109,32 @@ public:
     const usb_interface& get_interface(int interface_number) const;
     
     /**
+     * Detaches the standard drivers of the operating system.
+     *
+     * By detaching the standard drivers, the operating system releases the exclusive access
+     * to the device and/or its interfaces. It is relevant for USB devices implementing standard
+     * USB classes such as HID, CDC or mass storage.
+     *
+     * Executing this function requires either root privileges or the _com.apple.vm.device-access_ entitlement.
+     *
+     * This method should be called before the device is opened. After the device has been closed,
+     * `attach_standard_drivers()` should be called to restore the initial state.
+     */
+    void detach_standard_drivers();
+    
+    /**
+     * Attaches the standard drivers of the operating system.
+     *
+     * By attaching the standard drivers, the original state before `detach_standard_drivers()` was called
+     * is restored.
+     *
+     * Executing this function requires either root privileges or the _com.apple.vm.device-access_ entitlement.
+     *
+     * This method should be called after the device has been closed.
+     */
+    void attach_standard_drivers();
+    
+    /**
      * Get a USB endpoint.
      *
      * @param direction endpoint direction

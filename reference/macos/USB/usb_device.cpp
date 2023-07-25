@@ -85,6 +85,22 @@ const usb_endpoint& usb_device::get_endpoint(usb_direction direction, int endpoi
     return usb_endpoint::invalid;
 }
 
+void usb_device::detach_standard_drivers() {
+    if (is_open())
+        throw usb_error("detach_standard_drivers() must not be called when the device is open", 0);
+
+    IOReturn ret = (*device_)->USBDeviceReEnumerate(device_, kUSBReEnumerateCaptureDeviceMask);
+    usb_error::check(ret, "failed to detach standard drivers");
+}
+
+void usb_device::attach_standard_drivers() {
+    if (is_open())
+        throw usb_error("attach_standard_drivers() must not be called when the device is open", 0);
+
+    IOReturn ret = (*device_)->USBDeviceReEnumerate(device_, kUSBReEnumerateReleaseDeviceMask);
+    usb_error::check(ret, "failed to attach standard drivers");
+}
+
 
 bool usb_device::is_open() const {
     return is_open_;
