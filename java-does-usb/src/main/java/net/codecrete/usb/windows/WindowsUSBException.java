@@ -8,7 +8,6 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.USBException;
 import net.codecrete.usb.USBStallException;
-import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.ntdll.NtDll;
 
@@ -84,7 +83,7 @@ public class WindowsUSBException extends USBException {
 
     private static MemorySegment getNtModule() {
         if (ntModule == null) {
-            try (var arena = Arena.openConfined()) {
+            try (var arena = Arena.ofConfined()) {
                 var moduleName = Win.createSegmentFromString("NTDLL.DLL", arena);
                 ntModule = Kernel32.GetModuleHandleW(moduleName);
             }
@@ -94,7 +93,7 @@ public class WindowsUSBException extends USBException {
     }
 
     static String getErrorMessage(int errorCode) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var messagePointerHolder = arena.allocate(ADDRESS);
 
             // First try: Win32 error code
@@ -113,7 +112,7 @@ public class WindowsUSBException extends USBException {
             if (res == 0)
                 return "unspecified error";
 
-            var messagePointer = messagePointerHolder.get(ForeignMemory.UNBOUNDED_ADDRESS, 0);
+            var messagePointer = messagePointerHolder.get(ADDRESS, 0).reinterpret(128 * 1024);
             String message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);
             return message.trim();

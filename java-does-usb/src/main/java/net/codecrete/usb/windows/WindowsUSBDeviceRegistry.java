@@ -58,10 +58,10 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
     @Override
     protected void monitorDevices() {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             MemorySegment hwnd;
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             try {
                 final var className = Win.createSegmentFromString("USB_MONITOR", arena);
@@ -73,7 +73,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                         "handleWindowMessage", MethodType.methodType(long.class, MemorySegment.class, int.class,
                                 long.class, long.class)).bindTo(this);
                 var handleWindowMessageStub = Linker.nativeLinker().upcallStub(handleWindowMessageMH,
-                        FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), arena.scope());
+                        FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), arena);
 
                 // register window class
                 var wx = arena.allocate(WNDCLASSEXW.$LAYOUT());
@@ -126,9 +126,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     private void enumeratePresentDevices() {
 
         List<USBDevice> deviceList = new ArrayList<>();
-        try (var outerArena = Arena.openConfined(); var outerCleanup = new ScopeCleanup()) {
+        try (var outerArena = Arena.ofConfined(); var outerCleanup = new ScopeCleanup()) {
 
-            var lastErrorState = outerArena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = outerArena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // get device information set of all USB devices present
             var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL,
@@ -187,9 +187,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         // iterate all children
         for (var instanceId : childrenIds) {
-            try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
+            try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
 
-                var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+                var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
                 // create empty device info set
                 var devInfoSet = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);
@@ -239,7 +239,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
     private USBDevice createDeviceFromDeviceInfo(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                  String devicePath, HashMap<String, MemorySegment> hubHandles) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             var usbPortNum = DeviceProperty.getDeviceIntProperty(devInfoSet, devInfoData,
                     DeviceProperty.DEVPKEY_Device_Address);
@@ -251,7 +251,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var hubHandle = hubHandles.get(hubPath);
             if (hubHandle == null) {
                 var hubPathSeg = Win.createSegmentFromString(hubPath, arena);
-                var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+                var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
                 hubHandle = Kernel32B.CreateFileW(hubPathSeg, Kernel32.GENERIC_WRITE(), Kernel32.FILE_SHARE_WRITE(),
                         NULL, Kernel32.OPEN_EXISTING(), 0, NULL, lastErrorState);
                 if (Win.IsInvalidHandle(hubHandle))
@@ -306,13 +306,13 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     private USBDevice createDevice(String devicePath, Map<Integer, String> children, MemorySegment hubHandle,
                                    int usbPortNum) {
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             // get device descriptor
             var connInfo = arena.allocate(USBHelper.USB_NODE_CONNECTION_INFORMATION_EX$Struct);
             USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex.set(connInfo, usbPortNum);
             var sizeHolder = arena.allocate(JAVA_INT);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
             if (Kernel32B.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX(),
                     connInfo, (int) connInfo.byteSize(), connInfo, (int) connInfo.byteSize(), sizeHolder, NULL,
                     lastErrorState) == 0)
@@ -359,7 +359,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         // execute request
         var effectiveSizeHolder = arena.allocate(JAVA_INT);
-        var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+        var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
         if (Kernel32B.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION(),
                 descriptorRequest, size, descriptorRequest, size, effectiveSizeHolder, NULL, lastErrorState) == 0)
             throwLastError(lastErrorState, "Cannot retrieve descriptor %d", index);
@@ -391,7 +391,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         if (index == 0)
             return null;
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE,
                     index, DEFAULT_LANGUAGE, arena));
             return stringDesc.string();
@@ -406,12 +406,12 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         // check for message related to connecting/disconnecting devices
         if (uMsg == User32.WM_DEVICECHANGE() && (wParam == User32.DBT_DEVICEARRIVAL() || wParam == User32.DBT_DEVICEREMOVECOMPLETE())) {
-            var data = MemorySegment.ofAddress(lParam, DEV_BROADCAST_DEVICEINTERFACE_W.sizeof());
+            var data = MemorySegment.ofAddress(lParam).reinterpret(DEV_BROADCAST_DEVICEINTERFACE_W.sizeof());
             if (DEV_BROADCAST_HDR.dbch_devicetype$get(data) == User32.DBT_DEVTYP_DEVICEINTERFACE()) {
 
                 // get device path
                 var nameSlice =
-                        MemorySegment.ofAddress(DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name$slice(data).address(), 500);
+                        MemorySegment.ofAddress(DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name$slice(data).address()).reinterpret(500);
                 var devicePath = Win.createStringFromSegment(nameSlice);
                 if (wParam == User32.DBT_DEVICEARRIVAL())
                     onDeviceConnected(devicePath);
@@ -426,9 +426,9 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     }
 
     private void onDeviceConnected(String devicePath) {
-        try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
+        try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
 
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // create empty device info set
             var devInfoSet = SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, lastErrorState);

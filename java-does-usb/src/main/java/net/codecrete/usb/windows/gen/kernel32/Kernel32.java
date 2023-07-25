@@ -2,20 +2,21 @@
 
 package net.codecrete.usb.windows.gen.kernel32;
 
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class Kernel32  {
 
-    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = JAVA_BYTE;
+    public static final OfShort C_SHORT = JAVA_SHORT;
+    public static final OfInt C_INT = JAVA_INT;
+    public static final OfInt C_LONG = JAVA_INT;
+    public static final OfLong C_LONG_LONG = JAVA_LONG;
+    public static final OfFloat C_FLOAT = JAVA_FLOAT;
+    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
     /**
      * {@snippet :
      * #define FILE_SHARE_READ 1
@@ -89,7 +90,7 @@ public class Kernel32  {
         return (int)4096L;
     }
     public static MethodHandle CloseHandle$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CloseHandle$MH,"CloseHandle");
+        return RuntimeHelper.requireNonNull(constants$1.const$6,"CloseHandle");
     }
     /**
      * {@snippet :
@@ -105,7 +106,7 @@ public class Kernel32  {
         }
     }
     public static MethodHandle GetModuleHandleW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.GetModuleHandleW$MH,"GetModuleHandleW");
+        return RuntimeHelper.requireNonNull(constants$2.const$1,"GetModuleHandleW");
     }
     /**
      * {@snippet :
@@ -121,7 +122,7 @@ public class Kernel32  {
         }
     }
     public static MethodHandle LocalFree$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.LocalFree$MH,"LocalFree");
+        return RuntimeHelper.requireNonNull(constants$2.const$2,"LocalFree");
     }
     /**
      * {@snippet :
@@ -137,7 +138,7 @@ public class Kernel32  {
         }
     }
     public static MethodHandle FormatMessageW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.FormatMessageW$MH,"FormatMessageW");
+        return RuntimeHelper.requireNonNull(constants$2.const$4,"FormatMessageW");
     }
     /**
      * {@snippet :

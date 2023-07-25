@@ -70,12 +70,12 @@ public class WindowsAsyncTask {
      */
     private void asyncCompletionTask() {
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             var overlappedHolder = arena.allocate(ADDRESS, NULL);
             var numBytesHolder = arena.allocate(JAVA_INT, 0);
             var completionKeyHolder = arena.allocate(JAVA_LONG, 0);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             while (true) {
                 overlappedHolder.set(ADDRESS, 0, MemorySegment.NULL);
@@ -106,8 +106,8 @@ public class WindowsAsyncTask {
      */
     synchronized void addDevice(MemorySegment handle) {
 
-        try (var arena = Arena.openConfined()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // Creates a new port if it doesn't exist; adds handle to existing port if it exists
             MemorySegment portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
@@ -124,7 +124,7 @@ public class WindowsAsyncTask {
 
     private void startAsyncIOTask() {
         availableOverlappedStructs = new ArrayList<>();
-        arena = Arena.openShared();
+        arena = Arena.ofShared();
         requestsByOverlapped = new HashMap<>();
 
         // start background thread for handling IO completion

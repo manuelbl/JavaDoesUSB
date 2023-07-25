@@ -2,20 +2,21 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class User32  {
 
-    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static final OfInt C_INT = Constants$root.C_LONG$LAYOUT;
-    public static final OfInt C_LONG = Constants$root.C_LONG$LAYOUT;
-    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = JAVA_BYTE;
+    public static final OfShort C_SHORT = JAVA_SHORT;
+    public static final OfInt C_INT = JAVA_INT;
+    public static final OfInt C_LONG = JAVA_INT;
+    public static final OfLong C_LONG_LONG = JAVA_LONG;
+    public static final OfFloat C_FLOAT = JAVA_FLOAT;
+    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
     /**
      * {@snippet :
      * #define WM_DEVICECHANGE 537
@@ -57,7 +58,7 @@ public class User32  {
         return (int)5L;
     }
     public static MethodHandle DefWindowProcW$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.DefWindowProcW$MH,"DefWindowProcW");
+        return RuntimeHelper.requireNonNull(constants$3.const$2,"DefWindowProcW");
     }
     /**
      * {@snippet :
@@ -78,7 +79,7 @@ public class User32  {
      * }
      */
     public static MemorySegment HWND_MESSAGE() {
-        return constants$0.HWND_MESSAGE$ADDR;
+        return constants$4.const$5;
     }
 }
 

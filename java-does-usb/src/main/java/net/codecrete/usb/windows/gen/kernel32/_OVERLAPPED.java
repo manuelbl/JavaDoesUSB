@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.windows.gen.kernel32;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -22,24 +25,11 @@ import java.lang.invoke.VarHandle;
  */
 public class _OVERLAPPED {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG_LONG$LAYOUT.withName("Internal"),
-        Constants$root.C_LONG_LONG$LAYOUT.withName("InternalHigh"),
-        MemoryLayout.unionLayout(
-            MemoryLayout.structLayout(
-                Constants$root.C_LONG$LAYOUT.withName("Offset"),
-                Constants$root.C_LONG$LAYOUT.withName("OffsetHigh")
-            ).withName("$anon$0"),
-            Constants$root.C_POINTER$LAYOUT.withName("Pointer")
-        ).withName("$anon$0"),
-        Constants$root.C_POINTER$LAYOUT.withName("hEvent")
-    ).withName("_OVERLAPPED");
     public static MemoryLayout $LAYOUT() {
-        return _OVERLAPPED.$struct$LAYOUT;
+        return constants$0.const$4;
     }
-    static final VarHandle Internal$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Internal"));
     public static VarHandle Internal$VH() {
-        return _OVERLAPPED.Internal$VH;
+        return constants$0.const$5;
     }
     /**
      * Getter for field:
@@ -48,7 +38,7 @@ public class _OVERLAPPED {
      * }
      */
     public static long Internal$get(MemorySegment seg) {
-        return (long)_OVERLAPPED.Internal$VH.get(seg);
+        return (long)constants$0.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -57,17 +47,16 @@ public class _OVERLAPPED {
      * }
      */
     public static void Internal$set(MemorySegment seg, long x) {
-        _OVERLAPPED.Internal$VH.set(seg, x);
+        constants$0.const$5.set(seg, x);
     }
     public static long Internal$get(MemorySegment seg, long index) {
-        return (long)_OVERLAPPED.Internal$VH.get(seg.asSlice(index*sizeof()));
+        return (long)constants$0.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void Internal$set(MemorySegment seg, long index, long x) {
-        _OVERLAPPED.Internal$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle InternalHigh$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("InternalHigh"));
     public static VarHandle InternalHigh$VH() {
-        return _OVERLAPPED.InternalHigh$VH;
+        return constants$1.const$0;
     }
     /**
      * Getter for field:
@@ -76,7 +65,7 @@ public class _OVERLAPPED {
      * }
      */
     public static long InternalHigh$get(MemorySegment seg) {
-        return (long)_OVERLAPPED.InternalHigh$VH.get(seg);
+        return (long)constants$1.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -85,17 +74,16 @@ public class _OVERLAPPED {
      * }
      */
     public static void InternalHigh$set(MemorySegment seg, long x) {
-        _OVERLAPPED.InternalHigh$VH.set(seg, x);
+        constants$1.const$0.set(seg, x);
     }
     public static long InternalHigh$get(MemorySegment seg, long index) {
-        return (long)_OVERLAPPED.InternalHigh$VH.get(seg.asSlice(index*sizeof()));
+        return (long)constants$1.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void InternalHigh$set(MemorySegment seg, long index, long x) {
-        _OVERLAPPED.InternalHigh$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$0.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle Offset$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("$anon$0"), MemoryLayout.PathElement.groupElement("$anon$0"), MemoryLayout.PathElement.groupElement("Offset"));
     public static VarHandle Offset$VH() {
-        return _OVERLAPPED.Offset$VH;
+        return constants$1.const$1;
     }
     /**
      * Getter for field:
@@ -104,7 +92,7 @@ public class _OVERLAPPED {
      * }
      */
     public static int Offset$get(MemorySegment seg) {
-        return (int)_OVERLAPPED.Offset$VH.get(seg);
+        return (int)constants$1.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -113,17 +101,16 @@ public class _OVERLAPPED {
      * }
      */
     public static void Offset$set(MemorySegment seg, int x) {
-        _OVERLAPPED.Offset$VH.set(seg, x);
+        constants$1.const$1.set(seg, x);
     }
     public static int Offset$get(MemorySegment seg, long index) {
-        return (int)_OVERLAPPED.Offset$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$1.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void Offset$set(MemorySegment seg, long index, int x) {
-        _OVERLAPPED.Offset$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle OffsetHigh$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("$anon$0"), MemoryLayout.PathElement.groupElement("$anon$0"), MemoryLayout.PathElement.groupElement("OffsetHigh"));
     public static VarHandle OffsetHigh$VH() {
-        return _OVERLAPPED.OffsetHigh$VH;
+        return constants$1.const$2;
     }
     /**
      * Getter for field:
@@ -132,7 +119,7 @@ public class _OVERLAPPED {
      * }
      */
     public static int OffsetHigh$get(MemorySegment seg) {
-        return (int)_OVERLAPPED.OffsetHigh$VH.get(seg);
+        return (int)constants$1.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -141,17 +128,16 @@ public class _OVERLAPPED {
      * }
      */
     public static void OffsetHigh$set(MemorySegment seg, int x) {
-        _OVERLAPPED.OffsetHigh$VH.set(seg, x);
+        constants$1.const$2.set(seg, x);
     }
     public static int OffsetHigh$get(MemorySegment seg, long index) {
-        return (int)_OVERLAPPED.OffsetHigh$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$1.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void OffsetHigh$set(MemorySegment seg, long index, int x) {
-        _OVERLAPPED.OffsetHigh$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle Pointer$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("$anon$0"), MemoryLayout.PathElement.groupElement("Pointer"));
     public static VarHandle Pointer$VH() {
-        return _OVERLAPPED.Pointer$VH;
+        return constants$1.const$3;
     }
     /**
      * Getter for field:
@@ -160,7 +146,7 @@ public class _OVERLAPPED {
      * }
      */
     public static MemorySegment Pointer$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)_OVERLAPPED.Pointer$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -169,17 +155,16 @@ public class _OVERLAPPED {
      * }
      */
     public static void Pointer$set(MemorySegment seg, MemorySegment x) {
-        _OVERLAPPED.Pointer$VH.set(seg, x);
+        constants$1.const$3.set(seg, x);
     }
     public static MemorySegment Pointer$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)_OVERLAPPED.Pointer$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void Pointer$set(MemorySegment seg, long index, MemorySegment x) {
-        _OVERLAPPED.Pointer$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hEvent$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hEvent"));
     public static VarHandle hEvent$VH() {
-        return _OVERLAPPED.hEvent$VH;
+        return constants$1.const$4;
     }
     /**
      * Getter for field:
@@ -188,7 +173,7 @@ public class _OVERLAPPED {
      * }
      */
     public static MemorySegment hEvent$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)_OVERLAPPED.hEvent$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -197,20 +182,20 @@ public class _OVERLAPPED {
      * }
      */
     public static void hEvent$set(MemorySegment seg, MemorySegment x) {
-        _OVERLAPPED.hEvent$VH.set(seg, x);
+        constants$1.const$4.set(seg, x);
     }
     public static MemorySegment hEvent$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)_OVERLAPPED.hEvent$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void hEvent$set(MemorySegment seg, long index, MemorySegment x) {
-        _OVERLAPPED.hEvent$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$4.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

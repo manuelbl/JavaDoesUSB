@@ -10,6 +10,7 @@ package net.codecrete.usb.windows;
 import net.codecrete.usb.windows.gen.kernel32.GUID;
 
 import java.lang.foreign.*;
+import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,18 +24,13 @@ import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 public class Win {
 
     /**
-     * Global native memory segment allocator.
-     */
-    public static final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
-
-    /**
      * Call state for capturing the {@code GetLastError()} value.
      */
-    public static final Linker.Option.CaptureCallState LAST_ERROR_STATE = Linker.Option.captureCallState(
-            "GetLastError");
+    public static final Linker.Option LAST_ERROR_STATE = Linker.Option.captureCallState("GetLastError");
+    public static final StructLayout LAST_ERROR_STATE_LAYOUT = Linker.Option.captureStateLayout();
 
     private static final VarHandle callState_GetLastError$VH =
-            LAST_ERROR_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("GetLastError"));
+            LAST_ERROR_STATE_LAYOUT.varHandle(PathElement.groupElement("GetLastError"));
 
     /**
      * Returns the error code captured using the call state {@link #LAST_ERROR_STATE}.
@@ -132,7 +128,7 @@ public class Win {
     public static MemorySegment CreateGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
                                            byte data4_7) {
-        var guid = GLOBAL_ALLOCATOR.allocate(GUID.$LAYOUT());
+        var guid = Arena.global().allocate(GUID.$LAYOUT());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
     }

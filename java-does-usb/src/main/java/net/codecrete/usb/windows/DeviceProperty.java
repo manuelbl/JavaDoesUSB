@@ -65,10 +65,10 @@ public class DeviceProperty {
      */
     public static int getDeviceIntProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                            MemorySegment propertyKey) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var propertyTypeHolder = arena.allocate(JAVA_INT);
             var propertyValueHolder = arena.allocate(JAVA_INT);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
             if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, lastErrorState) == 0)
                 throwLastError(lastErrorState, "Internal error (SetupDiGetDevicePropertyW)");
@@ -90,7 +90,7 @@ public class DeviceProperty {
      */
     public static String getDeviceStringProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                  MemorySegment propertyKey) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey,
                     SetupAPI.DEVPROP_TYPE_STRING(), arena);
             if (propertyValue == null)
@@ -109,7 +109,7 @@ public class DeviceProperty {
      */
     public static List<String> getDeviceStringListProperty(MemorySegment devInfoSet, MemorySegment devInfoData,
                                                            MemorySegment propertyKey) {
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
             var propertyValue = getVariableLengthProperty(devInfoSet, devInfoData, propertyKey,
                     SetupAPI.DEVPROP_TYPE_STRING() | SetupAPI.DEVPROP_TYPEMOD_LIST(), arena);
             if (propertyValue == null)
@@ -125,7 +125,7 @@ public class DeviceProperty {
         // query length (thus no buffer)
         var propertyTypeHolder = arena.allocate(JAVA_INT);
         var requiredSizeHolder = arena.allocate(JAVA_INT);
-        var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+        var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
                 requiredSizeHolder, 0, lastErrorState) == 0) {
             int err = Win.getLastError(lastErrorState);
@@ -163,7 +163,7 @@ public class DeviceProperty {
                                                         Arena arena) {
 
         try (var cleanup = new ScopeCleanup()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // open device registry key
             var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(), 0,
@@ -201,8 +201,8 @@ public class DeviceProperty {
      * @return the device path
      */
     public static String getDevicePath(String instanceID, MemorySegment interfaceGuid) {
-        try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+        try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
+            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // get device info set for instance
             var instanceIDSegment = Win.createSegmentFromString(instanceID, arena);
@@ -254,7 +254,7 @@ public class DeviceProperty {
     private static MemorySegment createDEVPROPKEY(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                                   byte data4_2, byte data4_3, byte data4_4, byte data4_5,
                                                   byte data4_6, byte data4_7, int pid) {
-        var propKey = Win.GLOBAL_ALLOCATOR.allocate(DEVPROPKEY.$LAYOUT());
+        var propKey = Arena.global().allocate(DEVPROPKEY.$LAYOUT());
         Win.setGUID(DEVPROPKEY.fmtid$slice(propKey), data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4
                 , data4_5, data4_6, data4_7);
         DEVPROPKEY.pid$set(propKey, pid);

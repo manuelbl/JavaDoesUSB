@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.windows.gen.kernel32;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -16,18 +19,11 @@ import java.lang.invoke.VarHandle;
  */
 public class _GUID {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG$LAYOUT.withName("Data1"),
-        Constants$root.C_SHORT$LAYOUT.withName("Data2"),
-        Constants$root.C_SHORT$LAYOUT.withName("Data3"),
-        MemoryLayout.sequenceLayout(8, Constants$root.C_CHAR$LAYOUT).withName("Data4")
-    ).withName("_GUID");
     public static MemoryLayout $LAYOUT() {
-        return _GUID.$struct$LAYOUT;
+        return constants$0.const$0;
     }
-    static final VarHandle Data1$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Data1"));
     public static VarHandle Data1$VH() {
-        return _GUID.Data1$VH;
+        return constants$0.const$1;
     }
     /**
      * Getter for field:
@@ -36,7 +32,7 @@ public class _GUID {
      * }
      */
     public static int Data1$get(MemorySegment seg) {
-        return (int)_GUID.Data1$VH.get(seg);
+        return (int)constants$0.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -45,17 +41,16 @@ public class _GUID {
      * }
      */
     public static void Data1$set(MemorySegment seg, int x) {
-        _GUID.Data1$VH.set(seg, x);
+        constants$0.const$1.set(seg, x);
     }
     public static int Data1$get(MemorySegment seg, long index) {
-        return (int)_GUID.Data1$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$0.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void Data1$set(MemorySegment seg, long index, int x) {
-        _GUID.Data1$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle Data2$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Data2"));
     public static VarHandle Data2$VH() {
-        return _GUID.Data2$VH;
+        return constants$0.const$2;
     }
     /**
      * Getter for field:
@@ -64,7 +59,7 @@ public class _GUID {
      * }
      */
     public static short Data2$get(MemorySegment seg) {
-        return (short)_GUID.Data2$VH.get(seg);
+        return (short)constants$0.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -73,17 +68,16 @@ public class _GUID {
      * }
      */
     public static void Data2$set(MemorySegment seg, short x) {
-        _GUID.Data2$VH.set(seg, x);
+        constants$0.const$2.set(seg, x);
     }
     public static short Data2$get(MemorySegment seg, long index) {
-        return (short)_GUID.Data2$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$0.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void Data2$set(MemorySegment seg, long index, short x) {
-        _GUID.Data2$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle Data3$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Data3"));
     public static VarHandle Data3$VH() {
-        return _GUID.Data3$VH;
+        return constants$0.const$3;
     }
     /**
      * Getter for field:
@@ -92,7 +86,7 @@ public class _GUID {
      * }
      */
     public static short Data3$get(MemorySegment seg) {
-        return (short)_GUID.Data3$VH.get(seg);
+        return (short)constants$0.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -101,13 +95,13 @@ public class _GUID {
      * }
      */
     public static void Data3$set(MemorySegment seg, short x) {
-        _GUID.Data3$VH.set(seg, x);
+        constants$0.const$3.set(seg, x);
     }
     public static short Data3$get(MemorySegment seg, long index) {
-        return (short)_GUID.Data3$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$0.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void Data3$set(MemorySegment seg, long index, short x) {
-        _GUID.Data3$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$3.set(seg.asSlice(index*sizeof()), x);
     }
     public static MemorySegment Data4$slice(MemorySegment seg) {
         return seg.asSlice(8, 8);
@@ -117,7 +111,7 @@ public class _GUID {
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

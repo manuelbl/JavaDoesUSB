@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -17,25 +20,11 @@ import java.lang.invoke.VarHandle;
  */
 public class _DEV_BROADCAST_DEVICEINTERFACE_W {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG$LAYOUT.withName("dbcc_size"),
-        Constants$root.C_LONG$LAYOUT.withName("dbcc_devicetype"),
-        Constants$root.C_LONG$LAYOUT.withName("dbcc_reserved"),
-        MemoryLayout.structLayout(
-            Constants$root.C_LONG$LAYOUT.withName("Data1"),
-            Constants$root.C_SHORT$LAYOUT.withName("Data2"),
-            Constants$root.C_SHORT$LAYOUT.withName("Data3"),
-            MemoryLayout.sequenceLayout(8, Constants$root.C_CHAR$LAYOUT).withName("Data4")
-        ).withName("dbcc_classguid"),
-        MemoryLayout.sequenceLayout(1, Constants$root.C_SHORT$LAYOUT).withName("dbcc_name"),
-        MemoryLayout.paddingLayout(16)
-    ).withName("_DEV_BROADCAST_DEVICEINTERFACE_W");
     public static MemoryLayout $LAYOUT() {
-        return _DEV_BROADCAST_DEVICEINTERFACE_W.$struct$LAYOUT;
+        return constants$4.const$1;
     }
-    static final VarHandle dbcc_size$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dbcc_size"));
     public static VarHandle dbcc_size$VH() {
-        return _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$VH;
+        return constants$4.const$2;
     }
     /**
      * Getter for field:
@@ -44,7 +33,7 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static int dbcc_size$get(MemorySegment seg) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$VH.get(seg);
+        return (int)constants$4.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -53,17 +42,16 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static void dbcc_size$set(MemorySegment seg, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$VH.set(seg, x);
+        constants$4.const$2.set(seg, x);
     }
     public static int dbcc_size$get(MemorySegment seg, long index) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$4.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void dbcc_size$set(MemorySegment seg, long index, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$4.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle dbcc_devicetype$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dbcc_devicetype"));
     public static VarHandle dbcc_devicetype$VH() {
-        return _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$VH;
+        return constants$4.const$3;
     }
     /**
      * Getter for field:
@@ -72,7 +60,7 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static int dbcc_devicetype$get(MemorySegment seg) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$VH.get(seg);
+        return (int)constants$4.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -81,17 +69,16 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static void dbcc_devicetype$set(MemorySegment seg, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$VH.set(seg, x);
+        constants$4.const$3.set(seg, x);
     }
     public static int dbcc_devicetype$get(MemorySegment seg, long index) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$4.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void dbcc_devicetype$set(MemorySegment seg, long index, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$4.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle dbcc_reserved$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dbcc_reserved"));
     public static VarHandle dbcc_reserved$VH() {
-        return _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_reserved$VH;
+        return constants$4.const$4;
     }
     /**
      * Getter for field:
@@ -100,7 +87,7 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static int dbcc_reserved$get(MemorySegment seg) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_reserved$VH.get(seg);
+        return (int)constants$4.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -109,13 +96,13 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
      * }
      */
     public static void dbcc_reserved$set(MemorySegment seg, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_reserved$VH.set(seg, x);
+        constants$4.const$4.set(seg, x);
     }
     public static int dbcc_reserved$get(MemorySegment seg, long index) {
-        return (int)_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_reserved$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$4.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void dbcc_reserved$set(MemorySegment seg, long index, int x) {
-        _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_reserved$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$4.const$4.set(seg.asSlice(index*sizeof()), x);
     }
     public static MemorySegment dbcc_classguid$slice(MemorySegment seg) {
         return seg.asSlice(12, 16);
@@ -128,7 +115,7 @@ public class _DEV_BROADCAST_DEVICEINTERFACE_W {
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

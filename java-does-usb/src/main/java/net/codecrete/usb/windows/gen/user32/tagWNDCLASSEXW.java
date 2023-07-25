@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -24,26 +27,11 @@ import java.lang.invoke.VarHandle;
  */
 public class tagWNDCLASSEXW {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG$LAYOUT.withName("cbSize"),
-        Constants$root.C_LONG$LAYOUT.withName("style"),
-        Constants$root.C_POINTER$LAYOUT.withName("lpfnWndProc"),
-        Constants$root.C_LONG$LAYOUT.withName("cbClsExtra"),
-        Constants$root.C_LONG$LAYOUT.withName("cbWndExtra"),
-        Constants$root.C_POINTER$LAYOUT.withName("hInstance"),
-        Constants$root.C_POINTER$LAYOUT.withName("hIcon"),
-        Constants$root.C_POINTER$LAYOUT.withName("hCursor"),
-        Constants$root.C_POINTER$LAYOUT.withName("hbrBackground"),
-        Constants$root.C_POINTER$LAYOUT.withName("lpszMenuName"),
-        Constants$root.C_POINTER$LAYOUT.withName("lpszClassName"),
-        Constants$root.C_POINTER$LAYOUT.withName("hIconSm")
-    ).withName("tagWNDCLASSEXW");
     public static MemoryLayout $LAYOUT() {
-        return tagWNDCLASSEXW.$struct$LAYOUT;
+        return constants$0.const$0;
     }
-    static final VarHandle cbSize$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("cbSize"));
     public static VarHandle cbSize$VH() {
-        return tagWNDCLASSEXW.cbSize$VH;
+        return constants$0.const$1;
     }
     /**
      * Getter for field:
@@ -52,7 +40,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static int cbSize$get(MemorySegment seg) {
-        return (int)tagWNDCLASSEXW.cbSize$VH.get(seg);
+        return (int)constants$0.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -61,17 +49,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void cbSize$set(MemorySegment seg, int x) {
-        tagWNDCLASSEXW.cbSize$VH.set(seg, x);
+        constants$0.const$1.set(seg, x);
     }
     public static int cbSize$get(MemorySegment seg, long index) {
-        return (int)tagWNDCLASSEXW.cbSize$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$0.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void cbSize$set(MemorySegment seg, long index, int x) {
-        tagWNDCLASSEXW.cbSize$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle style$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("style"));
     public static VarHandle style$VH() {
-        return tagWNDCLASSEXW.style$VH;
+        return constants$0.const$2;
     }
     /**
      * Getter for field:
@@ -80,7 +67,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static int style$get(MemorySegment seg) {
-        return (int)tagWNDCLASSEXW.style$VH.get(seg);
+        return (int)constants$0.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -89,17 +76,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void style$set(MemorySegment seg, int x) {
-        tagWNDCLASSEXW.style$VH.set(seg, x);
+        constants$0.const$2.set(seg, x);
     }
     public static int style$get(MemorySegment seg, long index) {
-        return (int)tagWNDCLASSEXW.style$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$0.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void style$set(MemorySegment seg, long index, int x) {
-        tagWNDCLASSEXW.style$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle lpfnWndProc$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lpfnWndProc"));
     public static VarHandle lpfnWndProc$VH() {
-        return tagWNDCLASSEXW.lpfnWndProc$VH;
+        return constants$0.const$3;
     }
     /**
      * Getter for field:
@@ -108,7 +94,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment lpfnWndProc$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpfnWndProc$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$0.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -117,17 +103,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void lpfnWndProc$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.lpfnWndProc$VH.set(seg, x);
+        constants$0.const$3.set(seg, x);
     }
     public static MemorySegment lpfnWndProc$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpfnWndProc$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$0.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void lpfnWndProc$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.lpfnWndProc$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle cbClsExtra$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("cbClsExtra"));
     public static VarHandle cbClsExtra$VH() {
-        return tagWNDCLASSEXW.cbClsExtra$VH;
+        return constants$0.const$4;
     }
     /**
      * Getter for field:
@@ -136,7 +121,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static int cbClsExtra$get(MemorySegment seg) {
-        return (int)tagWNDCLASSEXW.cbClsExtra$VH.get(seg);
+        return (int)constants$0.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -145,17 +130,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void cbClsExtra$set(MemorySegment seg, int x) {
-        tagWNDCLASSEXW.cbClsExtra$VH.set(seg, x);
+        constants$0.const$4.set(seg, x);
     }
     public static int cbClsExtra$get(MemorySegment seg, long index) {
-        return (int)tagWNDCLASSEXW.cbClsExtra$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$0.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void cbClsExtra$set(MemorySegment seg, long index, int x) {
-        tagWNDCLASSEXW.cbClsExtra$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$4.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle cbWndExtra$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("cbWndExtra"));
     public static VarHandle cbWndExtra$VH() {
-        return tagWNDCLASSEXW.cbWndExtra$VH;
+        return constants$0.const$5;
     }
     /**
      * Getter for field:
@@ -164,7 +148,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static int cbWndExtra$get(MemorySegment seg) {
-        return (int)tagWNDCLASSEXW.cbWndExtra$VH.get(seg);
+        return (int)constants$0.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -173,17 +157,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void cbWndExtra$set(MemorySegment seg, int x) {
-        tagWNDCLASSEXW.cbWndExtra$VH.set(seg, x);
+        constants$0.const$5.set(seg, x);
     }
     public static int cbWndExtra$get(MemorySegment seg, long index) {
-        return (int)tagWNDCLASSEXW.cbWndExtra$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$0.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void cbWndExtra$set(MemorySegment seg, long index, int x) {
-        tagWNDCLASSEXW.cbWndExtra$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$0.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hInstance$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hInstance"));
     public static VarHandle hInstance$VH() {
-        return tagWNDCLASSEXW.hInstance$VH;
+        return constants$1.const$0;
     }
     /**
      * Getter for field:
@@ -192,7 +175,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment hInstance$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hInstance$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -201,17 +184,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void hInstance$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.hInstance$VH.set(seg, x);
+        constants$1.const$0.set(seg, x);
     }
     public static MemorySegment hInstance$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hInstance$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void hInstance$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.hInstance$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$0.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hIcon$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hIcon"));
     public static VarHandle hIcon$VH() {
-        return tagWNDCLASSEXW.hIcon$VH;
+        return constants$1.const$1;
     }
     /**
      * Getter for field:
@@ -220,7 +202,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment hIcon$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hIcon$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -229,17 +211,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void hIcon$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.hIcon$VH.set(seg, x);
+        constants$1.const$1.set(seg, x);
     }
     public static MemorySegment hIcon$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hIcon$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void hIcon$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.hIcon$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hCursor$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hCursor"));
     public static VarHandle hCursor$VH() {
-        return tagWNDCLASSEXW.hCursor$VH;
+        return constants$1.const$2;
     }
     /**
      * Getter for field:
@@ -248,7 +229,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment hCursor$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hCursor$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$2.get(seg);
     }
     /**
      * Setter for field:
@@ -257,17 +238,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void hCursor$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.hCursor$VH.set(seg, x);
+        constants$1.const$2.set(seg, x);
     }
     public static MemorySegment hCursor$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hCursor$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$2.get(seg.asSlice(index*sizeof()));
     }
     public static void hCursor$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.hCursor$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$2.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hbrBackground$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hbrBackground"));
     public static VarHandle hbrBackground$VH() {
-        return tagWNDCLASSEXW.hbrBackground$VH;
+        return constants$1.const$3;
     }
     /**
      * Getter for field:
@@ -276,7 +256,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment hbrBackground$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hbrBackground$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -285,17 +265,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void hbrBackground$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.hbrBackground$VH.set(seg, x);
+        constants$1.const$3.set(seg, x);
     }
     public static MemorySegment hbrBackground$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hbrBackground$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void hbrBackground$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.hbrBackground$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle lpszMenuName$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lpszMenuName"));
     public static VarHandle lpszMenuName$VH() {
-        return tagWNDCLASSEXW.lpszMenuName$VH;
+        return constants$1.const$4;
     }
     /**
      * Getter for field:
@@ -304,7 +283,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment lpszMenuName$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpszMenuName$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -313,17 +292,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void lpszMenuName$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.lpszMenuName$VH.set(seg, x);
+        constants$1.const$4.set(seg, x);
     }
     public static MemorySegment lpszMenuName$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpszMenuName$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void lpszMenuName$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.lpszMenuName$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$4.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle lpszClassName$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lpszClassName"));
     public static VarHandle lpszClassName$VH() {
-        return tagWNDCLASSEXW.lpszClassName$VH;
+        return constants$1.const$5;
     }
     /**
      * Getter for field:
@@ -332,7 +310,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment lpszClassName$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpszClassName$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$1.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -341,17 +319,16 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void lpszClassName$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.lpszClassName$VH.set(seg, x);
+        constants$1.const$5.set(seg, x);
     }
     public static MemorySegment lpszClassName$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.lpszClassName$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$1.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void lpszClassName$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.lpszClassName$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle hIconSm$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("hIconSm"));
     public static VarHandle hIconSm$VH() {
-        return tagWNDCLASSEXW.hIconSm$VH;
+        return constants$2.const$0;
     }
     /**
      * Getter for field:
@@ -360,7 +337,7 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static MemorySegment hIconSm$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hIconSm$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$2.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -369,20 +346,20 @@ public class tagWNDCLASSEXW {
      * }
      */
     public static void hIconSm$set(MemorySegment seg, MemorySegment x) {
-        tagWNDCLASSEXW.hIconSm$VH.set(seg, x);
+        constants$2.const$0.set(seg, x);
     }
     public static MemorySegment hIconSm$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)tagWNDCLASSEXW.hIconSm$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$2.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void hIconSm$set(MemorySegment seg, long index, MemorySegment x) {
-        tagWNDCLASSEXW.hIconSm$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$2.const$0.set(seg.asSlice(index*sizeof()), x);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
     public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 
