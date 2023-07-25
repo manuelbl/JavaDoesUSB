@@ -244,10 +244,10 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data, int timeout) {
+    public void transferOut(int endpointNumber, byte[] data, int offset, int length, int timeout) {
         try (var arena = Arena.openConfined()) {
             var buffer = arena.allocate(data.length);
-            buffer.copyFrom(MemorySegment.ofArray(data));
+            buffer.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
             var transfer = createSyncTransfer(buffer);
 
             synchronized (transfer) {

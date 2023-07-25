@@ -293,10 +293,33 @@ public interface USBDevice {
      * </p>
      *
      * @param endpointNumber the endpoint number (in the range between 1 and 127)
-     * @param timeout        the timeout period, in milliseconds (0 for no timeout)
      * @param data           data to send
+     * @param timeout        the timeout period, in milliseconds (0 for no timeout)
      */
     void transferOut(int endpointNumber, byte[] data, int timeout);
+
+    /**
+     * Sends data to this device.
+     * <p>
+     * This method blocks until the data has been sent, the timeout period has expired
+     * or an error has occurred. If the timeout expires, a {@link USBTimeoutException} is thrown.
+     * </p>
+     * <p>
+     * This method can send data to bulk and interrupt endpoints.
+     * </p>
+     * <p>
+     * If the sent data length is a multiple of the packet size, it is often
+     * required to send an additional zero-length packet (ZLP) for the device
+     * to actually process the data. This method will not do it automatically.
+     * </p>
+     *
+     * @param endpointNumber the endpoint number (in the range between 1 and 127)
+     * @param data           buffer containing data to send
+     * @param offset         offset of the first byte to send
+     * @param length         number of bytes to send
+     * @param timeout        the timeout period, in milliseconds (0 for no timeout)
+     */
+    void transferOut(int endpointNumber, byte[] data, int offset, int length, int timeout);
 
     /**
      * Receives data from this device.

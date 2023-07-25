@@ -412,18 +412,18 @@ public class MacosUSBDevice extends USBDeviceImpl {
     }
 
     @Override
-    public void transferOut(int endpointNumber, byte[] data, int timeout) {
+    public void transferOut(int endpointNumber, byte[] data, int offset, int length, int timeout) {
 
         EndpointInfo epInfo = getEndpointInfo(endpointNumber, USBDirection.OUT, USBTransferType.BULK,
                 USBTransferType.INTERRUPT);
 
         try (var arena = Arena.openConfined()) {
-            var nativeData = arena.allocateArray(JAVA_BYTE, data.length);
-            nativeData.copyFrom(MemorySegment.ofArray(data));
+            var nativeData = arena.allocateArray(JAVA_BYTE, length);
+            nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
 
             var transfer = new MacosTransfer();
             transfer.data = nativeData;
-            transfer.dataSize = data.length;
+            transfer.dataSize = length;
             transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
 
             synchronized (transfer) {
