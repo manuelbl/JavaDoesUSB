@@ -254,6 +254,7 @@ public class DeviceProperty {
     private static MemorySegment createDEVPROPKEY(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                                   byte data4_2, byte data4_3, byte data4_4, byte data4_5,
                                                   byte data4_6, byte data4_7, int pid) {
+        @SuppressWarnings("resource")
         var propKey = Arena.global().allocate(DEVPROPKEY.$LAYOUT());
         Win.setGUID(DEVPROPKEY.fmtid$slice(propKey), data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4
                 , data4_5, data4_6, data4_7);

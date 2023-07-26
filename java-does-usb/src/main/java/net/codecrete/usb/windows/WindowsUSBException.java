@@ -16,6 +16,7 @@ import java.lang.foreign.MemorySegment;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
+import static net.codecrete.usb.common.ForeignMemory.dereference;
 
 /**
  * Exception thrown if a Windows specific error occurs.
@@ -68,7 +69,7 @@ public class WindowsUSBException extends USBException {
      * Throws an exception for the last error.
      * <p>
      * The last Windows error code is taken from the call capture state
-     * {@link Win.LAST_ERROR_STATE} provided as the first parameter.
+     * {@link Win#LAST_ERROR_STATE} provided as the first parameter.
      * </p>
      *
      * @param lastErrorState call capture state containing last error code
@@ -112,7 +113,7 @@ public class WindowsUSBException extends USBException {
             if (res == 0)
                 return "unspecified error";
 
-            var messagePointer = messagePointerHolder.get(ADDRESS, 0).reinterpret(128 * 1024);
+            var messagePointer = dereference(messagePointerHolder).reinterpret(128 * 1024);
             String message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);
             return message.trim();

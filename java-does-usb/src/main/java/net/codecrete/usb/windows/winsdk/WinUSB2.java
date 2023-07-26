@@ -24,6 +24,7 @@ import static java.lang.foreign.ValueLayout.*;
  * {@code GetLastError()} until jextract catches up and can generate the corresponding code.
  * </p>
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class WinUSB2 {
     static {
         System.loadLibrary("Winusb");

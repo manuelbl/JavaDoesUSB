@@ -78,7 +78,7 @@ public class WindowsAsyncTask {
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             while (true) {
-                overlappedHolder.set(ADDRESS, 0, MemorySegment.NULL);
+                overlappedHolder.set(ADDRESS, 0, NULL);
                 completionKeyHolder.set(JAVA_LONG, 0, 0);
 
                 int res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
@@ -124,7 +124,7 @@ public class WindowsAsyncTask {
 
     private void startAsyncIOTask() {
         availableOverlappedStructs = new ArrayList<>();
-        arena = Arena.ofShared();
+        arena = Arena.ofAuto();
         requestsByOverlapped = new HashMap<>();
 
         // start background thread for handling IO completion

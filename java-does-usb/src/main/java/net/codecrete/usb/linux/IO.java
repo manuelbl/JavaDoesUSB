@@ -14,6 +14,7 @@ import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class IO {
 
     private static final Linker linker = Linker.nativeLinker();

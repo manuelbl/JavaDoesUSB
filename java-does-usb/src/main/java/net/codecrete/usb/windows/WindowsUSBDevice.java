@@ -26,13 +26,13 @@ import java.util.Map;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
 /**
  * Windows implementation for USB device.
  */
-@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public class WindowsUSBDevice extends USBDeviceImpl {
 
     private final WindowsAsyncTask asyncTask;
@@ -139,7 +139,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 var interfaceHandleHolder = arena.allocate(ADDRESS);
                 if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, lastErrorState) == 0)
                     throwLastError(lastErrorState, "Cannot open WinUSB device");
-                var interfaceHandle = interfaceHandleHolder.get(ADDRESS, 0);
+                var interfaceHandle = dereference(interfaceHandleHolder);
 
                 firstIntfHandle.deviceHandle = deviceHandle;
                 firstIntfHandle.deviceOpenCount += 1;

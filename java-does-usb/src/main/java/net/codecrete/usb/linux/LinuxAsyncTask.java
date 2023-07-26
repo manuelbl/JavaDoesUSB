@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
+import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 import static net.codecrete.usb.linux.USBDevFS.*;
@@ -56,7 +57,7 @@ public class LinuxAsyncTask {
         return singletonInstance;
     }
 
-    private final Arena urbArena = Arena.ofShared();
+    private final Arena urbArena = Arena.ofAuto();
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
     /// map of URB addresses to transfer (for outstanding transfers)
@@ -165,7 +166,7 @@ public class LinuxAsyncTask {
             }
 
             // call completion handler
-            var urb = urbPointerHolder.get(ADDRESS, 0);
+            var urb = dereference(urbPointerHolder);
             var transfer = getTransferResult(urb);
             transfer.completion.completed(transfer);
         }

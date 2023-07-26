@@ -11,11 +11,11 @@ import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.usbstandard.SetupPacket;
 
 import java.lang.foreign.GroupLayout;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.VarHandle;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
-import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.*;
 
 /**
@@ -44,7 +44,7 @@ public class USBHelper {
     //    USB_CONNECTION_STATUS ConnectionStatus;/* OUTPUT */
     //    USB_PIPE_INFO PipeList[0];/* OUTPUT */
     //} USB_NODE_CONNECTION_INFORMATION_EX, *PUSB_NODE_CONNECTION_INFORMATION_EX;
-    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = structLayout(
+    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = MemoryLayout.structLayout(
             JAVA_INT.withName("ConnectionIndex"),
             DeviceDescriptor.LAYOUT.withName("DeviceDescriptor"),
             JAVA_BYTE.withName("CurrentConfigurationValue"),
@@ -76,8 +76,8 @@ public class USBHelper {
     //    } SetupPacket;
     //    UCHAR Data[0];
     //} USB_DESCRIPTOR_REQUEST, *PUSB_DESCRIPTOR_REQUEST;
-    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = structLayout(JAVA_INT.withName("ConnectionIndex")
-            , SetupPacket.LAYOUT.withName("SetupPacket"));
+    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = MemoryLayout.structLayout(JAVA_INT.withName(
+            "ConnectionIndex"), SetupPacket.LAYOUT.withName("SetupPacket"));
     public static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex =
             USB_DESCRIPTOR_REQUEST$Struct.varHandle(groupElement("ConnectionIndex"));
     public static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset =

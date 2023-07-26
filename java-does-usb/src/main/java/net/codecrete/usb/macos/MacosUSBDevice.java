@@ -10,7 +10,6 @@ package net.codecrete.usb.macos;
 import net.codecrete.usb.USBControlTransfer;
 import net.codecrete.usb.USBDirection;
 import net.codecrete.usb.USBTransferType;
-import net.codecrete.usb.common.ForeignMemory;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 /**
@@ -166,7 +166,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             if (ret != 0)
                 throwException(ret, "failed to query first configuration");
 
-            var configDesc = ForeignMemory.deref(descPtrHolder, 999999);
+            var configDesc = dereference(descPtrHolder).reinterpret(999999);
             var configDescHeader = new ConfigurationDescriptor(configDesc);
             configDesc = configDesc.asSlice(0, configDescHeader.totalLength());
 
@@ -243,6 +243,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         updateEndpointList();
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public synchronized void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
         // check interface
         var intf = getInterface(interfaceNumber);
@@ -340,6 +341,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private synchronized EndpointInfo getEndpointInfo(int endpointNumber, USBDirection direction,
                                                       USBTransferType transferType1, USBTransferType transferType2) {
         if (endpoints != null) {
@@ -612,7 +614,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             int ret = IoKitUSB.CreateDeviceAsyncEventSource(device, sourceHolder);
             if (ret != 0)
                 throwException(ret, "failed to create event source");
-            var source = sourceHolder.get(ADDRESS, 0);
+            var source = dereference(sourceHolder);
             asyncTask.addEventSource(source);
         }
     }
@@ -623,7 +625,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             int ret = IoKitUSB.CreateInterfaceAsyncEventSource(interfaceInfo.iokitInterface(), sourceHolder);
             if (ret != 0)
                 throwException(ret, "failed to create event source");
-            var source = sourceHolder.get(ADDRESS, 0);
+            var source = dereference(sourceHolder);
             asyncTask.addEventSource(source);
         }
     }
