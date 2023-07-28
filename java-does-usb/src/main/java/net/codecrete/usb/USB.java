@@ -34,7 +34,7 @@ public class USB {
         } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new LinuxUSBDeviceRegistry();
         } else {
-            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " + "%s/%s", osName, osArch));
+            throw new UnsupportedOperationException(String.format("Java Does USB has no implementation for architecture " + "%s/%s", osName, osArch));
         }
         return impl;
     }
