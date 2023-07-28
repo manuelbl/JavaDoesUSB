@@ -15,16 +15,14 @@ import net.codecrete.usb.windows.WindowsUSBDeviceRegistry;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Provides access to USB devices.
  */
 public class USB {
 
     private static USBDeviceRegistry createInstance() {
-        String osName = System.getProperty("os.name");
-        String osArch = System.getProperty("os.arch");
+        var osName = System.getProperty("os.name");
+        var osArch = System.getProperty("os.arch");
 
         USBDeviceRegistry impl;
         if (osName.equals("Mac OS X") && (osArch.equals("x86_64") || osArch.equals("aarch64"))) {
@@ -74,7 +72,7 @@ public class USB {
      * @return list of USB devices
      */
     public static List<USBDevice> getDevices(USBDevicePredicate predicate) {
-        return instance().getAllDevices().stream().filter(predicate::matches).collect(toList());
+        return instance().getAllDevices().stream().filter(predicate::matches).toList();
     }
 
     /**
@@ -84,7 +82,7 @@ public class USB {
      * @return list of USB devices
      */
     public static List<USBDevice> getDevices(List<USBDevicePredicate> predicates) {
-        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).collect(toList());
+        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).toList();
     }
 
     /**

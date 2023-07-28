@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.macos;
 
+import net.codecrete.usb.USBException;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
@@ -34,20 +35,13 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
  * {@code refcon} argument to match callbacks with the submitted transfer.
  * </p>
  */
+@SuppressWarnings("java:S6548")
 class MacosAsyncTask {
-
-    private static MacosAsyncTask singletonInstance;
 
     /**
      * Singleton instance of background task.
-     *
-     * @return background task
      */
-    static synchronized MacosAsyncTask instance() {
-        if (singletonInstance == null)
-            singletonInstance = new MacosAsyncTask();
-        return singletonInstance;
-    }
+    static final MacosAsyncTask INSTANCE = new MacosAsyncTask();
 
     private final ReentrantLock asyncIoLock = new ReentrantLock();
     private Condition asyncIoReady;
@@ -72,15 +66,12 @@ class MacosAsyncTask {
                     asyncIoReady = asyncIoLock.newCondition();
                     startAsyncIOThread(source);
 
-                    while (asyncIoRunLoop == null)
-                        asyncIoReady.awaitUninterruptibly();
-
+                    waitForRunLoopReady();
                     return;
 
                 } else {
                     // special case: run loop is not ready yet but background process is already starting
-                    while (asyncIoRunLoop == null)
-                        asyncIoReady.awaitUninterruptibly();
+                    waitForRunLoopReady();
                 }
             }
 
@@ -88,6 +79,16 @@ class MacosAsyncTask {
 
         } finally {
             asyncIoLock.unlock();
+        }
+    }
+
+    private void waitForRunLoopReady() {
+        while (true) {
+            synchronized (this) {
+                if (asyncIoRunLoop != null)
+                    return;
+            }
+            asyncIoReady.awaitUninterruptibly();
         }
     }
 
@@ -116,12 +117,12 @@ class MacosAsyncTask {
                     Arena.global());
 
         } catch (IllegalAccessException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new USBException("Creating method handle failed", e);
         }
 
-        Thread t = new Thread(() -> asyncIOCompletionTask(firstSource), "USB async IO");
-        t.setDaemon(true);
-        t.start();
+        var thread = new Thread(() -> asyncIOCompletionTask(firstSource), "USB async IO");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -136,7 +137,9 @@ class MacosAsyncTask {
     private void asyncIOCompletionTask(MemorySegment firstSource) {
         try {
             asyncIoLock.lock();
-            asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
+            synchronized (this) {
+                asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
+            }
             CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, firstSource, IOKit.kCFRunLoopDefaultMode$get());
             asyncIoReady.signalAll();
         } finally {
@@ -170,6 +173,7 @@ class MacosAsyncTask {
      * @param result contains result code
      * @param arg0   contains actual length of transferred data
      */
+    @SuppressWarnings("java:S1144")
     private void asyncIOCompleted(MemorySegment refcon, int result, MemorySegment arg0) {
 
         MacosTransfer transfer;

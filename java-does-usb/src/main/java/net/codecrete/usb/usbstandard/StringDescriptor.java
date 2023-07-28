@@ -18,6 +18,7 @@ import static java.lang.foreign.ValueLayout.*;
 /**
  * USB string descriptor
  */
+@SuppressWarnings("java:S125")
 public class StringDescriptor {
 
     private final MemorySegment descriptor;
@@ -31,7 +32,7 @@ public class StringDescriptor {
     }
 
     public String string() {
-        var chars = descriptor.asSlice(string$offset, length() - 2).toArray(JAVA_CHAR);
+        var chars = descriptor.asSlice(string$offset, length() - 2L).toArray(JAVA_CHAR);
         return new String(chars);
     }
 

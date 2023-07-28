@@ -25,20 +25,24 @@ import static net.codecrete.usb.common.ForeignMemory.dereference;
 /**
  * Constants and helper functions for the IOKit framework.
  */
-public class IoKitHelper {
-    public static final MemorySegment kIOUSBDeviceUserClientTypeID = UUID.CreateCFUUID(new byte[]{(byte) 0x9d,
+class IoKitHelper {
+
+    private IoKitHelper() {
+    }
+
+    static final MemorySegment kIOUSBDeviceUserClientTypeID = UUID.createCFUUID(new byte[]{(byte) 0x9d,
             (byte) 0xc7, (byte) 0xb7, (byte) 0x80, (byte) 0x9e, (byte) 0xc0, (byte) 0x11, (byte) 0xD4, (byte) 0xa5,
             (byte) 0x4f, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61});
-    public static final MemorySegment kIOUSBInterfaceUserClientTypeID = UUID.CreateCFUUID(new byte[]{(byte) 0x2d,
+    static final MemorySegment kIOUSBInterfaceUserClientTypeID = UUID.createCFUUID(new byte[]{(byte) 0x2d,
             (byte) 0x97, (byte) 0x86, (byte) 0xc6, (byte) 0x9e, (byte) 0xf3, (byte) 0x11, (byte) 0xD4, (byte) 0xad,
             (byte) 0x51, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x05, (byte) 0x28, (byte) 0x61});
-    public static final MemorySegment kIOUSBDeviceInterfaceID187 = UUID.CreateCFUUID(new byte[]{(byte) 0x3c,
+    static final MemorySegment kIOUSBDeviceInterfaceID187 = UUID.createCFUUID(new byte[]{(byte) 0x3c,
             (byte) 0x9e, (byte) 0xe1, (byte) 0xeb, (byte) 0x24, (byte) 0x02, (byte) 0x11, (byte) 0xb2, (byte) 0x8e,
             (byte) 0x7e, (byte) 0x00, (byte) 0x0a, (byte) 0x27, (byte) 0x80, (byte) 0x1e, (byte) 0x86});
-    public static final MemorySegment kIOUSBInterfaceInterfaceID190 = UUID.CreateCFUUID(new byte[]{(byte) 0x8f,
+    static final MemorySegment kIOUSBInterfaceInterfaceID190 = UUID.createCFUUID(new byte[]{(byte) 0x8f,
             (byte) 0xdb, (byte) 0x84, (byte) 0x55, (byte) 0x74, (byte) 0xa6, (byte) 0x11, (byte) 0xD6, (byte) 0x97,
             (byte) 0xb1, (byte) 0x00, (byte) 0x30, (byte) 0x65, (byte) 0xd3, (byte) 0x60, (byte) 0x8e});
-    public static final MemorySegment kIOCFPlugInInterfaceID = UUID.CreateCFUUID(new byte[]{(byte) 0xC2, (byte) 0x44,
+    static final MemorySegment kIOCFPlugInInterfaceID = UUID.createCFUUID(new byte[]{(byte) 0xC2, (byte) 0x44,
             (byte) 0xE8, (byte) 0x58, (byte) 0x10, (byte) 0x9C, (byte) 0x11, (byte) 0xD4, (byte) 0x91, (byte) 0xD4,
             (byte) 0x00, (byte) 0x50, (byte) 0xE4, (byte) 0xC6, (byte) 0x42, (byte) 0x6F});
 
@@ -104,13 +108,13 @@ public class IoKitHelper {
      * @param interfaceId the interface ID
      * @return object instance implementing the interface, or {@code null} if the plugin type or interface is not available
      */
-    public static MemorySegment getInterface(int service, MemorySegment pluginType, MemorySegment interfaceId) {
+    static MemorySegment getInterface(int service, MemorySegment pluginType, MemorySegment interfaceId) {
         try (var arena = Arena.ofConfined()) {
             // MemorySegment for holding IOCFPlugInInterface**
             var plugHolder = arena.allocate(ADDRESS, NULL);
             // MemorySegment for holding score
             var score = arena.allocate(JAVA_INT, 0);
-            int ret = IOKit.IOCreatePlugInInterfaceForService(service, pluginType, kIOCFPlugInInterfaceID, plugHolder
+            var ret = IOKit.IOCreatePlugInInterfaceForService(service, pluginType, kIOCFPlugInInterfaceID, plugHolder
                     , score);
             if (ret != 0)
                 return null;
@@ -139,7 +143,7 @@ public class IoKitHelper {
      * @param arena   the arena for allocating memory
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static Integer getPropertyInt(int service, MemorySegment key, Arena arena) {
+    static Integer getPropertyInt(int service, MemorySegment key, Arena arena) {
 
         var value = IOKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
         if (value.address() == 0)
@@ -169,7 +173,7 @@ public class IoKitHelper {
      * @param arena   the arena for allocating memory
      * @return the property value, or {@code null} if the service doesn't have the property
      */
-    public static String getPropertyString(int service, MemorySegment key, Arena arena) {
+    static String getPropertyString(int service, MemorySegment key, Arena arena) {
 
         var value = IOKit.IORegistryEntryCreateCFProperty(service, key, NULL, 0);
         if (value.address() == 0)
@@ -186,7 +190,7 @@ public class IoKitHelper {
     }
 
     // debugging aid
-    public static int getRefCount(MemorySegment self) {
+    static int getRefCount(MemorySegment self) {
         return (int) refCount$VH.get(self);
     }
 }

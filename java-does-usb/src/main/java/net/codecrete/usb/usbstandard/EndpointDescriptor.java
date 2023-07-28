@@ -19,6 +19,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 /**
  * USB endpoint descriptor
  */
+@SuppressWarnings("java:S125")
 public class EndpointDescriptor {
 
     private final MemorySegment descriptor;

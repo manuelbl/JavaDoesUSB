@@ -22,32 +22,39 @@ import java.util.function.Consumer;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.macos.CoreFoundationHelper.createCFStringRef;
 import static net.codecrete.usb.macos.MacosUSBException.throwException;
 
 /**
  * MacOS implementation of USB device registry.
  */
+@SuppressWarnings("java:S116")
 public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private final SegmentAllocator GLOBAL_ALLOCATOR = Arena.global();
+    private static final MemorySegment KEY_ID_VENDOR;
+    private static final MemorySegment KEY_ID_PRODUCT;
+    private static final MemorySegment KEY_VENDOR;
+    private static final MemorySegment KEY_PRODUCT;
+    private static final MemorySegment KEY_SERIAL_NUM;
+    private static final MemorySegment KEY_DEVICE_CLASS;
+    private static final MemorySegment KEY_DEVICE_SUBCLASS;
+    private static final MemorySegment KEY_DEVICE_PROTOCOL;
+    private static final MemorySegment KEY_USB_BCD;
+    private static final MemorySegment KEY_DEVICE_BCD;
 
-    private final MemorySegment KEY_ID_VENDOR = CoreFoundationHelper.createCFStringRef("idVendor", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_ID_PRODUCT = CoreFoundationHelper.createCFStringRef("idProduct", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_VENDOR = CoreFoundationHelper.createCFStringRef("kUSBVendorString",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_PRODUCT = CoreFoundationHelper.createCFStringRef("kUSBProductString",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_SERIAL_NUM = CoreFoundationHelper.createCFStringRef("kUSBSerialNumberString",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_CLASS = CoreFoundationHelper.createCFStringRef("bDeviceClass",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_SUBCLASS = CoreFoundationHelper.createCFStringRef("bDeviceSubClass",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_PROTOCOL = CoreFoundationHelper.createCFStringRef("bDeviceProtocol",
-            GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_USB_BCD = CoreFoundationHelper.createCFStringRef("bcdUSB", GLOBAL_ALLOCATOR);
-    private final MemorySegment KEY_DEVICE_BCD = CoreFoundationHelper.createCFStringRef("bcdDevice", GLOBAL_ALLOCATOR);
-
+    static {
+        SegmentAllocator global = Arena.global();
+        KEY_ID_VENDOR = createCFStringRef("idVendor", global);
+        KEY_ID_PRODUCT = createCFStringRef("idProduct", global);
+        KEY_VENDOR = createCFStringRef("kUSBVendorString", global);
+        KEY_PRODUCT = createCFStringRef("kUSBProductString", global);
+        KEY_SERIAL_NUM = createCFStringRef("kUSBSerialNumberString", global);
+        KEY_DEVICE_CLASS = createCFStringRef("bDeviceClass", global);
+        KEY_DEVICE_SUBCLASS = createCFStringRef("bDeviceSubClass", global);
+        KEY_DEVICE_PROTOCOL = createCFStringRef("bDeviceProtocol", global);
+        KEY_USB_BCD = createCFStringRef("bcdUSB", global);
+        KEY_DEVICE_BCD = createCFStringRef("bcdDevice", global);
+    }
 
     /**
      * Monitors the USB devices.
@@ -72,24 +79,24 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 // setup notification for connected devices
                 var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
                         "onDevicesConnected", MethodType.methodType(void.class, MemorySegment.class, int.class));
-                int deviceConnectedIter = setupNotification(arena, notifyPort, IOKit.kIOFirstMatchNotification(),
+                var deviceConnectedIter = setupNotification(arena, notifyPort, IOKit.kIOFirstMatchNotification(),
                         onDeviceConnectedMH);
 
                 // iterate current devices in order to arm the notifications (and build initial device list)
                 var deviceList = new ArrayList<USBDevice>();
-                iterateDevices(deviceConnectedIter, (device) -> deviceList.add(device));
+                iterateDevices(deviceConnectedIter, device -> deviceList.add(device)); // NOSONAR
                 setInitialDeviceList(deviceList);
 
                 // setup notification for disconnected devices
                 var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(MacosUSBDeviceRegistry.class,
                         "onDevicesDisconnected", MethodType.methodType(void.class, MemorySegment.class, int.class));
-                int deviceDisconnectedIter = setupNotification(arena, notifyPort, IOKit.kIOTerminatedNotification(),
+                var deviceDisconnectedIter = setupNotification(arena, notifyPort, IOKit.kIOTerminatedNotification(),
                         onDeviceDisconnectedMH);
 
                 // iterate current devices in order to arm the notifications
                 onDevicesDisconnected(NULL, deviceDisconnectedIter);
 
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 enumerationFailed(e);
                 return;
             }
@@ -114,7 +121,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             while ((svc = IOKit.IOIteratorNext(iterator)) != 0) {
                 try (var cleanup = new ScopeCleanup()) {
 
-                    final int service = svc;
+                    final var service = svc;
                     cleanup.add(() -> IOKit.IOObjectRelease(service));
 
                     var device = IoKitHelper.getInterface(service, IoKitHelper.kIOUSBDeviceUserClientTypeID,
@@ -123,7 +130,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                         cleanup.add(() -> IoKitUSB.Release(device));
 
                     // get entry ID (as unique ID)
-                    int ret = IOKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
+                    var ret = IOKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
                     if (ret != 0)
                         throwException(ret, "IORegistryEntryGetRegistryEntryID failed");
                     var entryId = entryIdHolder.get(JAVA_LONG, 0);
@@ -145,6 +152,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param iterator the iterator
      * @param consumer the consumer
      */
+    @SuppressWarnings("java:S106")
     private void iterateDevices(int iterator, Consumer<USBDevice> consumer) {
         iterateDevices(iterator, (entryId, service, deviceIntf) -> {
 
@@ -154,7 +162,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                 if (device != null)
                     consumer.accept(device);
 
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " + "ignoring device%n", deviceInfo.vid, deviceInfo.pid);
                 e.printStackTrace(System.err);
             }
@@ -168,8 +176,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
         try (var arena = Arena.ofConfined()) {
 
-            Integer vendorId = IoKitHelper.getPropertyInt(service, KEY_ID_VENDOR, arena);
-            Integer productId = IoKitHelper.getPropertyInt(service, KEY_ID_PRODUCT, arena);
+            var vendorId = IoKitHelper.getPropertyInt(service, KEY_ID_VENDOR, arena);
+            var productId = IoKitHelper.getPropertyInt(service, KEY_ID_PRODUCT, arena);
             if (vendorId == null || productId == null)
                 return null;
 
@@ -178,21 +186,21 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
             var device = new MacosUSBDevice(deviceIntf, entryID, vendorId, productId);
 
-            String manufacturer = IoKitHelper.getPropertyString(service, KEY_VENDOR, arena);
-            String product = IoKitHelper.getPropertyString(service, KEY_PRODUCT, arena);
-            String serial = IoKitHelper.getPropertyString(service, KEY_SERIAL_NUM, arena);
+            var manufacturer = IoKitHelper.getPropertyString(service, KEY_VENDOR, arena);
+            var product = IoKitHelper.getPropertyString(service, KEY_PRODUCT, arena);
+            var serial = IoKitHelper.getPropertyString(service, KEY_SERIAL_NUM, arena);
 
             device.setProductStrings(manufacturer, product, serial);
 
-            Integer classCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_CLASS, arena);
-            Integer subclassCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_SUBCLASS, arena);
-            Integer protocolCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_PROTOCOL, arena);
+            var classCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_CLASS, arena);
+            var subclassCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_SUBCLASS, arena);
+            var protocolCode = IoKitHelper.getPropertyInt(service, KEY_DEVICE_PROTOCOL, arena);
 
             device.setClassCodes(classCode != null ? classCode : 0, subclassCode != null ? subclassCode : 0,
                     protocolCode != null ? protocolCode : 0);
 
-            Integer usbVersion = IoKitHelper.getPropertyInt(service, KEY_USB_BCD, arena);
-            Integer deviceVersion = IoKitHelper.getPropertyInt(service, KEY_DEVICE_BCD, arena);
+            var usbVersion = IoKitHelper.getPropertyInt(service, KEY_USB_BCD, arena);
+            var deviceVersion = IoKitHelper.getPropertyInt(service, KEY_DEVICE_BCD, arena);
             //noinspection DataFlowIssue
             device.setVersions(usbVersion, deviceVersion != null ? deviceVersion : 0);
 
@@ -203,7 +211,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
     private int setupNotification(Arena arena, MemorySegment notifyPort, MemorySegment notificationType,
                                   MethodHandle callback) {
 
-        // new matching dictionary for (dis)connected device notifications
+        // new matching dictionary for (dis)connected device notifications (NOSONAR)
         var matchingDict = IOKit.IOServiceMatching(IOKit.kIOUSBDeviceClassName());
 
         // create callback stub
@@ -213,7 +221,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         // Set up a notification to be called when a device is first matched / terminated by I/O Kit.
         // This method consumes the matchingDict reference.
         var deviceIterHolder = arena.allocate(JAVA_INT);
-        int ret = IOKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
+        var ret = IOKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
                 onDeviceCallbackStub, NULL, deviceIterHolder);
         if (ret != 0)
             throwException(ret, "IOServiceAddMatchingNotification failed");
@@ -230,6 +238,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param ignoredRefCon ignored parameter
      * @param iterator      device iterator
      */
+    @SuppressWarnings("java:S1172")
     private void onDevicesConnected(MemorySegment ignoredRefCon, int iterator) {
 
         // process device iterator for connected devices
@@ -245,8 +254,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
      * @param ignoredRefCon ignored parameter
      * @param iterator      device iterator
      */
-    private void onDevicesDisconnected(@SuppressWarnings("SameParameterValue") MemorySegment ignoredRefCon,
-                                       int iterator) {
+    @SuppressWarnings({"SameParameterValue", "java:S1172", "java:S106"})
+    private void onDevicesDisconnected(MemorySegment ignoredRefCon, int iterator) {
 
         // process device iterator for disconnected devices
         iterateDevices(iterator, (entryId, service, deviceIntf) -> {
@@ -256,7 +265,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
 
             try {
                 ((MacosUSBDevice) device).closeFully();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
                 e.printStackTrace(System.err);
             }

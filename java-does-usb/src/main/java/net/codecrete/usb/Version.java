@@ -67,7 +67,7 @@ public final class Version {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Version version = (Version) o;
+        var version = (Version) o;
         return bcdVersion == version.bcdVersion;
     }
 

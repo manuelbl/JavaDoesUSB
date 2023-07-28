@@ -18,6 +18,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 /**
  * USB interface association descriptor (IAD)
  */
+@SuppressWarnings("java:S125")
 public class InterfaceAssociationDescriptor {
 
     private final MemorySegment descriptor;
@@ -53,7 +54,6 @@ public class InterfaceAssociationDescriptor {
     public int function() {
         return 0xff & (byte) iFunction$VH.get(descriptor);
     }
-
 
     // struct USBInterfaceAssociationDescriptor {
     //     uint8_t  bLength,

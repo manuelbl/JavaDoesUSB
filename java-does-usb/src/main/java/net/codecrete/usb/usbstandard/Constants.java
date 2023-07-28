@@ -12,6 +12,9 @@ package net.codecrete.usb.usbstandard;
  */
 public class Constants {
 
+    private Constants() {
+    }
+
     public static final byte DEVICE_DESCRIPTOR_TYPE = 0x01;
     public static final byte CONFIGURATION_DESCRIPTOR_TYPE = 0x02;
     public static final byte STRING_DESCRIPTOR_TYPE = 0x03;
