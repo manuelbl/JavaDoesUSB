@@ -63,6 +63,6 @@ public class USBAlternateInterfaceImpl implements USBAlternateInterface {
 
     @Override
     public USBEndpoint getEndpoint(int endpointNumber, USBDirection direction) {
-        return endpointList.stream().filter((ep) -> ep.number() == endpointNumber && ep.direction() == direction).findFirst().orElse(null);
+        return endpointList.stream().filter(ep -> ep.number() == endpointNumber && ep.direction() == direction).findFirst().orElse(null);
     }
 }

@@ -36,7 +36,11 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 
+@SuppressWarnings("java:S2160")
 public class LinuxUSBDevice extends USBDeviceImpl {
+
+    @SuppressWarnings("resource")
+    private static final MemorySegment DRIVER_NAME_USBFS = Arena.global().allocateUtf8String("usbfs");
 
     private int fd = -1;
 
@@ -46,7 +50,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
     LinuxUSBDevice(Object id, int vendorId, int productId) {
         super(id, vendorId, productId);
-        asyncTask = LinuxAsyncTask.instance();
+        asyncTask = LinuxAsyncTask.INSTANCE;
         loadDescription((String) id);
     }
 
@@ -120,11 +124,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public synchronized void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intf = getInterface(interfaceNumber);
-        if (intf == null)
-            throwException("Invalid interface number: %d", interfaceNumber);
-        if (intf.isClaimed())
-            throwException("Interface %d has already been claimed", interfaceNumber);
+        var intf = getInterfaceWithCheck(interfaceNumber, false);
 
         try (var arena = Arena.ofConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
@@ -135,8 +135,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 var disconnectClaim = usbdevfs_disconnect_claim.allocate(arena);
                 usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
                 usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
-                byte[] driverName = {'u', 's', 'b', 'f', 's', 0};
-                usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(MemorySegment.ofArray(driverName));
+                usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(DRIVER_NAME_USBFS);
                 ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errnoState);
 
             } else {
@@ -156,11 +155,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public synchronized void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
         checkIsOpen();
 
-        var intf = getInterface(interfaceNumber);
-        if (intf == null)
-            throwException("Invalid interface number: %d", interfaceNumber);
-        if (!intf.isClaimed())
-            throwException("Interface %d has not been claimed", interfaceNumber);
+        var intf = getInterfaceWithCheck(interfaceNumber, true);
 
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
@@ -184,11 +179,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public synchronized void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intf = getInterface(interfaceNumber);
-        if (intf == null)
-            throwException("Invalid interface number: %d", interfaceNumber);
-        if (!intf.isClaimed())
-            throwException("Interface %d has not been claimed", interfaceNumber);
+        getInterfaceWithCheck(interfaceNumber, true);
 
         try (var arena = Arena.ofConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
@@ -252,7 +243,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                                                  int dataLength) {
         var bmRequest =
                 (direction == USBDirection.IN ? 0x80 : 0) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        var buffer = arena.allocate(8 + dataLength, 8);
+        var buffer = arena.allocate(8L + dataLength, 8);
         var setupPacket = new SetupPacket(buffer);
         setupPacket.setRequestType(bmRequest);
         setupPacket.setRequest(setup.request());

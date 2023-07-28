@@ -16,6 +16,9 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
  * Helper functions for accessing native memory.
  */
 public class ForeignMemory {
+    private ForeignMemory() {
+    }
+
     /**
      * Dereferences the address at the start of given memory segment and returns the result as
      * a memory segment with the length suitable for the specified layout.

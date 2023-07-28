@@ -14,8 +14,11 @@ import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
-public class IO {
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue", "java:S100"})
+class IO {
+
+    private IO() {
+    }
 
     private static final Linker linker = Linker.nativeLinker();
     private static final FunctionDescriptor ioctl$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_LONG, ADDRESS);
@@ -34,43 +37,43 @@ public class IO {
     private static final MethodHandle eventfd_write$MH = linker.downcallHandle(linker.defaultLookup().find(
             "eventfd_write").get(), eventfd_write$FUNC, Linux.ERRNO_STATE);
 
-    public static int ioctl(int fd, long request, MemorySegment segment, MemorySegment errno) {
+    static int ioctl(int fd, long request, MemorySegment segment, MemorySegment errno) {
         try {
             return (int) ioctl$MH.invokeExact(errno, fd, request, segment);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
-    public static int open(MemorySegment file, int oflag, MemorySegment errno) {
+    static int open(MemorySegment file, int oflag, MemorySegment errno) {
         try {
             return (int) open$MH.invokeExact(errno, file, oflag);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
-    public static int eventfd(int count, int flags, MemorySegment errno) {
+    static int eventfd(int count, int flags, MemorySegment errno) {
         try {
             return (int) eventfd$MH.invokeExact(errno, count, flags);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
-    public static int eventfd_read(int fd, MemorySegment value, MemorySegment errno) {
+    static int eventfd_read(int fd, MemorySegment value, MemorySegment errno) {
         try {
             return (int) eventfd_read$MH.invokeExact(errno, fd, value);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
-    public static int eventfd_write(int fd, long value, MemorySegment errno) {
+    static int eventfd_write(int fd, long value, MemorySegment errno) {
         try {
             return (int) eventfd_write$MH.invokeExact(errno, fd, value);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 

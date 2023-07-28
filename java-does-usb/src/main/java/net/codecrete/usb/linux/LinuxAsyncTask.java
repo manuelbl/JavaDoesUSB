@@ -43,19 +43,12 @@ import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
  * determines the number of allocated URBs.
  * </p>
  */
-public class LinuxAsyncTask {
-    private static LinuxAsyncTask singletonInstance;
-
+@SuppressWarnings("java:S6548")
+class LinuxAsyncTask {
     /**
      * Singleton instance of background task.
-     *
-     * @return background task
      */
-    static synchronized LinuxAsyncTask instance() {
-        if (singletonInstance == null)
-            singletonInstance = new LinuxAsyncTask();
-        return singletonInstance;
-    }
+    static final LinuxAsyncTask INSTANCE = new LinuxAsyncTask();
 
     private final Arena urbArena = Arena.ofAuto();
     /// available URBs
@@ -78,11 +71,12 @@ public class LinuxAsyncTask {
      * can be woken up to refresh the list of polled file descriptors.
      * </p>
      */
+    @SuppressWarnings({"java:S2189", "java:S135", "java:S3776"})
     private void asyncCompletionTask() {
 
         try (var arena = Arena.ofConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            var asyncPolls = pollfd.allocateArray(100, arena);
+            var pollfdArray = pollfd.allocateArray(100, arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
             var eventfdValueHolder = arena.allocate(JAVA_LONG);
 
@@ -94,28 +88,18 @@ public class LinuxAsyncTask {
                     fds = asyncFds;
                 }
 
-                // prepare pollfd struct array
-                var n = fds.length;
-                for (int i = 0; i < n; i++) {
-                    pollfd.fd$set(asyncPolls, i, fds[i]);
-                    pollfd.events$set(asyncPolls, i, (short) poll.POLLOUT());
-                    pollfd.revents$set(asyncPolls, i, (short) 0);
-                }
-
-                // entry n is the wake-up event file descriptor
-                pollfd.fd$set(asyncPolls, n, asyncIOWakeUpEventFd);
-                pollfd.events$set(asyncPolls, n, (short) poll.POLLIN());
-                pollfd.revents$set(asyncPolls, n, (short) 0);
-
                 // poll for event
-                int res = poll.poll(asyncPolls, n + 1, -1);
+                fillPollfdArray(pollfdArray, fds);
+                int n = fds.length;
+                int res = poll.poll(pollfdArray, n + 1L, -1);
                 if (res < 0)
                     throwException("internal error (poll)");
 
                 // acquire lock
                 synchronized (this) {
 
-                    if ((pollfd.revents$get(asyncPolls, n) & poll.POLLIN()) != 0) {
+                    // check for wakeup event
+                    if ((pollfd.revents$get(pollfdArray, n) & poll.POLLIN()) != 0) {
                         // wakeup to refresh list of file descriptors
                         res = IO.eventfd_read(asyncIOWakeUpEventFd, eventfdValueHolder, errnoState);
                         if (res < 0)
@@ -123,27 +107,42 @@ public class LinuxAsyncTask {
                         continue;
                     }
 
-                    // check for events
+                    // check for USB device events
                     for (int i = 0; i < n + 1; i++) {
-                        var revent = pollfd.revents$get(asyncPolls, i);
+                        var revent = pollfd.revents$get(pollfdArray, i);
                         if (revent == 0)
                             continue;
 
                         if ((revent & poll.POLLERR()) != 0) {
-                            // most likely the device has been disconnected;
+                            // most likely the device has been disconnected,
                             // remove from polled FD list to prevent further problems
-                            int fd = pollfd.fd$get(asyncPolls, i);
+                            int fd = pollfd.fd$get(pollfdArray, i);
                             removeFdFromAsyncIOCompletion(fd);
                             continue;
                         }
 
                         // reap URB
-                        int fd = pollfd.fd$get(asyncPolls, i);
+                        int fd = pollfd.fd$get(pollfdArray, i);
                         reapURBs(fd, urbPointerHolder, errnoState);
                     }
                 }
             }
         }
+    }
+
+    void fillPollfdArray(MemorySegment asyncPolls, int[] fds) {
+        // device file descriptors
+        var n = fds.length;
+        for (int i = 0; i < n; i++) {
+            pollfd.fd$set(asyncPolls, i, fds[i]);
+            pollfd.events$set(asyncPolls, i, (short) poll.POLLOUT());
+            pollfd.revents$set(asyncPolls, i, (short) 0);
+        }
+
+        // entry n is the wake-up event file descriptor
+        pollfd.fd$set(asyncPolls, n, asyncIOWakeUpEventFd);
+        pollfd.events$set(asyncPolls, n, (short) poll.POLLIN());
+        pollfd.revents$set(asyncPolls, n, (short) 0);
     }
 
     /**
@@ -280,6 +279,7 @@ public class LinuxAsyncTask {
         transfersByURB.put(urb, transfer);
     }
 
+    @SuppressWarnings("java:S2259")
     private synchronized LinuxTransfer getTransferResult(MemorySegment urb) {
         var transfer = transfersByURB.remove(urb);
         if (transfer == null)
@@ -293,6 +293,7 @@ public class LinuxAsyncTask {
         return transfer;
     }
 
+    @SuppressWarnings("java:S1066")
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
         int fd = device.fileDescriptor();
         try (var arena = Arena.ofConfined()) {
@@ -301,9 +302,8 @@ public class LinuxAsyncTask {
 
             // iterate all URBs and discard the ones for the specified endpoint
             for (var urb : transfersByURB.keySet()) {
-                if (fd != (int) usbdevfs_urb.usercontext$get(urb).address())
-                    continue;
-                if (endpointAddress != usbdevfs_urb.endpoint$get(urb))
+                if (fd != (int) usbdevfs_urb.usercontext$get(urb).address()
+                        || endpointAddress != usbdevfs_urb.endpoint$get(urb))
                     continue;
 
                 if (IO.ioctl(fd, DISCARDURB, urb, errnoState) < 0) {

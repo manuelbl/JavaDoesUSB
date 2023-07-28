@@ -91,7 +91,7 @@ public abstract class EndpointInputStream extends InputStream {
                     submitTransfer(transfer);
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             collectOutstandingTransfers();
             throw t;
         }
@@ -176,7 +176,7 @@ public abstract class EndpointInputStream extends InputStream {
 
             } while (currentTransfer.resultSize <= 0);
 
-        } catch (Throwable t) {
+        } catch (Exception t) {
             close();
             throw t;
         }
@@ -189,7 +189,7 @@ public abstract class EndpointInputStream extends InputStream {
                 numOutstandingTransfers -= 1;
                 return transfer;
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
     }

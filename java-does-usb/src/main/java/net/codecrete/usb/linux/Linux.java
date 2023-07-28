@@ -18,13 +18,16 @@ import java.lang.invoke.VarHandle;
 /**
  * Helper functions for Linux
  */
-public class Linux {
+class Linux {
+
+    private Linux() {
+    }
 
     /**
      * Call state for capturing the {@code errno} value.
      */
-    public static final Linker.Option ERRNO_STATE = Linker.Option.captureCallState("errno");
-    public static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
+    static final Linker.Option ERRNO_STATE = Linker.Option.captureCallState("errno");
+    static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
     private static final VarHandle callState_errno$VH =
             ERRNO_STATE_LAYOUT.varHandle(PathElement.groupElement("errno"));
 
@@ -34,7 +37,7 @@ public class Linux {
      * @param err error code
      * @return error message
      */
-    public static String getErrorMessage(int err) {
+    static String getErrorMessage(int err) {
         return string.strerror(err).getUtf8String(0);
     }
 
@@ -47,7 +50,7 @@ public class Linux {
      * @param errno memory segment with error code
      * @return error code
      */
-    public static int getErrno(MemorySegment errno) {
+    static int getErrno(MemorySegment errno) {
         return (int) callState_errno$VH.get(errno);
     }
 }

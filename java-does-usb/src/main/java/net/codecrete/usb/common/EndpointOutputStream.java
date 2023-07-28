@@ -178,7 +178,7 @@ public abstract class EndpointOutputStream extends OutputStream {
             writeOffset = 0;
             currentTransfer = waitForAvailableTransfer();
 
-        } catch (Throwable t) {
+        } catch (Exception t) {
             hasError = true;
             close();
             throw t;
@@ -237,7 +237,7 @@ public abstract class EndpointOutputStream extends OutputStream {
                 return transfer;
 
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
     }

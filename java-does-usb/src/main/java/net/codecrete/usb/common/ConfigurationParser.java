@@ -163,7 +163,7 @@ public class ConfigurationParser {
      * @return descriptor type
      */
     private int peekDescType(int offset) {
-        return 0xff & descriptor.get(ValueLayout.JAVA_BYTE, offset + 1);
+        return 0xff & descriptor.get(ValueLayout.JAVA_BYTE, offset + 1L);
     }
 
 }
