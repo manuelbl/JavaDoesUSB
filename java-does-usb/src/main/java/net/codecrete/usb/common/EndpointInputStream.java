@@ -63,15 +63,15 @@ public abstract class EndpointInputStream extends InputStream {
         this.endpointNumber = endpointNumber;
         arena = Arena.ofShared();
 
-        int packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+        var packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
-        int numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
         numPacketsPerTransfer = Math.min(Math.max(numPacketsPerTransfer, 4), 32);
         transferSize = numPacketsPerTransfer * packetSize;
 
         // use at least 2 outstanding transfers (3 in total)
-        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
+        var maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
 
         configureEndpoint();
 
@@ -79,11 +79,11 @@ public abstract class EndpointInputStream extends InputStream {
 
         // create all transfers, and submit them except one
         try {
-            for (int i = 0; i < maxOutstandingTransfers; i++) {
+            for (var i = 0; i < maxOutstandingTransfers; i++) {
                 final var transfer = device.createTransfer();
-                transfer.data = arena.allocate(transferSize, 8);
-                transfer.dataSize = transferSize;
-                transfer.completion = this::onCompletion;
+                transfer.setData(arena.allocate(transferSize, 8));
+                transfer.setDataSize(transferSize);
+                transfer.setCompletion(this::onCompletion);
 
                 if (i == 0) {
                     currentTransfer = transfer;
@@ -129,7 +129,7 @@ public abstract class EndpointInputStream extends InputStream {
         if (available() == 0)
             receiveMoreData();
 
-        int b = currentTransfer.data.get(JAVA_BYTE, readOffset) & 0xff;
+        var b = currentTransfer.data().get(JAVA_BYTE, readOffset) & 0xff;
         readOffset += 1;
         return b;
     }
@@ -143,8 +143,8 @@ public abstract class EndpointInputStream extends InputStream {
             receiveMoreData();
 
         // copy data to receiving buffer
-        int n = Math.min(len, currentTransfer.resultSize - readOffset);
-        MemorySegment.copy(currentTransfer.data, readOffset, MemorySegment.ofArray(b), off, n);
+        var n = Math.min(len, currentTransfer.resultSize() - readOffset);
+        MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), off, n);
         readOffset += n;
 
         // TODO: poll for further completed transfers if 'n' is less than 'len'
@@ -155,7 +155,7 @@ public abstract class EndpointInputStream extends InputStream {
     @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
-        return currentTransfer.resultSize - readOffset;
+        return currentTransfer.resultSize() - readOffset;
     }
 
     private void receiveMoreData() throws IOException {
@@ -170,11 +170,11 @@ public abstract class EndpointInputStream extends InputStream {
                 readOffset = 0;
 
                 // check for error
-                if (currentTransfer.resultCode != 0)
-                    device.throwOSException(currentTransfer.resultCode, "error reading from endpoint %d",
+                if (currentTransfer.resultCode() != 0)
+                    device.throwOSException(currentTransfer.resultCode(), "error reading from endpoint %d",
                             endpointNumber);
 
-            } while (currentTransfer.resultSize <= 0);
+            } while (currentTransfer.resultSize() <= 0);
 
         } catch (Exception t) {
             close();
@@ -185,7 +185,7 @@ public abstract class EndpointInputStream extends InputStream {
     private Transfer waitForCompletedTransfer() {
         while (true) {
             try {
-                Transfer transfer = completedTransferQueue.take();
+                var transfer = completedTransferQueue.take();
                 numOutstandingTransfers -= 1;
                 return transfer;
             } catch (InterruptedException e) {

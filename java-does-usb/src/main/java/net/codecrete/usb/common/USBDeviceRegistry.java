@@ -121,7 +121,7 @@ public abstract class USBDeviceRegistry {
      */
     protected void startDeviceMonitor(Runnable monitorTask) {
         // start new thread
-        Thread t = new Thread(monitorTask, "USB device monitor");
+        var t = new Thread(monitorTask, "USB device monitor");
         t.setDaemon(true);
         t.start();
 

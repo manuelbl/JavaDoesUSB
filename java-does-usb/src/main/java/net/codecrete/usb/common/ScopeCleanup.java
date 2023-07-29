@@ -45,7 +45,7 @@ public class ScopeCleanup implements AutoCloseable {
     @Override
     public void close() {
         var size = cleanupActions.size();
-        for (int i = size - 1; i >= 0; i--)
+        for (var i = size - 1; i >= 0; i--)
             cleanupActions.get(i).run();
     }
 }

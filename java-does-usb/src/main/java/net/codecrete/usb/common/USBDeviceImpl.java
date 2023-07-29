@@ -331,10 +331,10 @@ public abstract class USBDeviceImpl implements USBDevice {
             waitNoTimeout(transfer);
 
         } else {
-            boolean hasTimedOut = waitWithTimeout(transfer, timeout);
+            var hasTimedOut = waitWithTimeout(transfer, timeout);
 
             // test for timeout
-            if (hasTimedOut && transfer.resultCode == 0) {
+            if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
                 waitNoTimeout(transfer);
                 throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to " +
@@ -343,16 +343,16 @@ public abstract class USBDeviceImpl implements USBDevice {
         }
 
         // test for error
-        if (transfer.resultCode != 0) {
+        if (transfer.resultCode() != 0) {
             var operation = getOperationDescription(direction, endpointNumber);
-            throwOSException(transfer.resultCode, operation + " failed");
+            throwOSException(transfer.resultCode(), operation + " failed");
         }
     }
 
     @SuppressWarnings("java:S2273")
     private static void waitNoTimeout(Transfer transfer) {
         // wait for transfer
-        while (transfer.resultSize == -1) {
+        while (transfer.resultSize() == -1) {
             try {
                 transfer.wait();
             } catch (InterruptedException e) {
@@ -364,9 +364,9 @@ public abstract class USBDeviceImpl implements USBDevice {
     @SuppressWarnings("java:S2273")
     private static boolean waitWithTimeout(Transfer transfer, int timeout) {
         // wait for transfer to complete, or abort when timeout occurs
-        long expiration = System.currentTimeMillis() + timeout;
+        var expiration = System.currentTimeMillis() + timeout;
         long remainingTimeout = timeout;
-        while (remainingTimeout > 0 && transfer.resultSize == -1) {
+        while (remainingTimeout > 0 && transfer.resultSize() == -1) {
             try {
                 transfer.wait(remainingTimeout);
                 remainingTimeout = expiration - System.currentTimeMillis();
@@ -426,7 +426,7 @@ public abstract class USBDeviceImpl implements USBDevice {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        USBDeviceImpl that = (USBDeviceImpl) o;
+        var that = (USBDeviceImpl) o;
         return uniqueDeviceId.equals(that.uniqueDeviceId);
     }
 

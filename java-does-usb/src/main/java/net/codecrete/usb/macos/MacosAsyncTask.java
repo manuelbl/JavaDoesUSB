@@ -38,13 +38,20 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 @SuppressWarnings("java:S6548")
 class MacosAsyncTask {
 
+    enum TaskState {
+        NOT_STARTED,
+        STARTING,
+        RUNNING
+    }
+
     /**
      * Singleton instance of background task.
      */
     static final MacosAsyncTask INSTANCE = new MacosAsyncTask();
 
     private final ReentrantLock asyncIoLock = new ReentrantLock();
-    private Condition asyncIoReady;
+    private final Condition asyncIoReady = asyncIoLock.newCondition();
+    private TaskState state = TaskState.NOT_STARTED;
     private MemorySegment asyncIoRunLoop;
     private MemorySegment completionUpcallStub;
     private long lastTransferId;
@@ -59,13 +66,9 @@ class MacosAsyncTask {
         try {
             asyncIoLock.lock();
 
-            if (asyncIoRunLoop == null) {
-
-                if (asyncIoReady == null) {
-                    // start background thread
-                    asyncIoReady = asyncIoLock.newCondition();
+            if (state != TaskState.RUNNING) {
+                if (state == TaskState.NOT_STARTED) {
                     startAsyncIOThread(source);
-
                     waitForRunLoopReady();
                     return;
 
@@ -83,13 +86,8 @@ class MacosAsyncTask {
     }
 
     private void waitForRunLoopReady() {
-        while (true) {
-            synchronized (this) {
-                if (asyncIoRunLoop != null)
-                    return;
-            }
+        while (state != TaskState.RUNNING)
             asyncIoReady.awaitUninterruptibly();
-        }
     }
 
     /**
@@ -108,6 +106,7 @@ class MacosAsyncTask {
      */
     private void startAsyncIOThread(MemorySegment firstSource) {
         try {
+            state = TaskState.STARTING;
             var completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
             var asyncIOCompletedMH = MethodHandles.lookup().findVirtual(MacosAsyncTask.class, "asyncIOCompleted",
                     MethodType.methodType(void.class, MemorySegment.class, int.class, MemorySegment.class));
@@ -137,10 +136,9 @@ class MacosAsyncTask {
     private void asyncIOCompletionTask(MemorySegment firstSource) {
         try {
             asyncIoLock.lock();
-            synchronized (this) {
-                asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
-            }
+            asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
             CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, firstSource, IOKit.kCFRunLoopDefaultMode$get());
+            state = TaskState.RUNNING;
             asyncIoReady.signalAll();
         } finally {
             asyncIoLock.unlock();
@@ -161,8 +159,8 @@ class MacosAsyncTask {
      */
     synchronized void prepareForSubmission(MacosTransfer transfer) {
         lastTransferId += 1;
-        transfer.id = lastTransferId;
-        transfer.resultSize = -1;
+        transfer.setId(lastTransferId);
+        transfer.setResultSize(-1);
         transfersById.put(lastTransferId, transfer);
     }
 
@@ -181,9 +179,9 @@ class MacosAsyncTask {
             transfer = transfersById.remove(refcon.address());
         }
 
-        transfer.resultCode = result;
-        transfer.resultSize = (int) arg0.address();
-        transfer.completion.completed(transfer);
+        transfer.setResultCode(result);
+        transfer.setResultSize((int) arg0.address());
+        transfer.completion().completed(transfer);
     }
 
     /**

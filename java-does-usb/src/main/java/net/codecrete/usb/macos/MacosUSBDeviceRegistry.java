@@ -163,7 +163,9 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     consumer.accept(device);
 
             } catch (Exception e) {
-                System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " + "ignoring device%n", deviceInfo.vid, deviceInfo.pid);
+                System.err.printf(
+                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
+                        deviceInfo.vid, deviceInfo.pid);
                 e.printStackTrace(System.err);
             }
         });

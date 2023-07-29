@@ -54,12 +54,12 @@ public class ConfigurationParser {
         parseHeader();
 
         USBAlternateInterfaceImpl lastAlternate = null;
-        int offset = peekDescLength(0);
+        var offset = peekDescLength(0);
 
         while (offset < descriptor.byteSize()) {
 
-            int descLength = peekDescLength(offset);
-            int descType = peekDescType(offset);
+            var descLength = peekDescLength(offset);
+            var descType = peekDescType(offset);
 
             if (descType == INTERFACE_DESCRIPTOR_TYPE) {
                 var intf = parseInterface(offset);
@@ -99,7 +99,7 @@ public class ConfigurationParser {
         if (CONFIGURATION_DESCRIPTOR_TYPE != desc.descriptorType())
             throw new USBException("Invalid USB configuration descriptor");
 
-        int totalLength = desc.totalLength();
+        var totalLength = desc.totalLength();
         if (descriptor.byteSize() != totalLength)
             throw new USBException("Invalid USB configuration descriptor length");
 

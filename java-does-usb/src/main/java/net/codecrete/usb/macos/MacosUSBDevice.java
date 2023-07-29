@@ -381,14 +381,14 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(arena, USBDirection.IN, setup, data);
 
             var transfer = new MacosTransfer();
-            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+            transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
                 waitForTransfer(transfer, 0, USBDirection.IN, 0);
             }
 
-            return data.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+            return data.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
@@ -402,7 +402,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var deviceRequest = createDeviceRequest(arena, USBDirection.OUT, setup, dataSegment);
 
             var transfer = new MacosTransfer();
-            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+            transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
 
             synchronized (transfer) {
                 submitControlTransfer(deviceRequest, transfer);
@@ -422,9 +422,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
             nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
 
             var transfer = new MacosTransfer();
-            transfer.data = nativeData;
-            transfer.dataSize = length;
-            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+            transfer.setData(nativeData);
+            transfer.setDataSize(length);
+            transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
@@ -451,9 +451,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var nativeData = arena.allocateArray(JAVA_BYTE, epInfo.packetSize());
 
             var transfer = new MacosTransfer();
-            transfer.data = nativeData;
-            transfer.dataSize = epInfo.packetSize();
-            transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+            transfer.setData(nativeData);
+            transfer.setDataSize(epInfo.packetSize());
+            transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
 
             synchronized (transfer) {
                 if (timeout <= 0 || epInfo.transferType() == USBTransferType.BULK) {
@@ -468,7 +468,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 }
             }
 
-            return nativeData.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+            return nativeData.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
@@ -491,12 +491,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
         // submit transfer
         int ret;
         if (timeout <= 0)
-            ret = IoKitUSB.ReadPipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data,
-                    transfer.dataSize, asyncTask.nativeCompletionCallback(), MemorySegment.ofAddress(transfer.id));
+            ret = IoKitUSB.ReadPipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data(),
+                    transfer.dataSize(), asyncTask.nativeCompletionCallback(), MemorySegment.ofAddress(transfer.id()));
         else
-            ret = IoKitUSB.ReadPipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data,
-                    transfer.dataSize, timeout, timeout, asyncTask.nativeCompletionCallback(),
-                    MemorySegment.ofAddress(transfer.id));
+            ret = IoKitUSB.ReadPipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data(),
+                    transfer.dataSize(), timeout, timeout, asyncTask.nativeCompletionCallback(),
+                    MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
             throwException(ret, "failed to read from endpoint %d", endpointNumber);
@@ -521,12 +521,12 @@ public class MacosUSBDevice extends USBDeviceImpl {
         // submit transfer
         int ret;
         if (timeout <= 0)
-            ret = IoKitUSB.WritePipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data,
-                    transfer.dataSize, asyncTask.nativeCompletionCallback(), MemorySegment.ofAddress(transfer.id));
+            ret = IoKitUSB.WritePipeAsync(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data(),
+                    transfer.dataSize(), asyncTask.nativeCompletionCallback(), MemorySegment.ofAddress(transfer.id()));
         else
-            ret = IoKitUSB.WritePipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data,
-                    transfer.dataSize, timeout, timeout, asyncTask.nativeCompletionCallback(),
-                    MemorySegment.ofAddress(transfer.id));
+            ret = IoKitUSB.WritePipeAsyncTO(epInfo.iokitInterface(), epInfo.pipeIndex(), transfer.data(),
+                    transfer.dataSize(), timeout, timeout, asyncTask.nativeCompletionCallback(),
+                    MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
             throwException(ret, "failed to write to endpoint %d", endpointNumber);
@@ -545,7 +545,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         // submit transfer
         var ret = IoKitUSB.DeviceRequestAsync(device, deviceRequest, asyncTask.nativeCompletionCallback(),
-                MemorySegment.ofAddress(transfer.id));
+                MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
             throwException(ret, "failed to execute control transfer");

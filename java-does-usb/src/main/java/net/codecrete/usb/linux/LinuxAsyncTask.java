@@ -90,8 +90,8 @@ class LinuxAsyncTask {
 
                 // poll for event
                 fillPollfdArray(pollfdArray, fds);
-                int n = fds.length;
-                int res = poll.poll(pollfdArray, n + 1L, -1);
+                var n = fds.length;
+                var res = poll.poll(pollfdArray, n + 1L, -1);
                 if (res < 0)
                     throwException("internal error (poll)");
 
@@ -108,7 +108,7 @@ class LinuxAsyncTask {
                     }
 
                     // check for USB device events
-                    for (int i = 0; i < n + 1; i++) {
+                    for (var i = 0; i < n + 1; i++) {
                         var revent = pollfd.revents$get(pollfdArray, i);
                         if (revent == 0)
                             continue;
@@ -116,13 +116,13 @@ class LinuxAsyncTask {
                         if ((revent & poll.POLLERR()) != 0) {
                             // most likely the device has been disconnected,
                             // remove from polled FD list to prevent further problems
-                            int fd = pollfd.fd$get(pollfdArray, i);
+                            var fd = pollfd.fd$get(pollfdArray, i);
                             removeFdFromAsyncIOCompletion(fd);
                             continue;
                         }
 
                         // reap URB
-                        int fd = pollfd.fd$get(pollfdArray, i);
+                        var fd = pollfd.fd$get(pollfdArray, i);
                         reapURBs(fd, urbPointerHolder, errnoState);
                     }
                 }
@@ -133,7 +133,7 @@ class LinuxAsyncTask {
     void fillPollfdArray(MemorySegment asyncPolls, int[] fds) {
         // device file descriptors
         var n = fds.length;
-        for (int i = 0; i < n; i++) {
+        for (var i = 0; i < n; i++) {
             pollfd.fd$set(asyncPolls, i, fds[i]);
             pollfd.events$set(asyncPolls, i, (short) poll.POLLOUT());
             pollfd.revents$set(asyncPolls, i, (short) 0);
@@ -154,7 +154,7 @@ class LinuxAsyncTask {
      */
     private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errnoState) {
         while (true) {
-            int res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
+            var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
             if (res < 0) {
                 var err = Linux.getErrno(errnoState);
                 if (err == errno.EAGAIN())
@@ -167,7 +167,7 @@ class LinuxAsyncTask {
             // call completion handler
             var urb = dereference(urbPointerHolder);
             var transfer = getTransferResult(urb);
-            transfer.completion.completed(transfer);
+            transfer.completion().completed(transfer);
         }
     }
 
@@ -194,8 +194,8 @@ class LinuxAsyncTask {
      * @param device USB device
      */
     synchronized void addForAsyncIOCompletion(LinuxUSBDevice device) {
-        int n = asyncFds != null ? asyncFds.length : 0;
-        int[] fds = new int[n + 1];
+        var n = asyncFds != null ? asyncFds.length : 0;
+        var fds = new int[n + 1];
         if (n > 0)
             System.arraycopy(asyncFds, 0, fds, 0, n);
         fds[n] = device.fileDescriptor();
@@ -217,13 +217,13 @@ class LinuxAsyncTask {
 
     private synchronized void removeFdFromAsyncIOCompletion(int fd) {
         // copy file descriptor (except the device's) into new array
-        int n = asyncFds.length;
+        var n = asyncFds.length;
         if (n == 0)
             return;
 
-        int[] fds = new int[n - 1];
-        int tgt = 0;
-        for (int asyncFd : asyncFds) {
+        var fds = new int[n - 1];
+        var tgt = 0;
+        for (var asyncFd : asyncFds) {
             if (asyncFd != fd) {
                 if (tgt == n)
                     return;
@@ -243,15 +243,15 @@ class LinuxAsyncTask {
 
         usbdevfs_urb.type$set(urb, (byte) urbTransferType(transferType));
         usbdevfs_urb.endpoint$set(urb, (byte) endpointAddress);
-        usbdevfs_urb.buffer$set(urb, transfer.data);
-        usbdevfs_urb.buffer_length$set(urb, transfer.dataSize);
+        usbdevfs_urb.buffer$set(urb, transfer.data());
+        usbdevfs_urb.buffer_length$set(urb, transfer.dataSize());
         usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
         try (var arena = Arena.ofConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errnoState) < 0) {
-                String action = endpointAddress >= 128 ? "reading from" : "writing to";
-                String endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
+                var action = endpointAddress >= 128 ? "reading from" : "writing to";
+                var endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
                 throwLastError(errnoState, "failed %s %s", action, endpoint);
             }
         }
@@ -268,7 +268,7 @@ class LinuxAsyncTask {
 
     private void addURB(LinuxTransfer transfer) {
         MemorySegment urb;
-        int size = availableURBs.size();
+        var size = availableURBs.size();
         if (size > 0) {
             urb = availableURBs.remove(size - 1);
         } else {
@@ -285,8 +285,8 @@ class LinuxAsyncTask {
         if (transfer == null)
             throwException("internal error (unknown URB)");
 
-        transfer.resultCode = -usbdevfs_urb.status$get(transfer.urb);
-        transfer.resultSize = usbdevfs_urb.actual_length$get(transfer.urb);
+        transfer.setResultCode(-usbdevfs_urb.status$get(transfer.urb));
+        transfer.setResultSize(usbdevfs_urb.actual_length$get(transfer.urb));
 
         availableURBs.add(transfer.urb);
         transfer.urb = null;
@@ -295,7 +295,7 @@ class LinuxAsyncTask {
 
     @SuppressWarnings("java:S1066")
     synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
-        int fd = device.fileDescriptor();
+        var fd = device.fileDescriptor();
         try (var arena = Arena.ofConfined()) {
 
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
@@ -326,8 +326,8 @@ class LinuxAsyncTask {
         }
 
         // start background thread for handling IO completion
-        Thread t = new Thread(this::asyncCompletionTask, "USB async IO");
-        t.setDaemon(true);
-        t.start();
+        var thread = new Thread(this::asyncCompletionTask, "USB async IO");
+        thread.setDaemon(true);
+        thread.start();
     }
 }

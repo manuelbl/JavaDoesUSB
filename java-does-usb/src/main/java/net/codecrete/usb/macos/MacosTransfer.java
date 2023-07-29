@@ -9,6 +9,14 @@ package net.codecrete.usb.macos;
 
 import net.codecrete.usb.common.Transfer;
 
-public class MacosTransfer extends Transfer {
-    long id;
+class MacosTransfer extends Transfer {
+    private long id;
+
+    public long id() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 }

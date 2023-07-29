@@ -124,7 +124,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     public synchronized void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intf = getInterfaceWithCheck(interfaceNumber, false);
+        getInterfaceWithCheck(interfaceNumber, false);
 
         try (var arena = Arena.ofConfined()) {
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
@@ -168,7 +168,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            int ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
+            var ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Failed to set alternate interface");
         }
@@ -184,7 +184,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.ofConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            int ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
+            var ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
             if (ret != 0)
                 throwLastError(errnoState, "Cannot release USB interface");
 
@@ -204,10 +204,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     @Override
     public void controlTransferOut(USBControlTransfer setup, byte[] data) {
         try (var arena = Arena.ofConfined()) {
-            int dataLength = data != null ? data.length : 0;
+            var dataLength = data != null ? data.length : 0;
             var transfer = createSyncCtrlTransfer(arena, USBDirection.OUT, setup, dataLength);
             if (dataLength != 0)
-                transfer.data.asSlice(8).copyFrom(MemorySegment.ofArray(data));
+                transfer.data().asSlice(8).copyFrom(MemorySegment.ofArray(data));
 
             synchronized (transfer) {
                 submitTransfer(USBDirection.OUT, 0, transfer);
@@ -226,7 +226,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 waitForTransfer(transfer, 0, USBDirection.IN, 0);
             }
 
-            return transfer.data.asSlice(8, transfer.resultSize).toArray(JAVA_BYTE);
+            return transfer.data().asSlice(8, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
@@ -252,10 +252,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         setupPacket.setLength(dataLength);
 
         var transfer = new LinuxTransfer();
-        transfer.data = buffer;
-        transfer.dataSize = (int) buffer.byteSize();
-        transfer.resultSize = -1;
-        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        transfer.setData(buffer);
+        transfer.setDataSize((int) buffer.byteSize());
+        transfer.setResultSize(-1);
+        transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
 
         return transfer;
     }
@@ -287,16 +287,16 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
             }
 
-            return buffer.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+            return buffer.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
     private LinuxTransfer createSyncTransfer(MemorySegment data) {
         var transfer = new LinuxTransfer();
-        transfer.data = data;
-        transfer.dataSize = (int) data.byteSize();
-        transfer.resultSize = -1;
-        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        transfer.setData(data);
+        transfer.setDataSize((int) data.byteSize());
+        transfer.setResultSize(-1);
+        transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
         return transfer;
     }
 
@@ -326,7 +326,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.ofConfined()) {
             var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
             var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            int res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
+            var res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
             if (res < 0)
                 throwLastError(errnoState, "Clearing halt failed");
         }

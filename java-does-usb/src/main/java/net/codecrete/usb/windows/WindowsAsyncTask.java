@@ -147,8 +147,8 @@ public class WindowsAsyncTask {
             overlapped = availableOverlappedStructs.remove(size - 1);
         }
 
-        transfer.overlapped = overlapped;
-        transfer.resultSize = -1;
+        transfer.setOverlapped(overlapped);
+        transfer.setResultSize(-1);
         requestsByOverlapped.put(overlapped.address(), transfer);
     }
 
@@ -162,11 +162,11 @@ public class WindowsAsyncTask {
         if (transfer == null)
             return;
 
-        transfer.resultCode = (int) OVERLAPPED.Internal$get(transfer.overlapped);
-        transfer.resultSize = (int) OVERLAPPED.InternalHigh$get(transfer.overlapped);
+        transfer.setResultCode((int) OVERLAPPED.Internal$get(transfer.overlapped()));
+        transfer.setResultSize((int) OVERLAPPED.InternalHigh$get(transfer.overlapped()));
 
-        availableOverlappedStructs.add(transfer.overlapped);
-        transfer.overlapped = null;
-        transfer.completion.completed(transfer);
+        availableOverlappedStructs.add(transfer.overlapped());
+        transfer.setOverlapped(null);
+        transfer.completion().completed(transfer);
     }
 }

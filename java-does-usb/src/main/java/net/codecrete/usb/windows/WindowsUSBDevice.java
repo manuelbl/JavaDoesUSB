@@ -145,7 +145,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 firstIntfHandle.deviceOpenCount += 1;
                 intfHandle.interfaceHandle = interfaceHandle;
 
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Kernel32.CloseHandle(deviceHandle);
                 throw e;
             }
@@ -211,13 +211,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             // copy data to native memory
             var transfer = createSyncControlTransfer();
             int dataLength = data != null ? data.length : 0;
-            transfer.dataSize = dataLength;
+            transfer.setDataSize(dataLength);
             if (dataLength != 0) {
                 var buffer = arena.allocate(data.length);
                 buffer.copyFrom(MemorySegment.ofArray(data));
-                transfer.data = buffer;
+                transfer.setData(buffer);
             } else {
-                transfer.data = NULL;
+                transfer.setData(NULL);
             }
 
             synchronized (transfer) {
@@ -231,15 +231,15 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public byte[] controlTransferIn(USBControlTransfer setup, int length) {
         try (var arena = Arena.ofConfined()) {
             var transfer = createSyncControlTransfer();
-            transfer.data = arena.allocate(length);
-            transfer.dataSize = length;
+            transfer.setData(arena.allocate(length));
+            transfer.setDataSize(length);
 
             synchronized (transfer) {
                 submitControlTransfer(USBDirection.IN, setup, transfer);
                 waitForTransfer(transfer, 0, USBDirection.IN, 0);
             }
 
-            return transfer.data.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+            return transfer.data().asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
@@ -270,21 +270,21 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 waitForTransfer(transfer, timeout, USBDirection.IN, endpointNumber);
             }
 
-            return buffer.asSlice(0, transfer.resultSize).toArray(JAVA_BYTE);
+            return buffer.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
     }
 
     private WindowsTransfer createSyncControlTransfer() {
         var transfer = new WindowsTransfer();
-        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
         return transfer;
     }
 
     private WindowsTransfer createSyncTransfer(MemorySegment data) {
         var transfer = new WindowsTransfer();
-        transfer.data = data;
-        transfer.dataSize = (int) data.byteSize();
-        transfer.completion = USBDeviceImpl::onSyncTransferCompleted;
+        transfer.setData(data);
+        transfer.setDataSize((int) data.byteSize());
+        transfer.setCompletion(USBDeviceImpl::onSyncTransferCompleted);
         return transfer;
     }
 
@@ -310,14 +310,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             setupPacket.setRequest(setup.request());
             setupPacket.setValue(setup.value());
             setupPacket.setIndex(setup.index());
-            setupPacket.setLength(transfer.dataSize);
+            setupPacket.setLength(transfer.dataSize());
 
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket.segment(), transfer.data,
-                    transfer.dataSize, NULL, transfer.overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket.segment(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped(), lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting control transfer failed");
@@ -334,8 +334,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data, transfer.dataSize, NULL
-                    , transfer.overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped(), lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer OUT failed");
@@ -352,8 +352,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data, transfer.dataSize,
-                    NULL, transfer.overlapped, lastErrorState) == 0) {
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped(), lastErrorState) == 0) {
                 int err = Win.getLastError(lastErrorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
                     throwException(err, "Submitting transfer IN failed");
