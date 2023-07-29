@@ -19,6 +19,8 @@ import net.codecrete.usb.usbstandard.StringDescriptor;
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
 import net.codecrete.usb.windows.gen.setupapi.*;
 import net.codecrete.usb.windows.gen.usbioctl.USBIoctl;
+import net.codecrete.usb.windows.gen.usbioctl._USB_DESCRIPTOR_REQUEST;
+import net.codecrete.usb.windows.gen.usbioctl._USB_NODE_CONNECTION_INFORMATION_EX;
 import net.codecrete.usb.windows.gen.user32.*;
 import net.codecrete.usb.windows.winsdk.Kernel32B;
 import net.codecrete.usb.windows.winsdk.SetupAPI2;
@@ -51,6 +53,9 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  * </p>
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
+
+    private static final long REQUEST_DATA_OFFSET
+            = _USB_DESCRIPTOR_REQUEST.$LAYOUT().byteOffset(PathElement.groupElement("Data"));
 
     @Override
     protected void monitorDevices() {
@@ -92,7 +97,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter,
                         User32.DBT_DEVTYP_DEVICEINTERFACE());
-                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBConstants.GUID_DEVINTERFACE_USB_DEVICE);
 
                 var notifyHandle = User32B.RegisterDeviceNotificationW(hwnd, notificationFilter,
                         User32.DEVICE_NOTIFY_WINDOW_HANDLE(), lastErrorState);
@@ -128,7 +133,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var lastErrorState = outerArena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
 
             // get device information set of all USB devices present
-            var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(USBHelper.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL,
+            var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(USBConstants.GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL,
                     SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
             if (Win.isInvalidHandle(devInfoSet))
                 throwLastError(lastErrorState, "Internal error (SetupDiGetClassDevsW)");
@@ -156,7 +161,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
                 var instanceId = DeviceProperty.getDeviceStringProperty(devInfoSet, devInfoData,
                         DeviceProperty.DEVPKEY_Device_InstanceId);
-                var devicePath = DeviceProperty.getDevicePath(instanceId, USBHelper.GUID_DEVINTERFACE_USB_DEVICE);
+                var devicePath = DeviceProperty.getDevicePath(instanceId, USBConstants.GUID_DEVINTERFACE_USB_DEVICE);
 
                 try {
                     deviceList.add(createDeviceFromDeviceInfo(devInfoSet, devInfoData, devicePath, hubHandles));
@@ -231,7 +236,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     DeviceProperty.DEVPKEY_Device_Address);
             var parentInstanceId = DeviceProperty.getDeviceStringProperty(devInfoSet, devInfoData,
                     DeviceProperty.DEVPKEY_Device_Parent);
-            var hubPath = DeviceProperty.getDevicePath(parentInstanceId, USBHelper.GUID_DEVINTERFACE_USB_HUB);
+            var hubPath = DeviceProperty.getDevicePath(parentInstanceId, USBConstants.GUID_DEVINTERFACE_USB_HUB);
 
             // open hub if not open yet
             var hubHandle = hubHandles.get(hubPath);
@@ -300,8 +305,8 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         try (var arena = Arena.ofConfined()) {
 
             // get device descriptor
-            var connInfo = arena.allocate(USBHelper.USB_NODE_CONNECTION_INFORMATION_EX$Struct);
-            USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex.set(connInfo, usbPortNum);
+            var connInfo = _USB_NODE_CONNECTION_INFORMATION_EX.allocate(arena);
+            _USB_NODE_CONNECTION_INFORMATION_EX.ConnectionIndex$set(connInfo, usbPortNum);
             var sizeHolder = arena.allocate(JAVA_INT);
             var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
             if (Kernel32B.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX(),
@@ -309,7 +314,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     lastErrorState) == 0)
                 throwLastError(lastErrorState, "Internal error (cannot get device descriptor)");
 
-            var descriptorSegment = USBHelper.USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(connInfo);
+            var descriptorSegment = _USB_NODE_CONNECTION_INFORMATION_EX.DeviceDescriptor$slice(connInfo);
             var deviceDescriptor = new DeviceDescriptor(descriptorSegment);
 
             var vendorId = deviceDescriptor.vendorID();
@@ -333,20 +338,17 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
     private MemorySegment getDescriptor(MemorySegment hubHandle, int usbPortNumber, int descriptorType, int index,
                                         short languageID, int requestSize, Arena arena) {
-
-        var size = requestSize != 0 ? requestSize + (int) USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset : 256;
+        var size = requestSize != 0 ? requestSize + (int) REQUEST_DATA_OFFSET : 256;
 
         // create descriptor requests
         var descriptorRequest = arena.allocate(size);
-        USBHelper.USB_DESCRIPTOR_REQUEST_ConnectionIndex.set(descriptorRequest, usbPortNumber);
-        var setupPacket =
-                new SetupPacket(descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_SetupPacket$Offset,
-                        SetupPacket.LAYOUT.byteSize()));
+        _USB_DESCRIPTOR_REQUEST.ConnectionIndex$set(descriptorRequest, usbPortNumber);
+        var setupPacket = new SetupPacket(_USB_DESCRIPTOR_REQUEST.SetupPacket$slice(descriptorRequest));
         setupPacket.setRequestType(0x80); // device-to-host / type standard / recipient device
-        setupPacket.setRequest(USBHelper.USB_REQUEST_GET_DESCRIPTOR);
+        setupPacket.setRequest(USBConstants.USB_REQUEST_GET_DESCRIPTOR);
         setupPacket.setValue((descriptorType << 8) | index);
         setupPacket.setIndex(languageID);
-        setupPacket.setLength(size - (int) USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
+        setupPacket.setLength(size - (int) REQUEST_DATA_OFFSET);
 
         // execute request
         var effectiveSizeHolder = arena.allocate(JAVA_INT);
@@ -358,15 +360,15 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         // determine size of descriptor
         int expectedSize;
         if (descriptorType != CONFIGURATION_DESCRIPTOR_TYPE) {
-            expectedSize = 255 & descriptorRequest.get(JAVA_BYTE, USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset);
+            expectedSize = 255 & descriptorRequest.get(JAVA_BYTE, REQUEST_DATA_OFFSET);
         } else {
             var configDesc =
-                    new ConfigurationDescriptor(descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, ConfigurationDescriptor.LAYOUT.byteSize()));
+                    new ConfigurationDescriptor(descriptorRequest.asSlice(REQUEST_DATA_OFFSET, ConfigurationDescriptor.LAYOUT.byteSize()));
             expectedSize = configDesc.totalLength();
         }
 
         // check against effective size
-        var effectiveSize = effectiveSizeHolder.get(JAVA_INT, 0) - USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset;
+        var effectiveSize = effectiveSizeHolder.get(JAVA_INT, 0) - REQUEST_DATA_OFFSET;
         if (effectiveSize != expectedSize) {
             if (requestSize != 0)
                 throwException("Unexpected descriptor size");
@@ -375,7 +377,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return getDescriptor(hubHandle, usbPortNumber, descriptorType, index, languageID, expectedSize, arena);
         }
 
-        return descriptorRequest.asSlice(USBHelper.USB_DESCRIPTOR_REQUEST_Data$Offset, effectiveSize);
+        return descriptorRequest.asSlice(REQUEST_DATA_OFFSET, effectiveSize);
     }
 
     @SuppressWarnings("java:S106")
@@ -387,6 +389,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE,
                     index, DEFAULT_LANGUAGE, arena));
             return stringDesc.string();
+
         } catch (USBException e) {
             System.err.printf("Info: [JavaDoesUSB] failed to retrieve string descriptor %d (%s) - ignoring%n", index,
                     e.getMessage());
