@@ -9,10 +9,8 @@ package net.codecrete.usb.linux;
 
 import net.codecrete.usb.linux.gen.string.string;
 
-import java.lang.foreign.Linker;
+import java.lang.foreign.*;
 import java.lang.foreign.MemoryLayout.PathElement;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.StructLayout;
 import java.lang.invoke.VarHandle;
 
 /**
@@ -27,9 +25,13 @@ class Linux {
      * Call state for capturing the {@code errno} value.
      */
     static final Linker.Option ERRNO_STATE = Linker.Option.captureCallState("errno");
-    static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
+    private static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
     private static final VarHandle callState_errno$VH =
             ERRNO_STATE_LAYOUT.varHandle(PathElement.groupElement("errno"));
+
+    static MemorySegment allocateErrorState(Arena arena) {
+        return arena.allocate(ERRNO_STATE_LAYOUT.byteSize());
+    }
 
     /**
      * Gets the error message for the specified error code (returned by {@code errno}).
@@ -47,10 +49,10 @@ class Linux {
      * The memory segment is assumed to have the layout {@link #ERRNO_STATE}.
      * </p>
      *
-     * @param errno memory segment with error code
+     * @param errorState memory segment with error code
      * @return error code
      */
-    static int getErrno(MemorySegment errno) {
-        return (int) callState_errno$VH.get(errno);
+    static int getErrno(MemorySegment errorState) {
+        return (int) callState_errno$VH.get(errorState);
     }
 }

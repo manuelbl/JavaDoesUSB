@@ -22,6 +22,7 @@ import java.util.List;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
@@ -71,10 +72,10 @@ class DeviceProperty {
         try (var arena = Arena.ofConfined()) {
             var propertyTypeHolder = arena.allocate(JAVA_INT);
             var propertyValueHolder = arena.allocate(JAVA_INT);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
             if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
-                    propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Internal error (SetupDiGetDevicePropertyW - A)");
+                    propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
+                throwLastError(errorState, "Internal error (SetupDiGetDevicePropertyW - A)");
 
             if (propertyTypeHolder.get(JAVA_INT, 0) != SetupAPI.DEVPROP_TYPE_UINT32())
                 throwException("Internal error (expected property type UINT32)");
@@ -129,10 +130,10 @@ class DeviceProperty {
         // query length (thus no buffer)
         var propertyTypeHolder = arena.allocate(JAVA_INT);
         var requiredSizeHolder = arena.allocate(JAVA_INT);
-        var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+        var errorState = allocateErrorState(arena);
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
-                requiredSizeHolder, 0, lastErrorState) == 0) {
-            var err = Win.getLastError(lastErrorState);
+                requiredSizeHolder, 0, errorState) == 0) {
+            var err = Win.getLastError(errorState);
             if (err == Kernel32.ERROR_NOT_FOUND())
                 return null;
             if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
@@ -149,8 +150,8 @@ class DeviceProperty {
 
         // get property value
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
-                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, lastErrorState) == 0)
-            throwLastError(lastErrorState, "Internal error (SetupDiGetDevicePropertyW - C)");
+                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
+            throwLastError(errorState, "Internal error (SetupDiGetDevicePropertyW - C)");
 
         return propertyValueHolder;
     }
@@ -167,13 +168,13 @@ class DeviceProperty {
                                                         Arena arena) {
 
         try (var cleanup = new ScopeCleanup()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
 
             // open device registry key
             var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(), 0,
-                    SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), lastErrorState);
+                    SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), errorState);
             if (Win.isInvalidHandle(regKey))
-                throwLastError(lastErrorState, "Cannot open device registry key");
+                throwLastError(errorState, "Cannot open device registry key");
             cleanup.add(() -> Advapi32.RegCloseKey(regKey));
 
             // read registry value (without buffer, to query length)
@@ -206,14 +207,14 @@ class DeviceProperty {
      */
     static String getDevicePath(String instanceId, MemorySegment interfaceGuid) {
         try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
 
             // get device info set for instance
             var instanceIDSegment = Win.createSegmentFromString(instanceId, arena);
             final var devInfoSet = SetupAPI2.SetupDiGetClassDevsW(interfaceGuid, instanceIDSegment, NULL,
-                    SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), lastErrorState);
+                    SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), errorState);
             if (Win.isInvalidHandle(devInfoSet))
-                throwLastError(lastErrorState, "internal error (SetupDiGetClassDevsW)");
+                throwLastError(errorState, "internal error (SetupDiGetClassDevsW)");
 
             // ensure the result is destroyed when the scope is left
             cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
@@ -222,8 +223,8 @@ class DeviceProperty {
             var devIntfData = arena.allocate(_SP_DEVICE_INTERFACE_DATA.$LAYOUT());
             _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
-                    lastErrorState) == 0)
-                throwLastError(lastErrorState, "internal error (SetupDiEnumDeviceInterfaces)");
+                    errorState) == 0)
+                throwLastError(errorState, "internal error (SetupDiEnumDeviceInterfaces)");
 
             // get device path
             // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
@@ -234,8 +235,8 @@ class DeviceProperty {
                     (int) _SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
             var intfDetailDataSize = (int) intfDetailData.byteSize();
             if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, intfDetailData,
-                    intfDetailDataSize, NULL, NULL, lastErrorState) == 0)
-                throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    intfDetailDataSize, NULL, NULL, errorState) == 0)
+                throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
             return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
         }

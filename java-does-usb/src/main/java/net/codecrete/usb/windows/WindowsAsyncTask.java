@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
 /**
@@ -68,18 +69,18 @@ class WindowsAsyncTask {
             var overlappedHolder = arena.allocate(ADDRESS, NULL);
             var numBytesHolder = arena.allocate(JAVA_INT, 0);
             var completionKeyHolder = arena.allocate(JAVA_LONG, 0);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
 
             while (true) {
                 overlappedHolder.set(ADDRESS, 0, NULL);
                 completionKeyHolder.set(JAVA_LONG, 0, 0);
 
                 var res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
-                        completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), lastErrorState);
+                        completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), errorState);
                 var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
                 if (res == 0 && overlappedAddr == 0)
-                    throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
                 if (overlappedAddr == 0)
                     return; // registry closing?
@@ -100,13 +101,13 @@ class WindowsAsyncTask {
     synchronized void addDevice(MemorySegment handle) {
 
         try (var arena = Arena.ofConfined()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
 
             // Creates a new port if it doesn't exist; adds handle to existing port if it exists
             var portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
-                    handle.address(), 0, lastErrorState);
+                    handle.address(), 0, errorState);
             if (portHandle == MemorySegment.NULL)
-                throwLastError(lastErrorState, "internal error (CreateIoCompletionPort)");
+                throwLastError(errorState, "internal error (CreateIoCompletionPort)");
 
             if (asyncIoCompletionPort == MemorySegment.NULL) {
                 asyncIoCompletionPort = portHandle;

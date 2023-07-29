@@ -29,10 +29,14 @@ public class Win {
      * Call state for capturing the {@code GetLastError()} value.
      */
     public static final Linker.Option LAST_ERROR_STATE = Linker.Option.captureCallState("GetLastError");
-    public static final StructLayout LAST_ERROR_STATE_LAYOUT = Linker.Option.captureStateLayout();
+    private static final StructLayout LAST_ERROR_STATE_LAYOUT = Linker.Option.captureStateLayout();
 
     private static final VarHandle callState_GetLastError$VH =
             LAST_ERROR_STATE_LAYOUT.varHandle(PathElement.groupElement("GetLastError"));
+
+    static MemorySegment allocateErrorState(Arena arena) {
+        return arena.allocate(LAST_ERROR_STATE_LAYOUT);
+    }
 
     /**
      * Returns the error code captured using the call state {@link #LAST_ERROR_STATE}.

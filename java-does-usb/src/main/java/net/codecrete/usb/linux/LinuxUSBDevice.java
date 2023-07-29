@@ -33,6 +33,7 @@ import java.nio.file.Path;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 
@@ -95,10 +96,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var pathUtf8 = arena.allocateUtf8String(uniqueDeviceId.toString());
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errnoState);
+            var errorState = allocateErrorState(arena);
+            fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errorState);
             if (fd == -1)
-                throwLastError(errnoState, "Cannot open USB device");
+                throwLastError(errorState, "Cannot open USB device");
             asyncTask.addForAsyncIOCompletion(this);
         }
     }
@@ -127,7 +128,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         getInterfaceWithCheck(interfaceNumber, false);
 
         try (var arena = Arena.ofConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
             int ret;
 
             if (detachDrivers) {
@@ -136,16 +137,16 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
                 usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
                 usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(DRIVER_NAME_USBFS);
-                ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errnoState);
+                ret = IO.ioctl(fd, USBDevFS.DISCONNECT_CLAIM, disconnectClaim, errorState);
 
             } else {
                 // claim interface (without detaching kernel driver)
                 var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-                ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errnoState);
+                ret = IO.ioctl(fd, USBDevFS.CLAIMINTERFACE, intfNumSegment, errorState);
             }
 
             if (ret != 0)
-                throwLastError(errnoState, "Cannot claim USB interface");
+                throwLastError(errorState, "Cannot claim USB interface");
 
             setClaimed(interfaceNumber, true);
         }
@@ -167,10 +168,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            var ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errnoState);
+            var errorState = allocateErrorState(arena);
+            var ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errorState);
             if (ret != 0)
-                throwLastError(errnoState, "Failed to set alternate interface");
+                throwLastError(errorState, "Failed to set alternate interface");
         }
 
         intf.setAlternate(altSetting);
@@ -183,10 +184,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            var ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errnoState);
+            var errorState = allocateErrorState(arena);
+            var ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errorState);
             if (ret != 0)
-                throwLastError(errnoState, "Cannot release USB interface");
+                throwLastError(errorState, "Cannot release USB interface");
 
             setClaimed(interfaceNumber, false);
 
@@ -196,7 +197,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                 usbdevfs_ioctl.ifno$set(request, interfaceNumber);
                 usbdevfs_ioctl.ioctl_code$set(request, USBDevFS.CONNECT);
                 usbdevfs_ioctl.data$set(request, MemorySegment.NULL);
-                IO.ioctl(fd, USBDevFS.IOCTL, request, errnoState);
+                IO.ioctl(fd, USBDevFS.IOCTL, request, errorState);
             }
         }
     }
@@ -325,10 +326,10 @@ public class LinuxUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            var res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errnoState);
+            var errorState = allocateErrorState(arena);
+            var res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errorState);
             if (res < 0)
-                throwLastError(errnoState, "Clearing halt failed");
+                throwLastError(errorState, "Clearing halt failed");
         }
     }
 

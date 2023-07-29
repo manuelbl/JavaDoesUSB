@@ -72,12 +72,12 @@ public class WindowsUSBException extends USBException {
      * {@link Win#LAST_ERROR_STATE} provided as the first parameter.
      * </p>
      *
-     * @param lastErrorState call capture state containing last error code
-     * @param message        exception message format ({@link String#format(String, Object...)} style)
-     * @param args           arguments for exception message
+     * @param errorState call capture state containing last error code
+     * @param message    exception message format ({@link String#format(String, Object...)} style)
+     * @param args       arguments for exception message
      */
-    static void throwLastError(MemorySegment lastErrorState, String message, Object... args) {
-        throwException(Win.getLastError(lastErrorState), message, args);
+    static void throwLastError(MemorySegment errorState, String message, Object... args) {
+        throwException(Win.getLastError(errorState), message, args);
     }
 
     private static MemorySegment ntModule; // NOSONAR

@@ -23,6 +23,7 @@ import java.util.Map;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
+import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
 import static net.codecrete.usb.linux.USBDevFS.*;
@@ -75,7 +76,7 @@ class LinuxAsyncTask {
     private void asyncCompletionTask() {
 
         try (var arena = Arena.ofConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
             var pollfdArray = pollfd.allocateArray(100, arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
             var eventfdValueHolder = arena.allocate(JAVA_LONG);
@@ -101,9 +102,9 @@ class LinuxAsyncTask {
                     // check for wakeup event
                     if ((pollfd.revents$get(pollfdArray, n) & poll.POLLIN()) != 0) {
                         // wakeup to refresh list of file descriptors
-                        res = IO.eventfd_read(asyncIOWakeUpEventFd, eventfdValueHolder, errnoState);
+                        res = IO.eventfd_read(asyncIOWakeUpEventFd, eventfdValueHolder, errorState);
                         if (res < 0)
-                            throwLastError(errnoState, "internal error (eventfd_read)");
+                            throwLastError(errorState, "internal error (eventfd_read)");
                         continue;
                     }
 
@@ -123,7 +124,7 @@ class LinuxAsyncTask {
 
                         // reap URB
                         var fd = pollfd.fd$get(pollfdArray, i);
-                        reapURBs(fd, urbPointerHolder, errnoState);
+                        reapURBs(fd, urbPointerHolder, errorState);
                     }
                 }
             }
@@ -150,13 +151,13 @@ class LinuxAsyncTask {
      *
      * @param fd               file descriptor
      * @param urbPointerHolder native memory to receive the URB pointer
-     * @param errnoState       native memory to receive the errno
+     * @param errorState       native memory to receive the errno
      */
-    private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errnoState) {
+    private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
         while (true) {
-            var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errnoState);
+            var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errorState);
             if (res < 0) {
-                var err = Linux.getErrno(errnoState);
+                var err = Linux.getErrno(errorState);
                 if (err == errno.EAGAIN())
                     return; // no more pending URBs
                 if (err == errno.ENODEV())
@@ -182,9 +183,9 @@ class LinuxAsyncTask {
         }
 
         try (var arena = Arena.ofConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            if (IO.eventfd_write(asyncIOWakeUpEventFd, 1, errnoState) < 0)
-                throwLastError(errnoState, "internal error (eventfd_write)");
+            var errorState = allocateErrorState(arena);
+            if (IO.eventfd_write(asyncIOWakeUpEventFd, 1, errorState) < 0)
+                throwLastError(errorState, "internal error (eventfd_write)");
         }
     }
 
@@ -248,11 +249,11 @@ class LinuxAsyncTask {
         usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
         try (var arena = Arena.ofConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errnoState) < 0) {
+            var errorState = allocateErrorState(arena);
+            if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errorState) < 0) {
                 var action = endpointAddress >= 128 ? "reading from" : "writing to";
                 var endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
-                throwLastError(errnoState, "failed %s %s", action, endpoint);
+                throwLastError(errorState, "failed %s %s", action, endpoint);
             }
         }
     }
@@ -298,7 +299,7 @@ class LinuxAsyncTask {
         var fd = device.fileDescriptor();
         try (var arena = Arena.ofConfined()) {
 
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
+            var errorState = allocateErrorState(arena);
 
             // iterate all URBs and discard the ones for the specified endpoint
             for (var urb : transfersByURB.keySet()) {
@@ -306,10 +307,10 @@ class LinuxAsyncTask {
                         || endpointAddress != usbdevfs_urb.endpoint$get(urb))
                     continue;
 
-                if (IO.ioctl(fd, DISCARDURB, urb, errnoState) < 0) {
+                if (IO.ioctl(fd, DISCARDURB, urb, errorState) < 0) {
                     // ignore EINVAL; it occurs if the URB has completed at the same time
-                    if (Linux.getErrno(errnoState) != errno.EINVAL())
-                        throwLastError(errnoState, "failed to abort transfer");
+                    if (Linux.getErrno(errorState) != errno.EINVAL())
+                        throwLastError(errorState, "failed to abort transfer");
                 }
             }
         }
@@ -317,11 +318,11 @@ class LinuxAsyncTask {
 
     private void startAsyncIOTask() {
         try (var arena = Arena.ofConfined()) {
-            var errnoState = arena.allocate(Linux.ERRNO_STATE_LAYOUT);
-            asyncIOWakeUpEventFd = IO.eventfd(0, 0, errnoState);
+            var errorState = allocateErrorState(arena);
+            asyncIOWakeUpEventFd = IO.eventfd(0, 0, errorState);
             if (asyncIOWakeUpEventFd == -1) {
                 asyncIOWakeUpEventFd = 0;
-                throwLastError(errnoState, "internal error (eventfd)");
+                throwLastError(errorState, "internal error (eventfd)");
             }
         }
 

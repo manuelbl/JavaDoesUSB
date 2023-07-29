@@ -66,12 +66,12 @@ public class LinuxUSBException extends USBException {
      * {@link Linux#ERRNO_STATE}.
      * </p>
      *
-     * @param errno   segment with lat error code
+     * @param errorState segment with error state
      * @param message exception message format ({@link String#format(String, Object...)} style)
      * @param args    arguments for exception message
      */
-    static void throwLastError(MemorySegment errno, String message, Object... args) {
-        throwException(Linux.getErrno(errno), message, args);
+    static void throwLastError(MemorySegment errorState, String message, Object... args) {
+        throwException(Linux.getErrno(errorState), message, args);
     }
 
 }
