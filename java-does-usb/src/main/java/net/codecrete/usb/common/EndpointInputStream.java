@@ -139,23 +139,30 @@ public abstract class EndpointInputStream extends InputStream {
         if (isClosed())
             return -1;
 
-        if (available() == 0)
-            receiveMoreData();
+        var numRead = 0;
+        do {
+            if (available() == 0)
+                receiveMoreData();
 
-        // copy data to receiving buffer
-        var n = Math.min(len, currentTransfer.resultSize() - readOffset);
-        MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), off, n);
-        readOffset += n;
+            // copy data to receiving buffer
+            var n = Math.min(len - numRead, currentTransfer.resultSize() - readOffset);
+            MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), (long) off + numRead, n);
+            readOffset += n;
+            numRead += n;
 
-        // TODO: poll for further completed transfers if 'n' is less than 'len'
+        } while (numRead < len && hasMoreTransfers());
 
-        return n;
+        return numRead;
     }
 
     @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
         return currentTransfer.resultSize() - readOffset;
+    }
+
+    private boolean hasMoreTransfers() {
+        return !completedTransferQueue.isEmpty();
     }
 
     private void receiveMoreData() throws IOException {
