@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class InterruptTransferTest extends TestDeviceBase {
+class InterruptTransferTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {

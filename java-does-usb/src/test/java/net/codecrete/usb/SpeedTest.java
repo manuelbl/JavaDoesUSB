@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SpeedTest extends TestDeviceBase {
+class SpeedTest extends TestDeviceBase {
 
     @Test
     void loopback_isFast() throws Throwable {

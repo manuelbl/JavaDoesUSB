@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests the interface, alternate settings and endpoint descriptions.
  */
-public class DescriptionTest extends TestDeviceBase {
+class DescriptionTest extends TestDeviceBase {
 
     @Test
     void deviceInfo_isCorrect() {

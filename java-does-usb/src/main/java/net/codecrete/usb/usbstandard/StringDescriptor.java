@@ -48,5 +48,5 @@ public class StringDescriptor {
     );
 
     private static final VarHandle bLength$VH = LAYOUT.varHandle(groupElement("bLength"));
-    private static final long string$offset = LAYOUT.byteOffset(groupElement("string"));
+    private static final long string$offset = LAYOUT.byteOffset(groupElement("string")); // NOSONAR
 }

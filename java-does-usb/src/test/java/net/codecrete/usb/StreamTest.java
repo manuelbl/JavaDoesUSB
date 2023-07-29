@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StreamTest extends TestDeviceBase {
+class StreamTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
@@ -108,7 +108,7 @@ public class StreamTest extends TestDeviceBase {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
     }
 }

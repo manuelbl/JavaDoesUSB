@@ -25,10 +25,13 @@ import static java.lang.foreign.ValueLayout.*;
  * USB_NODE_CONNECTION_INFORMATION_EX struct.
  * </p>
  */
-public class USBHelper {
+@SuppressWarnings({"java:S125", "java:S1192", "java:S115", "java:S100"})
+class USBHelper {
 
-    public static final byte USB_REQUEST_GET_DESCRIPTOR = 0x06;
+    private USBHelper() {
+    }
 
+    static final byte USB_REQUEST_GET_DESCRIPTOR = 0x06;
 
     // typedef struct _USB_NODE_CONNECTION_INFORMATION_EX {
     //    ULONG ConnectionIndex;  /* INPUT */
@@ -44,7 +47,7 @@ public class USBHelper {
     //    USB_CONNECTION_STATUS ConnectionStatus;/* OUTPUT */
     //    USB_PIPE_INFO PipeList[0];/* OUTPUT */
     //} USB_NODE_CONNECTION_INFORMATION_EX, *PUSB_NODE_CONNECTION_INFORMATION_EX;
-    public static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = MemoryLayout.structLayout(
+    static final GroupLayout USB_NODE_CONNECTION_INFORMATION_EX$Struct = MemoryLayout.structLayout(
             JAVA_INT.withName("ConnectionIndex"),
             DeviceDescriptor.LAYOUT.withName("DeviceDescriptor"),
             JAVA_BYTE.withName("CurrentConfigurationValue"),
@@ -55,12 +58,12 @@ public class USBHelper {
             JAVA_INT_UNALIGNED.withName("ConnectionStatus")
             // USB_PIPE_INFO PipeList[0]
     );
-    public static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex =
+    static final VarHandle USB_NODE_CONNECTION_INFORMATION_EX_ConnectionIndex =
             USB_NODE_CONNECTION_INFORMATION_EX$Struct.varHandle(groupElement("ConnectionIndex"));
-    public static final long USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset =
+    static final long USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset =
             USB_NODE_CONNECTION_INFORMATION_EX$Struct.byteOffset(groupElement("DeviceDescriptor"));
 
-    public static MemorySegment USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(MemorySegment seg) {
+    static MemorySegment USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$slice(MemorySegment seg) {
         return seg.asSlice(USB_NODE_CONNECTION_INFORMATION_EX_DeviceDescriptor$Offset,
                 DeviceDescriptor.LAYOUT.byteSize());
     }
@@ -76,21 +79,21 @@ public class USBHelper {
     //    } SetupPacket;
     //    UCHAR Data[0];
     //} USB_DESCRIPTOR_REQUEST, *PUSB_DESCRIPTOR_REQUEST;
-    public static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = MemoryLayout.structLayout(JAVA_INT.withName(
+    static final GroupLayout USB_DESCRIPTOR_REQUEST$Struct = MemoryLayout.structLayout(JAVA_INT.withName(
             "ConnectionIndex"), SetupPacket.LAYOUT.withName("SetupPacket"));
-    public static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex =
+    static final VarHandle USB_DESCRIPTOR_REQUEST_ConnectionIndex =
             USB_DESCRIPTOR_REQUEST$Struct.varHandle(groupElement("ConnectionIndex"));
-    public static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset =
+    static final long USB_DESCRIPTOR_REQUEST_SetupPacket$Offset =
             USB_DESCRIPTOR_REQUEST$Struct.byteOffset(groupElement("SetupPacket"));
-    public static final long USB_DESCRIPTOR_REQUEST_Data$Offset = USB_DESCRIPTOR_REQUEST$Struct.byteSize();
+    static final long USB_DESCRIPTOR_REQUEST_Data$Offset = USB_DESCRIPTOR_REQUEST$Struct.byteSize();
 
     // A5DCBF10-6530-11D2-901F-00C04FB951ED
-    public static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.CreateGUID(0xA5DCBF10, (short) 0x6530,
+    static final MemorySegment GUID_DEVINTERFACE_USB_DEVICE = Win.createGUID(0xA5DCBF10, (short) 0x6530,
             (short) 0x11D2, (byte) 0x90, (byte) 0x1F, (byte) 0x00, (byte) 0xC0, (byte) 0x4F, (byte) 0xB9, (byte) 0x51
             , (byte) 0xED);
 
     // f18a0e88-c30c-11d0-8815-00a0c906bed8
-    public static final MemorySegment GUID_DEVINTERFACE_USB_HUB = Win.CreateGUID(0xf18a0e88, (short) 0xc30c,
+    static final MemorySegment GUID_DEVINTERFACE_USB_HUB = Win.createGUID(0xf18a0e88, (short) 0xc30c,
             (short) 0x11d0, (byte) 0x88, (byte) 0x15, (byte) 0x00, (byte) 0xa0, (byte) 0xc9, (byte) 0x06, (byte) 0xbe
             , (byte) 0xd8);
 

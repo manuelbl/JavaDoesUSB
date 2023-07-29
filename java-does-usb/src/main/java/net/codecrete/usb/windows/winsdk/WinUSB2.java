@@ -24,8 +24,11 @@ import static java.lang.foreign.ValueLayout.*;
  * {@code GetLastError()} until jextract catches up and can generate the corresponding code.
  * </p>
  */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "java:S100", "java:S107", "java:S117"})
 public class WinUSB2 {
+    private WinUSB2() {
+    }
+
     static {
         System.loadLibrary("Winusb");
     }
@@ -44,7 +47,7 @@ public class WinUSB2 {
         try {
             return (int) WinUsb_Initialize$MH.invokeExact(lastErrorState, DeviceHandle, InterfaceHandle);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -60,7 +63,7 @@ public class WinUSB2 {
             return (int) WinUsb_SetCurrentAlternateSetting$MH.invokeExact(lastErrorState, InterfaceHandle,
                     SettingNumber);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -77,7 +80,7 @@ public class WinUSB2 {
             return (int) WinUsb_ControlTransfer$MH.invokeExact(lastErrorState, InterfaceHandle, SetupPacket, Buffer,
                     BufferLength, LengthTransferred, Overlapped);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -93,7 +96,7 @@ public class WinUSB2 {
             return (int) WinUsb_SetPipePolicy$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID, PolicyType,
                     ValueLength, Value);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -110,7 +113,7 @@ public class WinUSB2 {
             return (int) WinUsb_WritePipe$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID, Buffer,
                     BufferLength, LengthTransferred, Overlapped);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -127,7 +130,7 @@ public class WinUSB2 {
             return (int) WinUsb_ReadPipe$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID, Buffer, BufferLength
                     , LengthTransferred, Overlapped);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -140,7 +143,7 @@ public class WinUSB2 {
         try {
             return (int) WinUsb_ResetPipe$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -153,7 +156,7 @@ public class WinUSB2 {
         try {
             return (int) WinUsb_AbortPipe$MH.invokeExact(lastErrorState, InterfaceHandle, PipeID);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 }

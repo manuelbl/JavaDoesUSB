@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class StallTest extends TestDeviceBase {
+class StallTest extends TestDeviceBase {
 
     @Test
     void stalledBulkTransferOut_recovers() {
@@ -46,9 +46,9 @@ public class StallTest extends TestDeviceBase {
 
     @Test
     void invalidControlTransfer_throws() {
-        assertThrows(USBStallException.class, () -> testDevice.controlTransferIn(
-                new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x08,
-                        (short) 0, (short) interfaceNumber), 2));
+        var request = new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x08,
+                (short) 0, (short) interfaceNumber);
+        assertThrows(USBStallException.class, () -> testDevice.controlTransferIn(request, 2));
     }
 
     void haltEndpoint(USBDirection direction, int endpointNumber) {

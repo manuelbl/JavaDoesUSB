@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DeviceLifecycleTest {
+class DeviceLifecycleTest {
 
     private USBDevice device;
 

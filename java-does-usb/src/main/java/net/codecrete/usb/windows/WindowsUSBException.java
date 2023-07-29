@@ -80,7 +80,7 @@ public class WindowsUSBException extends USBException {
         throwException(Win.getLastError(lastErrorState), message, args);
     }
 
-    private static MemorySegment ntModule;
+    private static MemorySegment ntModule; // NOSONAR
 
     private static MemorySegment getNtModule() {
         if (ntModule == null) {
@@ -98,7 +98,7 @@ public class WindowsUSBException extends USBException {
             var messagePointerHolder = arena.allocate(ADDRESS);
 
             // First try: Win32 error code
-            int res = Kernel32.FormatMessageW(
+            var res = Kernel32.FormatMessageW(
                     Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
                     NULL, errorCode, 0, messagePointerHolder, 0, NULL);
 
@@ -113,8 +113,8 @@ public class WindowsUSBException extends USBException {
             if (res == 0)
                 return "unspecified error";
 
-            var messagePointer = dereference(messagePointerHolder).reinterpret(128 * 1024);
-            String message = Win.createStringFromSegment(messagePointer);
+            var messagePointer = dereference(messagePointerHolder).reinterpret(128 * 1024); // NOSONAR
+            var message = Win.createStringFromSegment(messagePointer);
             Kernel32.LocalFree(messagePointer);
             return message.trim();
         }

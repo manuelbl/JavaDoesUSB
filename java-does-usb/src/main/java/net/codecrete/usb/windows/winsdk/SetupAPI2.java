@@ -24,8 +24,10 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
  * {@code GetLastError()} until jextract catches up and can generate the corresponding code.
  * </p>
  */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "java:S100", "java:S107", "java:S117"})
 public class SetupAPI2 {
+    private SetupAPI2() {
+    }
 
     static {
         System.loadLibrary("SetupAPI");
@@ -48,7 +50,7 @@ public class SetupAPI2 {
             return (int) SetupDiGetDevicePropertyW$MH.invokeExact(lastErrorState, DeviceInfoSet, DeviceInfoData,
                     PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, Flags);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -64,7 +66,7 @@ public class SetupAPI2 {
             return (int) SetupDiEnumDeviceInfo$MH.invokeExact(lastErrorState, DeviceInfoSet, MemberIndex,
                     DeviceInfoData);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -81,7 +83,7 @@ public class SetupAPI2 {
             return (MemorySegment) SetupDiOpenDevRegKey$MH.invokeExact(lastErrorState, DeviceInfoSet, DeviceInfoData,
                     Scope, HwProfile, KeyType, samDesired);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -98,7 +100,7 @@ public class SetupAPI2 {
             return (MemorySegment) SetupDiGetClassDevsW$MH.invokeExact(lastErrorState, ClassGuid, Enumerator,
                     hwndParent, Flags);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -115,7 +117,7 @@ public class SetupAPI2 {
             return (int) SetupDiEnumDeviceInterfaces$MH.invokeExact(lastErrorState, DeviceInfoSet, DeviceInfoData,
                     InterfaceClassGuid, MemberIndex, DeviceInterfaceData);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -133,7 +135,7 @@ public class SetupAPI2 {
                     DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize,
                     DeviceInfoData);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -148,7 +150,7 @@ public class SetupAPI2 {
         try {
             return (MemorySegment) SetupDiCreateDeviceInfoList$MH.invokeExact(lastErrorState, ClassGuid, hwndParent);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -165,7 +167,7 @@ public class SetupAPI2 {
             return (int) SetupDiOpenDeviceInfoW$MH.invokeExact(lastErrorState, DeviceInfoSet, DeviceInstanceId,
                     hwndParent, OpenFlags, DeviceInfoData);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -182,7 +184,7 @@ public class SetupAPI2 {
             return (int) SetupDiOpenDeviceInterfaceW$MH.invokeExact(lastErrorState, DeviceInfoSet, DevicePath,
                     OpenFlags, DeviceInterfaceData);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 

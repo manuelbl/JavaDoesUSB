@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TimeoutTest extends TestDeviceBase {
+class TimeoutTest extends TestDeviceBase {
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)

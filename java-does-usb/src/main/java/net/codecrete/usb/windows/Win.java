@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.windows.gen.kernel32.GUID;
+import net.codecrete.usb.windows.gen.kernel32._GUID;
 
 import java.lang.foreign.*;
 import java.lang.foreign.MemoryLayout.PathElement;
@@ -22,6 +22,8 @@ import static java.lang.foreign.ValueLayout.JAVA_CHAR;
  * Windows helpers.
  */
 public class Win {
+    private Win() {
+    }
 
     /**
      * Call state for capturing the {@code GetLastError()} value.
@@ -48,7 +50,7 @@ public class Win {
      * @param handle Windows handle
      * @return {@code true} if the handle is invalid, {@code false} otherwise
      */
-    public static boolean IsInvalidHandle(MemorySegment handle) {
+    public static boolean isInvalidHandle(MemorySegment handle) {
         return handle.address() == -1L;
     }
 
@@ -64,7 +66,7 @@ public class Win {
      */
     public static MemorySegment createSegmentFromString(String str, Arena arena) {
         // allocate segment (including space for terminating null)
-        var segment = arena.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1);
+        var segment = arena.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1L);
         // copy characters
         segment.copyFrom(MemorySegment.ofArray(str.toCharArray()));
         return segment;
@@ -80,7 +82,7 @@ public class Win {
      * @return copied string
      */
     public static String createStringFromSegment(MemorySegment segment) {
-        int len = 0;
+        var len = 0;
         while (segment.get(JAVA_CHAR, len) != 0) {
             len += 2;
         }
@@ -100,7 +102,7 @@ public class Win {
      */
     public static List<String> createStringListFromSegment(MemorySegment segment) {
         var stringList = new ArrayList<String>();
-        int offset = 0;
+        var offset = 0;
         while (segment.get(JAVA_CHAR, offset) != '\0') {
             var str = Win.createStringFromSegment(segment.asSlice(offset));
             offset += str.length() * 2 + 2;
@@ -125,21 +127,23 @@ public class Win {
      * @param data4_7 Byte 7 of group 4
      * @return GUID as memory segment
      */
-    public static MemorySegment CreateGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
+    @SuppressWarnings({"java:S117", "java:S107"})
+    public static MemorySegment createGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
                                            byte data4_7) {
         @SuppressWarnings("resource")
-        var guid = Arena.global().allocate(GUID.$LAYOUT());
+        var guid = Arena.global().allocate(_GUID.$LAYOUT());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
     }
 
+    @SuppressWarnings({"java:S117", "java:S107"})
     public static void setGUID(MemorySegment guid, int data1, short data2, short data3, byte data4_0, byte data4_1,
                                byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
-        GUID.Data1$set(guid, data1);
-        GUID.Data2$set(guid, data2);
-        GUID.Data3$set(guid, data3);
-        var data4 = GUID.Data4$slice(guid);
+        _GUID.Data1$set(guid, data1);
+        _GUID.Data2$set(guid, data2);
+        _GUID.Data3$set(guid, data3);
+        var data4 = _GUID.Data4$slice(guid);
         data4.set(JAVA_BYTE, 0, data4_0);
         data4.set(JAVA_BYTE, 1, data4_1);
         data4.set(JAVA_BYTE, 2, data4_2);

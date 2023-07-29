@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AlternateInterfaceTest extends TestDeviceBase {
+class AlternateInterfaceTest extends TestDeviceBase {
 
     @BeforeAll
     static void precondition() {

@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BulkTransferTest extends TestDeviceBase {
+class BulkTransferTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
