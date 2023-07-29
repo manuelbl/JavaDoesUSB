@@ -57,12 +57,12 @@ public class TestDeviceBase {
     protected static USBDevice testDevice;
 
     static USBDevice getDevice() {
-        var device = USB.getDevice(new USBDeviceFilter(VID_COMPOSITE, PID_COMPOSITE));
-        if (device == null)
-            device = USB.getDevice(new USBDeviceFilter(VID_LOOPBACK, PID_LOOPBACK));
-        if (device == null)
+        var optionalDevice = USB.getDevice(VID_COMPOSITE, PID_COMPOSITE);
+        if (optionalDevice.isEmpty())
+            optionalDevice = USB.getDevice(VID_LOOPBACK, PID_LOOPBACK);
+        if (optionalDevice.isEmpty())
             throw new IllegalStateException("No test device connected");
-        return device;
+        return optionalDevice.get();
     }
 
     static int getInterfaceNumber(USBDevice device) {

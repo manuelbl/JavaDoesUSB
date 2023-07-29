@@ -83,9 +83,11 @@ public class LogicAnalyzer implements Closeable {
     private USBDevice device;
 
     LogicAnalyzer() {
-        device = USB.getDevice(new USBDeviceFilter(VID, PID));
-        if (device == null)
+        var optionalDevice = USB.getDevice(VID, PID);
+        if (optionalDevice.isEmpty())
             throw new IllegalStateException("no logic analyzer connected");
+
+        device = optionalDevice.get();
 
         checkFirmware();
 
@@ -294,9 +296,10 @@ public class LogicAnalyzer implements Closeable {
         DeviceMonitor.instance().awaitDevice(true);
         sleep(200);
 
-        device = USB.getDevice(new USBDeviceFilter(VID, PID));
-        if (device == null)
+        var optionalDevice = USB.getDevice(VID, PID);
+        if (optionalDevice.isEmpty())
             throw new IllegalStateException("no logic analyzer connected");
+        device = optionalDevice.get();
         if (device.manufacturer() == null)
             throw new IllegalStateException("firmware upload failed");
 
@@ -336,7 +339,7 @@ public class LogicAnalyzer implements Closeable {
         private void start() {
             USB.setOnDeviceConnected((device) -> onDeviceConnected(device, true));
             USB.setOnDeviceDisconnected((device) -> onDeviceConnected(device, false));
-            isDeviceConnected = USB.getDevice(new USBDeviceFilter(VID, PID)) != null;
+            isDeviceConnected = USB.getDevice(VID, PID).isPresent();
         }
 
         private void onDeviceConnected(USBDevice device, boolean connected) {
