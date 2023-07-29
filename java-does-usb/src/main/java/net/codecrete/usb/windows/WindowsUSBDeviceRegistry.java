@@ -392,8 +392,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return stringDesc.string();
 
         } catch (USBException e) {
-            System.err.printf("Info: [JavaDoesUSB] failed to retrieve string descriptor %d (%s) - ignoring%n", index,
-                    e.getMessage());
             return null;
         }
     }
