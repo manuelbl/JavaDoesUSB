@@ -57,6 +57,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0666"
 Run the command below (adapting the file path depending on your specific board):
 
 ```shell
+$ mvn package
 $ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.5.1.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
 DFU device found with serial 35A737883336.
 Target memory segment: Internal Flash
