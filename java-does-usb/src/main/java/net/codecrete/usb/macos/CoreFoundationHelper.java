@@ -36,7 +36,7 @@ class CoreFoundationHelper {
 
         var strLen = CoreFoundation.CFStringGetLength(string);
         var buffer = arena.allocateArray(JAVA_CHAR, strLen);
-        var range = arena.allocate(CFRange.$LAYOUT());
+        var range = CFRange.allocate(arena);
         CFRange.location$set(range, 0);
         CFRange.length$set(range, strLen);
         CoreFoundation.CFStringGetCharacters(string, range, buffer);

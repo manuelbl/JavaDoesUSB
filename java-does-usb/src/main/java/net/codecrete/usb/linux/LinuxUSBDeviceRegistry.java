@@ -250,7 +250,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param arena an arena for allocating memory
      */
     private static void waitForFileDescriptor(int fd, Arena arena) {
-        var fds = arena.allocate(pollfd.$LAYOUT());
+        var fds = pollfd.allocate(arena);
         pollfd.fd$set(fds, fd);
         pollfd.events$set(fds, (short) poll.POLLIN());
         int res = poll.poll(fds, 1, -1);

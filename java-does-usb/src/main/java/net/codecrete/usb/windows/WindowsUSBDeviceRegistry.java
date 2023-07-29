@@ -78,7 +78,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                         FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), arena);
 
                 // register window class
-                var wx = arena.allocate(tagWNDCLASSEXW.$LAYOUT());
+                var wx = tagWNDCLASSEXW.allocate(arena);
                 tagWNDCLASSEXW.cbSize$set(wx, (int) wx.byteSize());
                 tagWNDCLASSEXW.lpfnWndProc$set(wx, handleWindowMessageStub);
                 tagWNDCLASSEXW.hInstance$set(wx, instance);
@@ -94,7 +94,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     throwLastError(errorState, "Internal error (CreateWindowExW)");
 
                 // configure notifications
-                var notificationFilter = arena.allocate(_DEV_BROADCAST_DEVICEINTERFACE_W.$LAYOUT());
+                var notificationFilter = _DEV_BROADCAST_DEVICEINTERFACE_W.allocate(arena);
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter,
                         User32.DBT_DEVTYP_DEVICEINTERFACE());
@@ -114,7 +114,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             }
 
             // process messages
-            var msg = arena.allocate(tagMSG.$LAYOUT());
+            var msg = tagMSG.allocate(arena);
             int err;
             //noinspection StatementWithEmptyBody
             while ((err = User32B.GetMessageW(msg, hwnd, 0, 0, errorState)) > 0)
@@ -143,7 +143,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             outerCleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // allocate SP_DEVINFO_DATA (will receive details for each device)
-            var devInfoData = outerArena.allocate(_SP_DEVINFO_DATA.$LAYOUT());
+            var devInfoData = _SP_DEVINFO_DATA.allocate(outerArena);
             _SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) _SP_DEVINFO_DATA.$LAYOUT().byteSize());
 
             // ensure all hubs are closed later
@@ -202,7 +202,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
                 // get device info for child
-                var devInfoData = arena.allocate(_SP_DEVINFO_DATA.$LAYOUT());
+                var devInfoData = _SP_DEVINFO_DATA.allocate(arena);
                 _SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) devInfoData.byteSize());
                 var instanceIdSegment = Win.createSegmentFromString(instanceId, arena);
                 if (SetupAPI2.SetupDiOpenDeviceInfoW(devInfoSet, instanceIdSegment, NULL, 0, devInfoData,
@@ -436,7 +436,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // load device information into dev info set
-            var devIntfData = arena.allocate(_SP_DEVICE_INTERFACE_DATA.$LAYOUT());
+            var devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
             _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             var devicePathSegment = Win.createSegmentFromString(devicePath, arena);
             if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSet, devicePathSegment, 0, devIntfData, errorState) == 0)
@@ -444,7 +444,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             cleanup.add(() -> SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSet, devIntfData));
 
-            var devInfoData = arena.allocate(_SP_DEVINFO_DATA.$LAYOUT());
+            var devInfoData = _SP_DEVINFO_DATA.allocate(arena);
             _SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) devInfoData.byteSize());
             if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, NULL, 0, NULL, devInfoData,
                     errorState) == 0) {

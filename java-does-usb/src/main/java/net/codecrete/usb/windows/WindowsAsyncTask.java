@@ -136,7 +136,7 @@ class WindowsAsyncTask {
         MemorySegment overlapped;
         var size = availableOverlappedStructs.size();
         if (size == 0) {
-            overlapped = overlappedArena.allocate(_OVERLAPPED.$LAYOUT());
+            overlapped = _OVERLAPPED.allocate(overlappedArena);
         } else {
             overlapped = availableOverlappedStructs.remove(size - 1);
         }

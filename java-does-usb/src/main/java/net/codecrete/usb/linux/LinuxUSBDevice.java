@@ -165,7 +165,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
                     alternateNumber);
 
         try (var arena = Arena.ofConfined()) {
-            var setIntfSegment = arena.allocate(usbdevfs_setinterface.$LAYOUT());
+            var setIntfSegment = usbdevfs_setinterface.allocate(arena);
             usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
             usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
             var errorState = allocateErrorState(arena);

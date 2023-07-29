@@ -220,7 +220,7 @@ class DeviceProperty {
             cleanup.add(() -> SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet));
 
             // retrieve first element of enumeration
-            var devIntfData = arena.allocate(_SP_DEVICE_INTERFACE_DATA.$LAYOUT());
+            var devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
             _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
             if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
                     errorState) == 0)
@@ -260,7 +260,7 @@ class DeviceProperty {
         for (var guid : guids) {
             // check for class GUID
             var guidSegment = Win.createSegmentFromString(guid, arena);
-            var clsid = arena.allocate(_GUID.$LAYOUT());
+            var clsid = _GUID.allocate(arena);
             if (Ole32.CLSIDFromString(guidSegment, clsid) != 0)
                 continue;
 

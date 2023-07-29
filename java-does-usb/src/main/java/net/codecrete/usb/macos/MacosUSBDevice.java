@@ -180,7 +180,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private InterfaceInfo findInterface(int interfaceNumber) {
 
         try (var arena = Arena.ofConfined(); var outerCleanup = new ScopeCleanup()) {
-            var request = arena.allocate(IOUSBFindInterfaceRequest.$LAYOUT());
+            var request = IOUSBFindInterfaceRequest.allocate(arena);
             IOUSBFindInterfaceRequest.bInterfaceClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
             IOUSBFindInterfaceRequest.bInterfaceSubClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
             IOUSBFindInterfaceRequest.bInterfaceProtocol$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
@@ -362,7 +362,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
     private static MemorySegment createDeviceRequest(Arena arena, USBDirection direction, USBControlTransfer setup,
                                                      MemorySegment data) {
-        var deviceRequest = arena.allocate(IOUSBDevRequest.$LAYOUT());
+        var deviceRequest = IOUSBDevRequest.allocate(arena);
         var bmRequestType =
                 (direction == USBDirection.IN ? 0x80 : 0x00) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
         IOUSBDevRequest.bmRequestType$set(deviceRequest, (byte) bmRequestType);
