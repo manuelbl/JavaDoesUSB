@@ -27,16 +27,16 @@ jobs:
         working-directory: ./java-does-usb
       - name: Example bulk_transfer
         run: ./mvnw $MAVEN_ARGS clean compile
-        working-directory: ./bulk_transfer
+        working-directory: ./examples/bulk_transfer
       - name: Example enumerate
         run: ./mvnw $MAVEN_ARGS clean compile
-        working-directory: ./enumerate
+        working-directory: ./examples/enumerate
       - name: Example monitor
         run: ./mvnw $MAVEN_ARGS clean compile
-        working-directory: ./monitor
+        working-directory: ./examples/monitor
       - name: Example stm_dfu
         run: ./mvnw $MAVEN_ARGS clean compile
-        working-directory: ./stm_dfu
+        working-directory: ./examples/stm_dfu
       - name: Example epaper_display
         run: ./mvnw $MAVEN_ARGS clean compile
-        working-directory: ./epaper_display
+        working-directory: ./examples/epaper_display
