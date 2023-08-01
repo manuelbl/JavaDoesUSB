@@ -1,0 +1,27 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+env:
+  MAVEN_ARGS: -B -V -ntp -e -Djansi.passthrough=true -Dstyle.color=always
+
+jobs:
+
+  test_os:
+    name: OS ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '20'
+          cache: 'maven'
+      - name: Test
+        run: ./mvnw $MAVEN_ARGS -DskipTests clean package javadoc:javadoc
+        working-directory: ./java-does-usb
