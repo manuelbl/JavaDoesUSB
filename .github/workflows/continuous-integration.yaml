@@ -22,21 +22,27 @@ jobs:
           website: jdk.java.net
           release: '21'
           version: latest
-      - name: Library
+      - name: Configure GPG key
+        run: |
+          echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+        shell: bash
+      - name: Build java-does-usb
         run: ./mvnw $MAVEN_ARGS -DskipTests clean install javadoc:javadoc
         working-directory: ./java-does-usb
-      - name: Example bulk_transfer
+      - name: Example "bulk_transfer"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/bulk_transfer
-      - name: Example enumerate
+      - name: Example "enumerate"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/enumerate
-      - name: Example monitor
+      - name: Example "monitor"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/monitor
-      - name: Example stm_dfu
+      - name: Example "stm_dfu"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/stm_dfu
-      - name: Example epaper_display
+      - name: Example "epaper_display"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/epaper_display
