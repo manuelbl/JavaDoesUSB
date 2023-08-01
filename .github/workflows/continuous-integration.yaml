@@ -1,0 +1,42 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+env:
+  MAVEN_ARGS: -B -V -ntp -e -Djansi.passthrough=true -Dstyle.color=always
+
+jobs:
+
+  test_os:
+    name: OS ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          cache: 'maven'
+      - name: Library
+        run: ./mvnw $MAVEN_ARGS -DskipTests clean package javadoc:javadoc
+        working-directory: ./java-does-usb
+      - name: Example bulk_transfer
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/bulk_transfer
+      - name: Example enumerate
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/enumerate
+      - name: Example monitor
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/monitor
+      - name: Example stm_dfu
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/stm_dfu
+      - name: Example epaper_display
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/epaper_display
