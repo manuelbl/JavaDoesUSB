@@ -27,6 +27,7 @@ jobs:
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+        shell: bash
       - name: Library
         run: ./mvnw $MAVEN_ARGS -DskipTests clean install javadoc:javadoc
         working-directory: ./java-does-usb
