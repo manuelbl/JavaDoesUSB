@@ -1,6 +1,15 @@
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - "test-devices/**"
+      - "reference/**"
+  pull_request:
+    paths-ignore:
+      - "test-devices/**"
+      - "reference/**"
+
 
 env:
   MAVEN_ARGS: -B -V -ntp -e -Djansi.passthrough=true -Dstyle.color=always

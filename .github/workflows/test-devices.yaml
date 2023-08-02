@@ -1,6 +1,14 @@
 name: Test Devices CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "test-devices/**"
+      - ".github/**"
+  pull_request:
+    paths:
+      - "test-devices/**"
+      - ".github/**"
 
 jobs:
   build:
