@@ -22,8 +22,8 @@ jobs:
 
       - name: Build loopback firmware
         run: pio run
-        working-directory: ./test-devices/loopback
+        working-directory: ./test-devices/loopback-stm32
 
-      - name: Build composite firmware-stm32
+      - name: Build composite firmware
         run: pio run
         working-directory: ./test-devices/composite-stm32
