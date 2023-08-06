@@ -132,7 +132,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     // get entry ID (as unique ID)
                     var ret = IOKit.IORegistryEntryGetRegistryEntryID(service, entryIdHolder);
                     if (ret != 0)
-                        throwException(ret, "IORegistryEntryGetRegistryEntryID failed");
+                        throwException(ret, "internal error (IORegistryEntryGetRegistryEntryID)");
                     var entryId = entryIdHolder.get(JAVA_LONG, 0);
 
                     // call consumer to process device
@@ -226,7 +226,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
         var ret = IOKit.IOServiceAddMatchingNotification(notifyPort, notificationType, matchingDict,
                 onDeviceCallbackStub, NULL, deviceIterHolder);
         if (ret != 0)
-            throwException(ret, "IOServiceAddMatchingNotification failed");
+            throwException(ret, "internal error (IOServiceAddMatchingNotification)");
 
         return deviceIterHolder.get(JAVA_INT, 0);
     }

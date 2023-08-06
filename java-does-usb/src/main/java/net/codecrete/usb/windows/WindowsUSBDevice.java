@@ -83,7 +83,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     @Override
     public synchronized void open() {
         if (isOpen())
-            throwException("the device is already open");
+            throwException("device is already open");
 
         showAsOpen = true;
     }
@@ -106,14 +106,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
         if (intfHandle.interfaceHandle != null)
-            throwException("Interface %d has already been claimed", interfaceNumber);
+            throwException("interface %d has already been claimed", interfaceNumber);
 
         var firstIntfHandle = intfHandle;
         if (intfHandle.firstInterfaceNumber != interfaceNumber)
             firstIntfHandle = getInterfaceHandle(intfHandle.firstInterfaceNumber);
 
         if (firstIntfHandle.devicePath == null)
-            throwException("Interface number %d cannot be claimed (non WinUSB device?)", interfaceNumber);
+            throwException("interface number %d cannot be claimed (non WinUSB device?)", interfaceNumber);
 
         try (var arena = Arena.ofConfined()) {
 
@@ -128,7 +128,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                         Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL, errorState);
 
                 if (Win.isInvalidHandle(deviceHandle))
-                    throwLastError(errorState, "Cannot open USB device %s", firstIntfHandle.devicePath);
+                    throwLastError(errorState, "opening USB device %s failed", firstIntfHandle.devicePath);
 
                 asyncTask.addDevice(deviceHandle);
 
@@ -140,7 +140,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 // open interface
                 var interfaceHandleHolder = arena.allocate(ADDRESS);
                 if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0)
-                    throwLastError(errorState, "Cannot open WinUSB device");
+                    throwLastError(errorState, "opening WinUSB device failed");
                 var interfaceHandle = dereference(interfaceHandleHolder);
 
                 firstIntfHandle.deviceHandle = deviceHandle;
@@ -162,21 +162,21 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
         if (intfHandle.interfaceHandle == null)
-            throwException("Interface %d has not been claimed", interfaceNumber);
+            throwException("interface %d has not been claimed", interfaceNumber);
 
         var intf = getInterface(interfaceNumber);
 
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
+            throwException("interface %d does not have an alternate interface setting %d", interfaceNumber,
                     alternateNumber);
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.interfaceHandle, (byte) alternateNumber,
                     errorState) == 0)
-                throwLastError(errorState, "Failed to set alternate interface");
+                throwLastError(errorState, "setting alternate interface failed");
         }
         intf.setAlternate(altSetting);
     }
@@ -186,7 +186,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         var intfHandle = getInterfaceHandle(interfaceNumber);
         if (intfHandle.interfaceHandle == null)
-            throwException("Interface %d has not been claimed", interfaceNumber);
+            throwException("interface %d has not been claimed", interfaceNumber);
 
         var firstIntfHandle = intfHandle;
         if (intfHandle.firstInterfaceNumber != interfaceNumber)
@@ -322,7 +322,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
-                    throwException(err, "Submitting control transfer failed");
+                    throwException(err, "submitting control transfer failed");
             }
         }
     }
@@ -340,7 +340,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
-                    throwException(err, "Submitting transfer OUT failed");
+                    throwException(err, "submitting transfer OUT failed");
             }
         }
     }
@@ -358,7 +358,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
-                    throwException(err, "Submitting transfer IN failed");
+                    throwException(err, "submitting transfer IN failed");
             }
         }
     }
@@ -373,12 +373,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var timeoutHolder = arena.allocate(JAVA_INT, 0);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
                     WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, errorState) == 0)
-                throwLastError(errorState, "Setting timeout failed");
+                throwLastError(errorState, "setting timeout failed");
 
             var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 1);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
                     (int) rawIoHolder.byteSize(), rawIoHolder, errorState) == 0)
-                throwLastError(errorState, "Setting raw IO failed");
+                throwLastError(errorState, "setting raw IO failed");
         }
     }
 
@@ -390,7 +390,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             if (WinUSB2.WinUsb_ResetPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), errorState) == 0)
-                throwLastError(errorState, "Clearing halt failed");
+                throwLastError(errorState, "clearing halt failed");
         }
     }
 
@@ -402,7 +402,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             if (WinUSB2.WinUsb_AbortPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), errorState) == 0)
-                throwLastError(errorState, "Aborting transfers on endpoint failed");
+                throwLastError(errorState, "aborting transfers on endpoint failed");
         }
     }
 
@@ -428,7 +428,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 return intfHandle;
         }
 
-        throwException("Invalid interface number: %s", interfaceNumber);
+        throwException("invalid interface number %s", interfaceNumber);
         throw new AssertionError("not reached");
     }
 
@@ -448,14 +448,14 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             if (endpointNumber != 0) {
                 interfaceNumber = getInterfaceNumber(direction, endpointNumber);
                 if (interfaceNumber == -1)
-                    throwException("Invalid endpoint number %d or interface not claimed", endpointNumber);
+                    throwException("invalid endpoint number %d or interface not claimed", endpointNumber);
             }
         }
 
         if (interfaceNumber >= 0) {
             var intfHandle = getInterfaceHandle(interfaceNumber);
             if (intfHandle.interfaceHandle == null)
-                throwException("Interface number %d has not been claimed", interfaceNumber);
+                throwException("interface number %d has not been claimed", interfaceNumber);
             return intfHandle;
         }
 
@@ -465,7 +465,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 return intfHandle;
         }
 
-        throwException("Control transfer failed as no interface has been claimed");
+        throwException("control transfer cannot be executed as no interface has been claimed");
         throw new AssertionError("not reached");
     }
 }

@@ -33,7 +33,7 @@ public class WindowsUSBException extends USBException {
      * @param errorCode Windows error code (usually returned from {@code GetLastError()})
      */
     public WindowsUSBException(String message, int errorCode) {
-        super(String.format("%s. %s", message, getErrorMessage(errorCode)), errorCode);
+        super(String.format("%s: %s", message, getErrorMessage(errorCode)), errorCode);
     }
 
     /**

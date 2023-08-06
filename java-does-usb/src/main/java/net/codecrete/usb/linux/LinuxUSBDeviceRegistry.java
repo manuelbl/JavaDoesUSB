@@ -220,8 +220,9 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             return device;
 
         } catch (Exception e) {
-            System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " +
-                    "ignoring device%n", vendorId, productId);
+            System.err.printf(
+                    "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
+                    vendorId, productId);
             e.printStackTrace(System.err);
             return null;
         }

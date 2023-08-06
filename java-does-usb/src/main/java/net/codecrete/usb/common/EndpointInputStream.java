@@ -22,12 +22,12 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * Input stream for bulk endpoints – optimized for high throughput.
  *
  * <p>
- * Multiple asynchronous transfer are submitted to achieve a good
+ * Multiple asynchronous transfers are submitted to achieve a good
  * degree of concurrency between the USB communication handled by the operating
  * system and the consuming application code.
  * </p>
  * <p>
- * For thread synchronization (between the background thread handling IO completion
+ * For thread synchronization (between the background thread handling IO completions
  * and the consuming application thread) a blocking queue is used. When an transfer
  * completes, the background thread adds it to the queue. The consuming code
  * waits for the next item in the queue.
@@ -178,7 +178,7 @@ public abstract class EndpointInputStream extends InputStream {
 
                 // check for error
                 if (currentTransfer.resultCode() != 0)
-                    device.throwOSException(currentTransfer.resultCode(), "error reading from endpoint %d",
+                    device.throwOSException(currentTransfer.resultCode(), "error occurred while reading from endpoint %d",
                             endpointNumber);
 
             } while (currentTransfer.resultSize() <= 0);

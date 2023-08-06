@@ -253,7 +253,7 @@ class LinuxAsyncTask {
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errorState) < 0) {
                 var action = endpointAddress >= 128 ? "reading from" : "writing to";
                 var endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
-                throwLastError(errorState, "failed %s %s", action, endpoint);
+                throwLastError(errorState, "error occurred while %s %s", action, endpoint);
             }
         }
     }
@@ -310,7 +310,7 @@ class LinuxAsyncTask {
                 if (IO.ioctl(fd, DISCARDURB, urb, errorState) < 0) {
                     // ignore EINVAL; it occurs if the URB has completed at the same time
                     if (Linux.getErrno(errorState) != errno.EINVAL())
-                        throwLastError(errorState, "failed to abort transfer");
+                        throwLastError(errorState, "error occurred while aborting transfer");
                 }
             }
         }

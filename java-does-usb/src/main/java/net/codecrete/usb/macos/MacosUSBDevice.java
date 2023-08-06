@@ -75,7 +75,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException("detachStandardDrivers() must not be called while the device is open");
         var ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateCaptureDeviceMask());
         if (ret != 0)
-            throwException(ret, "failed to detach kernel drivers");
+            throwException(ret, "detaching standard drivers failed");
     }
 
     @Override
@@ -84,7 +84,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             throwException("attachStandardDrivers() must not be called while the device is open");
         var ret = IoKitUSB.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateReleaseDeviceMask());
         if (ret != 0)
-            throwException(ret, "failed to attach kernel drivers");
+            throwException(ret, "attaching standard drivers failed");
     }
 
     @Override
@@ -96,7 +96,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
     @Override
     public synchronized void open() {
         if (isOpen())
-            throwException("the device is already open");
+            throwException("device is already open");
 
         // open device (several retries if device has just been connected/discovered)
         var duration = System.currentTimeMillis() - discoveryTime;
@@ -116,7 +116,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             }
         }
         if (ret != 0)
-            throwException(ret, "unable to open USB device");
+            throwException(ret, "opening USB device failed");
 
         claimedInterfaces = new ArrayList<>();
         addDeviceEventSource();
@@ -124,7 +124,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         // set configuration
         ret = IoKitUSB.SetConfiguration(device, (byte) configurationValue);
         if (ret != 0)
-            throwException(ret, "failed to set configuration");
+            throwException(ret, "setting configuration failed");
 
         updateEndpointList();
     }
@@ -165,7 +165,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var descPtrHolder = arena.allocate(ADDRESS);
             var ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder);
             if (ret != 0)
-                throwException(ret, "failed to query first configuration");
+                throwException(ret, "querying first configuration failed");
 
             var configDesc = dereference(descPtrHolder).reinterpret(999999);
             var configDescHeader = new ConfigurationDescriptor(configDesc);
@@ -189,7 +189,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var iterHolder = arena.allocate(JAVA_INT);
             var ret = IoKitUSB.CreateInterfaceIterator(device, request, iterHolder);
             if (ret != 0)
-                throwException("CreateInterfaceIterator failed");
+                throwException("internal error (CreateInterfaceIterator)");
 
             final var iter = iterHolder.get(JAVA_INT, 0);
             outerCleanup.add(() -> IOKit.IOObjectRelease(iter));
@@ -220,7 +220,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             }
         }
 
-        throwException("Invalid interface number: %d", interfaceNumber);
+        throwException("invalid interface number: %d", interfaceNumber);
         throw new AssertionError("not reached");
     }
 
@@ -235,7 +235,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
             var ret = IoKitUSB.USBInterfaceOpen(interfaceInfo.iokitInterface());
             if (ret != 0)
-                throwException(ret, "Failed to claim interface");
+                throwException(ret, "claiming interface failed");
 
             IoKitUSB.AddRef(interfaceInfo.iokitInterface());
             claimedInterfaces.add(interfaceInfo);
@@ -254,7 +254,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
+            throwException("interface %d does not have an alternate interface setting %d", interfaceNumber,
                     alternateNumber);
 
         var intfInfo =
@@ -262,7 +262,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         var ret = IoKitUSB.SetAlternateInterface(intfInfo.iokitInterface(), (byte) alternateNumber);
         if (ret != 0)
-            throwException(ret, "Failed to set alternate interface");
+            throwException(ret, "setting alternate interface failed");
 
         intf.setAlternate(altSetting);
         updateEndpointList();
@@ -283,7 +283,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         var ret = IoKitUSB.USBInterfaceClose(interfaceInfo.iokitInterface());
         if (ret != 0)
-            throwException(ret, "Failed to release interface");
+            throwException(ret, "releasing interface failed");
 
         claimedInterfaces.remove(interfaceInfo);
         IoKitUSB.Release(interfaceInfo.iokitInterface());
@@ -316,7 +316,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 var numEndpointsHolder = arena.allocate(JAVA_BYTE);
                 var ret = IoKitUSB.GetNumEndpoints(intf, numEndpointsHolder);
                 if (ret != 0)
-                    throwException(ret, "Failed to get number of endpoints");
+                    throwException(ret, "internal error (GetNumEndpoints)");
                 var numEndpoints = numEndpointsHolder.get(JAVA_BYTE, 0) & 255;
 
                 for (var pipeIndex = 1; pipeIndex <= numEndpoints; pipeIndex++) {
@@ -324,7 +324,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     ret = IoKitUSB.GetPipeProperties(intf, (byte) pipeIndex, directionHolder, numberHolder,
                             transferTypeHolder, maxPacketSizeHolder, intervalHolder);
                     if (ret != 0)
-                        throwException(ret, "Failed to get pipe properties");
+                        throwException(ret, "internal error (GetPipeProperties)");
 
                     var endpointNumber = numberHolder.get(JAVA_BYTE, 0) & 0xff;
                     var direction = directionHolder.get(JAVA_BYTE, 0) & 0xff;
@@ -355,8 +355,9 @@ public class MacosUSBDevice extends USBDeviceImpl {
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
 
-        throwException("Endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s "
-                + "transfer in %s direction", endpointNumber, transferTypeDesc, direction.name());
+        throwException(
+                "endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s transfer in %s direction",
+                endpointNumber, transferTypeDesc, direction.name());
         throw new AssertionError("not reached");
     }
 
@@ -499,7 +500,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
-            throwException(ret, "failed to read from endpoint %d", endpointNumber);
+            throwException(ret, "error occurred while reading from endpoint %d", endpointNumber);
     }
 
     /**
@@ -529,7 +530,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                     MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
-            throwException(ret, "failed to write to endpoint %d", endpointNumber);
+            throwException(ret, "error occurred while transmitting to endpoint %d", endpointNumber);
     }
 
     /**
@@ -548,7 +549,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
                 MemorySegment.ofAddress(transfer.id()));
 
         if (ret != 0)
-            throwException(ret, "failed to execute control transfer");
+            throwException(ret, "control transfer failed");
     }
 
     @Override
@@ -563,7 +564,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         var ret = IoKitUSB.AbortPipe(epInfo.iokitInterface(), epInfo.pipeIndex());
         if (ret != 0)
-            throwException(ret, "Aborting transfer failed");
+            throwException(ret, "aborting transfers failed");
     }
 
     @Override
@@ -573,7 +574,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
 
         var ret = IoKitUSB.ClearPipeStallBothEnds(epInfo.iokitInterface(), epInfo.pipeIndex());
         if (ret != 0)
-            throwException(ret, "Clearing halt condition failed");
+            throwException(ret, "clearing halt condition failed");
     }
 
     @Override
@@ -611,7 +612,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var sourceHolder = innerArena.allocate(ADDRESS);
             var ret = IoKitUSB.CreateDeviceAsyncEventSource(device, sourceHolder);
             if (ret != 0)
-                throwException(ret, "failed to create event source");
+                throwException(ret, "internal error (CreateDeviceAsyncEventSource)");
             var source = dereference(sourceHolder);
             asyncTask.addEventSource(source);
         }
@@ -622,7 +623,7 @@ public class MacosUSBDevice extends USBDeviceImpl {
             var sourceHolder = innerArena.allocate(ADDRESS);
             var ret = IoKitUSB.CreateInterfaceAsyncEventSource(interfaceInfo.iokitInterface(), sourceHolder);
             if (ret != 0)
-                throwException(ret, "failed to create event source");
+                throwException(ret, "internal error (CreateInterfaceAsyncEventSource)");
             var source = dereference(sourceHolder);
             asyncTask.addEventSource(source);
         }

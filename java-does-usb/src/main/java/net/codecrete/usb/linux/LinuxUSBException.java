@@ -27,7 +27,7 @@ public class LinuxUSBException extends USBException {
      * @param errorCode Linux error code (returned by {@code errno})
      */
     public LinuxUSBException(String message, int errorCode) {
-        super(String.format("%s. %s", message, Linux.getErrorMessage(errorCode)), errorCode);
+        super(String.format("%s: %s", message, Linux.getErrorMessage(errorCode)), errorCode);
     }
 
     /**

@@ -8,7 +8,7 @@
 package net.codecrete.usb.common;
 
 /**
- * Describes the function of an interface of a composite USB device.
+ * Describes a function of a composite USB device.
  * <p>
  * A composite USB device can have multiple functions, e.g. a mass
  * storage function and a virtual serial port function. Each function

@@ -116,7 +116,7 @@ class MacosAsyncTask {
                     Arena.global());
 
         } catch (IllegalAccessException | NoSuchMethodException e) {
-            throw new USBException("Creating method handle failed", e);
+            throw new USBException("internal error (creating method handle)", e);
         }
 
         var thread = new Thread(() -> asyncIOCompletionTask(firstSource), "USB async IO");

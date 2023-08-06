@@ -80,7 +80,7 @@ class WindowsAsyncTask {
                 var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
                 if (res == 0 && overlappedAddr == 0)
-                    throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    throwLastError(errorState, "internal error (SetupDiGetDeviceInterfaceDetailW)");
 
                 if (overlappedAddr == 0)
                     return; // registry closing?

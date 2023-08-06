@@ -21,7 +21,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 public abstract class USBDeviceImpl implements USBDevice {
 
     /**
-     * Operation-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
+     * Operating system-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
      * <p>
      * Can be a String instance (such as a file path) or a Long instance (such as an internal ID).
      * It only needs to be valid for the duration the device is connected.
@@ -79,7 +79,7 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     protected void checkIsOpen() {
         if (!isOpen())
-            throw new USBException("The device needs to be open to call this method");
+            throw new USBException("device needs to be opened first for this operation");
     }
 
     @Override
@@ -221,7 +221,7 @@ public abstract class USBDeviceImpl implements USBDevice {
                 return;
             }
         }
-        throw new USBException("Internal error (interface not found)");
+        throw new USBException("internal error (interface not found)");
     }
 
     @Override
@@ -232,11 +232,11 @@ public abstract class USBDeviceImpl implements USBDevice {
     public USBInterfaceImpl getInterfaceWithCheck(int interfaceNumber, boolean isClaimed) {
         var intf = getInterface(interfaceNumber);
         if (intf == null)
-            throw new USBException(String.format("Invalid interface number: %d", interfaceNumber));
+            throw new USBException(String.format("invalid interface number: %d", interfaceNumber));
         if (isClaimed && !intf.isClaimed()) {
-            throw new USBException(String.format("Interface %d has not been claimed", interfaceNumber));
+            throw new USBException(String.format("interface %d must be claimed first", interfaceNumber));
         } else if (!isClaimed && intf.isClaimed()) {
-            throw new USBException(String.format("Interface %d has already been claimed", interfaceNumber));
+            throw new USBException(String.format("interface %d has already been claimed", interfaceNumber));
         }
         return intf;
     }
@@ -292,7 +292,9 @@ public abstract class USBDeviceImpl implements USBDevice {
             transferTypeDesc = transferType1.name();
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
-        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " + "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc, direction.name()));
+        throw new USBException(String.format(
+                "endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s transfer in %s direction",
+                endpointNumber, transferTypeDesc, direction.name()));
     }
 
     protected int getInterfaceNumber(USBDirection direction, int endpointNumber) {
@@ -337,8 +339,8 @@ public abstract class USBDeviceImpl implements USBDevice {
             if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
                 waitNoTimeout(transfer);
-                throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to " +
-                        "timeout");
+                throw new USBTimeoutException(getOperationDescription(direction, endpointNumber)
+                        + "aborted due to timeout");
             }
         }
 
@@ -381,9 +383,9 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     protected static String getOperationDescription(USBDirection direction, int endpointNumber) {
         if (endpointNumber == 0) {
-            return "Control transfer";
+            return "control transfer";
         } else {
-            return String.format("Transfer %s on endpoint %d", direction.name(), endpointNumber);
+            return String.format("transfer %s on endpoint %d", direction.name(), endpointNumber);
         }
 
     }

@@ -104,8 +104,8 @@ public abstract class USBDeviceRegistry {
             onDeviceDisconnectedHandler.accept(device);
 
         } catch (Exception e) {
-            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - " +
-                    "ignoring");
+            System.err.println(
+                    "Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - ignoring");
             e.printStackTrace(System.err);
         }
     }
@@ -136,7 +136,7 @@ public abstract class USBDeviceRegistry {
         }
 
         if (failureCause != null)
-            throw new USBException("Initial device enumeration has failed", failureCause);
+            throw new USBException("initial device enumeration has failed", failureCause);
     }
 
     /**

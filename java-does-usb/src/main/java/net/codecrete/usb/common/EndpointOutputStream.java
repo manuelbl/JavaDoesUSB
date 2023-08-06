@@ -40,7 +40,7 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected USBDeviceImpl device;
     protected final int endpointNumber;
     protected final Arena arena;
-    // Endpoint's packet size
+    // Endpoint packet size
     private final int packetSize;
     // Transfer size (multiple of packet size)
     private final int transferSize;
@@ -228,7 +228,7 @@ public abstract class EndpointOutputStream extends OutputStream {
                 var result = transfer.resultCode();
                 if (result != 0 && !hasError) {
                     transfer.setResultCode(0);
-                    device.throwOSException(result, "error writing to endpoint %d", endpointNumber);
+                    device.throwOSException(result, "error occurred while transmitting to endpoint %d", endpointNumber);
                 }
 
                 return transfer;
@@ -256,6 +256,6 @@ public abstract class EndpointOutputStream extends OutputStream {
 
     private void checkIsOpen() throws IOException {
         if (isClosed())
-            throw new IOException("Bulk endpoint output stream has been closed");
+            throw new IOException("endpoint output stream has been closed");
     }
 }

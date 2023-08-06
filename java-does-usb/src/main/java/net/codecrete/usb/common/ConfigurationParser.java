@@ -28,7 +28,7 @@ import static net.codecrete.usb.usbstandard.Constants.*;
 public class ConfigurationParser {
 
     /**
-     * Parse a USB configuration descriptor (incl. interface and endpoint descriptors)
+     * Parses a USB configuration descriptor (incl. interface and endpoint descriptors)
      *
      * @param desc configuration descriptor
      * @return parsed configuration data
@@ -97,11 +97,11 @@ public class ConfigurationParser {
     private void parseHeader() {
         var desc = new ConfigurationDescriptor(descriptor);
         if (CONFIGURATION_DESCRIPTOR_TYPE != desc.descriptorType())
-            throw new USBException("Invalid USB configuration descriptor");
+            throw new USBException("invalid USB configuration descriptor");
 
         var totalLength = desc.totalLength();
         if (descriptor.byteSize() != totalLength)
-            throw new USBException("Invalid USB configuration descriptor length");
+            throw new USBException("invalid USB configuration descriptor (invalid length)");
 
         configuration = new Configuration(desc.configurationValue(), desc.attributes(), desc.maxPower());
     }

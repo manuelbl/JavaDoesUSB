@@ -60,7 +60,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         try {
             descriptors = Files.readAllBytes(Path.of(path));
         } catch (IOException e) {
-            throw new USBException("Cannot read configuration descriptor", e);
+            throw new USBException("reading configuration descriptor failed", e);
         }
 
         // `descriptors` contains the device descriptor followed by the configuration descriptor
@@ -92,14 +92,14 @@ public class LinuxUSBDevice extends USBDeviceImpl {
     @Override
     public synchronized void open() {
         if (isOpen())
-            throwException("the device is already open");
+            throwException("device is already open");
 
         try (var arena = Arena.ofConfined()) {
             var pathUtf8 = arena.allocateUtf8String(uniqueDeviceId.toString());
             var errorState = allocateErrorState(arena);
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errorState);
             if (fd == -1)
-                throwLastError(errorState, "Cannot open USB device");
+                throwLastError(errorState, "opening USB device failed");
             asyncTask.addForAsyncIOCompletion(this);
         }
     }
@@ -146,7 +146,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             }
 
             if (ret != 0)
-                throwLastError(errorState, "Cannot claim USB interface");
+                throwLastError(errorState, "claiming USB interface failed");
 
             setClaimed(interfaceNumber, true);
         }
@@ -161,7 +161,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
         if (altSetting == null)
-            throwException("Interface %d does not have an alternate interface setting %d", interfaceNumber,
+            throwException("interface %d does not have an alternate interface setting %d", interfaceNumber,
                     alternateNumber);
 
         try (var arena = Arena.ofConfined()) {
@@ -171,7 +171,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var errorState = allocateErrorState(arena);
             var ret = IO.ioctl(fd, USBDevFS.SETINTERFACE, setIntfSegment, errorState);
             if (ret != 0)
-                throwLastError(errorState, "Failed to set alternate interface");
+                throwLastError(errorState, "setting alternate interface failed");
         }
 
         intf.setAlternate(altSetting);
@@ -187,7 +187,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var errorState = allocateErrorState(arena);
             var ret = IO.ioctl(fd, USBDevFS.RELEASEINTERFACE, intfNumSegment, errorState);
             if (ret != 0)
-                throwLastError(errorState, "Cannot release USB interface");
+                throwLastError(errorState, "releasing USB interface failed");
 
             setClaimed(interfaceNumber, false);
 
@@ -329,7 +329,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
             var errorState = allocateErrorState(arena);
             var res = IO.ioctl(fd, USBDevFS.CLEAR_HALT, endpointAddrSegment, errorState);
             if (res < 0)
-                throwLastError(errorState, "Clearing halt failed");
+                throwLastError(errorState, "clearing halt failed");
         }
     }
 

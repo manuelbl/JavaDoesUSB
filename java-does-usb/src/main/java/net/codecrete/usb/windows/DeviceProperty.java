@@ -75,10 +75,10 @@ class DeviceProperty {
             var errorState = allocateErrorState(arena);
             if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
                     propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
-                throwLastError(errorState, "Internal error (SetupDiGetDevicePropertyW - A)");
+                throwLastError(errorState, "internal error (SetupDiGetDevicePropertyW - A)");
 
             if (propertyTypeHolder.get(JAVA_INT, 0) != SetupAPI.DEVPROP_TYPE_UINT32())
-                throwException("Internal error (expected property type UINT32)");
+                throwException("internal error (expected property type UINT32)");
 
             return propertyValueHolder.get(JAVA_INT, 0);
         }
@@ -137,11 +137,11 @@ class DeviceProperty {
             if (err == Kernel32.ERROR_NOT_FOUND())
                 return null;
             if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
-                throwException(err, "Internal error (SetupDiGetDevicePropertyW - B)");
+                throwException(err, "internal error (SetupDiGetDevicePropertyW - B)");
         }
 
         if (propertyTypeHolder.get(JAVA_INT, 0) != propertyType)
-            throwException("Internal error (unexpected property type)");
+            throwException("internal error (unexpected property type)");
 
         var stringLen = requiredSizeHolder.get(JAVA_INT, 0) / 2 - 1;
 
@@ -151,7 +151,7 @@ class DeviceProperty {
         // get property value
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
                 propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
-            throwLastError(errorState, "Internal error (SetupDiGetDevicePropertyW - C)");
+            throwLastError(errorState, "internal error (SetupDiGetDevicePropertyW - C)");
 
         return propertyValueHolder;
     }
@@ -174,7 +174,7 @@ class DeviceProperty {
             var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(), 0,
                     SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), errorState);
             if (Win.isInvalidHandle(regKey))
-                throwLastError(errorState, "Cannot open device registry key");
+                throwLastError(errorState, "internal error (SetupDiOpenDevRegKey)");
             cleanup.add(() -> Advapi32.RegCloseKey(regKey));
 
             // read registry value (without buffer, to query length)
@@ -185,14 +185,14 @@ class DeviceProperty {
             if (res == Kernel32.ERROR_FILE_NOT_FOUND())
                 return List.of(); // no device interface GUIDs
             if (res != 0 && res != Kernel32.ERROR_MORE_DATA())
-                throwException(res, "Internal error (RegQueryValueExW)");
+                throwException(res, "internal error (RegQueryValueExW)");
 
             // read registry value (with buffer)
             var valueSize = valueSizeHolder.get(JAVA_INT, 0);
             var value = arena.allocate(valueSize);
             res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
             if (res != 0)
-                throwException(res, "Internal error (RegQueryValueExW)");
+                throwException(res, "internal error (RegQueryValueExW)");
 
             return Win.createStringListFromSegment(value);
         }

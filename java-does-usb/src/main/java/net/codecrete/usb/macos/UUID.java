@@ -34,7 +34,7 @@ class UUID {
             uuidBytes.copyFrom(MemorySegment.ofArray(bytes));
             return CoreFoundation.CFUUIDCreateFromUUIDBytes(NULL, uuidBytes);
         } catch (Exception e) {
-            throw new AssertionError("internal error (createCFUUID)", e);
+            throw new AssertionError("internal error (CFUUIDCreateFromUUIDBytes)", e);
         }
     }
 }
