@@ -7,40 +7,58 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.windows.gen.setupapi.*;
+import net.codecrete.usb.windows.gen.setupapi._DEVPROPKEY;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 /**
- * Device property GUIDs
+ * Device property keys (GUIDs)
  */
-class DeviceProperty {
+class DevicePropertyKey {
 
-    private DeviceProperty() {
+    private DevicePropertyKey() {
     }
 
-    static final MemorySegment DEVPKEY_Device_Address = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
+    /**
+     * DEVPKEY_Device_Address
+     */
+    static final MemorySegment Address = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
             (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
             , (byte) 0xe0, 30);
 
-    static final MemorySegment DEVPKEY_Device_InstanceId = createDEVPROPKEY(0x78c34fc8, (short) 0x104a,
+    /**
+     * DEVPKEY_Device_InstanceId
+     */
+    static final MemorySegment InstanceId = createDEVPROPKEY(0x78c34fc8, (short) 0x104a,
             (short) 0x4aca, (byte) 0x9e, (byte) 0xa4, (byte) 0x52, (byte) 0x4d, (byte) 0x52, (byte) 0x99, (byte) 0x6e
             , (byte) 0x57, 256);
 
-    static final MemorySegment DEVPKEY_Device_Parent = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
+    /**
+     * DEVPKEY_Device_Parent
+     */
+    static final MemorySegment Parent = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
             (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64, (byte) 0x80, (byte) 0x08, (byte) 0xa5
             , (byte) 0xa7, 8);
 
-    static final MemorySegment DEVPKEY_Device_Service = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
+    /**
+     * DEVPKEY_Device_Service
+     */
+    static final MemorySegment Service = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
             (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
             , (byte) 0xe0, 6);
 
-    static final MemorySegment DEVPKEY_Device_Children = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
+    /**
+     * DEVPKEY_Device_Children
+     */
+    static final MemorySegment Children = createDEVPROPKEY(0x4340a6c5, (short) 0x93fa,
             (short) 0x4706, (byte) 0x97, (byte) 0x2c, (byte) 0x7b, (byte) 0x64, (byte) 0x80, (byte) 0x08, (byte) 0xa5
             , (byte) 0xa7, 9);
 
-    static final MemorySegment DEVPKEY_Device_HardwareIds = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
+    /**
+     * DEVPKEY_Device_HardwareIds
+     */
+    static final MemorySegment HardwareIds = createDEVPROPKEY(0xa45c254e, (short) 0xdf1c,
             (short) 0x4efd, (byte) 0x80, (byte) 0x20, (byte) 0x67, (byte) 0xd1, (byte) 0x46, (byte) 0xa8, (byte) 0x50
             , (byte) 0xe0, 3);
 

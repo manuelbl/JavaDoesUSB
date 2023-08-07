@@ -18,7 +18,7 @@ import java.util.List;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_Service;
+import static net.codecrete.usb.windows.DevicePropertyKey.Service;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
@@ -46,20 +46,12 @@ public class DeviceInfoSet implements AutoCloseable {
     private int iterationIndex = -1;
 
     /**
-     * Creates a new empty device info set.
-     *
-     * @return device info set
-     */
-    static DeviceInfoSet ofEmpty() {
-        return new DeviceInfoSet((arena, errorState) -> SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, errorState));
-    }
-
-    /**
      * Creates a new device info set containing the present devices of the specified device class and
      * optionally device instance ID.
      *
      * <p>
-     * After creation, there is no current element. {@link #next()} must be called first.
+     * After creation, there is no current element. {@link #next()} should be called to iterate the first
+     * and all subsequent elements.
      * </p>
      *
      * @param interfaceGuid device interface class GUID
@@ -72,6 +64,45 @@ public class DeviceInfoSet implements AutoCloseable {
             return SetupAPI2.SetupDiGetClassDevsW(interfaceGuid, instanceIdSegment, NULL,
                     SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), errorState);
         });
+    }
+
+    /**
+     * Creates a new device info set containing a single device with the specified instance ID.
+     *
+     * <p>
+     * The device becomes the current element. The set cannot be iterated.
+     * </p>
+     *
+     * @param instanceId instance ID
+     */
+    static DeviceInfoSet ofInstance(String instanceId) {
+        var devInfoSet = ofEmpty();
+        devInfoSet.addInstanceId(instanceId);
+        return devInfoSet;
+    }
+
+    /**
+     * Creates a new device info set containing a single device with the specified path.
+     *
+     * <p>
+     * The device becomes the current element. The set cannot be iterated.
+     * </p>
+     *
+     * @param devicePath device path
+     */
+    static DeviceInfoSet ofPath(String devicePath) {
+        var devInfoSet = ofEmpty();
+        devInfoSet.addDevicePath(devicePath);
+        return devInfoSet;
+    }
+
+    /**
+     * Creates a new empty device info set.
+     *
+     * @return device info set
+     */
+    private static DeviceInfoSet ofEmpty() {
+        return new DeviceInfoSet((arena, errorState) -> SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, errorState));
     }
 
     private DeviceInfoSet(InfoSetCreator creator) {
@@ -101,48 +132,13 @@ public class DeviceInfoSet implements AutoCloseable {
         arena.close();
     }
 
-    /**
-     * Iterates to the next element in this set.
-     *
-     * @return {@code true} if there is a current element, {@code false} if the iteration moved beyond the last element
-     */
-    boolean next() {
-        iterationIndex += 1;
-        if (SetupAPI2.SetupDiEnumDeviceInfo(devInfoSet, iterationIndex, devInfoData, errorState) == 0) {
-            var err = Win.getLastError(errorState);
-            if (err == Kernel32.ERROR_NO_MORE_ITEMS())
-                return false;
-            throwLastError(errorState, "internal error (SetupDiEnumDeviceInfo)");
-        }
-
-        return true;
-    }
-
-    /**
-     * Adds the device with the specified instance ID to this device info set.
-     *
-     * <p>
-     * The added device becomes the current element.
-     * </p>
-     *
-     * @param instanceId instance ID
-     */
-    void addInstance(String instanceId) {
+    private void addInstanceId(String instanceId) {
         var instanceIdSegment = Win.createSegmentFromString(instanceId, arena);
         if (SetupAPI2.SetupDiOpenDeviceInfoW(devInfoSet, instanceIdSegment, NULL, 0, devInfoData, errorState) == 0)
             throwLastError(errorState, "internal error (SetupDiOpenDeviceInfoW)");
     }
 
-    /**
-     * Adds the device with the specified path to this device info set.
-     *
-     * <p>
-     * The added device becomes the current element.
-     * </p>
-     *
-     * @param devicePath device path
-     */
-    void addDevice(String devicePath) {
+    private void addDevicePath(String devicePath) {
         if (devIntfData != null)
             throw new AssertionError("calling addDevice() multiple times is not implemented");
 
@@ -163,6 +159,22 @@ public class DeviceInfoSet implements AutoCloseable {
         }
     }
 
+    /**
+     * Iterates to the next element in this set.
+     *
+     * @return {@code true} if there is a current element, {@code false} if the iteration moved beyond the last element
+     */
+    boolean next() {
+        iterationIndex += 1;
+        if (SetupAPI2.SetupDiEnumDeviceInfo(devInfoSet, iterationIndex, devInfoData, errorState) == 0) {
+            var err = Win.getLastError(errorState);
+            if (err == Kernel32.ERROR_NO_MORE_ITEMS())
+                return false;
+            throwLastError(errorState, "internal error (SetupDiEnumDeviceInfo)");
+        }
+
+        return true;
+    }
 
     /**
      * Checks if the current element is a composite USB device
@@ -170,7 +182,7 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return {@code true} if it is a composite device
      */
     boolean isCompositeDevice() {
-        var deviceService = getStringProperty(DEVPKEY_Device_Service);
+        var deviceService = getStringProperty(Service);
 
         // usbccgp is the USB Generic Parent Driver used for composite devices
         return "usbccgp".equalsIgnoreCase(deviceService);

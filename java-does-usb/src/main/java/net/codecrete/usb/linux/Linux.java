@@ -9,8 +9,11 @@ package net.codecrete.usb.linux;
 
 import net.codecrete.usb.linux.gen.string.string;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout.PathElement;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
 import java.lang.invoke.VarHandle;
 
 /**

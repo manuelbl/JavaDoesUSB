@@ -30,20 +30,16 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.usbstandard.Constants.*;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_Address;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_Children;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_HardwareIds;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_InstanceId;
-import static net.codecrete.usb.windows.DeviceProperty.DEVPKEY_Device_Parent;
+import static net.codecrete.usb.windows.DevicePropertyKey.*;
+import static net.codecrete.usb.windows.USBConstants.GUID_DEVINTERFACE_USB_DEVICE;
+import static net.codecrete.usb.windows.USBConstants.GUID_DEVINTERFACE_USB_HUB;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
@@ -101,7 +97,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size$set(notificationFilter, (int) notificationFilter.byteSize());
                 _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype$set(notificationFilter,
                         User32.DBT_DEVTYP_DEVICEINTERFACE());
-                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(USBConstants.GUID_DEVINTERFACE_USB_DEVICE);
+                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid$slice(notificationFilter).copyFrom(GUID_DEVINTERFACE_USB_DEVICE);
 
                 var notifyHandle = User32B.RegisterDeviceNotificationW(hwnd, notificationFilter,
                         User32.DEVICE_NOTIFY_WINDOW_HANDLE(), errorState);
@@ -133,7 +129,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
         List<USBDevice> deviceList = new ArrayList<>();
         try (var cleanup = new ScopeCleanup();
-             var deviceInfoSet = DeviceInfoSet.ofPresentDevices(USBConstants.GUID_DEVINTERFACE_USB_DEVICE, null)) {
+             var deviceInfoSet = DeviceInfoSet.ofPresentDevices(GUID_DEVINTERFACE_USB_DEVICE, null)) {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
@@ -142,8 +138,8 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             // iterate all devices
             while (deviceInfoSet.next()) {
 
-                var instanceId = deviceInfoSet.getStringProperty(DEVPKEY_Device_InstanceId);
-                var devicePath = DeviceInfoSet.getDevicePath(instanceId, USBConstants.GUID_DEVINTERFACE_USB_DEVICE);
+                var instanceId = deviceInfoSet.getStringProperty(InstanceId);
+                var devicePath = DeviceInfoSet.getDevicePath(instanceId, GUID_DEVINTERFACE_USB_DEVICE);
 
                 try {
                     deviceList.add(createDeviceFromDeviceInfo(deviceInfoSet, devicePath, hubHandles));
@@ -160,48 +156,13 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
-    /**
-     * Enumerate the children of a composite device.
-     *
-     * @param childrenIds the children IDs
-     * @return map of containing children device paths, index by the first interface number
-     */
-    private Map<Integer, String> enumerateChildren(List<String> childrenIds) {
-
-        var children = new HashMap<Integer, String>();
-
-        // iterate all children
-        for (var instanceId : childrenIds) {
-            try (var deviceInfoSet = DeviceInfoSet.ofEmpty()) {
-
-                // get device info for child
-                deviceInfoSet.addInstance(instanceId);
-
-                // get hardware IDs (to extract interface number)
-                var hardwareIds = deviceInfoSet.getStringListProperty(DEVPKEY_Device_HardwareIds);
-                if (hardwareIds == null)
-                    throwException("internal error (device property 'HardwareIds' is missing)");
-                var interfaceNumber = extractInterfaceNumber(hardwareIds);
-                if (interfaceNumber == -1)
-                    continue;
-
-                var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
-                if (devicePath != null)
-                    children.put(interfaceNumber, devicePath);
-            }
-        }
-
-        return children;
-    }
-
-
     private USBDevice createDeviceFromDeviceInfo(DeviceInfoSet deviceInfoSet, String devicePath,
                                                  HashMap<String, MemorySegment> hubHandles) {
         try (var arena = Arena.ofConfined()) {
 
-            var usbPortNum = deviceInfoSet.getIntProperty(DEVPKEY_Device_Address);
-            var parentInstanceId = deviceInfoSet.getStringProperty(DEVPKEY_Device_Parent);
-            var hubPath = DeviceInfoSet.getDevicePath(parentInstanceId, USBConstants.GUID_DEVINTERFACE_USB_HUB);
+            var usbPortNum = deviceInfoSet.getIntProperty(Address);
+            var parentInstanceId = deviceInfoSet.getStringProperty(Parent);
+            var hubPath = DeviceInfoSet.getDevicePath(parentInstanceId, GUID_DEVINTERFACE_USB_HUB);
 
             // open hub if not open yet
             var hubHandle = hubHandles.get(hubPath);
@@ -233,7 +194,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         var numTries = 5;
         while (true) {
             numTries -= 1;
-            childrenInstanceIDs = deviceInfoSet.getStringListProperty(DEVPKEY_Device_Children);
+            childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
             if (childrenInstanceIDs != null || numTries == 0)
                 break;
 
@@ -253,7 +214,11 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             return null;
         }
 
-        return enumerateChildren(childrenInstanceIDs);
+        // create children map (interface number -> device path)
+        return childrenInstanceIDs.stream()
+                .map(WindowsUSBDeviceRegistry::getNumberPathTuple)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
@@ -388,9 +353,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
     @SuppressWarnings("java:S106")
     private void onDeviceConnected(String devicePath) {
         try (var cleanup = new ScopeCleanup();
-             var deviceInfoSet = DeviceInfoSet.ofEmpty()) {
-
-            deviceInfoSet.addDevice(devicePath);
+             var deviceInfoSet = DeviceInfoSet.ofPath(devicePath)) {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
@@ -436,6 +399,31 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 return i;
         }
         return -1;
+    }
+
+    /**
+     * Looks up the interface number and device path for the child device with the given instance ID.
+     *
+     * @param instanceId child instance ID
+     * @return tuple consisting of interface number and device path, or {@code null} if unsuccessful
+     */
+    private static Map.Entry<Integer, String> getNumberPathTuple(String instanceId) {
+        try (var deviceInfoSet = DeviceInfoSet.ofInstance(instanceId)) {
+
+            // get hardware IDs (to extract interface number)
+            var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
+            if (hardwareIds == null)
+                throwException("internal error (device property 'HardwareIds' is missing)");
+            var interfaceNumber = extractInterfaceNumber(hardwareIds);
+            if (interfaceNumber == -1)
+                return null;
+
+            var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
+            if (devicePath == null)
+                return null;
+
+            return new AbstractMap.SimpleImmutableEntry<>(interfaceNumber, devicePath);
+        }
     }
 
     private static final Pattern MULTIPLE_INTERFACE_ID = Pattern.compile(

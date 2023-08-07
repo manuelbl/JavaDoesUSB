@@ -7,7 +7,10 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.USBControlTransfer;
+import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.USBRecipient;
+import net.codecrete.usb.USBTransferType;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
