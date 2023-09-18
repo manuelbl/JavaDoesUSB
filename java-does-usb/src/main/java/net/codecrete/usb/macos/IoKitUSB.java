@@ -81,9 +81,14 @@ class IoKitUSB {
         return IOUSBDeviceStruct187.CreateInterfaceIterator(getVtable(self), Arena.global()).apply(self, req, iter);
     }
 
+    // IOReturn (* DeviceRequest)(void* self, IOUSBDevRequest* req)
+    static int DeviceRequest(MemorySegment self, MemorySegment deviceRequest) {
+        return IOUSBDeviceStruct187.DeviceRequest(getVtable(self), Arena.global()).apply(self, deviceRequest);
+    }
+
     // IOReturn (* DeviceRequestAsync)(void* self, IOUSBDevRequest* req, IOAsyncCallback1 callback, void* refCon)
     static int DeviceRequestAsync(MemorySegment self, MemorySegment deviceRequest, MemorySegment callback,
-                                         MemorySegment refCon) {
+                                  MemorySegment refCon) {
         return IOUSBDeviceStruct187.DeviceRequestAsync(getVtable(self), Arena.global()).apply(self, deviceRequest,
                 callback, refCon);
     }

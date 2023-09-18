@@ -21,9 +21,9 @@ class BulkTransferTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
-        byte[] sampleData = generateRandomBytes(12, 293872394);
+        var sampleData = generateRandomBytes(12, 293872394);
         writeBytes(sampleData);
-        byte[] data = readBytes(sampleData.length);
+        var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
     }
 
@@ -31,19 +31,19 @@ class BulkTransferTest extends TestDeviceBase {
     void mediumTransfer_succeeds() {
         // This synchronous approach should work as the test device
         // has an internal buffer of about 500 bytes.
-        byte[] sampleData = generateRandomBytes(140, 97333894);
+        var sampleData = generateRandomBytes(140, 97333894);
         writeBytes(sampleData);
-        byte[] data = readBytes(sampleData.length);
+        var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
     }
 
     @Test
     void transferWithZLP_succeeds() {
         var inEndpoint = testDevice.getEndpoint(USBDirection.IN, LOOPBACK_EP_IN);
-        byte[] sampleData = generateRandomBytes(inEndpoint.packetSize(), 97333894);
+        var sampleData = generateRandomBytes(inEndpoint.packetSize(), 97333894);
         testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
         testDevice.transferOut(LOOPBACK_EP_OUT, new byte[0]);
-        byte[] data = testDevice.transferIn(LOOPBACK_EP_IN);
+        var data = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(sampleData, data);
         data = testDevice.transferIn(LOOPBACK_EP_IN);
         assertNotNull(data);
@@ -52,8 +52,8 @@ class BulkTransferTest extends TestDeviceBase {
 
     @Test
     void largeTransfer_succeeds() throws Throwable {
-        final int numBytes = 230763;
-        byte[] sampleData = generateRandomBytes(numBytes, 3829007493L);
+        final var numBytes = 230763;
+        var sampleData = generateRandomBytes(numBytes, 3829007493L);
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData));
         var reader = CompletableFuture.supplyAsync(() -> readBytes(numBytes));
         CompletableFuture.allOf(writer, reader).join();
@@ -63,19 +63,19 @@ class BulkTransferTest extends TestDeviceBase {
     }
 
     static void writeBytes(byte[] data) {
-        final int chunkSize = 100;
-        int numBytes = 0;
+        final var chunkSize = 100;
+        var numBytes = 0;
         while (numBytes < data.length) {
-            int size = Math.min(chunkSize, data.length - numBytes);
+            var size = Math.min(chunkSize, data.length - numBytes);
             testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(data, numBytes, numBytes + size));
             numBytes += size;
         }
     }
     static byte[] readBytes(int numBytes) {
         var buffer = new ByteArrayOutputStream();
-        int bytesRead = 0;
+        var bytesRead = 0;
         while (bytesRead < numBytes) {
-            byte[] data = testDevice.transferIn(LOOPBACK_EP_IN);
+            var data = testDevice.transferIn(LOOPBACK_EP_IN);
             buffer.writeBytes(data);
             bytesRead += data.length;
         }

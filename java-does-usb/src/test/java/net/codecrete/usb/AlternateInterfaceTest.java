@@ -47,7 +47,7 @@ class AlternateInterfaceTest extends TestDeviceBase {
     void transferOnValidEndpoint_succeeds() {
         testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
 
-        byte[] sampleData = generateRandomBytes(12, 293872394);
+        var sampleData = generateRandomBytes(12, 293872394);
         testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
         var received = testDevice.transferIn(LOOPBACK_EP_IN);
         assertArrayEquals(sampleData, received);

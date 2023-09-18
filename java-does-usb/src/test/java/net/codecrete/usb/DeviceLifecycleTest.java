@@ -21,7 +21,7 @@ class DeviceLifecycleTest {
     @Test
     void lifecycle_showsValidState() {
         device = TestDeviceBase.getDevice();
-        int interfaceNumber = TestDeviceBase.getInterfaceNumber(device);
+        var interfaceNumber = TestDeviceBase.getInterfaceNumber(device);
 
         var intf = device.interfaces().get(interfaceNumber);
         assertEquals(interfaceNumber, intf.number());

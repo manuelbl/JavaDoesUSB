@@ -7,9 +7,7 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.*;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
@@ -17,6 +15,8 @@ import net.codecrete.usb.macos.gen.iokit.IOKit;
 import net.codecrete.usb.macos.gen.iokit.IOUSBDevRequest;
 import net.codecrete.usb.macos.gen.iokit.IOUSBFindInterfaceRequest;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
+import net.codecrete.usb.usbstandard.Constants;
+import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -159,11 +159,23 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private void loadDescription(MemorySegment device) {
         try (var arena = Arena.ofConfined()) {
 
+            var data = arena.allocate(DeviceDescriptor.LAYOUT.byteSize());
+            var ret = IoKitUSB.DeviceRequest(device, createDeviceRequest(arena, USBDirection.IN, new USBControlTransfer(
+                    USBRequestType.STANDARD,
+                    USBRecipient.DEVICE,
+                    6, // get descriptor
+                    Constants.DEVICE_DESCRIPTOR_TYPE << 8,
+                    0
+            ), data));
+            if (ret != 0)
+                throwException(ret, "querying device descriptor failed");
+            rawDeviceDescriptor = data.toArray(JAVA_BYTE);
+
             configurationValue = 0;
 
             // retrieve information of first configuration
             var descPtrHolder = arena.allocate(ADDRESS);
-            var ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder);
+            ret = IoKitUSB.GetConfigurationDescriptorPtr(device, (byte) 0, descPtrHolder);
             if (ret != 0)
                 throwException(ret, "querying first configuration failed");
 

@@ -31,6 +31,8 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     protected List<USBInterface> interfaceList;
 
+    protected byte[] rawDeviceDescriptor;
+
     protected byte[] rawConfigurationDescriptor;
 
     // Information from the device descriptor
@@ -137,6 +139,11 @@ public abstract class USBDeviceImpl implements USBDevice {
         return rawConfigurationDescriptor;
     }
 
+    @Override
+    public byte[] deviceDescriptor() {
+        return rawDeviceDescriptor;
+    }
+
     public Object getUniqueId() {
         return uniqueDeviceId;
     }
@@ -147,6 +154,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param descriptor the device descriptor
      */
     public void setFromDeviceDescriptor(MemorySegment descriptor) {
+        rawDeviceDescriptor = descriptor.toArray(JAVA_BYTE);
         var deviceDescriptor = new DeviceDescriptor(descriptor);
         deviceClass = deviceDescriptor.deviceClass() & 255;
         deviceSubclass = deviceDescriptor.deviceSubClass() & 255;

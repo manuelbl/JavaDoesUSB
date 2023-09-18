@@ -23,7 +23,7 @@ class IO {
     private static final Linker linker = Linker.nativeLinker();
     private static final FunctionDescriptor ioctl$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_LONG, ADDRESS);
     private static final MethodHandle ioctl$MH = linker.downcallHandle(linker.defaultLookup().find("ioctl").get(),
-            ioctl$FUNC, Linux.ERRNO_STATE);
+            ioctl$FUNC, Linux.ERRNO_STATE, Linker.Option.firstVariadicArg(2));
     private static final FunctionDescriptor open$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT);
     private static final MethodHandle open$MH = linker.downcallHandle(linker.defaultLookup().find("open").get(),
             open$FUNC, Linux.ERRNO_STATE);
