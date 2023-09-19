@@ -19,12 +19,15 @@ import java.lang.foreign.MemorySegment;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.Logger.Level.INFO;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 
 /**
  * Linux implementation of USB device registry.
  */
 public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
+
+    private static final System.Logger LOG = System.getLogger(LinuxUSBDeviceRegistry.class.getName());
 
     private static final MemorySegment SUBSYSTEM_USB;
     private static final MemorySegment MONITOR_NAME;
@@ -220,10 +223,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
             return device;
 
         } catch (Exception e) {
-            System.err.printf(
-                    "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
-                    vendorId, productId);
-            e.printStackTrace(System.err);
+            LOG.log(INFO, String.format("failed to retrieve information about device 0x%04x/0x%04x - ignoring device", vendorId, productId), e);
             return null;
         }
     }

@@ -34,6 +34,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.lang.System.Logger.Level.DEBUG;
+import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.usbstandard.Constants.*;
@@ -53,6 +55,8 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  * </p>
  */
 public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
+
+    private static final System.Logger LOG = System.getLogger(WindowsUSBDeviceRegistry.class.getName());
 
     private static final long REQUEST_DATA_OFFSET
             = _USB_DESCRIPTOR_REQUEST.$LAYOUT().byteOffset(PathElement.groupElement("Data"));
@@ -145,10 +149,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                     deviceList.add(createDeviceFromDeviceInfo(deviceInfoSet, devicePath, hubHandles));
 
                 } catch (Exception e) {
-                    System.err.printf(
-                            "Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring device%n",
-                            devicePath);
-                    e.printStackTrace(System.err);
+                    LOG.log(INFO, String.format("failed to retrieve information about device %s - ignoring device", devicePath), e);
                 }
             }
 
@@ -200,6 +201,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             // sleep and retry
             try {
+                LOG.log(DEBUG, "Sleeping for 200ms (after unsuccessfully retrieving DEVPKEY_Device_Children)");
                 //noinspection BusyWait
                 Thread.sleep(200);
             } catch (InterruptedException e) {
@@ -208,9 +210,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
         }
 
         if (childrenInstanceIDs == null) {
-            System.err.printf(
-                    "Info: [JavaDoesUSB] unable to retrieve information about children of device %s - ignoring%n",
-                    devicePath);
+            LOG.log(DEBUG, "unable to retrieve information about children of device {0} - ignoring", devicePath);
             return null;
         }
 
@@ -367,10 +367,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 addDevice(device);
 
             } catch (Exception e) {
-                System.err.printf(
-                        "Info: [JavaDoesUSB] failed to retrieve information about device %s - ignoring device%n",
-                        devicePath);
-                e.printStackTrace(System.err);
+                    LOG.log(INFO, String.format("failed to retrieve information about device %s - ignoring device", devicePath), e);
             }
         }
     }
@@ -415,12 +412,16 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             if (hardwareIds == null)
                 throwException("internal error (device property 'HardwareIds' is missing)");
             var interfaceNumber = extractInterfaceNumber(hardwareIds);
-            if (interfaceNumber == -1)
+            if (interfaceNumber == -1) {
+                LOG.log(DEBUG, "Child device {0} has no interface number", instanceId);
                 return null;
+            }
 
             var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
-            if (devicePath == null)
+            if (devicePath == null) {
+                LOG.log(DEBUG, "Child device {0} has no device path", instanceId);
                 return null;
+            }
 
             return new AbstractMap.SimpleImmutableEntry<>(interfaceNumber, devicePath);
         }

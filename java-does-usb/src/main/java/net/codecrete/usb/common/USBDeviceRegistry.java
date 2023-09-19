@@ -18,6 +18,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
+
 /**
  * Base class for USB device registry.
  * <p>
@@ -31,6 +34,8 @@ import java.util.function.Consumer;
  * </p>
  */
 public abstract class USBDeviceRegistry {
+
+    private static final System.Logger LOG = System.getLogger(USBDeviceRegistry.class.getName());
 
     private List<USBDevice> devices;
     private Throwable failureCause;
@@ -81,7 +86,6 @@ public abstract class USBDeviceRegistry {
         onDeviceDisconnectedHandler = handler;
     }
 
-    @SuppressWarnings("java:S106")
     protected void emitOnDeviceConnected(USBDevice device) {
         if (onDeviceConnectedHandler == null)
             return;
@@ -90,12 +94,10 @@ public abstract class USBDeviceRegistry {
             onDeviceConnectedHandler.accept(device);
 
         } catch (Exception e) {
-            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceConnected' handler - ignoring");
-            e.printStackTrace(System.err);
+            LOG.log(WARNING, "unhandled exception in 'onDeviceConnected' handler - ignoring", e);
         }
     }
 
-    @SuppressWarnings("java:S106")
     protected void emitOnDeviceDisconnected(USBDevice device) {
         if (onDeviceDisconnectedHandler == null)
             return;
@@ -104,9 +106,7 @@ public abstract class USBDeviceRegistry {
             onDeviceDisconnectedHandler.accept(device);
 
         } catch (Exception e) {
-            System.err.println(
-                    "Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - ignoring");
-            e.printStackTrace(System.err);
+            LOG.log(WARNING, "unhandled exception in 'onDeviceDisconnected' handler - ignoring", e);
         }
     }
 
@@ -207,8 +207,7 @@ public abstract class USBDeviceRegistry {
         try {
             device.close();
         } catch (Exception e) {
-            System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
-            e.printStackTrace(System.err);
+            LOG.log(INFO, "failed to close USB device - ignoring exception", e);
         }
 
         removeDevice(deviceId);

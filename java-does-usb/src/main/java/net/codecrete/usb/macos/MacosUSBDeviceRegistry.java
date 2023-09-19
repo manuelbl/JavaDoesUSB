@@ -20,6 +20,7 @@ import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.macos.CoreFoundationHelper.createCFStringRef;
@@ -30,6 +31,8 @@ import static net.codecrete.usb.macos.MacosUSBException.throwException;
  */
 @SuppressWarnings("java:S116")
 public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
+
+    private static final System.Logger LOG = System.getLogger(MacosUSBDeviceRegistry.class.getName());
 
     private static final MemorySegment KEY_ID_VENDOR;
     private static final MemorySegment KEY_ID_PRODUCT;
@@ -163,10 +166,8 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
                     consumer.accept(device);
 
             } catch (Exception e) {
-                System.err.printf(
-                        "Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - ignoring device%n",
-                        deviceInfo.vid, deviceInfo.pid);
-                e.printStackTrace(System.err);
+                LOG.log(INFO, String.format("failed to retrieve information about device 0x%04x/0x%04x - ignoring device",
+                        deviceInfo.vid, deviceInfo.pid), e);
             }
         });
     }
@@ -268,8 +269,7 @@ public class MacosUSBDeviceRegistry extends USBDeviceRegistry {
             try {
                 ((MacosUSBDevice) device).closeFully();
             } catch (Exception e) {
-                System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
-                e.printStackTrace(System.err);
+                LOG.log(INFO, "failed to close USB device - ignoring exception", e);
             }
 
             removeDevice(entryId);
