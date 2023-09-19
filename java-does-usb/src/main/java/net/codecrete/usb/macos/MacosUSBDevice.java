@@ -16,7 +16,6 @@ import net.codecrete.usb.macos.gen.iokit.IOUSBDevRequest;
 import net.codecrete.usb.macos.gen.iokit.IOUSBFindInterfaceRequest;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.usbstandard.Constants;
-import net.codecrete.usb.usbstandard.DeviceDescriptor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -159,17 +158,21 @@ public class MacosUSBDevice extends USBDeviceImpl {
     private void loadDescription(MemorySegment device) {
         try (var arena = Arena.ofConfined()) {
 
-            var data = arena.allocate(DeviceDescriptor.LAYOUT.byteSize());
-            var ret = IoKitUSB.DeviceRequest(device, createDeviceRequest(arena, USBDirection.IN, new USBControlTransfer(
+            // retrieve device descriptor using synchronous control transfer
+            var data = arena.allocate(255);
+            var deviceRequest = createDeviceRequest(arena, USBDirection.IN, new USBControlTransfer(
                     USBRequestType.STANDARD,
                     USBRecipient.DEVICE,
                     6, // get descriptor
                     Constants.DEVICE_DESCRIPTOR_TYPE << 8,
                     0
-            ), data));
+            ), data);
+            var ret = IoKitUSB.DeviceRequest(device, deviceRequest);
             if (ret != 0)
                 throwException(ret, "querying device descriptor failed");
-            rawDeviceDescriptor = data.toArray(JAVA_BYTE);
+
+            var len = IOUSBDevRequest.wLenDone$get(deviceRequest);
+            rawDeviceDescriptor = data.asSlice(0, len).toArray(JAVA_BYTE);
 
             configurationValue = 0;
 
