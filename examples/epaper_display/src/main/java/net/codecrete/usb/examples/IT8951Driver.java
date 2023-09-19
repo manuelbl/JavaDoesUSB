@@ -46,10 +46,11 @@ public class IT8951Driver {
      * @throws IllegalStateException if no IT8951 device is found
      */
     public void open() {
-        device = USB.getDevice(dev -> dev.vendorId() == 0x048d && dev.productId() == 0x8951);
-        if (device == null)
+        var optionalDevice = USB.getDevice(0x048d, 0x8951);
+        if (optionalDevice.isEmpty())
             throw new IllegalStateException("No IT8951 device found");
 
+        device = optionalDevice.get();
         device.detachStandardDrivers();
         device.open();
         try {
@@ -57,7 +58,7 @@ public class IT8951Driver {
             var sysInfoBytes = readCommand(GET_SYS_CMD, DisplayInfo.LENGTH);
             displayInfo = DisplayInfo.from(sysInfoBytes);
 
-        } catch (Throwable t) {
+        } catch (Exception t) {
             device.close();
             throw t;
         }

@@ -19,6 +19,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 /**
  * USB device descriptor
  */
+@SuppressWarnings("java:S125")
 public class DeviceDescriptor {
 
     private final MemorySegment descriptor;

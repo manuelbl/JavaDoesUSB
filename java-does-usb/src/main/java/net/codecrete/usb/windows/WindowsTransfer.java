@@ -11,6 +11,14 @@ import net.codecrete.usb.common.Transfer;
 
 import java.lang.foreign.MemorySegment;
 
-public class WindowsTransfer extends Transfer {
-    MemorySegment overlapped;
+class WindowsTransfer extends Transfer {
+    private MemorySegment overlapped;
+
+    public MemorySegment overlapped() {
+        return overlapped;
+    }
+
+    public void setOverlapped(MemorySegment overlapped) {
+        this.overlapped = overlapped;
+    }
 }

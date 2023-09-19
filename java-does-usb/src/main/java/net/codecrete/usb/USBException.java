@@ -15,7 +15,7 @@ public class USBException extends RuntimeException {
     /**
      * Error code.
      */
-    private int code = -1;
+    private final int code;
 
     /**
      * Creates a new instance with a message.
@@ -24,6 +24,7 @@ public class USBException extends RuntimeException {
      */
     public USBException(String message) {
         super(message);
+        code = -1;
     }
 
     /**
@@ -45,6 +46,7 @@ public class USBException extends RuntimeException {
      */
     public USBException(String message, Throwable cause) {
         super(message, cause);
+        code = -1;
     }
 
     /**

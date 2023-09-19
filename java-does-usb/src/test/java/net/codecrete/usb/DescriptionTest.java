@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests the interface, alternate settings and endpoint descriptions.
  */
-public class DescriptionTest extends TestDeviceBase {
+class DescriptionTest extends TestDeviceBase {
 
     @Test
     void deviceInfo_isCorrect() {
@@ -36,7 +36,7 @@ public class DescriptionTest extends TestDeviceBase {
             assertEquals(0x00, testDevice.protocolCode());
         }
 
-        boolean isComposite = isCompositeDevce();
+        var isComposite = isCompositeDevce();
 
         assertEquals(2, testDevice.usbVersion().major());
         assertEquals(isComposite ? 1 : 0, testDevice.usbVersion().minor());
@@ -132,9 +132,9 @@ public class DescriptionTest extends TestDeviceBase {
 
     @Test
     void configurationDescription_isAvailable() {
-        int expectedLength = isLoopbackDevice() ? 69 : 98;
+        var expectedLength = isLoopbackDevice() ? 69 : 98;
 
-        byte[] configDesc = testDevice.configurationDescriptor();
+        var configDesc = testDevice.configurationDescriptor();
         assertNotNull(configDesc);
         assertEquals(expectedLength, configDesc.length);
         assertEquals(2, configDesc[1]);

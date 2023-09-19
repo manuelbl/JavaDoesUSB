@@ -453,6 +453,13 @@ public interface USBDevice {
     void clearHalt(USBDirection direction, int endpointNumber);
 
     /**
+     * Gets the device descriptor.
+     *
+     * @return the device descriptor (as a byte array)
+     */
+    byte[] deviceDescriptor();
+
+    /**
      * Gets the configuration descriptor.
      *
      * @return the configuration descriptor (as a byte array)

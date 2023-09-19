@@ -18,6 +18,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
+
 /**
  * Base class for USB device registry.
  * <p>
@@ -32,8 +35,10 @@ import java.util.function.Consumer;
  */
 public abstract class USBDeviceRegistry {
 
-    private volatile List<USBDevice> devices;
-    private volatile Throwable failureCause;
+    private static final System.Logger LOG = System.getLogger(USBDeviceRegistry.class.getName());
+
+    private List<USBDevice> devices;
+    private Throwable failureCause;
     protected Consumer<USBDevice> onDeviceConnectedHandler;
     protected Consumer<USBDevice> onDeviceDisconnectedHandler;
 
@@ -69,7 +74,7 @@ public abstract class USBDeviceRegistry {
      *
      * @return list of devices
      */
-    public List<USBDevice> getAllDevices() {
+    public synchronized List<USBDevice> getAllDevices() {
         return Collections.unmodifiableList(devices);
     }
 
@@ -88,9 +93,8 @@ public abstract class USBDeviceRegistry {
         try {
             onDeviceConnectedHandler.accept(device);
 
-        } catch (Throwable e) {
-            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceConnected' handler - ignoring");
-            e.printStackTrace(System.err);
+        } catch (Exception e) {
+            LOG.log(WARNING, "unhandled exception in 'onDeviceConnected' handler - ignoring", e);
         }
     }
 
@@ -101,10 +105,8 @@ public abstract class USBDeviceRegistry {
         try {
             onDeviceDisconnectedHandler.accept(device);
 
-        } catch (Throwable e) {
-            System.err.println("Warning: [JavaDoesUSB] unhandled exception in 'onDeviceDisconnected' handler - " +
-                    "ignoring");
-            e.printStackTrace(System.err);
+        } catch (Exception e) {
+            LOG.log(WARNING, "unhandled exception in 'onDeviceDisconnected' handler - ignoring", e);
         }
     }
 
@@ -119,7 +121,7 @@ public abstract class USBDeviceRegistry {
      */
     protected void startDeviceMonitor(Runnable monitorTask) {
         // start new thread
-        Thread t = new Thread(monitorTask, "USB device monitor");
+        var t = new Thread(monitorTask, "USB device monitor");
         t.setDaemon(true);
         t.start();
 
@@ -134,7 +136,7 @@ public abstract class USBDeviceRegistry {
         }
 
         if (failureCause != null)
-            throw new USBException("Initial device enumeration has failed", failureCause);
+            throw new USBException("initial device enumeration has failed", failureCause);
     }
 
     /**
@@ -168,7 +170,9 @@ public abstract class USBDeviceRegistry {
      * @param deviceList the device list
      */
     protected void setInitialDeviceList(List<USBDevice> deviceList) {
-        devices = deviceList;
+        synchronized (this) {
+            devices = deviceList;
+        }
         signalEnumerationComplete();
     }
 
@@ -178,20 +182,23 @@ public abstract class USBDeviceRegistry {
      * @param device device to add
      */
     protected void addDevice(USBDevice device) {
-        // check for duplicates
-        if (findDeviceIndex(devices, ((USBDeviceImpl) device).getUniqueId()) >= 0)
-            return;
+        synchronized (this) {
+            // check for duplicates
+            if (findDeviceIndex(devices, ((USBDeviceImpl) device).getUniqueId()) >= 0)
+                return;
 
-        // copy list
-        var newDeviceList = new ArrayList<USBDevice>(devices.size() + 1);
-        newDeviceList.addAll(devices);
-        newDeviceList.add(device);
-        devices = newDeviceList;
+            // copy list
+            var newDeviceList = new ArrayList<USBDevice>(devices.size() + 1);
+            newDeviceList.addAll(devices);
+            newDeviceList.add(device);
+            devices = newDeviceList;
+        }
 
         // send notification
         emitOnDeviceConnected(device);
     }
 
+    @SuppressWarnings("java:S106")
     protected void closeAndRemoveDevice(Object deviceId) {
         var device = findDevice(deviceId);
         if (device == null)
@@ -199,9 +206,8 @@ public abstract class USBDeviceRegistry {
 
         try {
             device.close();
-        } catch (Throwable e) {
-            System.err.println("Info: [JavaDoesUSB] failed to close USB device - ignoring exception");
-            e.printStackTrace(System.err);
+        } catch (Exception e) {
+            LOG.log(INFO, "failed to close USB device - ignoring exception", e);
         }
 
         removeDevice(deviceId);
@@ -213,16 +219,19 @@ public abstract class USBDeviceRegistry {
      * @param deviceId the unique ID of the device to remove
      */
     protected void removeDevice(Object deviceId) {
-        // locate device to be removed
-        int index = findDeviceIndex(devices, deviceId);
-        if (index < 0)
-            return; // strange
+        USBDevice device;
+        synchronized (this) {
+            // locate device to be removed
+            int index = findDeviceIndex(devices, deviceId);
+            if (index < 0)
+                return; // strange
 
-        // copy list and remove device
-        var device = devices.get(index);
-        var newDeviceList = new ArrayList<>(devices);
-        newDeviceList.remove(index);
-        devices = newDeviceList;
+            // copy list and remove device
+            device = devices.get(index);
+            var newDeviceList = new ArrayList<>(devices);
+            newDeviceList.remove(index);
+            devices = newDeviceList;
+        }
 
         // send notification
         emitOnDeviceDisconnected(device);

@@ -22,12 +22,12 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * Input stream for bulk endpoints – optimized for high throughput.
  *
  * <p>
- * Multiple asynchronous transfer are submitted to achieve a good
+ * Multiple asynchronous transfers are submitted to achieve a good
  * degree of concurrency between the USB communication handled by the operating
  * system and the consuming application code.
  * </p>
  * <p>
- * For thread synchronization (between the background thread handling IO completion
+ * For thread synchronization (between the background thread handling IO completions
  * and the consuming application thread) a blocking queue is used. When an transfer
  * completes, the background thread adds it to the queue. The consuming code
  * waits for the next item in the queue.
@@ -61,17 +61,17 @@ public abstract class EndpointInputStream extends InputStream {
     protected EndpointInputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-        arena = Arena.openShared();
+        arena = Arena.ofShared();
 
-        int packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+        var packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
-        int numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
         numPacketsPerTransfer = Math.min(Math.max(numPacketsPerTransfer, 4), 32);
         transferSize = numPacketsPerTransfer * packetSize;
 
         // use at least 2 outstanding transfers (3 in total)
-        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
+        var maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
 
         configureEndpoint();
 
@@ -79,11 +79,11 @@ public abstract class EndpointInputStream extends InputStream {
 
         // create all transfers, and submit them except one
         try {
-            for (int i = 0; i < maxOutstandingTransfers; i++) {
+            for (var i = 0; i < maxOutstandingTransfers; i++) {
                 final var transfer = device.createTransfer();
-                transfer.data = arena.allocate(transferSize, 8);
-                transfer.dataSize = transferSize;
-                transfer.completion = this::onCompletion;
+                transfer.setData(arena.allocate(transferSize, 8));
+                transfer.setDataSize(transferSize);
+                transfer.setCompletion(this::onCompletion);
 
                 if (i == 0) {
                     currentTransfer = transfer;
@@ -91,7 +91,7 @@ public abstract class EndpointInputStream extends InputStream {
                     submitTransfer(transfer);
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             collectOutstandingTransfers();
             throw t;
         }
@@ -129,7 +129,7 @@ public abstract class EndpointInputStream extends InputStream {
         if (available() == 0)
             receiveMoreData();
 
-        int b = currentTransfer.data.get(JAVA_BYTE, readOffset) & 0xff;
+        var b = currentTransfer.data().get(JAVA_BYTE, readOffset) & 0xff;
         readOffset += 1;
         return b;
     }
@@ -139,23 +139,30 @@ public abstract class EndpointInputStream extends InputStream {
         if (isClosed())
             return -1;
 
-        if (available() == 0)
-            receiveMoreData();
+        var numRead = 0;
+        do {
+            if (available() == 0)
+                receiveMoreData();
 
-        // copy data to receiving buffer
-        int n = Math.min(len, currentTransfer.resultSize - readOffset);
-        MemorySegment.copy(currentTransfer.data, readOffset, MemorySegment.ofArray(b), off, n);
-        readOffset += n;
+            // copy data to receiving buffer
+            var n = Math.min(len - numRead, currentTransfer.resultSize() - readOffset);
+            MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), (long) off + numRead, n);
+            readOffset += n;
+            numRead += n;
 
-        // TODO: poll for further completed transfers if 'n' is less than 'len'
+        } while (numRead < len && hasMoreTransfers());
 
-        return n;
+        return numRead;
     }
 
     @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
-        return currentTransfer.resultSize - readOffset;
+        return currentTransfer.resultSize() - readOffset;
+    }
+
+    private boolean hasMoreTransfers() {
+        return !completedTransferQueue.isEmpty();
     }
 
     private void receiveMoreData() throws IOException {
@@ -170,13 +177,13 @@ public abstract class EndpointInputStream extends InputStream {
                 readOffset = 0;
 
                 // check for error
-                if (currentTransfer.resultCode != 0)
-                    device.throwOSException(currentTransfer.resultCode, "error reading from endpoint %d",
+                if (currentTransfer.resultCode() != 0)
+                    device.throwOSException(currentTransfer.resultCode(), "error occurred while reading from endpoint %d",
                             endpointNumber);
 
-            } while (currentTransfer.resultSize <= 0);
+            } while (currentTransfer.resultSize() <= 0);
 
-        } catch (Throwable t) {
+        } catch (Exception t) {
             close();
             throw t;
         }
@@ -185,11 +192,11 @@ public abstract class EndpointInputStream extends InputStream {
     private Transfer waitForCompletedTransfer() {
         while (true) {
             try {
-                Transfer transfer = completedTransferQueue.take();
+                var transfer = completedTransferQueue.take();
                 numOutstandingTransfers -= 1;
                 return transfer;
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
     }

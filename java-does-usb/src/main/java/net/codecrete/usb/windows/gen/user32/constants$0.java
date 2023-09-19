@@ -2,24 +2,34 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.StructLayout;
+import java.lang.invoke.VarHandle;
+
+import static java.lang.foreign.ValueLayout.JAVA_INT;
 final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor DefWindowProcW$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle DefWindowProcW$MH = RuntimeHelper.downcallHandle(
-        "DefWindowProcW",
-        constants$0.DefWindowProcW$FUNC
-    );
-    static final MemorySegment HWND_MESSAGE$ADDR = MemorySegment.ofAddress(-3L);
+    static final StructLayout const$0 = MemoryLayout.structLayout(
+        JAVA_INT.withName("cbSize"),
+        JAVA_INT.withName("style"),
+        RuntimeHelper.POINTER.withName("lpfnWndProc"),
+        JAVA_INT.withName("cbClsExtra"),
+        JAVA_INT.withName("cbWndExtra"),
+        RuntimeHelper.POINTER.withName("hInstance"),
+        RuntimeHelper.POINTER.withName("hIcon"),
+        RuntimeHelper.POINTER.withName("hCursor"),
+        RuntimeHelper.POINTER.withName("hbrBackground"),
+        RuntimeHelper.POINTER.withName("lpszMenuName"),
+        RuntimeHelper.POINTER.withName("lpszClassName"),
+        RuntimeHelper.POINTER.withName("hIconSm")
+    ).withName("tagWNDCLASSEXW");
+    static final VarHandle const$1 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("cbSize"));
+    static final VarHandle const$2 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("style"));
+    static final VarHandle const$3 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("lpfnWndProc"));
+    static final VarHandle const$4 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("cbClsExtra"));
+    static final VarHandle const$5 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("cbWndExtra"));
 }
 
 

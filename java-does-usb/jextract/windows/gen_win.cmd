@@ -69,6 +69,10 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   -I "%SDK_DIR%\shared" ^
   --header-class-name USBIoctl ^
   --target-package net.codecrete.usb.windows.gen.usbioctl ^
+  --include-struct _USB_NODE_CONNECTION_INFORMATION_EX ^
+  --include-typedef USB_NODE_CONNECTION_INFORMATION_EX ^
+  --include-struct _USB_DESCRIPTOR_REQUEST ^
+  --include-typedef USB_DESCRIPTOR_REQUEST ^
   --include-constant IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX ^
   --include-constant IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION ^
   windows_headers.h

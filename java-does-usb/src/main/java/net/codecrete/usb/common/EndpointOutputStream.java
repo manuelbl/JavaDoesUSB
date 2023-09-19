@@ -40,7 +40,7 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected USBDeviceImpl device;
     protected final int endpointNumber;
     protected final Arena arena;
-    // Endpoint's packet size
+    // Endpoint packet size
     private final int packetSize;
     // Transfer size (multiple of packet size)
     private final int transferSize;
@@ -63,27 +63,27 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected EndpointOutputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-        arena = Arena.openShared();
+        arena = Arena.ofShared();
 
         packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
-        int numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
+        var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
         numPacketsPerTransfer = Math.min(Math.max(numPacketsPerTransfer, 4), 32);
         transferSize = numPacketsPerTransfer * packetSize;
 
         // use at least 2 outstanding transfers (3 in total)
-        int maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
+        var maxOutstandingTransfers = Math.max((bufferSize + transferSize / 2) / transferSize, 3);
 
         configureEndpoint();
 
         availableTransferQueue = new ArrayBlockingQueue<>(maxOutstandingTransfers);
 
         // prefill transfer queue
-        for (int i = 0; i < maxOutstandingTransfers; i++) {
+        for (var i = 0; i < maxOutstandingTransfers; i++) {
             final var transfer = device.createTransfer();
-            transfer.data = arena.allocate(transferSize, 8);
-            transfer.completion = this::onCompletion;
+            transfer.setData(arena.allocate(transferSize, 8));
+            transfer.setCompletion(this::onCompletion);
 
             if (i == 0) {
                 currentTransfer = transfer;
@@ -115,10 +115,9 @@ public abstract class EndpointOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        if (isClosed())
-            throw new IOException("Bulk endpoint output stream has been closed");
+        checkIsOpen();
 
-        currentTransfer.data.set(JAVA_BYTE, writeOffset, (byte) b);
+        currentTransfer.data().set(JAVA_BYTE, writeOffset, (byte) b);
         writeOffset += 1;
         if (writeOffset == transferSize)
             submitTransfer(writeOffset);
@@ -126,12 +125,11 @@ public abstract class EndpointOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        if (isClosed())
-            throw new IOException("Bulk endpoint output stream has been closed");
+        checkIsOpen();
 
         while (len > 0) {
-            int chunkSize = Math.min(len, transferSize - writeOffset);
-            MemorySegment.copy(b, off, currentTransfer.data, JAVA_BYTE, writeOffset, chunkSize);
+            var chunkSize = Math.min(len, transferSize - writeOffset);
+            MemorySegment.copy(b, off, currentTransfer.data(), JAVA_BYTE, writeOffset, chunkSize);
             writeOffset += chunkSize;
             off += chunkSize;
             len -= chunkSize;
@@ -143,8 +141,7 @@ public abstract class EndpointOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        if (isClosed())
-            throw new IOException("Bulk endpoint output stream has been closed");
+        checkIsOpen();
 
         if (writeOffset > 0)
             submitTransfer(writeOffset);
@@ -167,7 +164,7 @@ public abstract class EndpointOutputStream extends OutputStream {
      */
     private void submitTransfer(int size) throws IOException {
         try {
-            currentTransfer.dataSize = size;
+            currentTransfer.setDataSize(size);
             submitTransferOut(currentTransfer);
 
             synchronized (this) {
@@ -178,7 +175,7 @@ public abstract class EndpointOutputStream extends OutputStream {
             writeOffset = 0;
             currentTransfer = waitForAvailableTransfer();
 
-        } catch (Throwable t) {
+        } catch (Exception t) {
             hasError = true;
             close();
             throw t;
@@ -205,7 +202,7 @@ public abstract class EndpointOutputStream extends OutputStream {
             return;
 
         var transfers = new Transfer[numTransfers];
-        for (int i = 0; i < numTransfers; i++)
+        for (var i = 0; i < numTransfers; i++)
             transfers[i] = waitForAvailableTransfer();
 
         // reinsert the transfer instances
@@ -225,19 +222,19 @@ public abstract class EndpointOutputStream extends OutputStream {
     private Transfer waitForAvailableTransfer() {
         while (true) {
             try {
-                Transfer transfer = availableTransferQueue.take();
+                var transfer = availableTransferQueue.take();
 
                 // check for error
-                int result = transfer.resultCode;
+                var result = transfer.resultCode();
                 if (result != 0 && !hasError) {
-                    transfer.resultCode = 0;
-                    device.throwOSException(result, "error writing to endpoint %d", endpointNumber);
+                    transfer.setResultCode(0);
+                    device.throwOSException(result, "error occurred while transmitting to endpoint %d", endpointNumber);
                 }
 
                 return transfer;
 
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -255,5 +252,10 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected abstract void submitTransferOut(Transfer request);
 
     protected void configureEndpoint() {
+    }
+
+    private void checkIsOpen() throws IOException {
+        if (isClosed())
+            throw new IOException("endpoint output stream has been closed");
     }
 }

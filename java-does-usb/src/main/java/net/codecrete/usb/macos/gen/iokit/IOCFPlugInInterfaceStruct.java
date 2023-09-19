@@ -2,8 +2,10 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.*;
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -22,24 +24,11 @@ import java.lang.invoke.VarHandle;
  */
 public class IOCFPlugInInterfaceStruct {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_POINTER$LAYOUT.withName("_reserved"),
-        Constants$root.C_POINTER$LAYOUT.withName("QueryInterface"),
-        Constants$root.C_POINTER$LAYOUT.withName("AddRef"),
-        Constants$root.C_POINTER$LAYOUT.withName("Release"),
-        Constants$root.C_SHORT$LAYOUT.withName("version"),
-        Constants$root.C_SHORT$LAYOUT.withName("revision"),
-        MemoryLayout.paddingLayout(32),
-        Constants$root.C_POINTER$LAYOUT.withName("Probe"),
-        Constants$root.C_POINTER$LAYOUT.withName("Start"),
-        Constants$root.C_POINTER$LAYOUT.withName("Stop")
-    ).withName("IOCFPlugInInterfaceStruct");
     public static MemoryLayout $LAYOUT() {
-        return IOCFPlugInInterfaceStruct.$struct$LAYOUT;
+        return constants$40.const$2;
     }
-    static final VarHandle _reserved$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("_reserved"));
     public static VarHandle _reserved$VH() {
-        return IOCFPlugInInterfaceStruct._reserved$VH;
+        return constants$40.const$3;
     }
     /**
      * Getter for field:
@@ -48,7 +37,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment _reserved$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct._reserved$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$40.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -57,39 +46,14 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void _reserved$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct._reserved$VH.set(seg, x);
+        constants$40.const$3.set(seg, x);
     }
     public static MemorySegment _reserved$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct._reserved$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$40.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void _reserved$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct._reserved$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$40.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    static final FunctionDescriptor QueryInterface$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        MemoryLayout.structLayout(
-            Constants$root.C_CHAR$LAYOUT.withName("byte0"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte1"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte2"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte3"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte4"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte5"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte6"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte7"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte8"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte9"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte10"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte11"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte12"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte13"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte14"),
-            Constants$root.C_CHAR$LAYOUT.withName("byte15")
-        ),
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle QueryInterface$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.QueryInterface$FUNC
-    );
     /**
      * {@snippet :
  * HRESULT (*QueryInterface)(void*,REFIID,LPVOID*);
@@ -98,14 +62,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface QueryInterface {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, java.lang.foreign.MemorySegment _x2);
-        static MemorySegment allocate(QueryInterface fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(QueryInterface.class, fi, IOCFPlugInInterfaceStruct.QueryInterface$FUNC, scope);
+        static MemorySegment allocate(QueryInterface fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$40.const$4, fi, constants$5.const$1, scope);
         }
-        static QueryInterface ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static QueryInterface ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, java.lang.foreign.MemorySegment __x2) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.QueryInterface$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)constants$5.const$3.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -113,9 +77,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle QueryInterface$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("QueryInterface"));
     public static VarHandle QueryInterface$VH() {
-        return IOCFPlugInInterfaceStruct.QueryInterface$VH;
+        return constants$40.const$5;
     }
     /**
      * Getter for field:
@@ -124,7 +87,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment QueryInterface$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.QueryInterface$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$40.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -133,23 +96,17 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void QueryInterface$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.QueryInterface$VH.set(seg, x);
+        constants$40.const$5.set(seg, x);
     }
     public static MemorySegment QueryInterface$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.QueryInterface$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$40.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void QueryInterface$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.QueryInterface$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$40.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    public static QueryInterface QueryInterface(MemorySegment segment, SegmentScope scope) {
+    public static QueryInterface QueryInterface(MemorySegment segment, Arena scope) {
         return QueryInterface.ofAddress(QueryInterface$get(segment), scope);
     }
-    static final FunctionDescriptor AddRef$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle AddRef$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.AddRef$FUNC
-    );
     /**
      * {@snippet :
  * ULONG (*AddRef)(void*);
@@ -158,14 +115,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface AddRef {
 
         int apply(java.lang.foreign.MemorySegment _x0);
-        static MemorySegment allocate(AddRef fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(AddRef.class, fi, IOCFPlugInInterfaceStruct.AddRef$FUNC, scope);
+        static MemorySegment allocate(AddRef fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$41.const$0, fi, constants$5.const$5, scope);
         }
-        static AddRef ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static AddRef ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.AddRef$MH.invokeExact(symbol, __x0);
+                    return (int)constants$6.const$1.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -173,9 +130,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle AddRef$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("AddRef"));
     public static VarHandle AddRef$VH() {
-        return IOCFPlugInInterfaceStruct.AddRef$VH;
+        return constants$41.const$1;
     }
     /**
      * Getter for field:
@@ -184,7 +140,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment AddRef$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.AddRef$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$41.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -193,23 +149,17 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void AddRef$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.AddRef$VH.set(seg, x);
+        constants$41.const$1.set(seg, x);
     }
     public static MemorySegment AddRef$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.AddRef$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$41.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void AddRef$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.AddRef$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$41.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    public static AddRef AddRef(MemorySegment segment, SegmentScope scope) {
+    public static AddRef AddRef(MemorySegment segment, Arena scope) {
         return AddRef.ofAddress(AddRef$get(segment), scope);
     }
-    static final FunctionDescriptor Release$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle Release$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.Release$FUNC
-    );
     /**
      * {@snippet :
  * ULONG (*Release)(void*);
@@ -218,14 +168,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface Release {
 
         int apply(java.lang.foreign.MemorySegment _x0);
-        static MemorySegment allocate(Release fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(Release.class, fi, IOCFPlugInInterfaceStruct.Release$FUNC, scope);
+        static MemorySegment allocate(Release fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$41.const$2, fi, constants$5.const$5, scope);
         }
-        static Release ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static Release ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.Release$MH.invokeExact(symbol, __x0);
+                    return (int)constants$6.const$1.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -233,9 +183,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle Release$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Release"));
     public static VarHandle Release$VH() {
-        return IOCFPlugInInterfaceStruct.Release$VH;
+        return constants$41.const$3;
     }
     /**
      * Getter for field:
@@ -244,7 +193,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment Release$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Release$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$41.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -253,20 +202,19 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void Release$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Release$VH.set(seg, x);
+        constants$41.const$3.set(seg, x);
     }
     public static MemorySegment Release$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Release$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$41.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void Release$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Release$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$41.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    public static Release Release(MemorySegment segment, SegmentScope scope) {
+    public static Release Release(MemorySegment segment, Arena scope) {
         return Release.ofAddress(Release$get(segment), scope);
     }
-    static final VarHandle version$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("version"));
     public static VarHandle version$VH() {
-        return IOCFPlugInInterfaceStruct.version$VH;
+        return constants$41.const$4;
     }
     /**
      * Getter for field:
@@ -275,7 +223,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static short version$get(MemorySegment seg) {
-        return (short)IOCFPlugInInterfaceStruct.version$VH.get(seg);
+        return (short)constants$41.const$4.get(seg);
     }
     /**
      * Setter for field:
@@ -284,17 +232,16 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void version$set(MemorySegment seg, short x) {
-        IOCFPlugInInterfaceStruct.version$VH.set(seg, x);
+        constants$41.const$4.set(seg, x);
     }
     public static short version$get(MemorySegment seg, long index) {
-        return (short)IOCFPlugInInterfaceStruct.version$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$41.const$4.get(seg.asSlice(index*sizeof()));
     }
     public static void version$set(MemorySegment seg, long index, short x) {
-        IOCFPlugInInterfaceStruct.version$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$41.const$4.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle revision$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("revision"));
     public static VarHandle revision$VH() {
-        return IOCFPlugInInterfaceStruct.revision$VH;
+        return constants$41.const$5;
     }
     /**
      * Getter for field:
@@ -303,7 +250,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static short revision$get(MemorySegment seg) {
-        return (short)IOCFPlugInInterfaceStruct.revision$VH.get(seg);
+        return (short)constants$41.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -312,23 +259,14 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void revision$set(MemorySegment seg, short x) {
-        IOCFPlugInInterfaceStruct.revision$VH.set(seg, x);
+        constants$41.const$5.set(seg, x);
     }
     public static short revision$get(MemorySegment seg, long index) {
-        return (short)IOCFPlugInInterfaceStruct.revision$VH.get(seg.asSlice(index*sizeof()));
+        return (short)constants$41.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void revision$set(MemorySegment seg, long index, short x) {
-        IOCFPlugInInterfaceStruct.revision$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$41.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final FunctionDescriptor Probe$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle Probe$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.Probe$FUNC
-    );
     /**
      * {@snippet :
  * IOReturn (*Probe)(void*,CFDictionaryRef,io_service_t,SInt32*);
@@ -337,14 +275,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface Probe {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, int _x2, java.lang.foreign.MemorySegment _x3);
-        static MemorySegment allocate(Probe fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(Probe.class, fi, IOCFPlugInInterfaceStruct.Probe$FUNC, scope);
+        static MemorySegment allocate(Probe fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$42.const$1, fi, constants$42.const$0, scope);
         }
-        static Probe ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static Probe ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, int __x2, java.lang.foreign.MemorySegment __x3) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.Probe$MH.invokeExact(symbol, __x0, __x1, __x2, __x3);
+                    return (int)constants$42.const$2.invokeExact(symbol, __x0, __x1, __x2, __x3);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -352,9 +290,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle Probe$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Probe"));
     public static VarHandle Probe$VH() {
-        return IOCFPlugInInterfaceStruct.Probe$VH;
+        return constants$42.const$3;
     }
     /**
      * Getter for field:
@@ -363,7 +300,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment Probe$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Probe$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$42.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -372,25 +309,17 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void Probe$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Probe$VH.set(seg, x);
+        constants$42.const$3.set(seg, x);
     }
     public static MemorySegment Probe$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Probe$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$42.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void Probe$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Probe$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$42.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    public static Probe Probe(MemorySegment segment, SegmentScope scope) {
+    public static Probe Probe(MemorySegment segment, Arena scope) {
         return Probe.ofAddress(Probe$get(segment), scope);
     }
-    static final FunctionDescriptor Start$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle Start$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.Start$FUNC
-    );
     /**
      * {@snippet :
  * IOReturn (*Start)(void*,CFDictionaryRef,io_service_t);
@@ -399,14 +328,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface Start {
 
         int apply(java.lang.foreign.MemorySegment _x0, java.lang.foreign.MemorySegment _x1, int _x2);
-        static MemorySegment allocate(Start fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(Start.class, fi, IOCFPlugInInterfaceStruct.Start$FUNC, scope);
+        static MemorySegment allocate(Start fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$42.const$5, fi, constants$42.const$4, scope);
         }
-        static Start ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static Start ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0, java.lang.foreign.MemorySegment __x1, int __x2) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.Start$MH.invokeExact(symbol, __x0, __x1, __x2);
+                    return (int)constants$43.const$0.invokeExact(symbol, __x0, __x1, __x2);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -414,9 +343,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle Start$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Start"));
     public static VarHandle Start$VH() {
-        return IOCFPlugInInterfaceStruct.Start$VH;
+        return constants$43.const$1;
     }
     /**
      * Getter for field:
@@ -425,7 +353,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment Start$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Start$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$43.const$1.get(seg);
     }
     /**
      * Setter for field:
@@ -434,23 +362,17 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void Start$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Start$VH.set(seg, x);
+        constants$43.const$1.set(seg, x);
     }
     public static MemorySegment Start$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Start$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$43.const$1.get(seg.asSlice(index*sizeof()));
     }
     public static void Start$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Start$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$43.const$1.set(seg.asSlice(index*sizeof()), x);
     }
-    public static Start Start(MemorySegment segment, SegmentScope scope) {
+    public static Start Start(MemorySegment segment, Arena scope) {
         return Start.ofAddress(Start$get(segment), scope);
     }
-    static final FunctionDescriptor Stop$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle Stop$MH = RuntimeHelper.downcallHandle(
-        IOCFPlugInInterfaceStruct.Stop$FUNC
-    );
     /**
      * {@snippet :
  * IOReturn (*Stop)(void*);
@@ -459,14 +381,14 @@ public class IOCFPlugInInterfaceStruct {
     public interface Stop {
 
         int apply(java.lang.foreign.MemorySegment _x0);
-        static MemorySegment allocate(Stop fi, SegmentScope scope) {
-            return RuntimeHelper.upcallStub(Stop.class, fi, IOCFPlugInInterfaceStruct.Stop$FUNC, scope);
+        static MemorySegment allocate(Stop fi, Arena scope) {
+            return RuntimeHelper.upcallStub(constants$43.const$2, fi, constants$5.const$5, scope);
         }
-        static Stop ofAddress(MemorySegment addr, SegmentScope scope) {
-            MemorySegment symbol = MemorySegment.ofAddress(addr.address(), 0, scope);
+        static Stop ofAddress(MemorySegment addr, Arena arena) {
+            MemorySegment symbol = addr.reinterpret(arena, null);
             return (java.lang.foreign.MemorySegment __x0) -> {
                 try {
-                    return (int)IOCFPlugInInterfaceStruct.Stop$MH.invokeExact(symbol, __x0);
+                    return (int)constants$6.const$1.invokeExact(symbol, __x0);
                 } catch (Throwable ex$) {
                     throw new AssertionError("should not reach here", ex$);
                 }
@@ -474,9 +396,8 @@ public class IOCFPlugInInterfaceStruct {
         }
     }
 
-    static final VarHandle Stop$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("Stop"));
     public static VarHandle Stop$VH() {
-        return IOCFPlugInInterfaceStruct.Stop$VH;
+        return constants$43.const$3;
     }
     /**
      * Getter for field:
@@ -485,7 +406,7 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static MemorySegment Stop$get(MemorySegment seg) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Stop$VH.get(seg);
+        return (java.lang.foreign.MemorySegment)constants$43.const$3.get(seg);
     }
     /**
      * Setter for field:
@@ -494,15 +415,15 @@ public class IOCFPlugInInterfaceStruct {
      * }
      */
     public static void Stop$set(MemorySegment seg, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Stop$VH.set(seg, x);
+        constants$43.const$3.set(seg, x);
     }
     public static MemorySegment Stop$get(MemorySegment seg, long index) {
-        return (java.lang.foreign.MemorySegment)IOCFPlugInInterfaceStruct.Stop$VH.get(seg.asSlice(index*sizeof()));
+        return (java.lang.foreign.MemorySegment)constants$43.const$3.get(seg.asSlice(index*sizeof()));
     }
     public static void Stop$set(MemorySegment seg, long index, MemorySegment x) {
-        IOCFPlugInInterfaceStruct.Stop$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$43.const$3.set(seg.asSlice(index*sizeof()), x);
     }
-    public static Stop Stop(MemorySegment segment, SegmentScope scope) {
+    public static Stop Stop(MemorySegment segment, Arena scope) {
         return Stop.ofAddress(Stop$get(segment), scope);
     }
     public static long sizeof() { return $LAYOUT().byteSize(); }
@@ -510,7 +431,7 @@ public class IOCFPlugInInterfaceStruct {
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

@@ -18,13 +18,13 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StreamTest extends TestDeviceBase {
+class StreamTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
-        byte[] sampleData = generateRandomBytes(12, 293872394);
+       var sampleData = generateRandomBytes(12, 293872394);
         writeBytes(sampleData, 100);
-        byte[] data = readBytes(sampleData.length);
+        var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
     }
 
@@ -32,15 +32,15 @@ public class StreamTest extends TestDeviceBase {
     void mediumTransfer_succeeds() {
         // This synchronous approach should work as the test device
         // has an internal buffer of about 500 bytes.
-        byte[] sampleData = generateRandomBytes(140, 97333894);
+        var sampleData = generateRandomBytes(140, 97333894);
         writeBytes(sampleData, 30);
-        byte[] data = readBytes(sampleData.length);
+       var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
     }
 
     @Test
     void transferWithZLP_succeeds() {
-        final byte[] sampleData = generateRandomBytes(2 * LOOPBACK_MAX_PACKET_SIZE, 197007894);
+        final var sampleData = generateRandomBytes(2 * LOOPBACK_MAX_PACKET_SIZE, 197007894);
         var writer = CompletableFuture.runAsync(() -> {
             testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, 0, LOOPBACK_MAX_PACKET_SIZE));
             sleep(200);
@@ -56,8 +56,8 @@ public class StreamTest extends TestDeviceBase {
 
     @Test
     void largeTransferSmallChunks_succeeds() {
-        final int numBytes = 23076;
-        byte[] sampleData = generateRandomBytes(numBytes, 3829007493L);
+        final var numBytes = 23076;
+        var sampleData = generateRandomBytes(numBytes, 3829007493L);
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData, 20));
         var reader = CompletableFuture.supplyAsync(() -> readBytes(numBytes));
         var allFutures = CompletableFuture.allOf(writer, reader);
@@ -67,8 +67,8 @@ public class StreamTest extends TestDeviceBase {
 
     @Test
     void largeTransferBigChunks_succeeds() {
-        final int numBytes = 230763;
-        byte[] sampleData = generateRandomBytes(numBytes, 3829007493L);
+        final var numBytes = 230763;
+        var sampleData = generateRandomBytes(numBytes, 3829007493L);
         var writer = CompletableFuture.runAsync(() -> writeBytes(sampleData, 150));
         var reader = CompletableFuture.supplyAsync(() -> readBytes(numBytes));
         CompletableFuture.allOf(writer, reader).join();
@@ -77,9 +77,9 @@ public class StreamTest extends TestDeviceBase {
 
     static void writeBytes(byte[] data, int chunkSize) {
         try (var os = testDevice.openOutputStream(LOOPBACK_EP_OUT)) {
-            int numBytes = 0;
+            var numBytes = 0;
             while (numBytes < data.length) {
-                int size = Math.min(chunkSize, data.length - numBytes);
+                var size = Math.min(chunkSize, data.length - numBytes);
                 os.write(data, numBytes, size);
                 numBytes += size;
             }
@@ -91,9 +91,9 @@ public class StreamTest extends TestDeviceBase {
     static byte[] readBytes(int numBytes) {
         var buffer = new byte[numBytes];
         try (var is = testDevice.openInputStream(LOOPBACK_EP_IN)) {
-            int bytesRead = 0;
+            var bytesRead = 0;
             while (bytesRead < numBytes) {
-                int n = is.read(buffer, bytesRead, numBytes - bytesRead);
+                var n = is.read(buffer, bytesRead, numBytes - bytesRead);
                 assertTrue(n > 0);
                 bytesRead += n;
             }
@@ -104,11 +104,12 @@ public class StreamTest extends TestDeviceBase {
         return buffer;
     }
 
+    @SuppressWarnings({"java:S2925", "SameParameterValue"})
     private static void sleep(int millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
         }
     }
 }

@@ -17,7 +17,10 @@ import static java.lang.foreign.MemorySegment.NULL;
 /**
  * Memory layouts and helpers for CFUUID.
  */
-public class UUID {
+class UUID {
+
+    private UUID() {
+    }
 
     /**
      * Creates a CFUUID struct from a byte array.
@@ -25,13 +28,13 @@ public class UUID {
      * @param bytes UUID as 16 bytes
      * @return the CFUUID
      */
-    public static MemorySegment CreateCFUUID(byte[] bytes) {
-        try (var arena = Arena.openConfined()) {
+    static MemorySegment createCFUUID(byte[] bytes) {
+        try (var arena = Arena.ofConfined()) {
             var uuidBytes = arena.allocate(16);
             uuidBytes.copyFrom(MemorySegment.ofArray(bytes));
             return CoreFoundation.CFUUIDCreateFromUUIDBytes(NULL, uuidBytes);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
+        } catch (Exception e) {
+            throw new AssertionError("internal error (CFUUIDCreateFromUUIDBytes)", e);
         }
     }
 }

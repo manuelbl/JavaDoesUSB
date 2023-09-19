@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.linux.gen.usbdevice_fs;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -15,17 +18,11 @@ import java.lang.invoke.VarHandle;
  */
 public class usbdevfs_disconnect_claim {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_INT$LAYOUT.withName("interface"),
-        Constants$root.C_INT$LAYOUT.withName("flags"),
-        MemoryLayout.sequenceLayout(256, Constants$root.C_CHAR$LAYOUT).withName("driver")
-    ).withName("usbdevfs_disconnect_claim");
     public static MemoryLayout $LAYOUT() {
-        return usbdevfs_disconnect_claim.$struct$LAYOUT;
+        return constants$5.const$4;
     }
-    static final VarHandle interface_$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("interface"));
     public static VarHandle interface_$VH() {
-        return usbdevfs_disconnect_claim.interface_$VH;
+        return constants$5.const$5;
     }
     /**
      * Getter for field:
@@ -34,7 +31,7 @@ public class usbdevfs_disconnect_claim {
      * }
      */
     public static int interface_$get(MemorySegment seg) {
-        return (int)usbdevfs_disconnect_claim.interface_$VH.get(seg);
+        return (int)constants$5.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -43,17 +40,16 @@ public class usbdevfs_disconnect_claim {
      * }
      */
     public static void interface_$set(MemorySegment seg, int x) {
-        usbdevfs_disconnect_claim.interface_$VH.set(seg, x);
+        constants$5.const$5.set(seg, x);
     }
     public static int interface_$get(MemorySegment seg, long index) {
-        return (int)usbdevfs_disconnect_claim.interface_$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$5.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void interface_$set(MemorySegment seg, long index, int x) {
-        usbdevfs_disconnect_claim.interface_$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$5.const$5.set(seg.asSlice(index*sizeof()), x);
     }
-    static final VarHandle flags$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("flags"));
     public static VarHandle flags$VH() {
-        return usbdevfs_disconnect_claim.flags$VH;
+        return constants$6.const$0;
     }
     /**
      * Getter for field:
@@ -62,7 +58,7 @@ public class usbdevfs_disconnect_claim {
      * }
      */
     public static int flags$get(MemorySegment seg) {
-        return (int)usbdevfs_disconnect_claim.flags$VH.get(seg);
+        return (int)constants$6.const$0.get(seg);
     }
     /**
      * Setter for field:
@@ -71,13 +67,13 @@ public class usbdevfs_disconnect_claim {
      * }
      */
     public static void flags$set(MemorySegment seg, int x) {
-        usbdevfs_disconnect_claim.flags$VH.set(seg, x);
+        constants$6.const$0.set(seg, x);
     }
     public static int flags$get(MemorySegment seg, long index) {
-        return (int)usbdevfs_disconnect_claim.flags$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$6.const$0.get(seg.asSlice(index*sizeof()));
     }
     public static void flags$set(MemorySegment seg, long index, int x) {
-        usbdevfs_disconnect_claim.flags$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$6.const$0.set(seg.asSlice(index*sizeof()), x);
     }
     public static MemorySegment driver$slice(MemorySegment seg) {
         return seg.asSlice(8, 256);
@@ -87,7 +83,7 @@ public class usbdevfs_disconnect_claim {
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

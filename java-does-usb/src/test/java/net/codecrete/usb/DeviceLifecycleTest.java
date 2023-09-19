@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DeviceLifecycleTest {
+class DeviceLifecycleTest {
 
     private USBDevice device;
 
     @Test
     void lifecycle_showsValidState() {
         device = TestDeviceBase.getDevice();
-        int interfaceNumber = TestDeviceBase.getInterfaceNumber(device);
+        var interfaceNumber = TestDeviceBase.getInterfaceNumber(device);
 
         var intf = device.interfaces().get(interfaceNumber);
         assertEquals(interfaceNumber, intf.number());

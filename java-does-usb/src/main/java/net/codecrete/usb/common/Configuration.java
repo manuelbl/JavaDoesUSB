@@ -18,12 +18,12 @@ import java.util.List;
 public class Configuration {
     private final List<CompositeFunction> functionList;
     private final List<USBInterface> interfaceList;
-    private final int configuration;
+    private final int configurationValue;
     private final int configurationAttributes;
     private final int configurationMaxPower;
 
     public Configuration(int configValue, int attributes, int maxPower) {
-        configuration = configValue;
+        configurationValue = configValue;
         configurationAttributes = attributes;
         configurationMaxPower = maxPower;
         functionList = new ArrayList<>();
@@ -31,7 +31,7 @@ public class Configuration {
     }
 
     public int configValue() {
-        return configuration;
+        return configurationValue;
     }
 
     public int attributes() {
@@ -55,7 +55,7 @@ public class Configuration {
     }
 
     public USBInterfaceImpl findInterfaceByNumber(int number) {
-        return (USBInterfaceImpl) interfaceList.stream().filter((intf) -> intf.number() == number).findFirst().orElse(null);
+        return (USBInterfaceImpl) interfaceList.stream().filter(intf -> intf.number() == number).findFirst().orElse(null);
     }
 
     public void addFunction(CompositeFunction function) {
@@ -63,6 +63,6 @@ public class Configuration {
     }
 
     public CompositeFunction findFunction(int interfaceNumber) {
-        return functionList.stream().filter((f) -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
+        return functionList.stream().filter(f -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
     }
 }

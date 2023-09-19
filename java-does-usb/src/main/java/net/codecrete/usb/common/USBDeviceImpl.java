@@ -13,7 +13,7 @@ import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import java.lang.foreign.MemorySegment;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
@@ -21,7 +21,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 public abstract class USBDeviceImpl implements USBDevice {
 
     /**
-     * Operation-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
+     * Operating system-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
      * <p>
      * Can be a String instance (such as a file path) or a Long instance (such as an internal ID).
      * It only needs to be valid for the duration the device is connected.
@@ -30,6 +30,8 @@ public abstract class USBDeviceImpl implements USBDevice {
     protected final Object uniqueDeviceId;
 
     protected List<USBInterface> interfaceList;
+
+    protected byte[] rawDeviceDescriptor;
 
     protected byte[] rawConfigurationDescriptor;
 
@@ -77,18 +79,9 @@ public abstract class USBDeviceImpl implements USBDevice {
         // default implementation: do nothing
     }
 
-    @Override
-    public abstract void open();
-
-    @Override
-    public abstract void close();
-
-    @Override
-    public abstract boolean isOpen();
-
     protected void checkIsOpen() {
         if (!isOpen())
-            throw new USBException("The device needs to be open to call this method");
+            throw new USBException("device needs to be opened first for this operation");
     }
 
     @Override
@@ -146,6 +139,11 @@ public abstract class USBDeviceImpl implements USBDevice {
         return rawConfigurationDescriptor;
     }
 
+    @Override
+    public byte[] deviceDescriptor() {
+        return rawDeviceDescriptor;
+    }
+
     public Object getUniqueId() {
         return uniqueDeviceId;
     }
@@ -156,6 +154,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param descriptor the device descriptor
      */
     public void setFromDeviceDescriptor(MemorySegment descriptor) {
+        rawDeviceDescriptor = descriptor.toArray(JAVA_BYTE);
         var deviceDescriptor = new DeviceDescriptor(descriptor);
         deviceClass = deviceDescriptor.deviceClass() & 255;
         deviceSubclass = deviceDescriptor.deviceSubClass() & 255;
@@ -200,7 +199,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param descriptor   device descriptor
      * @param stringLookup string lookup function
      */
-    public void setProductString(MemorySegment descriptor, Function<Integer, String> stringLookup) {
+    public void setProductString(MemorySegment descriptor, IntFunction<String> stringLookup) {
         var deviceDescriptor = new DeviceDescriptor(descriptor);
         manufacturerString = stringLookup.apply(deviceDescriptor.iManufacturer());
         productString = stringLookup.apply(deviceDescriptor.iProduct());
@@ -223,12 +222,6 @@ public abstract class USBDeviceImpl implements USBDevice {
         return Collections.unmodifiableList(interfaceList);
     }
 
-    @Override
-    public abstract void claimInterface(int interfaceNumber);
-
-    @Override
-    public abstract void releaseInterface(int interfaceNumber);
-
     public void setClaimed(int interfaceNumber, boolean claimed) {
         for (var intf : interfaceList) {
             if (intf.number() == interfaceNumber) {
@@ -236,12 +229,24 @@ public abstract class USBDeviceImpl implements USBDevice {
                 return;
             }
         }
-        throw new USBException("Internal error (interface not found)");
+        throw new USBException("internal error (interface not found)");
     }
 
     @Override
     public USBInterfaceImpl getInterface(int interfaceNumber) {
-        return (USBInterfaceImpl) interfaceList.stream().filter((intf) -> intf.number() == interfaceNumber).findFirst().orElse(null);
+        return (USBInterfaceImpl) interfaceList.stream().filter(intf -> intf.number() == interfaceNumber).findFirst().orElse(null);
+    }
+
+    public USBInterfaceImpl getInterfaceWithCheck(int interfaceNumber, boolean isClaimed) {
+        var intf = getInterface(interfaceNumber);
+        if (intf == null)
+            throw new USBException(String.format("invalid interface number: %d", interfaceNumber));
+        if (isClaimed && !intf.isClaimed()) {
+            throw new USBException(String.format("interface %d must be claimed first", interfaceNumber));
+        } else if (!isClaimed && intf.isClaimed()) {
+            throw new USBException(String.format("interface %d has already been claimed", interfaceNumber));
+        }
+        return intf;
     }
 
     @Override
@@ -264,6 +269,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      * @param transferType2  transfer type 2 (or {@code null})
      * @return endpoint
      */
+    @SuppressWarnings("java:S3776")
     protected EndpointInfo getEndpoint(USBDirection direction, int endpointNumber, USBTransferType transferType1,
                                        USBTransferType transferType2) {
 
@@ -273,7 +279,8 @@ public abstract class USBDeviceImpl implements USBDevice {
             for (var intf : interfaceList) {
                 if (intf.isClaimed()) {
                     for (var ep : intf.alternate().endpoints()) {
-                        if (ep.number() == endpointNumber && ep.direction() == direction && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
+                        if (ep.number() == endpointNumber && ep.direction() == direction
+                                && (ep.transferType() == transferType1 || ep.transferType() == transferType2))
                             return new EndpointInfo(intf.number(), ep.number(),
                                     (byte) (endpointNumber | (direction == USBDirection.IN ? 0x80 : 0)),
                                     ep.packetSize(), ep.transferType());
@@ -293,7 +300,9 @@ public abstract class USBDeviceImpl implements USBDevice {
             transferTypeDesc = transferType1.name();
         else
             transferTypeDesc = String.format("%s or %s", transferType1.name(), transferType2.name());
-        throw new USBException(String.format("Endpoint number %d does not exist, is not part of a claimed interface " + "or is not valid for %s transfer in %s direction", endpointNumber, transferTypeDesc, direction.name()));
+        throw new USBException(String.format(
+                "endpoint number %d does not exist, is not part of a claimed interface or is not valid for %s transfer in %s direction",
+                endpointNumber, transferTypeDesc, direction.name()));
     }
 
     protected int getInterfaceNumber(USBDirection direction, int endpointNumber) {
@@ -313,12 +322,6 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     @Override
-    public abstract byte[] controlTransferIn(USBControlTransfer setup, int length);
-
-    @Override
-    public abstract void controlTransferOut(USBControlTransfer setup, byte[] data);
-
-    @Override
     public void transferOut(int endpointNumber, byte[] data) {
         transferOut(endpointNumber, data, 0, data.length, 0);
     }
@@ -329,61 +332,57 @@ public abstract class USBDeviceImpl implements USBDevice {
     }
 
     @Override
-    public abstract void transferOut(int endpointNumber, byte[] data, int offset, int length, int timeout);
-
-    @Override
     public byte[] transferIn(int endpointNumber) {
         return transferIn(endpointNumber, 0);
     }
-
-    @Override
-    public abstract byte[] transferIn(int endpointNumber, int timeout);
 
     protected void waitForTransfer(Transfer transfer, int timeout, USBDirection direction, int endpointNumber) {
         if (timeout <= 0) {
             waitNoTimeout(transfer);
 
         } else {
-            boolean hasTimedOut = waitWithTimeout(transfer, timeout);
+            var hasTimedOut = waitWithTimeout(transfer, timeout);
 
             // test for timeout
-            if (hasTimedOut && transfer.resultCode == 0) {
+            if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
                 waitNoTimeout(transfer);
-                throw new USBTimeoutException(getOperationDescription(direction, endpointNumber) + "aborted due to " +
-                        "timeout");
+                throw new USBTimeoutException(getOperationDescription(direction, endpointNumber)
+                        + "aborted due to timeout");
             }
         }
 
         // test for error
-        if (transfer.resultCode != 0) {
+        if (transfer.resultCode() != 0) {
             var operation = getOperationDescription(direction, endpointNumber);
-            throwOSException(transfer.resultCode, operation + " failed");
+            throwOSException(transfer.resultCode(), operation + " failed");
         }
     }
 
+    @SuppressWarnings("java:S2273")
     private static void waitNoTimeout(Transfer transfer) {
         // wait for transfer
-        while (transfer.resultSize == -1) {
+        while (transfer.resultSize() == -1) {
             try {
                 transfer.wait();
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
     }
 
+    @SuppressWarnings("java:S2273")
     private static boolean waitWithTimeout(Transfer transfer, int timeout) {
         // wait for transfer to complete, or abort when timeout occurs
-        long expiration = System.currentTimeMillis() + timeout;
+        var expiration = System.currentTimeMillis() + timeout;
         long remainingTimeout = timeout;
-        while (remainingTimeout > 0 && transfer.resultSize == -1) {
+        while (remainingTimeout > 0 && transfer.resultSize() == -1) {
             try {
                 transfer.wait(remainingTimeout);
                 remainingTimeout = expiration - System.currentTimeMillis();
 
             } catch (InterruptedException e) {
-                // ignore and retry
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -392,9 +391,9 @@ public abstract class USBDeviceImpl implements USBDevice {
 
     protected static String getOperationDescription(USBDirection direction, int endpointNumber) {
         if (endpointNumber == 0) {
-            return "Control transfer";
+            return "control transfer";
         } else {
-            return String.format("Transfer %s on endpoint %d", direction.name(), endpointNumber);
+            return String.format("transfer %s on endpoint %d", direction.name(), endpointNumber);
         }
 
     }
@@ -415,6 +414,7 @@ public abstract class USBDeviceImpl implements USBDevice {
      *
      * @param transfer the transfer that has completed
      */
+    @SuppressWarnings({"java:S2445", "java:S2446"})
     protected static void onSyncTransferCompleted(Transfer transfer) {
         synchronized (transfer) {
             transfer.notify();
@@ -436,7 +436,7 @@ public abstract class USBDeviceImpl implements USBDevice {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        USBDeviceImpl that = (USBDeviceImpl) o;
+        var that = (USBDeviceImpl) o;
         return uniqueDeviceId.equals(that.uniqueDeviceId);
     }
 

@@ -2,6 +2,7 @@
 
 package net.codecrete.usb.macos.gen.corefoundation;
 
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.MethodHandle;
@@ -9,16 +10,16 @@ import java.lang.invoke.MethodHandle;
 import static java.lang.foreign.ValueLayout.*;
 public class CoreFoundation  {
 
-    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = JAVA_BYTE;
+    public static final OfShort C_SHORT = JAVA_SHORT;
+    public static final OfInt C_INT = JAVA_INT;
+    public static final OfLong C_LONG = JAVA_LONG;
+    public static final OfLong C_LONG_LONG = JAVA_LONG;
+    public static final OfFloat C_FLOAT = JAVA_FLOAT;
+    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
     public static MethodHandle CFGetTypeID$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFGetTypeID$MH,"CFGetTypeID");
+        return RuntimeHelper.requireNonNull(constants$0.const$4,"CFGetTypeID");
     }
     /**
      * {@snippet :
@@ -34,7 +35,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFRelease$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFRelease$MH,"CFRelease");
+        return RuntimeHelper.requireNonNull(constants$0.const$6,"CFRelease");
     }
     /**
      * {@snippet :
@@ -50,7 +51,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFStringGetTypeID$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFStringGetTypeID$MH,"CFStringGetTypeID");
+        return RuntimeHelper.requireNonNull(constants$1.const$1,"CFStringGetTypeID");
     }
     /**
      * {@snippet :
@@ -66,7 +67,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFStringCreateWithCharacters$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFStringCreateWithCharacters$MH,"CFStringCreateWithCharacters");
+        return RuntimeHelper.requireNonNull(constants$1.const$3,"CFStringCreateWithCharacters");
     }
     /**
      * {@snippet :
@@ -82,7 +83,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFStringGetLength$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFStringGetLength$MH,"CFStringGetLength");
+        return RuntimeHelper.requireNonNull(constants$1.const$4,"CFStringGetLength");
     }
     /**
      * {@snippet :
@@ -98,7 +99,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFStringGetCharacters$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.CFStringGetCharacters$MH,"CFStringGetCharacters");
+        return RuntimeHelper.requireNonNull(constants$1.const$6,"CFStringGetCharacters");
     }
     /**
      * {@snippet :
@@ -122,7 +123,7 @@ public class CoreFoundation  {
         return (int)3L;
     }
     public static MethodHandle CFNumberGetTypeID$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFNumberGetTypeID$MH,"CFNumberGetTypeID");
+        return RuntimeHelper.requireNonNull(constants$2.const$0,"CFNumberGetTypeID");
     }
     /**
      * {@snippet :
@@ -138,7 +139,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFNumberGetValue$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFNumberGetValue$MH,"CFNumberGetValue");
+        return RuntimeHelper.requireNonNull(constants$2.const$2,"CFNumberGetValue");
     }
     /**
      * {@snippet :
@@ -154,7 +155,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFRunLoopGetCurrent$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFRunLoopGetCurrent$MH,"CFRunLoopGetCurrent");
+        return RuntimeHelper.requireNonNull(constants$2.const$4,"CFRunLoopGetCurrent");
     }
     /**
      * {@snippet :
@@ -170,7 +171,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFRunLoopRun$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFRunLoopRun$MH,"CFRunLoopRun");
+        return RuntimeHelper.requireNonNull(constants$2.const$6,"CFRunLoopRun");
     }
     /**
      * {@snippet :
@@ -186,7 +187,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFRunLoopAddSource$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFRunLoopAddSource$MH,"CFRunLoopAddSource");
+        return RuntimeHelper.requireNonNull(constants$3.const$1,"CFRunLoopAddSource");
     }
     /**
      * {@snippet :
@@ -202,7 +203,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFRunLoopRemoveSource$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.CFRunLoopRemoveSource$MH,"CFRunLoopRemoveSource");
+        return RuntimeHelper.requireNonNull(constants$3.const$2,"CFRunLoopRemoveSource");
     }
     /**
      * {@snippet :
@@ -218,7 +219,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFUUIDGetUUIDBytes$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.CFUUIDGetUUIDBytes$MH,"CFUUIDGetUUIDBytes");
+        return RuntimeHelper.requireNonNull(constants$6.const$3,"CFUUIDGetUUIDBytes");
     }
     /**
      * {@snippet :
@@ -234,7 +235,7 @@ public class CoreFoundation  {
         }
     }
     public static MethodHandle CFUUIDCreateFromUUIDBytes$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.CFUUIDCreateFromUUIDBytes$MH,"CFUUIDCreateFromUUIDBytes");
+        return RuntimeHelper.requireNonNull(constants$6.const$5,"CFUUIDCreateFromUUIDBytes");
     }
     /**
      * {@snippet :

@@ -2,22 +2,23 @@
 
 package net.codecrete.usb.linux.gen.udev;
 
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 import static java.lang.foreign.ValueLayout.*;
 public class udev  {
 
-    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = JAVA_BYTE;
+    public static final OfShort C_SHORT = JAVA_SHORT;
+    public static final OfInt C_INT = JAVA_INT;
+    public static final OfLong C_LONG = JAVA_LONG;
+    public static final OfLong C_LONG_LONG = JAVA_LONG;
+    public static final OfFloat C_FLOAT = JAVA_FLOAT;
+    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
     public static MethodHandle udev_new$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_new$MH,"udev_new");
+        return RuntimeHelper.requireNonNull(constants$0.const$1,"udev_new");
     }
     /**
      * {@snippet :
@@ -33,7 +34,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_list_entry_get_next$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_list_entry_get_next$MH,"udev_list_entry_get_next");
+        return RuntimeHelper.requireNonNull(constants$0.const$3,"udev_list_entry_get_next");
     }
     /**
      * {@snippet :
@@ -49,7 +50,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_list_entry_get_name$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_list_entry_get_name$MH,"udev_list_entry_get_name");
+        return RuntimeHelper.requireNonNull(constants$0.const$4,"udev_list_entry_get_name");
     }
     /**
      * {@snippet :
@@ -65,7 +66,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_unref$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_device_unref$MH,"udev_device_unref");
+        return RuntimeHelper.requireNonNull(constants$0.const$5,"udev_device_unref");
     }
     /**
      * {@snippet :
@@ -81,7 +82,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_new_from_syspath$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_device_new_from_syspath$MH,"udev_device_new_from_syspath");
+        return RuntimeHelper.requireNonNull(constants$1.const$1,"udev_device_new_from_syspath");
     }
     /**
      * {@snippet :
@@ -97,7 +98,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_get_devtype$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.udev_device_get_devtype$MH,"udev_device_get_devtype");
+        return RuntimeHelper.requireNonNull(constants$1.const$2,"udev_device_get_devtype");
     }
     /**
      * {@snippet :
@@ -113,7 +114,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_get_devnode$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_device_get_devnode$MH,"udev_device_get_devnode");
+        return RuntimeHelper.requireNonNull(constants$1.const$3,"udev_device_get_devnode");
     }
     /**
      * {@snippet :
@@ -129,7 +130,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_get_action$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_device_get_action$MH,"udev_device_get_action");
+        return RuntimeHelper.requireNonNull(constants$1.const$4,"udev_device_get_action");
     }
     /**
      * {@snippet :
@@ -145,7 +146,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_device_get_sysattr_value$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_device_get_sysattr_value$MH,"udev_device_get_sysattr_value");
+        return RuntimeHelper.requireNonNull(constants$1.const$5,"udev_device_get_sysattr_value");
     }
     /**
      * {@snippet :
@@ -161,7 +162,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_monitor_new_from_netlink$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_new_from_netlink$MH,"udev_monitor_new_from_netlink");
+        return RuntimeHelper.requireNonNull(constants$2.const$0,"udev_monitor_new_from_netlink");
     }
     /**
      * {@snippet :
@@ -177,7 +178,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_monitor_enable_receiving$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_enable_receiving$MH,"udev_monitor_enable_receiving");
+        return RuntimeHelper.requireNonNull(constants$2.const$2,"udev_monitor_enable_receiving");
     }
     /**
      * {@snippet :
@@ -193,7 +194,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_monitor_get_fd$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.udev_monitor_get_fd$MH,"udev_monitor_get_fd");
+        return RuntimeHelper.requireNonNull(constants$2.const$3,"udev_monitor_get_fd");
     }
     /**
      * {@snippet :
@@ -209,7 +210,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_monitor_receive_device$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_monitor_receive_device$MH,"udev_monitor_receive_device");
+        return RuntimeHelper.requireNonNull(constants$2.const$4,"udev_monitor_receive_device");
     }
     /**
      * {@snippet :
@@ -225,7 +226,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_monitor_filter_add_match_subsystem_devtype$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_monitor_filter_add_match_subsystem_devtype$MH,"udev_monitor_filter_add_match_subsystem_devtype");
+        return RuntimeHelper.requireNonNull(constants$2.const$6,"udev_monitor_filter_add_match_subsystem_devtype");
     }
     /**
      * {@snippet :
@@ -241,7 +242,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_unref$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_unref$MH,"udev_enumerate_unref");
+        return RuntimeHelper.requireNonNull(constants$3.const$0,"udev_enumerate_unref");
     }
     /**
      * {@snippet :
@@ -257,7 +258,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_new$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_new$MH,"udev_enumerate_new");
+        return RuntimeHelper.requireNonNull(constants$3.const$1,"udev_enumerate_new");
     }
     /**
      * {@snippet :
@@ -273,7 +274,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_add_match_subsystem$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_add_match_subsystem$MH,"udev_enumerate_add_match_subsystem");
+        return RuntimeHelper.requireNonNull(constants$3.const$3,"udev_enumerate_add_match_subsystem");
     }
     /**
      * {@snippet :
@@ -289,7 +290,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_scan_devices$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.udev_enumerate_scan_devices$MH,"udev_enumerate_scan_devices");
+        return RuntimeHelper.requireNonNull(constants$3.const$4,"udev_enumerate_scan_devices");
     }
     /**
      * {@snippet :
@@ -305,7 +306,7 @@ public class udev  {
         }
     }
     public static MethodHandle udev_enumerate_get_list_entry$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.udev_enumerate_get_list_entry$MH,"udev_enumerate_get_list_entry");
+        return RuntimeHelper.requireNonNull(constants$3.const$5,"udev_enumerate_get_list_entry");
     }
     /**
      * {@snippet :

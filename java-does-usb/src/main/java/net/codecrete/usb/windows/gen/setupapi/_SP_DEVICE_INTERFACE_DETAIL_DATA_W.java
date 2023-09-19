@@ -2,7 +2,10 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.VarHandle;
 /**
  * {@snippet :
@@ -14,17 +17,11 @@ import java.lang.invoke.VarHandle;
  */
 public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
 
-    static final StructLayout $struct$LAYOUT = MemoryLayout.structLayout(
-        Constants$root.C_LONG$LAYOUT.withName("cbSize"),
-        MemoryLayout.sequenceLayout(1, Constants$root.C_SHORT$LAYOUT).withName("DevicePath"),
-        MemoryLayout.paddingLayout(16)
-    ).withName("_SP_DEVICE_INTERFACE_DETAIL_DATA_W");
     public static MemoryLayout $LAYOUT() {
-        return _SP_DEVICE_INTERFACE_DETAIL_DATA_W.$struct$LAYOUT;
+        return constants$1.const$4;
     }
-    static final VarHandle cbSize$VH = $struct$LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("cbSize"));
     public static VarHandle cbSize$VH() {
-        return _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH;
+        return constants$1.const$5;
     }
     /**
      * Getter for field:
@@ -33,7 +30,7 @@ public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
      * }
      */
     public static int cbSize$get(MemorySegment seg) {
-        return (int)_SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.get(seg);
+        return (int)constants$1.const$5.get(seg);
     }
     /**
      * Setter for field:
@@ -42,13 +39,13 @@ public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
      * }
      */
     public static void cbSize$set(MemorySegment seg, int x) {
-        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.set(seg, x);
+        constants$1.const$5.set(seg, x);
     }
     public static int cbSize$get(MemorySegment seg, long index) {
-        return (int)_SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.get(seg.asSlice(index*sizeof()));
+        return (int)constants$1.const$5.get(seg.asSlice(index*sizeof()));
     }
     public static void cbSize$set(MemorySegment seg, long index, int x) {
-        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$VH.set(seg.asSlice(index*sizeof()), x);
+        constants$1.const$5.set(seg.asSlice(index*sizeof()), x);
     }
     public static MemorySegment DevicePath$slice(MemorySegment seg) {
         return seg.asSlice(4, 2);
@@ -58,7 +55,7 @@ public class _SP_DEVICE_INTERFACE_DETAIL_DATA_W {
     public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
         return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
     }
-    public static MemorySegment ofAddress(MemorySegment addr, SegmentScope scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
+    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
 }
 
 

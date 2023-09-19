@@ -9,22 +9,32 @@ package net.codecrete.usb.linux;
 
 import net.codecrete.usb.linux.gen.string.string;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.Linker;
-import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
 import java.lang.invoke.VarHandle;
 
 /**
  * Helper functions for Linux
  */
-public class Linux {
+class Linux {
+
+    private Linux() {
+    }
 
     /**
      * Call state for capturing the {@code errno} value.
      */
-    public static final Linker.Option.CaptureCallState ERRNO_STATE = Linker.Option.captureCallState("errno");
+    static final Linker.Option ERRNO_STATE = Linker.Option.captureCallState("errno");
+    private static final StructLayout ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
     private static final VarHandle callState_errno$VH =
-            ERRNO_STATE.layout().varHandle(MemoryLayout.PathElement.groupElement("errno"));
+            ERRNO_STATE_LAYOUT.varHandle(PathElement.groupElement("errno"));
+
+    static MemorySegment allocateErrorState(Arena arena) {
+        return arena.allocate(ERRNO_STATE_LAYOUT.byteSize());
+    }
 
     /**
      * Gets the error message for the specified error code (returned by {@code errno}).
@@ -32,7 +42,7 @@ public class Linux {
      * @param err error code
      * @return error message
      */
-    public static String getErrorMessage(int err) {
+    static String getErrorMessage(int err) {
         return string.strerror(err).getUtf8String(0);
     }
 
@@ -42,10 +52,10 @@ public class Linux {
      * The memory segment is assumed to have the layout {@link #ERRNO_STATE}.
      * </p>
      *
-     * @param errno memory segment with error code
+     * @param errorState memory segment with error code
      * @return error code
      */
-    public static int getErrno(MemorySegment errno) {
-        return (int) callState_errno$VH.get(errno);
+    static int getErrno(MemorySegment errorState) {
+        return (int) callState_errno$VH.get(errorState);
     }
 }

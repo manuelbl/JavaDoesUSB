@@ -16,11 +16,10 @@ import net.codecrete.usb.linux.gen.udev.udev;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.SegmentScope;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.Logger.Level.INFO;
 import static net.codecrete.usb.linux.LinuxUSBException.throwException;
 
 /**
@@ -28,17 +27,34 @@ import static net.codecrete.usb.linux.LinuxUSBException.throwException;
  */
 public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
-    private final SegmentAllocator GLOBAL_ALLOCATOR = SegmentAllocator.nativeAllocator(SegmentScope.global());
-    private final MemorySegment SUBSYSTEM_USB = GLOBAL_ALLOCATOR.allocateUtf8String("usb");
-    private final MemorySegment MONITOR_NAME = GLOBAL_ALLOCATOR.allocateUtf8String("udev");
-    private final MemorySegment DEVTYPE_USB_DEVICE = GLOBAL_ALLOCATOR.allocateUtf8String("usb_device");
+    private static final System.Logger LOG = System.getLogger(LinuxUSBDeviceRegistry.class.getName());
 
-    private final MemorySegment ATTR_ID_VENDOR = GLOBAL_ALLOCATOR.allocateUtf8String("idVendor");
-    private final MemorySegment ATTR_ID_PRODUCT = GLOBAL_ALLOCATOR.allocateUtf8String("idProduct");
-    private final MemorySegment ATTR_MANUFACTURER = GLOBAL_ALLOCATOR.allocateUtf8String("manufacturer");
-    private final MemorySegment ATTR_PRODUCT = GLOBAL_ALLOCATOR.allocateUtf8String("product");
-    private final MemorySegment ATTR_SERIAL = GLOBAL_ALLOCATOR.allocateUtf8String("serial");
+    private static final MemorySegment SUBSYSTEM_USB;
+    private static final MemorySegment MONITOR_NAME;
+    private static final MemorySegment DEVTYPE_USB_DEVICE;
 
+    private static final MemorySegment ATTR_ID_VENDOR;
+    private static final MemorySegment ATTR_ID_PRODUCT;
+    private static final MemorySegment ATTR_MANUFACTURER;
+    private static final MemorySegment ATTR_PRODUCT;
+    private static final MemorySegment ATTR_SERIAL;
+
+    static {
+        @SuppressWarnings("resource")
+        var global = Arena.global();
+
+        SUBSYSTEM_USB = global.allocateUtf8String("usb");
+        MONITOR_NAME = global.allocateUtf8String("udev");
+        DEVTYPE_USB_DEVICE = global.allocateUtf8String("usb_device");
+
+        ATTR_ID_VENDOR = global.allocateUtf8String("idVendor");
+        ATTR_ID_PRODUCT = global.allocateUtf8String("idProduct");
+        ATTR_MANUFACTURER = global.allocateUtf8String("manufacturer");
+        ATTR_PRODUCT = global.allocateUtf8String("product");
+        ATTR_SERIAL = global.allocateUtf8String("serial");
+    }
+
+    @SuppressWarnings({"java:S1181", "java:S2189"})
     @Override
     protected void monitorDevices() {
 
@@ -77,7 +93,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         // monitor device changes
         //noinspection InfiniteLoopStatement
         while (true) {
-            try (var arena = Arena.openConfined(); var cleanup = new ScopeCleanup()) {
+            try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
 
                 // wait for next change
                 waitForFileDescriptor(fd, arena);
@@ -101,6 +117,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
         }
     }
 
+    @SuppressWarnings("java:S135")
     private List<USBDevice> enumeratePresentDevices(MemorySegment udevInstance) {
         List<USBDevice> result = new ArrayList<>();
         try (var outerCleanup = new ScopeCleanup()) {
@@ -173,6 +190,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param udevDevice the device (udev_device*)
      * @return the device instance
      */
+    @SuppressWarnings("java:S106")
     private USBDevice getDeviceDetails(MemorySegment udevDevice) {
 
         int vendorId = 0;
@@ -204,10 +222,8 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
 
             return device;
 
-        } catch (Throwable e) {
-            System.err.printf("Info: [JavaDoesUSB] failed to retrieve information about device 0x%04x/0x%04x - " +
-                    "ignoring device%n", vendorId, productId);
-            e.printStackTrace(System.err);
+        } catch (Exception e) {
+            LOG.log(INFO, String.format("failed to retrieve information about device 0x%04x/0x%04x - ignoring device", vendorId, productId), e);
             return null;
         }
     }
@@ -235,7 +251,7 @@ public class LinuxUSBDeviceRegistry extends USBDeviceRegistry {
      * @param arena an arena for allocating memory
      */
     private static void waitForFileDescriptor(int fd, Arena arena) {
-        var fds = arena.allocate(pollfd.$LAYOUT());
+        var fds = pollfd.allocate(arena);
         pollfd.fd$set(fds, fd);
         pollfd.events$set(fds, (short) poll.POLLIN());
         int res = poll.poll(fds, 1, -1);

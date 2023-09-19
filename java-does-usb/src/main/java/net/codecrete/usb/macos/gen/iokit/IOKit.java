@@ -2,6 +2,7 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
@@ -10,14 +11,14 @@ import java.lang.invoke.VarHandle;
 import static java.lang.foreign.ValueLayout.*;
 public class IOKit  {
 
-    public static final OfByte C_CHAR = Constants$root.C_CHAR$LAYOUT;
-    public static final OfShort C_SHORT = Constants$root.C_SHORT$LAYOUT;
-    public static final OfInt C_INT = Constants$root.C_INT$LAYOUT;
-    public static final OfLong C_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfLong C_LONG_LONG = Constants$root.C_LONG_LONG$LAYOUT;
-    public static final OfFloat C_FLOAT = Constants$root.C_FLOAT$LAYOUT;
-    public static final OfDouble C_DOUBLE = Constants$root.C_DOUBLE$LAYOUT;
-    public static final OfAddress C_POINTER = Constants$root.C_POINTER$LAYOUT;
+    public static final OfByte C_CHAR = JAVA_BYTE;
+    public static final OfShort C_SHORT = JAVA_SHORT;
+    public static final OfInt C_INT = JAVA_INT;
+    public static final OfLong C_LONG = JAVA_LONG;
+    public static final OfLong C_LONG_LONG = JAVA_LONG;
+    public static final OfFloat C_FLOAT = JAVA_FLOAT;
+    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
     /**
      * {@snippet :
      * enum .kIOUSBFindInterfaceDontCare = 65535;
@@ -43,13 +44,13 @@ public class IOKit  {
         return (int)536870912L;
     }
     public static MemoryLayout kCFRunLoopDefaultMode$LAYOUT() {
-        return constants$0.kCFRunLoopDefaultMode$LAYOUT;
+        return RuntimeHelper.POINTER;
     }
     public static VarHandle kCFRunLoopDefaultMode$VH() {
-        return constants$0.kCFRunLoopDefaultMode$VH;
+        return constants$2.const$1;
     }
     public static MemorySegment kCFRunLoopDefaultMode$SEGMENT() {
-        return RuntimeHelper.requireNonNull(constants$0.kCFRunLoopDefaultMode$SEGMENT,"kCFRunLoopDefaultMode");
+        return RuntimeHelper.requireNonNull(constants$2.const$2,"kCFRunLoopDefaultMode");
     }
     /**
      * Getter for variable:
@@ -58,7 +59,7 @@ public class IOKit  {
      * }
      */
     public static MemorySegment kCFRunLoopDefaultMode$get() {
-        return (java.lang.foreign.MemorySegment) constants$0.kCFRunLoopDefaultMode$VH.get(RuntimeHelper.requireNonNull(constants$0.kCFRunLoopDefaultMode$SEGMENT, "kCFRunLoopDefaultMode"));
+        return (java.lang.foreign.MemorySegment) constants$2.const$1.get(RuntimeHelper.requireNonNull(constants$2.const$2, "kCFRunLoopDefaultMode"));
     }
     /**
      * Setter for variable:
@@ -67,16 +68,16 @@ public class IOKit  {
      * }
      */
     public static void kCFRunLoopDefaultMode$set(MemorySegment x) {
-        constants$0.kCFRunLoopDefaultMode$VH.set(RuntimeHelper.requireNonNull(constants$0.kCFRunLoopDefaultMode$SEGMENT, "kCFRunLoopDefaultMode"), x);
+        constants$2.const$1.set(RuntimeHelper.requireNonNull(constants$2.const$2, "kCFRunLoopDefaultMode"), x);
     }
     public static MemoryLayout kIOMasterPortDefault$LAYOUT() {
-        return constants$0.kIOMasterPortDefault$LAYOUT;
+        return JAVA_INT;
     }
     public static VarHandle kIOMasterPortDefault$VH() {
-        return constants$0.kIOMasterPortDefault$VH;
+        return constants$2.const$3;
     }
     public static MemorySegment kIOMasterPortDefault$SEGMENT() {
-        return RuntimeHelper.requireNonNull(constants$0.kIOMasterPortDefault$SEGMENT,"kIOMasterPortDefault");
+        return RuntimeHelper.requireNonNull(constants$2.const$4,"kIOMasterPortDefault");
     }
     /**
      * Getter for variable:
@@ -85,7 +86,7 @@ public class IOKit  {
      * }
      */
     public static int kIOMasterPortDefault$get() {
-        return (int) constants$0.kIOMasterPortDefault$VH.get(RuntimeHelper.requireNonNull(constants$0.kIOMasterPortDefault$SEGMENT, "kIOMasterPortDefault"));
+        return (int) constants$2.const$3.get(RuntimeHelper.requireNonNull(constants$2.const$4, "kIOMasterPortDefault"));
     }
     /**
      * Setter for variable:
@@ -94,10 +95,10 @@ public class IOKit  {
      * }
      */
     public static void kIOMasterPortDefault$set(int x) {
-        constants$0.kIOMasterPortDefault$VH.set(RuntimeHelper.requireNonNull(constants$0.kIOMasterPortDefault$SEGMENT, "kIOMasterPortDefault"), x);
+        constants$2.const$3.set(RuntimeHelper.requireNonNull(constants$2.const$4, "kIOMasterPortDefault"), x);
     }
     public static MethodHandle IONotificationPortCreate$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.IONotificationPortCreate$MH,"IONotificationPortCreate");
+        return RuntimeHelper.requireNonNull(constants$2.const$6,"IONotificationPortCreate");
     }
     /**
      * {@snippet :
@@ -113,7 +114,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IONotificationPortGetRunLoopSource$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.IONotificationPortGetRunLoopSource$MH,"IONotificationPortGetRunLoopSource");
+        return RuntimeHelper.requireNonNull(constants$3.const$1,"IONotificationPortGetRunLoopSource");
     }
     /**
      * {@snippet :
@@ -129,7 +130,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IOObjectRelease$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.IOObjectRelease$MH,"IOObjectRelease");
+        return RuntimeHelper.requireNonNull(constants$3.const$3,"IOObjectRelease");
     }
     /**
      * {@snippet :
@@ -145,7 +146,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IOIteratorNext$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.IOIteratorNext$MH,"IOIteratorNext");
+        return RuntimeHelper.requireNonNull(constants$3.const$4,"IOIteratorNext");
     }
     /**
      * {@snippet :
@@ -161,7 +162,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IOServiceAddMatchingNotification$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.IOServiceAddMatchingNotification$MH,"IOServiceAddMatchingNotification");
+        return RuntimeHelper.requireNonNull(constants$3.const$6,"IOServiceAddMatchingNotification");
     }
     /**
      * {@snippet :
@@ -177,7 +178,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IORegistryEntryGetRegistryEntryID$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.IORegistryEntryGetRegistryEntryID$MH,"IORegistryEntryGetRegistryEntryID");
+        return RuntimeHelper.requireNonNull(constants$4.const$1,"IORegistryEntryGetRegistryEntryID");
     }
     /**
      * {@snippet :
@@ -193,7 +194,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IORegistryEntryCreateCFProperty$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.IORegistryEntryCreateCFProperty$MH,"IORegistryEntryCreateCFProperty");
+        return RuntimeHelper.requireNonNull(constants$4.const$3,"IORegistryEntryCreateCFProperty");
     }
     /**
      * {@snippet :
@@ -209,7 +210,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IOServiceMatching$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.IOServiceMatching$MH,"IOServiceMatching");
+        return RuntimeHelper.requireNonNull(constants$4.const$4,"IOServiceMatching");
     }
     /**
      * {@snippet :
@@ -225,7 +226,7 @@ public class IOKit  {
         }
     }
     public static MethodHandle IOCreatePlugInInterfaceForService$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.IOCreatePlugInInterfaceForService$MH,"IOCreatePlugInInterfaceForService");
+        return RuntimeHelper.requireNonNull(constants$43.const$5,"IOCreatePlugInInterfaceForService");
     }
     /**
      * {@snippet :
@@ -278,7 +279,7 @@ public class IOKit  {
      * }
      */
     public static MemorySegment kIOFirstMatchNotification() {
-        return constants$1.kIOFirstMatchNotification$SEGMENT;
+        return constants$44.const$0;
     }
     /**
      * {@snippet :
@@ -286,7 +287,7 @@ public class IOKit  {
      * }
      */
     public static MemorySegment kIOTerminatedNotification() {
-        return constants$2.kIOTerminatedNotification$SEGMENT;
+        return constants$44.const$1;
     }
     /**
      * {@snippet :
@@ -294,7 +295,7 @@ public class IOKit  {
      * }
      */
     public static MemorySegment kIOUSBDeviceClassName() {
-        return constants$2.kIOUSBDeviceClassName$SEGMENT;
+        return constants$44.const$2;
     }
 }
 

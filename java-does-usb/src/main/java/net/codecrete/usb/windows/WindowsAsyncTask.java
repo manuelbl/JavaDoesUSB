@@ -8,7 +8,7 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.kernel32.OVERLAPPED;
+import net.codecrete.usb.windows.gen.kernel32._OVERLAPPED;
 import net.codecrete.usb.windows.winsdk.Kernel32B;
 
 import java.lang.foreign.Arena;
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
+import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 
 /**
@@ -37,20 +38,13 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
  * determines the number of allocated OVERLAPPED structs.
  * </p>
  */
-public class WindowsAsyncTask {
-
-    private static WindowsAsyncTask singletonInstance;
+@SuppressWarnings("java:S6548")
+class WindowsAsyncTask {
 
     /**
      * Singleton instance of background task.
-     *
-     * @return background task
      */
-    static synchronized WindowsAsyncTask instance() {
-        if (singletonInstance == null)
-            singletonInstance = new WindowsAsyncTask();
-        return singletonInstance;
-    }
+    static final WindowsAsyncTask INSTANCE = new WindowsAsyncTask();
 
     // Currently outstanding transfer requests,
     // indexed by OVERLAPPED address.
@@ -58,7 +52,7 @@ public class WindowsAsyncTask {
     // available OVERLAPPED data structures
     private List<MemorySegment> availableOverlappedStructs;
     // Arena used to allocate OVERLAPPED data structures
-    private Arena arena;
+    private Arena overlappedArena;
 
     /**
      * Windows completion port for asynchronous/overlapped IO
@@ -70,23 +64,23 @@ public class WindowsAsyncTask {
      */
     private void asyncCompletionTask() {
 
-        try (var arena = Arena.openConfined()) {
+        try (var arena = Arena.ofConfined()) {
 
             var overlappedHolder = arena.allocate(ADDRESS, NULL);
             var numBytesHolder = arena.allocate(JAVA_INT, 0);
             var completionKeyHolder = arena.allocate(JAVA_LONG, 0);
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+            var errorState = allocateErrorState(arena);
 
             while (true) {
-                overlappedHolder.set(ADDRESS, 0, MemorySegment.NULL);
+                overlappedHolder.set(ADDRESS, 0, NULL);
                 completionKeyHolder.set(JAVA_LONG, 0, 0);
 
-                int res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
-                        completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), lastErrorState);
+                var res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
+                        completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), errorState);
                 var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
                 if (res == 0 && overlappedAddr == 0)
-                    throwLastError(lastErrorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    throwLastError(errorState, "internal error (SetupDiGetDeviceInterfaceDetailW)");
 
                 if (overlappedAddr == 0)
                     return; // registry closing?
@@ -106,14 +100,14 @@ public class WindowsAsyncTask {
      */
     synchronized void addDevice(MemorySegment handle) {
 
-        try (var arena = Arena.openConfined()) {
-            var lastErrorState = arena.allocate(Win.LAST_ERROR_STATE.layout());
+        try (var arena = Arena.ofConfined()) {
+            var errorState = allocateErrorState(arena);
 
             // Creates a new port if it doesn't exist; adds handle to existing port if it exists
-            MemorySegment portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
-                    handle.address(), 0, lastErrorState);
+            var portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
+                    handle.address(), 0, errorState);
             if (portHandle == MemorySegment.NULL)
-                throwLastError(lastErrorState, "internal error (CreateIoCompletionPort)");
+                throwLastError(errorState, "internal error (CreateIoCompletionPort)");
 
             if (asyncIoCompletionPort == MemorySegment.NULL) {
                 asyncIoCompletionPort = portHandle;
@@ -124,13 +118,13 @@ public class WindowsAsyncTask {
 
     private void startAsyncIOTask() {
         availableOverlappedStructs = new ArrayList<>();
-        arena = Arena.openShared();
+        overlappedArena = Arena.ofAuto();
         requestsByOverlapped = new HashMap<>();
 
         // start background thread for handling IO completion
-        Thread t = new Thread(this::asyncCompletionTask, "USB async IO");
-        t.setDaemon(true);
-        t.start();
+        var thread = new Thread(this::asyncCompletionTask, "USB async IO");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -140,15 +134,15 @@ public class WindowsAsyncTask {
      */
     synchronized void prepareForSubmission(WindowsTransfer transfer) {
         MemorySegment overlapped;
-        int size = availableOverlappedStructs.size();
+        var size = availableOverlappedStructs.size();
         if (size == 0) {
-            overlapped = arena.allocate(OVERLAPPED.$LAYOUT());
+            overlapped = _OVERLAPPED.allocate(overlappedArena);
         } else {
             overlapped = availableOverlappedStructs.remove(size - 1);
         }
 
-        transfer.overlapped = overlapped;
-        transfer.resultSize = -1;
+        transfer.setOverlapped(overlapped);
+        transfer.setResultSize(-1);
         requestsByOverlapped.put(overlapped.address(), transfer);
     }
 
@@ -162,11 +156,11 @@ public class WindowsAsyncTask {
         if (transfer == null)
             return;
 
-        transfer.resultCode = (int) OVERLAPPED.Internal$get(transfer.overlapped);
-        transfer.resultSize = (int) OVERLAPPED.InternalHigh$get(transfer.overlapped);
+        transfer.setResultCode((int) _OVERLAPPED.Internal$get(transfer.overlapped()));
+        transfer.setResultSize((int) _OVERLAPPED.InternalHigh$get(transfer.overlapped()));
 
-        availableOverlappedStructs.add(transfer.overlapped);
-        transfer.overlapped = null;
-        transfer.completion.completed(transfer);
+        availableOverlappedStructs.add(transfer.overlapped());
+        transfer.setOverlapped(null);
+        transfer.completion().completed(transfer);
     }
 }

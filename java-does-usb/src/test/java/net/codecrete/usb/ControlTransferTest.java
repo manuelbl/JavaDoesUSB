@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 /**
  * Tests control transfers
  */
-public class ControlTransferTest extends TestDeviceBase {
+class ControlTransferTest extends TestDeviceBase {
 
     @Test
     void storeValue_succeeds() {

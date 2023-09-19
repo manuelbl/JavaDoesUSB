@@ -23,7 +23,11 @@ import static java.lang.foreign.ValueLayout.*;
  * {@code GetLastError()} until jextract catches up and can generate the corresponding code.
  * </p>
  */
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "java:S100", "java:S107", "java:S117"})
 public class User32B {
+
+    private User32B() {
+    }
 
     static {
         System.loadLibrary("User32");
@@ -41,7 +45,7 @@ public class User32B {
         try {
             return (short) RegisterClassExW$MH.invokeExact(lastErrorState, unnamedParam1);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -60,7 +64,7 @@ public class User32B {
             return (MemorySegment) CreateWindowExW$MH.invokeExact(lastErrorState, dwExStyle, lpClassName,
                     lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -77,7 +81,7 @@ public class User32B {
             return (MemorySegment) RegisterDeviceNotificationW$MH.invokeExact(lastErrorState, hRecipient,
                     NotificationFilter, Flags);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -92,7 +96,7 @@ public class User32B {
         try {
             return (int) GetMessageW$MH.invokeExact(lastErrorState, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 }

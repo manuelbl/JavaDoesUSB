@@ -14,6 +14,7 @@ import java.util.Optional;
 /**
  * Sample application enumerating connected USB devices.
  */
+@SuppressWarnings("java:S106")
 public class Enumerate {
 
     public static void main(String[] args) {
@@ -42,10 +43,14 @@ public class Enumerate {
         for (var intf: device.interfaces())
             printInterface(intf);
 
+        printRawDescriptor("Device descriptor", device.deviceDescriptor());
+        printRawDescriptor("Configuration descriptor", device.configurationDescriptor());
+
         System.out.println();
         System.out.println();
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private static void printInParens(Optional<String> text) {
         if (text.isPresent()) {
             System.out.printf(" (%s)%n", text.get());
@@ -84,5 +89,18 @@ public class Enumerate {
         System.out.printf("        Direction: %s%n", endpoint.direction().name());
         System.out.printf("        Transfer type: %s%n", endpoint.transferType().name());
         System.out.printf("        Packet size: %d bytes%n", endpoint.packetSize());
+    }
+
+    private static void printRawDescriptor(String title, byte[] descriptor) {
+        System.out.println();
+        System.out.println(title);
+
+        int len = descriptor.length;
+        for (int i = 0; i < len; i += 16) {
+            System.out.printf("%04x ", i);
+            for (int j = i; j < Math.min(i + 16, len); j += 1)
+                System.out.printf(" %02x", descriptor[j] & 255);
+            System.out.println();
+        }
     }
 }

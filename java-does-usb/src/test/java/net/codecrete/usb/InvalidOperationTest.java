@@ -12,7 +12,7 @@ package net.codecrete.usb;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class InvalidOperationTest extends TestDeviceBase {
+class InvalidOperationTest extends TestDeviceBase {
 
     @Test
     void claimInvalidInterface_throws() {

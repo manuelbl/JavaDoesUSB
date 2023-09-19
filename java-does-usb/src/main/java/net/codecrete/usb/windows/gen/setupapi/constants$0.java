@@ -2,27 +2,39 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.invoke.MethodHandle;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.StructLayout;
+import java.lang.invoke.VarHandle;
+
+import static java.lang.foreign.ValueLayout.*;
 final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor SetupDiDestroyDeviceInfoList$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiDestroyDeviceInfoList$MH = RuntimeHelper.downcallHandle(
-        "SetupDiDestroyDeviceInfoList",
-        constants$0.SetupDiDestroyDeviceInfoList$FUNC
-    );
-    static final FunctionDescriptor SetupDiDeleteDeviceInterfaceData$FUNC = FunctionDescriptor.of(Constants$root.C_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle SetupDiDeleteDeviceInterfaceData$MH = RuntimeHelper.downcallHandle(
-        "SetupDiDeleteDeviceInterfaceData",
-        constants$0.SetupDiDeleteDeviceInterfaceData$FUNC
-    );
+    static final StructLayout const$0 = MemoryLayout.structLayout(
+        MemoryLayout.structLayout(
+            JAVA_INT.withName("Data1"),
+            JAVA_SHORT.withName("Data2"),
+            JAVA_SHORT.withName("Data3"),
+            MemoryLayout.sequenceLayout(8, JAVA_BYTE).withName("Data4")
+        ).withName("fmtid"),
+        JAVA_INT.withName("pid")
+    ).withName("_DEVPROPKEY");
+    static final VarHandle const$1 = constants$0.const$0.varHandle(MemoryLayout.PathElement.groupElement("pid"));
+    static final StructLayout const$2 = MemoryLayout.structLayout(
+        JAVA_INT.withName("cbSize"),
+        MemoryLayout.structLayout(
+            JAVA_INT.withName("Data1"),
+            JAVA_SHORT.withName("Data2"),
+            JAVA_SHORT.withName("Data3"),
+            MemoryLayout.sequenceLayout(8, JAVA_BYTE).withName("Data4")
+        ).withName("ClassGuid"),
+        JAVA_INT.withName("DevInst"),
+        JAVA_LONG.withName("Reserved")
+    ).withName("_SP_DEVINFO_DATA");
+    static final VarHandle const$3 = constants$0.const$2.varHandle(MemoryLayout.PathElement.groupElement("cbSize"));
+    static final VarHandle const$4 = constants$0.const$2.varHandle(MemoryLayout.PathElement.groupElement("DevInst"));
+    static final VarHandle const$5 = constants$0.const$2.varHandle(MemoryLayout.PathElement.groupElement("Reserved"));
 }
 
 

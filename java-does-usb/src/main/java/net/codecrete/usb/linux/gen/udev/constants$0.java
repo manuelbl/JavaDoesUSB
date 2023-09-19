@@ -8,46 +8,25 @@ final class constants$0 {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private constants$0() {}
-    static final FunctionDescriptor udev_new$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT);
-    static final MethodHandle udev_new$MH = RuntimeHelper.downcallHandle(
+    static final FunctionDescriptor const$0 = FunctionDescriptor.of(RuntimeHelper.POINTER);
+    static final MethodHandle const$1 = RuntimeHelper.downcallHandle(
         "udev_new",
-        constants$0.udev_new$FUNC
+        constants$0.const$0
     );
-    static final FunctionDescriptor udev_list_entry_get_next$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
+    static final FunctionDescriptor const$2 = FunctionDescriptor.of(RuntimeHelper.POINTER,
+        RuntimeHelper.POINTER
     );
-    static final MethodHandle udev_list_entry_get_next$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$3 = RuntimeHelper.downcallHandle(
         "udev_list_entry_get_next",
-        constants$0.udev_list_entry_get_next$FUNC
+        constants$0.const$2
     );
-    static final FunctionDescriptor udev_list_entry_get_name$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_list_entry_get_name$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$4 = RuntimeHelper.downcallHandle(
         "udev_list_entry_get_name",
-        constants$0.udev_list_entry_get_name$FUNC
+        constants$0.const$2
     );
-    static final FunctionDescriptor udev_device_unref$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_device_unref$MH = RuntimeHelper.downcallHandle(
+    static final MethodHandle const$5 = RuntimeHelper.downcallHandle(
         "udev_device_unref",
-        constants$0.udev_device_unref$FUNC
-    );
-    static final FunctionDescriptor udev_device_new_from_syspath$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_device_new_from_syspath$MH = RuntimeHelper.downcallHandle(
-        "udev_device_new_from_syspath",
-        constants$0.udev_device_new_from_syspath$FUNC
-    );
-    static final FunctionDescriptor udev_device_get_devtype$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle udev_device_get_devtype$MH = RuntimeHelper.downcallHandle(
-        "udev_device_get_devtype",
-        constants$0.udev_device_get_devtype$FUNC
+        constants$0.const$2
     );
 }
 

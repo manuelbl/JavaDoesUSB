@@ -13,6 +13,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 /**
  * USB setup packet.
  */
+@SuppressWarnings("java:S125")
 public class SetupPacket {
 
     private final MemorySegment descriptor;

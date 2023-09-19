@@ -24,6 +24,11 @@ package net.codecrete.usb;
  * @param value       value (value between 0 and 65535, called {@code wValue} in USB specification)
  * @param index       index (value between 0 and 65535, called {@code wIndex} in USB specification).
  */
-public record USBControlTransfer(USBRequestType requestType, USBRecipient recipient, int request, int value,
-                                 int index) {
+public record USBControlTransfer(
+        USBRequestType requestType,
+        USBRecipient recipient,
+        int request,
+        int value,
+        int index
+) {
 }

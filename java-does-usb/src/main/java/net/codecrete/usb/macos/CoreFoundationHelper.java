@@ -20,7 +20,10 @@ import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 /**
  * Core Foundation helper functions
  */
-public class CoreFoundationHelper {
+class CoreFoundationHelper {
+
+    private CoreFoundationHelper() {
+    }
 
     /**
      * Gets Java string as a copy of the {@code CFStringRef}.
@@ -29,11 +32,11 @@ public class CoreFoundationHelper {
      * @param arena  the arena to allocate memory
      * @return copied string
      */
-    public static String stringFromCFStringRef(MemorySegment string, Arena arena) {
+    static String stringFromCFStringRef(MemorySegment string, Arena arena) {
 
-        long strLen = CoreFoundation.CFStringGetLength(string);
+        var strLen = CoreFoundation.CFStringGetLength(string);
         var buffer = arena.allocateArray(JAVA_CHAR, strLen);
-        var range = arena.allocate(CFRange.$LAYOUT());
+        var range = CFRange.allocate(arena);
         CFRange.location$set(range, 0);
         CFRange.length$set(range, strLen);
         CoreFoundation.CFStringGetCharacters(string, range, buffer);
@@ -51,8 +54,8 @@ public class CoreFoundationHelper {
      * @param allocator the allocator for allocating memory
      * @return {@code CFStringRef}
      */
-    public static MemorySegment createCFStringRef(String string, SegmentAllocator allocator) {
-        char[] charArray = string.toCharArray();
+    static MemorySegment createCFStringRef(String string, SegmentAllocator allocator) {
+        var charArray = string.toCharArray();
         var chars = allocator.allocateArray(JAVA_CHAR, charArray.length);
         chars.copyFrom(MemorySegment.ofArray(charArray));
         return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());

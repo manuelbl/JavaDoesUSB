@@ -264,7 +264,7 @@ public class Unplug {
                 Thread.sleep(millis);
 
             } catch (InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
         }
     }

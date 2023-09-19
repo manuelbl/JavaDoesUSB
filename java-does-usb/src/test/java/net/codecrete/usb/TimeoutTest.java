@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TimeoutTest extends TestDeviceBase {
+class TimeoutTest extends TestDeviceBase {
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
@@ -29,10 +29,10 @@ public class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransfer_doesNotTimeOut() {
-        byte[] data = generateRandomBytes(20, 7280277392L);
+        var data = generateRandomBytes(20, 7280277392L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
 
-        byte[] received = testDevice.transferIn(LOOPBACK_EP_IN, 200);
+       var received = testDevice.transferIn(LOOPBACK_EP_IN, 200);
         assertArrayEquals(data, received);
 
     }
@@ -41,15 +41,15 @@ public class TimeoutTest extends TestDeviceBase {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
         // The test device has an internal buffer of about 2KB for full-speed
-        // and 16KB for high-speed. The first transfer should not time-out.
-        final int bufferSize = 32 * testDevice
+        // and 16KB for high-speed. The first transfer should not time out.
+        final var bufferSize = 32 * testDevice
                 .getEndpoint(USBDirection.OUT, LOOPBACK_EP_OUT).packetSize();
 
-        byte[] data = generateRandomBytes(100, 9383073929L);
+        var data = generateRandomBytes(100, 9383073929L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
 
         assertThrows(USBTimeoutException.class, () -> {
-            for (int i = 0; i < bufferSize / data.length; i++) {
+            for (var i = 0; i < bufferSize / data.length; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
         });
@@ -78,11 +78,11 @@ public class TimeoutTest extends TestDeviceBase {
         Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
-        byte[] sampleData = generateRandomBytes(12, 293872394);
+        var sampleData = generateRandomBytes(12, 293872394);
         testDevice.transferOut(ECHO_EP_OUT, sampleData, 200);
 
         // receive first echo
-        byte[] echo = testDevice.transferIn(ECHO_EP_IN, 200);
+        var echo = testDevice.transferIn(ECHO_EP_IN, 200);
         assertArrayEquals(sampleData, echo);
 
         // receive second echo

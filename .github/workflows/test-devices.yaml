@@ -1,0 +1,37 @@
+name: Test Devices CI
+
+on:
+  push:
+    paths:
+      - "test-devices/**"
+      - ".github/**"
+  pull_request:
+    paths:
+      - "test-devices/**"
+      - ".github/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+      - name: Build loopback firmware
+        run: pio run
+        working-directory: ./test-devices/loopback-stm32
+
+      - name: Build composite firmware
+        run: pio run
+        working-directory: ./test-devices/composite-stm32

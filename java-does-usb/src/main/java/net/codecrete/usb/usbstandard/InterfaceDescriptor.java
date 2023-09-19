@@ -18,6 +18,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 /**
  * USB interface descriptor
  */
+@SuppressWarnings("java:S125")
 public class InterfaceDescriptor {
 
     private final MemorySegment descriptor;

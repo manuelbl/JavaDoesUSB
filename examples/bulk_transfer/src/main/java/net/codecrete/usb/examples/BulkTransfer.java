@@ -14,7 +14,8 @@ import net.codecrete.usb.*;
  * <p>
  * This example assumes that one of the interfaces has two bulk endpoints,
  * one for sending and one for receiving data. The test device fulfils
- * this requirement (see https://github.com/manuelbl/JavaDoesUSB/tree/main/test-devices/loopback-stm32)
+ * this requirement (see
+ * <a href="https://github.com/manuelbl/JavaDoesUSB/tree/main/test-devices/loopback-stm32">loopback-stm32</a>)
  * </p>
  */
 public class BulkTransfer {
@@ -26,7 +27,13 @@ public class BulkTransfer {
     private static final int ENDPOINT_IN = 2;
 
     public static void main(String[] args) {
-        var device = USB.getDevice(new USBDeviceFilter(VID, PID));
+        var optionalDevice = USB.getDevice(VID, PID);
+        if (optionalDevice.isEmpty()) {
+            System.out.printf("No USB device with VID=0x%04x and PID=0x%04x found.%n", VID, PID);
+            return;
+        }
+
+        var device = optionalDevice.get();
         device.open();
         device.claimInterface(INTERFACE_NO);
 

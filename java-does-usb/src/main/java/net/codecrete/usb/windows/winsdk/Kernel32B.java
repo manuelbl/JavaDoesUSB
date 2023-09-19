@@ -23,9 +23,13 @@ import static java.lang.foreign.ValueLayout.*;
  * {@code GetLastError()} until jextract catches up and can generate the corresponding code.
  * </p>
  */
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "java:S100", "java:S107", "java:S117"})
 public class Kernel32B {
     static {
         System.loadLibrary("Kernel32");
+    }
+
+    private Kernel32B() {
     }
 
     private static final Linker LINKER = Linker.nativeLinker();
@@ -46,7 +50,7 @@ public class Kernel32B {
             return (MemorySegment) CreateFileW$MH.invokeExact(lastErrorState, lpFileName, dwDesiredAccess,
                     dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -64,7 +68,7 @@ public class Kernel32B {
             return (int) DeviceIoControl$MH.invokeExact(lastErrorState, hDevice, dwIoControlCode, lpInBuffer,
                     nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -82,7 +86,7 @@ public class Kernel32B {
             return (int) GetQueuedCompletionStatus$MH.invokeExact(lastErrorState, CompletionPort,
                     lpNumberOfBytesTransferred, lpCompletionKey, lpOverlapped, dwMilliseconds);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 
@@ -98,7 +102,7 @@ public class Kernel32B {
             return (MemorySegment) CreateIoCompletionPort$MH.invokeExact(lastErrorState, FileHandle,
                     ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new AssertionError(ex);
         }
     }
 }

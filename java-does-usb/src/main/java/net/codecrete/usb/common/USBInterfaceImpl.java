@@ -48,7 +48,7 @@ public class USBInterfaceImpl implements USBInterface {
 
     @Override
     public USBAlternateInterface getAlternate(int alternateNumber) {
-        return alternateInterfaces.stream().filter((alt) -> alt.number() == alternateNumber).findFirst().orElse(null);
+        return alternateInterfaces.stream().filter(alt -> alt.number() == alternateNumber).findFirst().orElse(null);
     }
 
     @Override

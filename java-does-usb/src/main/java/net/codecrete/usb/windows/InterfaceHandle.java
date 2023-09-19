@@ -38,6 +38,7 @@ class InterfaceHandle {
     /**
      * The WinUSB handle of the interface.
      */
+    @SuppressWarnings("java:S1700")
     MemorySegment interfaceHandle;
     /**
      * Count indicating how many interface depend on the device being open.

@@ -28,7 +28,7 @@ import static net.codecrete.usb.usbstandard.Constants.*;
 public class ConfigurationParser {
 
     /**
-     * Parse a USB configuration descriptor (incl. interface and endpoint descriptors)
+     * Parses a USB configuration descriptor (incl. interface and endpoint descriptors)
      *
      * @param desc configuration descriptor
      * @return parsed configuration data
@@ -54,12 +54,12 @@ public class ConfigurationParser {
         parseHeader();
 
         USBAlternateInterfaceImpl lastAlternate = null;
-        int offset = peekDescLength(0);
+        var offset = peekDescLength(0);
 
         while (offset < descriptor.byteSize()) {
 
-            int descLength = peekDescLength(offset);
-            int descType = peekDescType(offset);
+            var descLength = peekDescLength(offset);
+            var descType = peekDescType(offset);
 
             if (descType == INTERFACE_DESCRIPTOR_TYPE) {
                 var intf = parseInterface(offset);
@@ -97,11 +97,11 @@ public class ConfigurationParser {
     private void parseHeader() {
         var desc = new ConfigurationDescriptor(descriptor);
         if (CONFIGURATION_DESCRIPTOR_TYPE != desc.descriptorType())
-            throw new USBException("Invalid USB configuration descriptor");
+            throw new USBException("invalid USB configuration descriptor");
 
-        int totalLength = desc.totalLength();
+        var totalLength = desc.totalLength();
         if (descriptor.byteSize() != totalLength)
-            throw new USBException("Invalid USB configuration descriptor length");
+            throw new USBException("invalid USB configuration descriptor (invalid length)");
 
         configuration = new Configuration(desc.configurationValue(), desc.attributes(), desc.maxPower());
     }
@@ -163,7 +163,7 @@ public class ConfigurationParser {
      * @return descriptor type
      */
     private int peekDescType(int offset) {
-        return 0xff & descriptor.get(ValueLayout.JAVA_BYTE, offset + 1);
+        return 0xff & descriptor.get(ValueLayout.JAVA_BYTE, offset + 1L);
     }
 
 }

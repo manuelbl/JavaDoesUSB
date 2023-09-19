@@ -13,9 +13,8 @@ import net.codecrete.usb.macos.MacosUSBDeviceRegistry;
 import net.codecrete.usb.windows.WindowsUSBDeviceRegistry;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Provides access to USB devices.
@@ -23,8 +22,8 @@ import static java.util.stream.Collectors.toList;
 public class USB {
 
     private static USBDeviceRegistry createInstance() {
-        String osName = System.getProperty("os.name");
-        String osArch = System.getProperty("os.arch");
+        var osName = System.getProperty("os.name");
+        var osArch = System.getProperty("os.arch");
 
         USBDeviceRegistry impl;
         if (osName.equals("Mac OS X") && (osArch.equals("x86_64") || osArch.equals("aarch64"))) {
@@ -34,7 +33,9 @@ public class USB {
         } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new LinuxUSBDeviceRegistry();
         } else {
-            throw new UnsupportedOperationException(String.format("JavaCanDoUsb is not implemented for architecture " + "%s/%s", osName, osArch));
+            throw new UnsupportedOperationException(String.format(
+                    "Java Does USB has no implementation for architecture %s/%s",
+                    osName, osArch));
         }
         return impl;
     }
@@ -70,41 +71,32 @@ public class USB {
     /**
      * Gets a list of connected USB devices matching the specified predicate.
      *
-     * @param predicate device predicate/filter
+     * @param predicate device predicate
      * @return list of USB devices
      */
     public static List<USBDevice> getDevices(USBDevicePredicate predicate) {
-        return instance().getAllDevices().stream().filter(predicate::matches).collect(toList());
-    }
-
-    /**
-     * Gets a list of connected USB devices matching any of the specified predicates/filters.
-     *
-     * @param predicates list of device predicates/filters
-     * @return list of USB devices
-     */
-    public static List<USBDevice> getDevices(List<USBDevicePredicate> predicates) {
-        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).collect(toList());
+        return instance().getAllDevices().stream().filter(predicate::matches).toList();
     }
 
     /**
      * Gets the first connected USB device matching the specified predicate.
      *
-     * @param predicate device predicate/filter
-     * @return USB device, or {@code null} if no device matches
+     * @param predicate device predicate
+     * @return optional USB device
      */
-    public static USBDevice getDevice(USBDevicePredicate predicate) {
-        return instance().getAllDevices().stream().filter(predicate::matches).findFirst().orElse(null);
+    public static Optional<USBDevice> getDevice(USBDevicePredicate predicate) {
+        return instance().getAllDevices().stream().filter(predicate::matches).findFirst();
     }
 
     /**
-     * Gets the first connected USB device matching any of the specified predicates.
+     * Gets the first connected USB device with the specified vendor and product ID.
      *
-     * @param predicates list of device predicates/filters
-     * @return USB device, or {@code null} if no device matches
+     * @param vendorId vendor ID
+     * @param productId product ID
+     * @return optional USB device
      */
-    public static USBDevice getDevice(List<USBDevicePredicate> predicates) {
-        return instance().getAllDevices().stream().filter(dev -> USBDevicePredicate.matchesAny(dev, predicates)).findFirst().orElse(null);
+    public static Optional<USBDevice> getDevice(int vendorId, int productId) {
+        return getDevice(device -> device.vendorId() == vendorId && device.productId() == productId);
     }
 
     /**
