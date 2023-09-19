@@ -66,7 +66,7 @@ public class LinuxUSBDevice extends USBDeviceImpl {
         // `descriptors` contains the device descriptor followed by the configuration descriptor
         // (including the interface descriptors, endpoint descriptors etc.)
         var descriptorsSegment = MemorySegment.ofArray(descriptors);
-        setFromDeviceDescriptor(descriptorsSegment);
+        setFromDeviceDescriptor(descriptorsSegment.asSlice(0, DeviceDescriptor.LAYOUT));
         setConfigurationDescriptor(descriptorsSegment.asSlice(DeviceDescriptor.LAYOUT.byteSize()));
     }
 
