@@ -52,10 +52,8 @@ private:
     void monitor();
 
     void detect_present_devices();
-    std::map<int, std::wstring> get_child_devices(device_info_set& dev_info_set, const std::wstring& device_path);
-    void add_child_info(std::map<int, std::wstring>& children, const std::wstring& child_id);
     std::shared_ptr<usb_device> create_device_from_device_info(device_info_set& dev_info_set, std::wstring&& device_path, std::map<std::wstring, HANDLE>& hub_handles);
-    std::shared_ptr<usb_device> create_device(std::wstring&& device_path, std::map<int, std::wstring>&& children, HANDLE hub_handle, DWORD usb_port_num);
+    std::shared_ptr<usb_device> create_device(std::wstring&& device_path, bool is_composite, HANDLE hub_handle, DWORD usb_port_num);
 
     static std::string get_string(HANDLE hub_handle, ULONG usb_port_num, int index);
     static std::vector<uint8_t> get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size = 0);

@@ -36,7 +36,7 @@ std::string usb_error::full_message(const char* message, int code) {
     LPSTR messageBuffer = nullptr;
 
     size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, code, 0, (LPSTR)&messageBuffer, 0, NULL);
+        nullptr, code, 0, (LPSTR)&messageBuffer, 0, nullptr);
     while (size > 0 && (messageBuffer[size - 1] == L'\r' || messageBuffer[size - 1] == '\n'))
         size--;
 

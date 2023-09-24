@@ -10,21 +10,27 @@
 #include "usb_device.hpp"
 #include "usb_error.hpp"
 #include "usb_iostream.hpp"
+#include "device_info_set.h"
 #include "scope.hpp"
 #include "config_parser.hpp"
 #include "usb_registry.hpp"
 
-#include <cstdio>
+#include <devpkey.h>
 
-usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children)
-: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
+#include <chrono>
+#include <cstdio>
+#include <regex>
+#include <thread>
+
+usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite)
+: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)), is_composite_(is_composite) {
 
     config_parser parser{};
     parser.parse(config_desc.data(), static_cast<int>(config_desc.size()));
     interfaces_ = std::move(parser.interfaces);
     functions_ = std::move(parser.functions);
 
-    build_handles(device_path_, std::move(children));
+    build_handles(device_path_);
 }
 
 void usb_device::set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number) {
@@ -33,19 +39,14 @@ void usb_device::set_product_names(const std::string& manufacturer, const std::s
     serial_number_ = serial_number;
 }
 
-void usb_device::build_handles(const std::wstring& device_path, std::map<int, std::wstring>&& children) {
+void usb_device::build_handles(const std::wstring& device_path) {
     for (const usb_interface& intf : interfaces_) {
         int intf_number = intf.number();
         auto function = get_function(intf_number);
 
         std::wstring path;
-        if (function->first_interface() == intf_number) {
-            if (children.size() > 0) {
-                path = std::move(children[intf_number]);
-            } else {
-                path = device_path;
-            }
-        }
+        if (intf_number == 0)
+            path = device_path;
 
         interface_handles_.push_back(interface_handle(intf_number, function->first_interface(), std::move(path)));
     }
@@ -132,8 +133,13 @@ void usb_device::claim_interface(int interface_number) {
 
     // open device if needed
     if (first_intf_handle->device_handle == nullptr) {
-        std::wcerr << "opening device " << first_intf_handle->device_path << std::endl;
-        first_intf_handle->device_handle = CreateFileW(first_intf_handle->device_path.c_str(),
+        auto device_path = get_interface_device_path(first_intf_handle->interface_num);
+        if (device_path.empty())
+            throw usb_error("failed to claim interface (function has no device path, might be missing WinUSB driver)");
+
+        std::wcerr << "opening device " << device_path << std::endl;
+
+        first_intf_handle->device_handle = CreateFileW(device_path.c_str(),
             GENERIC_WRITE | GENERIC_READ,
             FILE_SHARE_WRITE | FILE_SHARE_READ,
             nullptr,
@@ -143,21 +149,19 @@ void usb_device::claim_interface(int interface_number) {
         if (first_intf_handle->device_handle == INVALID_HANDLE_VALUE)
             usb_error::throw_error("cannot open USB device");
 
+        // open interface
+        if (!WinUsb_Initialize(first_intf_handle->device_handle, &first_intf_handle->intf_handle)) {
+            auto err = GetLastError();
+            CloseHandle(first_intf_handle->device_handle);
+            first_intf_handle->device_handle = nullptr;
+            throw usb_error("cannot open USB device (2)", err);
+        }
+
         registry_->add_to_completion_port(first_intf_handle->device_handle);
     }
 
-    // open interface
-    std::wcerr << "opening interface for device " << first_intf_handle->device_path << std::endl;
-    if (!WinUsb_Initialize(first_intf_handle->device_handle, &intf_handle->intf_handle)) {
-        auto err = GetLastError();
-        if (first_intf_handle->device_open_count == 0) {
-            CloseHandle(first_intf_handle->device_handle);
-            first_intf_handle->device_handle = nullptr;
-        }
-        throw usb_error("cannot open USB device", err);
-    }
-
     first_intf_handle->device_open_count += 1;
+    intf_handle->intf_handle = first_intf_handle->intf_handle;
     intf->set_claimed(true);
 }
 
@@ -175,14 +179,13 @@ void usb_device::release_interface(int interface_number) {
     interface_handle* intf_handle = get_interface_handle(interface_number);
     interface_handle* first_intf_handle = get_interface_handle(intf_handle->first_interface_num);
 
-    // close interface
-    WinUsb_Free(intf_handle->intf_handle);
     intf_handle->intf_handle = nullptr;
     intf->set_claimed(false);
 
     // close device if needed
     first_intf_handle->device_open_count -= 1;
     if (first_intf_handle->device_open_count == 0) {
+        WinUsb_Free(first_intf_handle->intf_handle);
         CloseHandle(first_intf_handle->device_handle);
         first_intf_handle->device_handle = nullptr;
     }
@@ -442,9 +445,102 @@ void usb_device::cancel_transfer(usb_direction direction, int endpoint_number, O
         usb_error::throw_error("Error on cancelling transfer");
 }
 
+std::wstring usb_device::get_interface_device_path(int interface_num) {
+    if (interface_num == 0)
+        return device_path_;
+
+    auto it = interface_device_paths_.find(interface_num);
+    if (it != interface_device_paths_.end())
+        return it->second;
+
+    int num_retries = 30; // 30 x 100ms
+
+    while (num_retries > 0) {
+
+        auto dev_info_set = device_info_set::of_path(device_path_);
+
+        if (!dev_info_set.is_composite_device())
+            throw usb_error("internal error: interface belongs to a separate function but device is not composite");
+
+        auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
+        if (children_instance_ids.empty()) {
+            std::wcerr << "missing children IDs for device " << device_path_ << std::endl;
+
+        } else {
+
+            std::wcerr << "children IDs: ";
+            for (auto it = children_instance_ids.begin(); it < children_instance_ids.end(); it++) {
+                if (it != children_instance_ids.begin())
+                    std::wcerr << ", ";
+                std::wcerr << *it;
+            }
+            std::wcerr << std::endl;
+
+            std::wstring child_path;
+            for (auto& child_id : children_instance_ids) {
+                auto res = get_child_device_path(child_id, interface_num, child_path);
+                if (res == 1)
+                    return child_path;
+                if (res == -1)
+                    break;
+            }
+        }
+
+        std::cerr << "Sleeping for 100ms..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        num_retries -= 1;
+    }
+
+    return {};
+}
+
+int usb_device::get_child_device_path(const std::wstring& child_id, int interface_num, std::wstring& device_path) {
+
+    auto dev_info_set = device_info_set::of_instance(child_id);
+
+    auto hardware_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_HardwareIds);
+    if (hardware_ids.empty()) {
+        std::wcerr << "child device " << child_id << " has no hardware IDs" << std::endl;
+        return 0;
+    }
+
+    auto intf_num = extract_interface_number(hardware_ids);
+    if (intf_num == -1) {
+        std::wcerr << "child device " << child_id << " has no interface number" << std::endl;
+        return 0;
+    }
+
+    if (intf_num != interface_num)
+        return 0;
+
+    device_path = dev_info_set.get_device_path_by_guid(child_id);
+    if (device_path.empty()) {
+        std::wcerr << "child device " << child_id << " has no device path" << std::endl;
+        return -1;
+    }
+
+    std::wcerr << "child device: interface=" << intf_num << ", device path=" << device_path << std::endl;
+    interface_device_paths_[interface_num] = device_path;
+    return 1;
+}
+
+static const std::wregex multiple_interface_id_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
+
+int usb_device::extract_interface_number(const std::vector<std::wstring>& hardware_ids) {
+    // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
+
+    for (auto& id : hardware_ids) {
+        auto matches = std::wsmatch{};
+        if (std::regex_search(id, matches, multiple_interface_id_pattern))
+            return std::stoul(matches[1].str(), nullptr, 16);
+    }
+
+    return -1;
+}
+
 
 // --- interface_handle
 
 usb_device::interface_handle::interface_handle(int intf_num, int first_num, std::wstring&& path)
-    : interface_num(intf_num), first_interface_num(first_num), device_path(std::move(path)),
+    : interface_num(intf_num), first_interface_num(first_num),
         device_handle(nullptr), intf_handle(nullptr), device_open_count(0) { }

@@ -241,7 +241,6 @@ private:
     struct interface_handle {
         int interface_num;
         int first_interface_num;
-        std::wstring device_path;
         HANDLE device_handle;
         WINUSB_INTERFACE_HANDLE intf_handle;
         int device_open_count;
@@ -249,9 +248,12 @@ private:
         interface_handle(int intf_num, int first_num, std::wstring&& path);
     };
 
-    usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children);
+    usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite);
     void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
-    void build_handles(const std::wstring& device_path, std::map<int, std::wstring>&& children);
+    void build_handles(const std::wstring& device_path);
+    std::wstring get_interface_device_path(int interface_num);
+    int get_child_device_path(const std::wstring& child_id, int interface_num, std::wstring& device_path);
+    static int extract_interface_number(const std::vector<std::wstring>& hardware_ids);
 
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
     usb_composite_function* get_function(int intf_number);
@@ -286,6 +288,8 @@ private:
     std::vector<usb_interface> interfaces_;
     std::vector<usb_composite_function> functions_;
     std::vector<interface_handle> interface_handles_;
+    std::map<int, std::wstring> interface_device_paths_;
+    bool is_composite_;
 
     friend class usb_registry;
     friend class usb_istreambuf;

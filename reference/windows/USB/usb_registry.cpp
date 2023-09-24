@@ -15,7 +15,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <regex>
 #include <string>
 
 #include <initguid.h>
@@ -26,7 +25,6 @@
 
 #pragma comment (lib, "SetupAPI.lib")
 #pragma comment (lib, "Winusb.lib")
-
 
 usb_registry::usb_registry()
 : on_connected_callback(nullptr), on_disconnected_callback(nullptr),
@@ -108,7 +106,7 @@ void usb_registry::monitor() {
     notification_filter.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
 
     HDEVNOTIFY notify_handle = RegisterDeviceNotificationW(message_window, &notification_filter, DEVICE_NOTIFY_WINDOW_HANDLE /* | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES */);
-    if (notify_handle == NULL)
+    if (notify_handle == nullptr)
         usb_error::throw_error("internal error (RegisterDeviceNotificationW)");
 
     auto notify_handle_guard = make_scope_exit([notify_handle]() { UnregisterDeviceNotification(notify_handle); });
@@ -142,7 +140,7 @@ void usb_registry::detect_present_devices() {
         auto instance_id = dev_info_set.get_device_property_string(DEVPKEY_Device_InstanceId);
         auto device_path = device_info_set::get_device_path(instance_id, GUID_DEVINTERFACE_USB_DEVICE);
 
-        std::wcerr << "Device detected: InstanceId=" << instance_id << ", DevicePath=" << device_path << std::endl;
+        std::wcerr << "Device present: InstanceId=" << instance_id << ", DevicePath=" << device_path << std::endl;
 
         // create new device
         auto device = create_device_from_device_info(dev_info_set, std::move(device_path), hub_handles);
@@ -169,13 +167,10 @@ std::shared_ptr<usb_device> usb_registry::create_device_from_device_info(device_
         hub_handles[hub_path] = hub_handle;
     }
 
-    // check for composite device
-    auto children = get_child_devices(dev_info_set, device_path);
-
-    return create_device(std::move(device_path), std::move(children), hub_handle, usb_port_num);
+    return create_device(std::move(device_path), dev_info_set.is_composite_device(), hub_handle, usb_port_num);
 }
 
-std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_path, std::map<int, std::wstring>&& children, HANDLE hub_handle, DWORD usb_port_num) {
+std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_path, bool is_composite, HANDLE hub_handle, DWORD usb_port_num) {
 
     // get device descriptor
     USB_NODE_CONNECTION_INFORMATION_EX conn_info = { 0 };
@@ -192,65 +187,13 @@ std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_pa
 
     // Create new device
     // usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children
-    std::shared_ptr<usb_device> device(new usb_device(this, std::move(device_path), vendorId, productId, config_desc, std::move(children)));
+    std::shared_ptr<usb_device> device(new usb_device(this, std::move(device_path), vendorId, productId, config_desc, is_composite));
     device->set_product_names(
         get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
         get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
         get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iSerialNumber)
     );
     return device;
-}
-
-std::map<int, std::wstring> usb_registry::get_child_devices(device_info_set& dev_info_set, const std::wstring& device_path) {
-
-    std::map<int, std::wstring> children{};
-
-    if (!dev_info_set.is_composite_device())
-        return children;
-
-    auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
-    if (children_instance_ids.empty()) {
-        std::wcerr << "unable to retrieve information about children of device " << device_path << " - ignoring" << std::endl;
-        return children;
-    }
-
-    std::wcerr << "Children IDs: ";
-    for (auto it = children_instance_ids.begin(); it < children_instance_ids.end(); it++) {
-        if (it != children_instance_ids.begin())
-            std::wcerr << ", ";
-        std::wcerr << *it;
-    }
-    std::wcerr << std::endl;
-
-    for (auto& child_id : children_instance_ids)
-        add_child_info(children, child_id);
-
-    return children;
-}
-
-void usb_registry::add_child_info(std::map<int, std::wstring>& children, const std::wstring& child_id) {
-
-    auto dev_info_set = device_info_set::of_instance(child_id);
-
-    auto hardware_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_HardwareIds);
-    if (hardware_ids.empty())
-        return;
-
-    auto intf_num = extract_interface_number(hardware_ids);
-    if (intf_num == -1) {
-        std::wcerr << "child device " << child_id << " has no interface number" << std::endl;
-        return;
-    }
-
-    auto device_path = dev_info_set.get_device_path_by_guid(child_id);
-    if (device_path.empty()) {
-        std::wcerr << "child device " << child_id << " has no device path" << std::endl;
-        return;
-    }
-
-    std::wcerr << "Child device: InteraceNumber=" << intf_num << ", DevicePath=" << device_path << std::endl;
-
-    children[intf_num] = device_path;
 }
 
 LRESULT usb_registry::handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -262,19 +205,19 @@ LRESULT usb_registry::handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam
         CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
         self = reinterpret_cast<usb_registry*>(cs->lpCreateParams);
         SetLastError(ERROR_SUCCESS);
-        LONG_PTR result = SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+        LONG_PTR result = SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
         break;
     }
 
     case WM_DESTROY: {
-        LONG_PTR result = SetWindowLongPtr(hWnd, GWLP_USERDATA, NULL);
+        LONG_PTR result = SetWindowLongPtrW(hWnd, GWLP_USERDATA, NULL);
         PostQuitMessage(0);
         break;
     }
     }
 
     if (self != nullptr && self->handle_message(hWnd, uMsg, wParam, lParam))
-        return NULL;
+        return 0;
 
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
@@ -290,8 +233,10 @@ bool usb_registry::handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
     DEV_BROADCAST_DEVICEINTERFACE_W* broadcast = reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE_W*>(lParam);
     if (wParam == DBT_DEVICEARRIVAL) {
+        std::wcerr << "Device added: DevicePath=" << broadcast->dbcc_name << std::endl;
         on_device_connected(broadcast->dbcc_name);
     } else {
+        std::wcerr << "Device removed: DevicePath=" << broadcast->dbcc_name << std::endl;
         on_device_disconnected(broadcast->dbcc_name);
     }
     return true;
@@ -426,20 +371,6 @@ usb_io_callback* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
         return nullptr;
 
     return it->second;
-}
-
-static const std::wregex multiple_interface_id_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
-
-int usb_registry::extract_interface_number(const std::vector<std::wstring>& hardware_ids) {
-    // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
-
-    for (auto& id : hardware_ids) {
-        auto matches = std::wsmatch{};
-        if (std::regex_search(id, matches, multiple_interface_id_pattern))
-            return std::stoul(matches[1].str(), nullptr, 16);
-    }
-
-    return -1;
 }
 
 std::vector<uint8_t> usb_registry::get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size) {
