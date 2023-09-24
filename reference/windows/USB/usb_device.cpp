@@ -132,6 +132,7 @@ void usb_device::claim_interface(int interface_number) {
 
     // open device if needed
     if (first_intf_handle->device_handle == nullptr) {
+        std::wcerr << "opening device " << first_intf_handle->device_path << std::endl;
         first_intf_handle->device_handle = CreateFileW(first_intf_handle->device_path.c_str(),
             GENERIC_WRITE | GENERIC_READ,
             FILE_SHARE_WRITE | FILE_SHARE_READ,
@@ -140,19 +141,20 @@ void usb_device::claim_interface(int interface_number) {
             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
             nullptr);
         if (first_intf_handle->device_handle == INVALID_HANDLE_VALUE)
-            usb_error::throw_error("Cannot open USB device");
+            usb_error::throw_error("cannot open USB device");
 
         registry_->add_to_completion_port(first_intf_handle->device_handle);
     }
 
     // open interface
+    std::wcerr << "opening interface for device " << first_intf_handle->device_path << std::endl;
     if (!WinUsb_Initialize(first_intf_handle->device_handle, &intf_handle->intf_handle)) {
+        auto err = GetLastError();
         if (first_intf_handle->device_open_count == 0) {
             CloseHandle(first_intf_handle->device_handle);
             first_intf_handle->device_handle = nullptr;
         }
-        usb_error::throw_error("Cannot open USB device");
-        return;
+        throw usb_error("cannot open USB device", err);
     }
 
     first_intf_handle->device_open_count += 1;
@@ -416,7 +418,7 @@ void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int bu
         DWORD err = GetLastError();
         if (err == ERROR_IO_PENDING)
             return;
-        throw new usb_error("Failed to submit transfer IN", err);
+        throw usb_error("Failed to submit transfer IN", err);
     }
 }
 
@@ -429,7 +431,7 @@ void usb_device::submit_transfer_out(int endpoint_number, uint8_t* data, int dat
         DWORD err = GetLastError();
         if (err == ERROR_IO_PENDING)
             return;
-        throw new usb_error("Failed to submit transfer OUT", err);
+        throw usb_error("Failed to submit transfer OUT", err);
     }
 }
 

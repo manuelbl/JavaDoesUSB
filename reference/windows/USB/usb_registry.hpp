@@ -25,6 +25,8 @@
 #undef LowSpeed
 #include <SetupAPI.h>
 
+class device_info_set;
+
 /**
  * Registry of connected USB devices.
  */
@@ -50,14 +52,20 @@ private:
     void monitor();
 
     void detect_present_devices();
-    std::map<int, std::wstring> enumerate_child_devices(const std::vector<std::wstring> child_ids);
-    
+    std::map<int, std::wstring> get_child_devices(device_info_set& dev_info_set, const std::wstring& device_path);
+    void add_child_info(std::map<int, std::wstring>& children, const std::wstring& child_id);
+    std::shared_ptr<usb_device> create_device_from_device_info(device_info_set& dev_info_set, std::wstring&& device_path, std::map<std::wstring, HANDLE>& hub_handles);
+    std::shared_ptr<usb_device> create_device(std::wstring&& device_path, std::map<int, std::wstring>&& children, HANDLE hub_handle, DWORD usb_port_num);
+
+    static std::string get_string(HANDLE hub_handle, ULONG usb_port_num, int index);
+    static std::vector<uint8_t> get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size = 0);
+    static int extract_interface_number(const std::vector<std::wstring>& hardware_ids);
+
     void on_device_connected(const WCHAR* path);
     void on_device_disconnected(const WCHAR* path);
 
     bool handle_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    std::shared_ptr<usb_device> create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info);
 
     std::vector<usb_device_ptr> devices;
 

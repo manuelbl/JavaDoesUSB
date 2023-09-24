@@ -93,7 +93,7 @@ usb_istreambuf::int_type usb_istreambuf::underflow() {
 
         current_request = wait_for_request_completion();
         if (current_request->result_code() != S_OK)
-            throw new usb_error("transfer IN failed", current_request->result_code());
+            throw usb_error("transfer IN failed", current_request->result_code());
 
         char* buf = reinterpret_cast<char*>(current_request->buffer);
         int size = current_request->result_size();
@@ -203,7 +203,7 @@ usb_ostreambuf::transfer_request* usb_ostreambuf::wait_for_available_transfer() 
     // check for error
     DWORD result = request->result_code();
     if (result != S_OK)
-        throw new usb_error("transfer OUT failed", result);
+        throw usb_error("transfer OUT failed", result);
 
     return request;
 }

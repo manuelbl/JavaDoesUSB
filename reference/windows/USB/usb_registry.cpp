@@ -9,12 +9,13 @@
 
 #include "usb_registry.hpp"
 #include "usb_device.hpp"
-#include "usb_device_info.hpp"
+#include "device_info_set.h"
 #include "usb_error.hpp"
 #include "scope.hpp"
 
 #include <algorithm>
 #include <iostream>
+#include <regex>
 #include <string>
 
 #include <initguid.h>
@@ -125,56 +126,56 @@ void usb_registry::monitor() {
 
 void usb_registry::detect_present_devices() {
 
-    // get device information set of all USB devices present
-    HDEVINFO dev_info_set = SetupDiGetClassDevsW(&GUID_DEVINTERFACE_USB_DEVICE, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (dev_info_set == INVALID_HANDLE_VALUE)
-        throw usb_error("internal error (SetupDiGetClassDevsA)", GetLastError());
+    // get device information set of all present USB devices
+    auto dev_info_set = device_info_set::of_present_devices(GUID_DEVINTERFACE_USB_DEVICE);
 
-    // ensure the result id destroyed when the scope is left
-    auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
-        SetupDiDestroyDeviceInfoList(dev_info_set);
+    std::map<std::wstring, HANDLE> hub_handles{};
+
+    auto hub_handle_guard = make_scope_exit([&hub_handles]() {
+        for (auto& hub : hub_handles)
+            CloseHandle(hub.second);
     });
 
-    SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
-
     // iterate over the set
-    for (int i = 0; ; i++) {
-        if (!SetupDiEnumDeviceInfo(dev_info_set, i, &dev_info_data)) {
-            DWORD err = GetLastError();
-            if (err == ERROR_NO_MORE_ITEMS)
-                break;
-            throw usb_error("Internal error (SetupDiEnumDeviceInfo)", err);
-        }
+    while (dev_info_set.next()) {
+
+        auto instance_id = dev_info_set.get_device_property_string(DEVPKEY_Device_InstanceId);
+        auto device_path = device_info_set::get_device_path(instance_id, GUID_DEVINTERFACE_USB_DEVICE);
+
+        std::wcerr << "Device detected: InstanceId=" << instance_id << ", DevicePath=" << device_path << std::endl;
 
         // create new device
-        auto device = create_device(dev_info_set, &dev_info_data);
+        auto device = create_device_from_device_info(dev_info_set, std::move(device_path), hub_handles);
         devices.push_back(device);
     }
 }
 
-std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set, SP_DEVINFO_DATA* dev_info_data) {
+std::shared_ptr<usb_device> usb_registry::create_device_from_device_info(device_info_set& dev_info_set, std::wstring&& device_path, std::map<std::wstring, HANDLE>& hub_handles) {
 
-    DWORD usb_port_num = usb_device_info::get_device_property_int(dev_info_set, dev_info_data, &DEVPKEY_Device_Address);
-    std::wstring instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_InstanceId);
-    std::wstring parent_instance_id = usb_device_info::get_device_property_string(dev_info_set, dev_info_data, &DEVPKEY_Device_Parent);
+    DWORD usb_port_num = dev_info_set.get_device_property_int(DEVPKEY_Device_Address);
+    std::wstring parent_instance_id = dev_info_set.get_device_property_string(DEVPKEY_Device_Parent);
+    std::wstring hub_path = device_info_set::get_device_path(parent_instance_id, GUID_DEVINTERFACE_USB_HUB);
 
-    std::wstring hub_path = usb_device_info::get_device_path(parent_instance_id, &GUID_DEVINTERFACE_USB_HUB);
-
-    // open parent (hub)
-    HANDLE hub_handle = CreateFileW(hub_path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
-    if (hub_handle == INVALID_HANDLE_VALUE)
-        usb_error::throw_error("Cannot open USB hub");
-
-    auto hub_handle_guard = make_scope_exit([hub_handle]() {
-        CloseHandle(hub_handle);
-    });
+    // open parent (hub) if not open
+    HANDLE hub_handle;
+    auto it = hub_handles.find(hub_path);
+    if (it != hub_handles.end()) {
+        hub_handle = it->second;
+    }
+    else {
+        hub_handle = CreateFileW(hub_path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+        if (hub_handle == INVALID_HANDLE_VALUE)
+            usb_error::throw_error("Cannot open USB hub");
+        hub_handles[hub_path] = hub_handle;
+    }
 
     // check for composite device
-    std::map<int, std::wstring> children{};
-    if (usb_device_info::is_composite_device(dev_info_set, dev_info_data))
-        children = enumerate_child_devices(usb_device_info::get_device_property_string_list(dev_info_set, dev_info_data, &DEVPKEY_Device_Children));
+    auto children = get_child_devices(dev_info_set, device_path);
 
-    auto path = usb_device_info::get_device_path(instance_id, &GUID_DEVINTERFACE_USB_DEVICE);
+    return create_device(std::move(device_path), std::move(children), hub_handle, usb_port_num);
+}
+
+std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_path, std::map<int, std::wstring>&& children, HANDLE hub_handle, DWORD usb_port_num) {
 
     // get device descriptor
     USB_NODE_CONNECTION_INFORMATION_EX conn_info = { 0 };
@@ -183,66 +184,74 @@ std::shared_ptr<usb_device> usb_registry::create_device(HDEVINFO dev_info_set, S
     if (!DeviceIoControl(hub_handle, IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX, &conn_info, sizeof(conn_info), &conn_info, sizeof(conn_info), &size, nullptr))
         usb_error::throw_error("Internal error (cannot get device descriptor)");
 
+    int vendorId = conn_info.DeviceDescriptor.idVendor;
+    int productId = conn_info.DeviceDescriptor.idProduct;
+
     // get configuration descriptor
-    auto config_desc = usb_device_info::get_descriptor(hub_handle, usb_port_num, USB_CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
+    auto config_desc = get_descriptor(hub_handle, usb_port_num, USB_CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
 
     // Create new device
-    std::shared_ptr<usb_device> device(new usb_device(this, std::move(path), conn_info.DeviceDescriptor.idVendor, conn_info.DeviceDescriptor.idProduct, config_desc, std::move(children)));
+    // usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, std::map<int, std::wstring>&& children
+    std::shared_ptr<usb_device> device(new usb_device(this, std::move(device_path), vendorId, productId, config_desc, std::move(children)));
     device->set_product_names(
-        usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
-        usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
-        usb_device_info::get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iSerialNumber)
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),
+        get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iSerialNumber)
     );
     return device;
 }
 
-std::map<int, std::wstring> usb_registry::enumerate_child_devices(const std::vector<std::wstring> child_ids) {
+std::map<int, std::wstring> usb_registry::get_child_devices(device_info_set& dev_info_set, const std::wstring& device_path) {
 
     std::map<int, std::wstring> children{};
 
-    for (const std::wstring& child_instance_id : child_ids) {
-        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
-        if (dev_info_set == INVALID_HANDLE_VALUE)
-            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
+    if (!dev_info_set.is_composite_device())
+        return children;
 
-        // ensure the result id destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set);
-        });
-
-        // get device info for child
-        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
-        if (!SetupDiOpenDeviceInfoW(dev_info_set, child_instance_id.c_str(), nullptr, 0, &dev_info_data))
-            throw usb_error("internal error (SetupDiOpenDeviceInfoW)", GetLastError());
-        
-        // get first interface number
-        int interface_number = usb_device_info::get_first_interface(dev_info_set, &dev_info_data);
-        if (interface_number == -1)
-            continue;
-
-        // get device interface GUIDs
-        auto device_guids = usb_device_info::find_device_interface_guids(dev_info_set, &dev_info_data);
-
-        CLSID clsid{};
-        // use GUIDs to get device path
-        for (const std::wstring& guid : device_guids) {
-            if (CLSIDFromString(guid.c_str(), &clsid) != NOERROR)
-                continue;
-
-            try {
-                auto device_path = usb_device_info::get_device_path(child_instance_id.c_str(), &clsid);
-                children[interface_number] = device_path;
-                break;
-
-            } catch (usb_error&) {
-                // ignore and try next one
-            }
-        }
+    auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
+    if (children_instance_ids.empty()) {
+        std::wcerr << "unable to retrieve information about children of device " << device_path << " - ignoring" << std::endl;
+        return children;
     }
+
+    std::wcerr << "Children IDs: ";
+    for (auto it = children_instance_ids.begin(); it < children_instance_ids.end(); it++) {
+        if (it != children_instance_ids.begin())
+            std::wcerr << ", ";
+        std::wcerr << *it;
+    }
+    std::wcerr << std::endl;
+
+    for (auto& child_id : children_instance_ids)
+        add_child_info(children, child_id);
 
     return children;
 }
 
+void usb_registry::add_child_info(std::map<int, std::wstring>& children, const std::wstring& child_id) {
+
+    auto dev_info_set = device_info_set::of_instance(child_id);
+
+    auto hardware_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_HardwareIds);
+    if (hardware_ids.empty())
+        return;
+
+    auto intf_num = extract_interface_number(hardware_ids);
+    if (intf_num == -1) {
+        std::wcerr << "child device " << child_id << " has no interface number" << std::endl;
+        return;
+    }
+
+    auto device_path = dev_info_set.get_device_path_by_guid(child_id);
+    if (device_path.empty()) {
+        std::wcerr << "child device " << child_id << " has no device path" << std::endl;
+        return;
+    }
+
+    std::wcerr << "Child device: InteraceNumber=" << intf_num << ", DevicePath=" << device_path << std::endl;
+
+    children[intf_num] = device_path;
+}
 
 LRESULT usb_registry::handle_windows_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
@@ -292,35 +301,17 @@ void usb_registry::on_device_connected(const WCHAR* path) {
 
     usb_device_ptr device;
     try {
-        // create empty device information set
-        HDEVINFO dev_info_set = SetupDiCreateDeviceInfoList(NULL, NULL);
-        if (dev_info_set == INVALID_HANDLE_VALUE)
-            throw usb_error("internal error (SetupDiCreateDeviceInfoList)", GetLastError());
+        // create device information set
+        auto dev_info_set = device_info_set::of_path(path);
 
-        // ensure the result is destroyed when the scope is left
-        auto dev_info_set_guard = make_scope_exit([dev_info_set]() {
-            SetupDiDestroyDeviceInfoList(dev_info_set);
+        std::map<std::wstring, HANDLE> hub_handles{};
+        auto hub_handle_guard = make_scope_exit([&hub_handles]() {
+            for (auto& hub : hub_handles)
+                CloseHandle(hub.second);
         });
-
-        // load device information into dev info set
-        SP_DEVICE_INTERFACE_DATA dev_intf_data = { sizeof(dev_intf_data) };
-        if (!SetupDiOpenDeviceInterfaceW(dev_info_set, path, 0, &dev_intf_data))
-            usb_error::throw_error("internal error (SetupDiOpenDeviceInterfaceW)");
-
-        auto dev_intf_data_guard = make_scope_exit([dev_info_set, &dev_intf_data]() {
-            SetupDiDeleteDeviceInterfaceData(dev_info_set, &dev_intf_data);
-        });
-
-        // load device info data
-        SP_DEVINFO_DATA dev_info_data = { sizeof(dev_info_data) };
-        if (!SetupDiGetDeviceInterfaceDetailW(dev_info_set, &dev_intf_data, nullptr, 0, nullptr, &dev_info_data)) {
-            DWORD err = GetLastError();
-            if (err != ERROR_INSUFFICIENT_BUFFER)
-                throw usb_error("internal error (SetupDiGetDeviceInterfaceDetailW)", err);
-        }
 
         // create new device
-        device = create_device(dev_info_set, &dev_info_data);
+        device = create_device_from_device_info(dev_info_set, path, hub_handles);
         devices.push_back(device);
     }
     catch (const std::exception& e) {
@@ -435,4 +426,82 @@ usb_io_callback* usb_registry::get_completion_handler(OVERLAPPED* overlapped) {
         return nullptr;
 
     return it->second;
+}
+
+static const std::wregex multiple_interface_id_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
+
+int usb_registry::extract_interface_number(const std::vector<std::wstring>& hardware_ids) {
+    // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
+
+    for (auto& id : hardware_ids) {
+        auto matches = std::wsmatch{};
+        if (std::regex_search(id, matches, multiple_interface_id_pattern))
+            return std::stoul(matches[1].str(), nullptr, 16);
+    }
+
+    return -1;
+}
+
+std::vector<uint8_t> usb_registry::get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size) {
+    int size = sizeof(USB_DESCRIPTOR_REQUEST) + (request_size != 0 ? request_size : 255);
+    uint8_t* descriptor_request_buffer = new uint8_t[size];
+    auto dev_info_set_guard = make_scope_exit([descriptor_request_buffer]() {
+        delete[] descriptor_request_buffer;
+    });
+
+    // setup request data structure
+    USB_DESCRIPTOR_REQUEST* descriptor_request = reinterpret_cast<USB_DESCRIPTOR_REQUEST*>(descriptor_request_buffer);
+    descriptor_request->ConnectionIndex = usb_port_num;
+    descriptor_request->SetupPacket.bmRequest = 0x80; // device-to-host / type standard / recipient device
+    descriptor_request->SetupPacket.bRequest = 0x06; // GET_DESCRIPTOR
+    descriptor_request->SetupPacket.wValue = (descriptor_type << 8) | index;
+    descriptor_request->SetupPacket.wIndex = language_id;
+    descriptor_request->SetupPacket.wLength = static_cast<USHORT>(size - sizeof(USB_DESCRIPTOR_REQUEST));
+
+    // get descriptor
+    DWORD bytesReturned = 0;
+    if (!DeviceIoControl(hub_handle, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, descriptor_request, size, descriptor_request, size, &bytesReturned, nullptr))
+        throw usb_error("Cannot retrieve descriptor (DeviceIoControl)", GetLastError());
+    int data_size = bytesReturned - sizeof(USB_DESCRIPTOR_REQUEST);
+
+    if (data_size <= 2)
+        throw usb_error("invalid descriptor");
+
+    // determine expected size of descriptor
+    int expected_size;
+    if (descriptor_type != USB_CONFIGURATION_DESCRIPTOR_TYPE) {
+        expected_size = descriptor_request->Data[0];
+    }
+    else {
+        auto config_desc = reinterpret_cast<USB_CONFIGURATION_DESCRIPTOR*>(descriptor_request->Data);
+        expected_size = config_desc->wTotalLength;
+    }
+
+    // check against effective size
+    if (data_size < expected_size) {
+        if (request_size != 0)
+            throw usb_error("Unexpected descriptor size");
+
+        // repeat with larger size
+        return get_descriptor(hub_handle, usb_port_num, descriptor_type, index, language_id, expected_size);
+    }
+
+    return std::vector<uint8_t>(descriptor_request->Data, descriptor_request->Data + data_size);
+}
+
+std::string usb_registry::get_string(HANDLE hub_handle, ULONG usb_port_num, int index) {
+    if (index == 0)
+        return "";
+
+    std::vector<uint8_t> str_desc_raw = get_descriptor(hub_handle, usb_port_num, USB_STRING_DESCRIPTOR_TYPE, index, 0x0409);
+    USB_STRING_DESCRIPTOR* str_desc = reinterpret_cast<USB_STRING_DESCRIPTOR*>(str_desc_raw.data());
+
+    // required length of UTF-8 string
+    int len = WideCharToMultiByte(CP_UTF8, 0, str_desc->bString, str_desc->bLength / 2 - 1, nullptr, 0, nullptr, nullptr);
+
+    // convert to UTF-8
+    std::string result;
+    result.resize(len, 'x');
+    WideCharToMultiByte(CP_UTF8, 0, str_desc->bString, str_desc->bLength / 2 - 1, &result[0], len, nullptr, nullptr);
+    return result;
 }
