@@ -24,16 +24,16 @@ class DescriptionTest extends TestDeviceBase {
         assertEquals(isLoopbackDevice() ? "Loopback" : "Composite", testDevice.product());
         assertEquals(12, testDevice.serialNumber().length());
 
-        if (interfaceNumber == 2) {
-            // composite device
-            assertEquals(0xef, testDevice.classCode());
-            assertEquals(0x02, testDevice.subclassCode());
-            assertEquals(0x01, testDevice.protocolCode());
-        } else {
+        if (isLoopbackDevice()) {
             // simple device
             assertEquals(0xff, testDevice.classCode());
             assertEquals(0x00, testDevice.subclassCode());
             assertEquals(0x00, testDevice.protocolCode());
+        } else {
+            // composite device
+            assertEquals(0xef, testDevice.classCode());
+            assertEquals(0x02, testDevice.subclassCode());
+            assertEquals(0x01, testDevice.protocolCode());
         }
 
         var isComposite = isCompositeDevce();
@@ -132,7 +132,7 @@ class DescriptionTest extends TestDeviceBase {
 
     @Test
     void configurationDescription_isAvailable() {
-        var expectedLength = isLoopbackDevice() ? 69 : 98;
+        var expectedLength = isLoopbackDevice() ? 69 : 115;
 
         var configDesc = testDevice.configurationDescriptor();
         assertNotNull(configDesc);

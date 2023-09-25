@@ -49,20 +49,17 @@ uint8_t const* tud_descriptor_device_cb(void) {
 
 // --- Configuration Descriptor ---
 
-enum {
-    INTF_CDC_COMM = 0,
-    INTF_CDC_DATA,
-    INTF_LOOPBACK,
-    INTF_NUM_TOTAL
-};
-
-#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + 9 + 7 + 7)
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + 8 + 9 + 9 + 7 + 7)
 
 uint8_t const desc_configuration[] = {
     // Config number, interface count, string index, total length, attribute, power in mA
     TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 500),
     // CDC interfaces
     TUD_CDC_DESCRIPTOR(INTF_CDC_COMM, 0, EP_CDC_COMM, 8, EP_CDC_DATA_RX, EP_CDC_DATA_TX, BULK_MAX_PACKET_SIZE),
+    // Interface association descriptor (IAD)
+    CUSTOM_VENDOR_INTERFACE_ASSOCIATION(INTF_LOOPBACK_CTRL, 2, 0x04),
+    // Echo interface (no endpoint, just control messages)
+    CUSTOM_VENDOR_INTERFACE(INTF_LOOPBACK_CTRL, 0),
     // Loopback interface
     CUSTOM_VENDOR_INTERFACE(INTF_LOOPBACK, 2),
     // Loopback endpoint OUT
@@ -81,6 +78,8 @@ uint8_t const* tud_descriptor_configuration_cb(uint8_t configuration_index) {
 
 
 // --- BOS Descriptor ---
+
+#if CFG_WINUSB == OPT_WINUSB_MSOS20
 
 #define BOS_TOTAL_LEN (TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
 
@@ -108,7 +107,7 @@ uint8_t const desc_ms_os_20[] = {
     U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_CONFIGURATION), 0, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A),
 
     // Function Subset header: length, type, first interface, reserved, subset length
-    U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), INTF_LOOPBACK, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A-0x08),
+    U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), INTF_LOOPBACK_CTRL, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN-0x0A-0x08),
 
     // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
     U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
@@ -129,6 +128,7 @@ uint8_t const desc_ms_os_20[] = {
 
 TU_VERIFY_STATIC(sizeof(desc_ms_os_20) == MS_OS_20_DESC_LEN, "Incorrect size");
 
+#endif
 
 
 // --- String Descriptors ---
@@ -138,7 +138,8 @@ const char* const string_table[] = {
     0,                // 0 - supported languages (see below)
     "JavaDoesUSB",    // 1 - manufacturer
     "Composite",      // 2 - product
-    board_serial_num  // 3 - serial number
+    board_serial_num, // 3 - serial number
+    "Loopback IAD"    // 4 - interface association descriptor
 };
 
 

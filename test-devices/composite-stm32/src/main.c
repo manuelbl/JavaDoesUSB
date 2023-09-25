@@ -157,6 +157,12 @@ void cust_vendor_halt_cleared_cb(uint8_t ep_addr) {
 
 // --- Control messages (see README)
 
+#define REQUEST_SAVE_VALUE 0x01
+#define REQUEST_SAVE_DATA 0x02
+#define REQUEST_SEND_DATA 0x03
+#define REQUEST_RESET_BUFFERS 0x04
+#define REQUEST_GET_INTF_NUM 0x05
+
 static uint32_t saved_value = 0;
 
 bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request) {
@@ -168,7 +174,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
         switch (request->bRequest) {
 
-        case 0x01:
+        case REQUEST_SAVE_VALUE:
             if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 0) {
                 // save value from wValue
                 saved_value = request->wValue;
@@ -176,27 +182,38 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
             }
             break;
 
-        case 0x02:
+        case REQUEST_SAVE_DATA:
             if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 4) {
                 // receive into `saved_value`
                 return tud_control_xfer(rhport, request, &saved_value, 4);
             }
             break;
 
-        case 0x03:
+        case REQUEST_SEND_DATA:
             if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wLength == 4) {
                 // transmit from `saved_value`
                 return tud_control_xfer(rhport, request, &saved_value, 4);
             }
             break;
 
-        case 0x04:
+        case REQUEST_RESET_BUFFERS:
             if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 0) {
                 reset_buffers();
                 return tud_control_status(rhport, request);
             }
             break;
 
+        case REQUEST_GET_INTF_NUM:
+            if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wLength == 1) {
+                uint8_t intf_num = request->wIndex & 0xff;
+                if (intf_num < 4) {
+                    // return inteface number
+                    return tud_control_xfer(rhport, request, &intf_num, 1);
+                }
+            }
+            break;
+
+#if CFG_WINUSB == OPT_WINUSB_MSOS20
         case MSOS_VENDOR_CODE:
             if (request->wIndex == 7) {
                 // Get Microsoft OS 2.0 compatible descriptor
@@ -205,6 +222,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
                 return tud_control_xfer(rhport, request, (uint8_t*) desc_ms_os_20, total_len);
             }
             break;
+#endif
 
         default:
             break;

@@ -42,27 +42,30 @@ void cv_reset(uint8_t rhport) {
     // nothing to do
 }
 
-uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const * desc_intf, uint16_t max_len) {
-
+uint16_t cv_open(uint8_t rhport, tusb_desc_interface_t const *desc_intf, uint16_t max_len) {
     // return 0 if interface class is not "vendor specific"
     TU_VERIFY(TUSB_CLASS_VENDOR_SPECIFIC == desc_intf->bInterfaceClass, 0);
 
-    uint8_t const * p_desc = tu_desc_next(desc_intf);
-    uint8_t const * desc_end = p_desc + max_len;
-    int num_endpoints = desc_intf->bNumEndpoints;
+    uint8_t const *p_desc = (uint8_t const *)desc_intf;
+    uint8_t const *p_end = p_desc + max_len;
 
-    // iterate all endpoints
-    while (num_endpoints > 0 && p_desc < desc_end) {
+    for (int i = 0; i < CFG_VENDOR_ADVANCED_NUM_INTF; i++) {
+        TU_VERIFY(p_desc + sizeof(tusb_desc_interface_t) <= p_end, 0);
 
-        // open endpoint
-        tusb_desc_endpoint_t const * desc_ep = (tusb_desc_endpoint_t const *) p_desc;
-        TU_ASSERT(usbd_edpt_open(rhport, desc_ep));
+        tusb_desc_interface_t const *intf = (tusb_desc_interface_t const *)p_desc;
+        int num_endpoints = intf->bNumEndpoints;
 
-        p_desc = tu_desc_next(p_desc);
-        num_endpoints--;
+        tusb_desc_endpoint_t const *desc_ep = (tusb_desc_endpoint_t const *)(p_desc + sizeof(tusb_desc_interface_t));
+        TU_VERIFY((uint8_t const *)(desc_ep + num_endpoints) <= p_end, 0);
+
+        // open all endpoints
+        for (int i = 0; i < num_endpoints; i++)
+            TU_ASSERT(usbd_edpt_open(rhport, desc_ep + i));
+
+        p_desc = (uint8_t const *)(desc_ep + num_endpoints);
     }
 
-    uint16_t processed_bytes = p_desc - (uint8_t const *) desc_intf;
+    uint16_t processed_bytes = p_desc - (uint8_t const *)desc_intf;
 
     cust_vendor_intf_open_cb(desc_intf->bInterfaceNumber);
 

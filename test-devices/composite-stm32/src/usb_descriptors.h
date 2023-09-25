@@ -13,6 +13,24 @@
 
 #include <stdint.h>
 
+#define OPT_WINUSB_NONE 0
+#define OPT_WINUSB_MSOS20 2
+
+#ifndef CFG_WINUSB
+#define CFG_WINUSB OPT_WINUSB_MSOS20
+#endif
+
+
+// interfaces
+enum {
+    INTF_CDC_COMM = 0,
+    INTF_CDC_DATA,
+    INTF_LOOPBACK_CTRL,
+    INTF_LOOPBACK,
+    INTF_NUM_TOTAL
+};
+
+
 #define INTR_MAX_PACKET_SIZE 16
 #define BULK_MAX_PACKET_SIZE 64
 
@@ -24,8 +42,11 @@
 #define EP_LOOPBACK_RX 0x01
 #define EP_LOOPBACK_TX 0x82
 
-#define MSOS_VENDOR_CODE 0x44
+#if CFG_WINUSB == OPT_WINUSB_MSOS20
 
+#define MSOS_VENDOR_CODE 0x44
 extern uint8_t const desc_ms_os_20[];
+
+#endif
 
 void usb_init_serial_num();

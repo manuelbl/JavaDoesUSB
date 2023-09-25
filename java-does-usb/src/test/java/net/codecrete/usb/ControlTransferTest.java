@@ -12,6 +12,7 @@ package net.codecrete.usb;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests control transfers
@@ -37,5 +38,18 @@ class ControlTransferTest extends TestDeviceBase {
         testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) interfaceNumber), sentValue);
         var retrievedValue = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
         assertArrayEquals(sentValue, retrievedValue);
+    }
+
+    @Test
+    void interfaceNumber_canBeRetrieved() {
+        var response = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) interfaceNumber), 1);
+        assertEquals(interfaceNumber, response[0] & 0xff);
+
+        if (isCompositeDevce()) {
+            testDevice.claimInterface(2);
+            response = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) 2), 1);
+            assertEquals(2, response[0] & 0xff);
+            testDevice.releaseInterface(2);
+        }
     }
 }

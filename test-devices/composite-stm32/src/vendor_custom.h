@@ -32,6 +32,10 @@
     /* Endpoint */\
     7, TUSB_DESC_ENDPOINT, _epaddr, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(_packetsize), _interval
 
+// Interface association descriptor: first interface index, number of interfaces, string index of description
+#define CUSTOM_VENDOR_INTERFACE_ASSOCIATION(_firstintf, _numintf, _strIndex) \
+    /* Interface Association */\
+    8, TUSB_DESC_INTERFACE_ASSOCIATION, _firstintf, _numintf, TUSB_CLASS_VENDOR_SPECIFIC, 0x00, 0x00, _strIndex
 
 // --- Application API
 

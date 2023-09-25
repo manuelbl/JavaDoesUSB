@@ -41,7 +41,7 @@ public class TestDeviceBase {
     /**
      * Composite test device loopback interface number
      */
-    static final int LOOPBACK_INTF_COMPOSITE = 2;
+    static final int LOOPBACK_INTF_COMPOSITE = 3;
     /**
      * Interface number of connected test device
      */
