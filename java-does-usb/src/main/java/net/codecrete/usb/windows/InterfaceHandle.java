@@ -13,6 +13,10 @@ import java.lang.foreign.MemorySegment;
  * Handles for WinUSB devices and interfaces
  */
 class InterfaceHandle {
+    InterfaceHandle(int interfaceNumber, int firstInterfaceNumber) {
+        this.interfaceNumber = interfaceNumber;
+        this.firstInterfaceNumber = firstInterfaceNumber;
+    }
     /**
      * The number of this interface.
      */
@@ -21,13 +25,6 @@ class InterfaceHandle {
      * The number of the first interface in the same composite function.
      */
     int firstInterfaceNumber;
-    /**
-     * The device path.
-     * <p>
-     * This is only set for the first interface in a composite function.
-     * </p>
-     */
-    String devicePath;
     /**
      * The file handle of the device.
      * <p>
@@ -39,7 +36,7 @@ class InterfaceHandle {
      * The WinUSB handle of the interface.
      */
     @SuppressWarnings("java:S1700")
-    MemorySegment interfaceHandle;
+    MemorySegment winusbHandle;
     /**
      * Count indicating how many interface depend on the device being open.
      */

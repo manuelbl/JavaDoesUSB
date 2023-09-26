@@ -51,6 +51,20 @@ public class WinUSB2 {
         }
     }
 
+    private static final FunctionDescriptor WinUsb_GetAssociatedInterface$FUNC = FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_BYTE, ADDRESS);
+
+    private static final MethodHandle WinUsb_GetAssociatedInterface$MH =
+            LINKER.downcallHandle(LOOKUP.find("WinUsb_GetAssociatedInterface").get(), WinUsb_GetAssociatedInterface$FUNC, Win.LAST_ERROR_STATE);
+
+    public static int WinUsb_GetAssociatedInterface(MemorySegment InterfaceHandle, byte AssociatedInterfaceIndex,
+                                                    MemorySegment AssociatedInterfaceHandle, MemorySegment lastErrorState) {
+        try {
+            return (int) WinUsb_GetAssociatedInterface$MH.invokeExact(lastErrorState, InterfaceHandle, AssociatedInterfaceIndex, AssociatedInterfaceHandle);
+        } catch (Throwable ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
     private static final FunctionDescriptor WinUsb_SetCurrentAlternateSetting$FUNC = FunctionDescriptor.of(JAVA_INT,
             ADDRESS, JAVA_BYTE);
 

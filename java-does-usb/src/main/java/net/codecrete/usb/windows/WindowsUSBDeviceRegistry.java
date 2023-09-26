@@ -31,10 +31,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
@@ -177,61 +174,19 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hubHandles.put(hubPath, hubHandle);
             }
 
-            // check for composite device
-            var children = getChildDevices(deviceInfoSet, devicePath);
-
-            return createDevice(devicePath, children, hubHandle, usbPortNum);
+            return createDevice(devicePath, hubHandle, usbPortNum);
         }
-    }
-
-    @SuppressWarnings({"java:S106", "java:S1168"})
-    private Map<Integer, String> getChildDevices(DeviceInfoSet deviceInfoSet, String devicePath) {
-        if (!deviceInfoSet.isCompositeDevice())
-            return null;
-
-        // For certain devices, it seems to take some time until the "Device_Children"
-        // entry is present. So we retry a few times if needed and pause in between.
-        List<String> childrenInstanceIDs;
-        var numTries = 5;
-        while (true) {
-            numTries -= 1;
-            childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
-            if (childrenInstanceIDs != null || numTries == 0)
-                break;
-
-            // sleep and retry
-            try {
-                LOG.log(DEBUG, "Sleeping for 200ms (after unsuccessfully retrieving DEVPKEY_Device_Children)");
-                //noinspection BusyWait
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        if (childrenInstanceIDs == null) {
-            LOG.log(DEBUG, "unable to retrieve information about children of device {0} - ignoring", devicePath);
-            return null;
-        }
-
-        // create children map (interface number -> device path)
-        return childrenInstanceIDs.stream()
-                .map(WindowsUSBDeviceRegistry::getNumberPathTuple)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
      * Retrieve device descriptor and create {@code USBDevice} instance
      *
      * @param devicePath the device path
-     * @param children   map of child device paths, indexed by the first interface number
      * @param hubHandle  the hub handle (parent)
      * @param usbPortNum the USB port number
      * @return the {@code USBDevice} instance
      */
-    private USBDevice createDevice(String devicePath, Map<Integer, String> children, MemorySegment hubHandle,
-                                   int usbPortNum) {
+    private USBDevice createDevice(String devicePath, MemorySegment hubHandle, int usbPortNum) {
 
         try (var arena = Arena.ofConfined()) {
 
@@ -253,7 +208,8 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
 
             var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, arena);
 
-            var device = new WindowsUSBDevice(devicePath, children, vendorId, productId, configDesc);
+            // create new device
+            var device = new WindowsUSBDevice(devicePath, vendorId, productId, configDesc);
             device.setFromDeviceDescriptor(descriptorSegment);
             device.setProductString(descriptorSegment, index -> getStringDescriptor(hubHandle, usbPortNum, index));
 
@@ -395,56 +351,6 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             if (id.equalsIgnoreCase(dev.getUniqueId().toString()))
                 return i;
         }
-        return -1;
-    }
-
-    /**
-     * Looks up the interface number and device path for the child device with the given instance ID.
-     *
-     * @param instanceId child instance ID
-     * @return tuple consisting of interface number and device path, or {@code null} if unsuccessful
-     */
-    private static Map.Entry<Integer, String> getNumberPathTuple(String instanceId) {
-        try (var deviceInfoSet = DeviceInfoSet.ofInstance(instanceId)) {
-
-            // get hardware IDs (to extract interface number)
-            var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
-            if (hardwareIds == null)
-                throwException("internal error (device property 'HardwareIds' is missing)");
-            var interfaceNumber = extractInterfaceNumber(hardwareIds);
-            if (interfaceNumber == -1) {
-                LOG.log(DEBUG, "Child device {0} has no interface number", instanceId);
-                return null;
-            }
-
-            var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
-            if (devicePath == null) {
-                LOG.log(DEBUG, "Child device {0} has no device path", instanceId);
-                return null;
-            }
-
-            return new AbstractMap.SimpleImmutableEntry<>(interfaceNumber, devicePath);
-        }
-    }
-
-    private static final Pattern MULTIPLE_INTERFACE_ID = Pattern.compile(
-            "USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
-
-    private static int extractInterfaceNumber(List<String> hardwareIds) {
-        // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
-
-        for (var id : hardwareIds) {
-            var matcher = MULTIPLE_INTERFACE_ID.matcher(id);
-            if (matcher.find()) {
-                var intfHexNumber = matcher.group(1);
-                try {
-                    return Integer.parseInt(intfHexNumber, 16);
-                } catch (NumberFormatException e) {
-                    // ignore and try next one
-                }
-            }
-        }
-
         return -1;
     }
 }

@@ -7,10 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBRecipient;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.*;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.USBDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
@@ -23,13 +20,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import static java.lang.System.Logger.Level.DEBUG;
+import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
+import static net.codecrete.usb.windows.DevicePropertyKey.Children;
+import static net.codecrete.usb.windows.DevicePropertyKey.HardwareIds;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUSBException.throwException;
 import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
@@ -40,42 +42,36 @@ import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
 @SuppressWarnings("java:S2160")
 public class WindowsUSBDevice extends USBDeviceImpl {
 
+    private static final System.Logger LOG = System.getLogger(WindowsUSBDevice.class.getName());
+
     private final WindowsAsyncTask asyncTask;
     private List<InterfaceHandle> interfaceHandles;
+    // device paths by interface number (first interface of function)
+    private Map<Integer, String> devicePaths;
+
     /**
      * Indicates if {@link #open()} has been called. Since separate interfaces can have separate underlying
      * Windows device, {@link #claimInterface(int)} instead of {@link #open()} will open the Windows device.
      */
     private boolean showAsOpen;
 
-    WindowsUSBDevice(String devicePath, Map<Integer, String> children,
-                     int vendorId, int productId, MemorySegment configDesc) {
+    WindowsUSBDevice(String devicePath, int vendorId, int productId, MemorySegment configDesc) {
         super(devicePath, vendorId, productId);
         asyncTask = WindowsAsyncTask.INSTANCE;
-        readDescription(configDesc, devicePath, children);
+        readDescription(configDesc);
     }
 
-    private void readDescription(MemorySegment configDesc, String devicePath, Map<Integer, String> children) {
+    private void readDescription(MemorySegment configDesc) {
         var configuration = setConfigurationDescriptor(configDesc);
 
         // build list of interface handles
-        interfaceHandles = new ArrayList<>();
-        for (var intf : configuration.interfaces()) {
-            var interfaceNumber = intf.number();
-            var function = configuration.findFunction(interfaceNumber);
-
-            var intfHandle = new InterfaceHandle();
-            intfHandle.interfaceNumber = interfaceNumber;
-            if (function.firstInterfaceNumber() == interfaceNumber) {
-                if (children == null) {
-                    intfHandle.devicePath = devicePath;
-                } else {
-                    intfHandle.devicePath = children.get(interfaceNumber);
-                }
-            }
-            intfHandle.firstInterfaceNumber = function.firstInterfaceNumber();
-            interfaceHandles.add(intfHandle);
-        }
+        interfaceHandles = configuration.interfaces().stream()
+                .map(intf -> {
+                    var interfaceNumber = intf.number();
+                    var function = configuration.findFunction(interfaceNumber);
+                    return new InterfaceHandle(interfaceNumber, function.firstInterfaceNumber());
+                }).
+                toList();
     }
 
     @Override
@@ -107,55 +103,62 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public synchronized void claimInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intfHandle = getInterfaceHandle(interfaceNumber);
-        if (intfHandle.interfaceHandle != null)
-            throwException("interface %d has already been claimed", interfaceNumber);
+        getInterfaceWithCheck(interfaceNumber, false);
 
+        var intfHandle = getInterfaceHandle(interfaceNumber);
         var firstIntfHandle = intfHandle;
         if (intfHandle.firstInterfaceNumber != interfaceNumber)
             firstIntfHandle = getInterfaceHandle(intfHandle.firstInterfaceNumber);
 
-        if (firstIntfHandle.devicePath == null)
-            throwException("interface number %d cannot be claimed (non WinUSB device?)", interfaceNumber);
-
         try (var arena = Arena.ofConfined()) {
-
-            MemorySegment deviceHandle;
             var errorState = allocateErrorState(arena);
 
-            // open Windows device if needed
+            // both the device and the first interface must be opened for any interface belonging to the same function
             if (firstIntfHandle.deviceHandle == null) {
-                var pathSegment = Win.createSegmentFromString(firstIntfHandle.devicePath, arena);
-                deviceHandle = Kernel32B.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
+                var devicePath = getInterfaceDevicePath(firstIntfHandle.interfaceNumber);
+                if (devicePath == null)
+                    throw new USBException("claiming interface failed (function has no device path, might be missing WinUSB driver)");
+
+                LOG.log(DEBUG, "opening device {0}", devicePath);
+
+                // open Windows device if needed
+                var pathSegment = Win.createSegmentFromString(devicePath, arena);
+                var deviceHandle = Kernel32B.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
                         Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(), NULL, Kernel32.OPEN_EXISTING(),
                         Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL, errorState);
 
                 if (Win.isInvalidHandle(deviceHandle))
-                    throwLastError(errorState, "opening USB device %s failed", firstIntfHandle.devicePath);
+                    throwLastError(errorState, "claiming interface failed (opening USB device %s failed)", devicePath);
 
-                asyncTask.addDevice(deviceHandle);
+                try {
+                    // open first interface
+                    var interfaceHandleHolder = arena.allocate(ADDRESS);
+                    if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0)
+                        throwLastError(errorState, "claiming interface failed");
+                    var interfaceHandle = dereference(interfaceHandleHolder);
 
-            } else {
-                deviceHandle = firstIntfHandle.deviceHandle;
+                    firstIntfHandle.deviceHandle = deviceHandle;
+                    firstIntfHandle.winusbHandle = interfaceHandle;
+                    asyncTask.addDevice(deviceHandle);
+
+                } catch (Exception e) {
+                    Kernel32.CloseHandle(deviceHandle);
+                    throw e;
+                }
             }
 
-            try {
-                // open interface
+            if (intfHandle != firstIntfHandle) {
+                // open associated interface
                 var interfaceHandleHolder = arena.allocate(ADDRESS);
-                if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0)
-                    throwLastError(errorState, "opening WinUSB device failed");
-                var interfaceHandle = dereference(interfaceHandleHolder);
-
-                firstIntfHandle.deviceHandle = deviceHandle;
-                firstIntfHandle.deviceOpenCount += 1;
-                intfHandle.interfaceHandle = interfaceHandle;
-
-            } catch (Exception e) {
-                Kernel32.CloseHandle(deviceHandle);
-                throw e;
+                if (WinUSB2.WinUsb_GetAssociatedInterface(firstIntfHandle.winusbHandle,
+                        (byte)(intfHandle.interfaceNumber - firstIntfHandle.interfaceNumber - 1),
+                        interfaceHandleHolder, errorState) == 0)
+                    throwLastError(errorState, "claiming (associated) interface failed");
+                intfHandle.winusbHandle = dereference(interfaceHandleHolder);
             }
         }
 
+        firstIntfHandle.deviceOpenCount += 1;
         setClaimed(interfaceNumber, true);
     }
 
@@ -163,11 +166,8 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public synchronized void selectAlternateSetting(int interfaceNumber, int alternateNumber) {
         checkIsOpen();
 
+        var intf = getInterfaceWithCheck(interfaceNumber, true);
         var intfHandle = getInterfaceHandle(interfaceNumber);
-        if (intfHandle.interfaceHandle == null)
-            throwException("interface %d has not been claimed", interfaceNumber);
-
-        var intf = getInterface(interfaceNumber);
 
         // check alternate setting
         var altSetting = intf.getAlternate(alternateNumber);
@@ -177,7 +177,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.interfaceHandle, (byte) alternateNumber,
+            if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.winusbHandle, (byte) alternateNumber,
                     errorState) == 0)
                 throwLastError(errorState, "setting alternate interface failed");
         }
@@ -187,26 +187,30 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     public synchronized void releaseInterface(int interfaceNumber) {
         checkIsOpen();
 
-        var intfHandle = getInterfaceHandle(interfaceNumber);
-        if (intfHandle.interfaceHandle == null)
-            throwException("interface %d has not been claimed", interfaceNumber);
+        getInterfaceWithCheck(interfaceNumber, true);
 
+        var intfHandle = getInterfaceHandle(interfaceNumber);
         var firstIntfHandle = intfHandle;
         if (intfHandle.firstInterfaceNumber != interfaceNumber)
             firstIntfHandle = getInterfaceHandle(intfHandle.firstInterfaceNumber);
 
-        // close interface
-        WinUSB.WinUsb_Free(intfHandle.interfaceHandle);
-        intfHandle.interfaceHandle = null;
+        setClaimed(interfaceNumber, false);
 
-        // close device
+        if (intfHandle != firstIntfHandle) {
+            // close associated interface
+            WinUSB.WinUsb_Free(intfHandle.winusbHandle);
+            intfHandle.winusbHandle = null;
+        }
+
+        // close device if needed
         firstIntfHandle.deviceOpenCount -= 1;
         if (firstIntfHandle.deviceOpenCount == 0) {
+            WinUSB.WinUsb_Free(firstIntfHandle.winusbHandle);
+            firstIntfHandle.winusbHandle = null;
+
             Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
         }
-
-        setClaimed(interfaceNumber, false);
     }
 
     @Override
@@ -321,7 +325,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.interfaceHandle, setupPacket.segment(), transfer.data(),
+            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.winusbHandle, setupPacket.segment(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
@@ -339,7 +343,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data(),
+            if (WinUSB2.WinUsb_WritePipe(intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
@@ -357,7 +361,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), transfer.data(),
+            if (WinUSB2.WinUsb_ReadPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
                 var err = Win.getLastError(errorState);
                 if (err != Kernel32.ERROR_IO_PENDING())
@@ -374,12 +378,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var errorState = allocateErrorState(arena);
 
             var timeoutHolder = arena.allocate(JAVA_INT, 0);
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(),
+            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(),
                     WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, errorState) == 0)
                 throwLastError(errorState, "setting timeout failed");
 
             var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 1);
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.interfaceHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
+            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
                     (int) rawIoHolder.byteSize(), rawIoHolder, errorState) == 0)
                 throwLastError(errorState, "setting raw IO failed");
         }
@@ -392,7 +396,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_ResetPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), errorState) == 0)
+            if (WinUSB2.WinUsb_ResetPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), errorState) == 0)
                 throwLastError(errorState, "clearing halt failed");
         }
     }
@@ -404,7 +408,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_AbortPipe(intfHandle.interfaceHandle, endpoint.endpointAddress(), errorState) == 0)
+            if (WinUSB2.WinUsb_AbortPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), errorState) == 0)
                 throwLastError(errorState, "aborting transfers on endpoint failed");
         }
     }
@@ -457,18 +461,124 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         if (interfaceNumber >= 0) {
             var intfHandle = getInterfaceHandle(interfaceNumber);
-            if (intfHandle.interfaceHandle == null)
+            if (intfHandle.winusbHandle == null)
                 throwException("interface number %d has not been claimed", interfaceNumber);
             return intfHandle;
         }
 
         // for control transfer to device, use any claimed interface
         for (var intfHandle : interfaceHandles) {
-            if (intfHandle.interfaceHandle != null)
+            if (intfHandle.winusbHandle != null)
                 return intfHandle;
         }
 
         throwException("control transfer cannot be executed as no interface has been claimed");
         throw new AssertionError("not reached");
+    }
+
+    private String getInterfaceDevicePath(int interfaceNumber) {
+        var parentDevicePath = (String) getUniqueId(); // device path is id
+        if (interfaceNumber == 0)
+            return parentDevicePath;
+
+        if (devicePaths != null) {
+            var devicePath = devicePaths.get(interfaceNumber);
+            if (devicePath != null)
+                return devicePath;
+        }
+
+        // When a device is plugged in, a notification is sent. For composite devices, it is a notification
+        // that the information for the composite device is ready. Each composite function will be registered
+        // separately and the related information will be available with a delay. So for composite functions,
+        // several retries might be needed until the device path is available.
+        var numRetries = 30; // 30 x 100ms
+        while (true) {
+            try (var deviceInfoSet = DeviceInfoSet.ofPath(parentDevicePath)) {
+                if (!deviceInfoSet.isCompositeDevice())
+                    throwException("internal error: interface belongs to a separate function but device is not composite");
+
+                var childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
+                if (childrenInstanceIDs == null) {
+                    LOG.log(DEBUG, "missing children instance IDs for device {0}", parentDevicePath);
+
+                } else {
+                    LOG.log(DEBUG, "children instance IDs: {0}", childrenInstanceIDs);
+
+                    for (var instanceId : childrenInstanceIDs) {
+                        var res = fetchChildDevicePath(instanceId, interfaceNumber);
+                        if (res == 1)
+                            return devicePaths.get(interfaceNumber); // success
+                        if (res == -1)
+                            break; // retry later
+                    }
+                }
+
+                numRetries -= 1;
+                if (numRetries == 0)
+                    return null; // failure
+
+                // sleep and retry
+                try {
+                    LOG.log(DEBUG, "Sleeping for 100ms...");
+                    //noinspection BusyWait
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    private int fetchChildDevicePath(String instanceId, int interfaceNumber) {
+        try (var deviceInfoSet = DeviceInfoSet.ofInstance(instanceId)) {
+
+            // get hardware IDs (to extract interface number)
+            var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
+            if (hardwareIds == null) {
+                LOG.log(DEBUG, "child device {0} has no hardware IDs", instanceId);
+                return 0; // continue with next child
+            }
+
+            var extractedNumber = extractInterfaceNumber(hardwareIds);
+            if (extractedNumber == -1) {
+                LOG.log(DEBUG, "child device {0} has no interface number", instanceId);
+                return 0; // continue with next child
+            }
+
+            if (extractedNumber != interfaceNumber)
+                return 0; // continue with next child
+
+            var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
+            if (devicePath == null) {
+                LOG.log(INFO, "Child device {0} has no device path", instanceId);
+                return -1; // retry later
+            }
+
+            if (devicePaths == null)
+                devicePaths = new HashMap<>();
+            devicePaths.put(interfaceNumber, devicePath);
+            return 1; // success
+        }
+    }
+
+    private static final Pattern MULTIPLE_INTERFACE_ID = Pattern.compile(
+            "USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
+
+    private static int extractInterfaceNumber(List<String> hardwareIds) {
+        // Also see https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
+
+        for (var id : hardwareIds) {
+            var matcher = MULTIPLE_INTERFACE_ID.matcher(id);
+            if (matcher.find()) {
+                var intfHexNumber = matcher.group(1);
+                try {
+                    return Integer.parseInt(intfHexNumber, 16);
+                } catch (NumberFormatException e) {
+                    // ignore and try next one
+                }
+            }
+        }
+
+        return -1;
     }
 }

@@ -22,8 +22,8 @@
 #include <regex>
 #include <thread>
 
-usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite)
-: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)), is_composite_(is_composite) {
+usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc)
+: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
 
     config_parser parser{};
     parser.parse(config_desc.data(), static_cast<int>(config_desc.size()));
@@ -513,27 +513,27 @@ int usb_device::get_child_device_path(const std::wstring& child_id, int interfac
     auto hardware_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_HardwareIds);
     if (hardware_ids.empty()) {
         std::wcerr << "child device " << child_id << " has no hardware IDs" << std::endl;
-        return 0;
+        return 0; // continue with next child
     }
 
     auto intf_num = extract_interface_number(hardware_ids);
     if (intf_num == -1) {
         std::wcerr << "child device " << child_id << " has no interface number" << std::endl;
-        return 0;
+        return 0; // continue with next child
     }
 
     if (intf_num != interface_num)
-        return 0;
+        return 0; // continue with next child
 
     device_path = dev_info_set.get_device_path_by_guid(child_id);
     if (device_path.empty()) {
         std::wcerr << "child device " << child_id << " has no device path" << std::endl;
-        return -1;
+        return -1; // retry later
     }
 
     std::wcerr << "child device: interface=" << intf_num << ", device path=" << device_path << std::endl;
     interface_device_paths_[interface_num] = device_path;
-    return 1;
+    return 1;  // success
 }
 
 static const std::wregex multiple_interface_id_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");
