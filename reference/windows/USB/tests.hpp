@@ -21,6 +21,7 @@ private:
     void test_control_transfers();
     void test_bulk_transfers();
     void test_speed();
+    void test_control_transfer_intf(int intf_num);
     
     void test_loopback(int num_bytes);
 
@@ -33,5 +34,9 @@ private:
     
     usb_device_ptr test_device;
     usb_registry registry;
+    bool is_composite;
+    int loopback_intf;
+    int loopback_ep_out;
+    int loopback_ep_in;
 };
 

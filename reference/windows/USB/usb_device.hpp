@@ -242,7 +242,7 @@ private:
         int interface_num;
         int first_interface_num;
         HANDLE device_handle;
-        WINUSB_INTERFACE_HANDLE intf_handle;
+        WINUSB_INTERFACE_HANDLE winusb_handle;
         int device_open_count;
 
         interface_handle(int intf_num, int first_num, std::wstring&& path);

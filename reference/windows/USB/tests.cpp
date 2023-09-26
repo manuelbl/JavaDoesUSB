@@ -43,15 +43,22 @@ void tests::run() {
 void tests::test_current_device() {
     try {
         std::cout << "Found test device" << std::endl;
+
+        is_composite = test_device->product_id() == 0xcea0;
+        loopback_intf = is_composite ? 3 : 0;
+        loopback_ep_out = is_composite ? 1 : 1;
+        loopback_ep_in = is_composite ? 2 : 2;
+
         test_device->open();
-        test_device->claim_interface(0);
+        test_device->claim_interface(loopback_intf);
 
         test_control_transfers();
         test_bulk_transfers();
         test_speed();
 
-        test_device->release_interface(0);
+        test_device->release_interface(loopback_intf);
         test_device->close();
+
         std::cout << "Test completed" << std::endl;
     }
     catch (const std::exception& e) {
@@ -65,7 +72,7 @@ void tests::test_control_transfers() {
         usb_request_type::type_vendor, usb_request_type::recipient_interface);
     request_set_value_no_data.bRequest = 0x01;
     request_set_value_no_data.wValue = 0x9a41;
-    request_set_value_no_data.wIndex = 0; // interface number
+    request_set_value_no_data.wIndex = loopback_intf;
     request_set_value_no_data.wLength = 0;
     test_device->control_transfer(request_set_value_no_data);
     
@@ -74,7 +81,7 @@ void tests::test_control_transfers() {
         usb_request_type::type_vendor, usb_request_type::recipient_interface);
     request_get_data.bRequest = 0x03;
     request_get_data.wValue = 0;
-    request_get_data.wIndex = 0; // interface number
+    request_get_data.wIndex = loopback_intf;
     request_get_data.wLength = 4;
     auto data = test_device->control_transfer_in(request_get_data);
     std::vector<uint8_t> expected_data{ 0x41, 0x9a, 0x00, 0x00 };
@@ -86,13 +93,36 @@ void tests::test_control_transfers() {
         usb_request_type::type_vendor, usb_request_type::recipient_interface);
     request_set_value_data.bRequest = 0x02;
     request_set_value_data.wValue = 0;
-    request_set_value_data.wIndex = 0; // interface number
+    request_set_value_data.wIndex = loopback_intf;
     request_set_value_data.wLength = static_cast<uint16_t>(sent_value.size());
     test_device->control_transfer_out(request_set_value_data, sent_value);
 
     data = test_device->control_transfer_in(request_get_data);
     assert_equals(sent_value, data);
+
+    test_control_transfer_intf(loopback_intf);
+
+    if (is_composite) {
+        test_device->claim_interface(2);
+        test_control_transfer_intf(2);
+        test_device->release_interface(2);
+    }
 }
+
+void tests::test_control_transfer_intf(int intf_num) {
+    usb_control_request request_get_intf_num = { 0 };
+    request_get_intf_num.bmRequestType = usb_control_request::request_type(usb_request_type::direction_in,
+        usb_request_type::type_vendor, usb_request_type::recipient_interface);
+    request_get_intf_num.bRequest = 0x05;
+    request_get_intf_num.wValue = 0;
+    request_get_intf_num.wIndex = intf_num;
+    request_get_intf_num.wLength = 1;
+    auto data = test_device->control_transfer_in(request_get_intf_num);
+
+    std::vector<uint8_t> expected_data{ (uint8_t)intf_num };
+    assert_equals(expected_data, data);
+}
+
 
 void tests::test_bulk_transfers() {
     test_loopback(12);
@@ -113,7 +143,7 @@ void tests::test_loopback(int num_bytes) {
     std::thread reader([this, &rx_data, num_bytes]() {
         size_t bytes_read = 0;
         while (bytes_read < num_bytes) {
-            auto data = test_device->transfer_in(2);
+            auto data = test_device->transfer_in(loopback_ep_in);
             rx_data.insert(rx_data.end(), data.begin(), data.end());
             bytes_read += data.size();
         }
@@ -125,7 +155,7 @@ void tests::test_loopback(int num_bytes) {
     while (bytes_written < num_bytes) {
         int size = std::min(chunk_size, num_bytes - bytes_written);
         std::vector<uint8_t> chunk = {random_data.begin() + bytes_written, random_data.begin() + bytes_written + size};
-        test_device->transfer_out(1, chunk);
+        test_device->transfer_out(loopback_ep_out, chunk);
         bytes_written += size;
     }
     
@@ -169,5 +199,6 @@ std::vector<uint8_t> tests::random_bytes(int num) {
 }
 
 bool tests::is_test_device(usb_device_ptr device) {
-    return device->vendor_id() == 0xcafe && device->product_id() == 0xceaf;
+    return device->vendor_id() == 0xcafe
+        && (device->product_id() == 0xceaf || device->product_id() == 0xcea0);
 }

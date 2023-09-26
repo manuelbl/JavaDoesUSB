@@ -131,7 +131,7 @@ void usb_device::claim_interface(int interface_number) {
     interface_handle* intf_handle = get_interface_handle(interface_number);
     interface_handle* first_intf_handle = get_interface_handle(intf_handle->first_interface_num);
 
-    // open device if needed
+    // both the device and the first interface must be opened for any interface belonging to the same function
     if (first_intf_handle->device_handle == nullptr) {
         auto device_path = get_interface_device_path(first_intf_handle->interface_num);
         if (device_path.empty())
@@ -139,6 +139,7 @@ void usb_device::claim_interface(int interface_number) {
 
         std::wcerr << "opening device " << device_path << std::endl;
 
+        // open device
         first_intf_handle->device_handle = CreateFileW(device_path.c_str(),
             GENERIC_WRITE | GENERIC_READ,
             FILE_SHARE_WRITE | FILE_SHARE_READ,
@@ -147,21 +148,26 @@ void usb_device::claim_interface(int interface_number) {
             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
             nullptr);
         if (first_intf_handle->device_handle == INVALID_HANDLE_VALUE)
-            usb_error::throw_error("cannot open USB device");
+            usb_error::throw_error("failed to claim interface (cannot open USB device)");
 
-        // open interface
-        if (!WinUsb_Initialize(first_intf_handle->device_handle, &first_intf_handle->intf_handle)) {
+        // open first interface
+        if (!WinUsb_Initialize(first_intf_handle->device_handle, &first_intf_handle->winusb_handle)) {
             auto err = GetLastError();
             CloseHandle(first_intf_handle->device_handle);
             first_intf_handle->device_handle = nullptr;
-            throw usb_error("cannot open USB device (2)", err);
+            throw usb_error("failed to claim interface (cannot open associated interface)", err);
         }
 
         registry_->add_to_completion_port(first_intf_handle->device_handle);
     }
 
+    // open associated interface
+    if (intf_handle != first_intf_handle) {
+        if (!WinUsb_GetAssociatedInterface(first_intf_handle->winusb_handle, intf_handle->interface_num - first_intf_handle->interface_num - 1, &intf_handle->winusb_handle))
+            throw usb_error("cannot open associated interface", GetLastError());
+    }
+
     first_intf_handle->device_open_count += 1;
-    intf_handle->intf_handle = first_intf_handle->intf_handle;
     intf->set_claimed(true);
 }
 
@@ -179,13 +185,19 @@ void usb_device::release_interface(int interface_number) {
     interface_handle* intf_handle = get_interface_handle(interface_number);
     interface_handle* first_intf_handle = get_interface_handle(intf_handle->first_interface_num);
 
-    intf_handle->intf_handle = nullptr;
     intf->set_claimed(false);
+
+    if (intf_handle != first_intf_handle) {
+        // close assicated interface
+        if (!WinUsb_Free(intf_handle->winusb_handle))
+            throw usb_error("failed to release associated interface", GetLastError());
+        intf_handle->winusb_handle = nullptr;
+    }
 
     // close device if needed
     first_intf_handle->device_open_count -= 1;
     if (first_intf_handle->device_open_count == 0) {
-        WinUsb_Free(first_intf_handle->intf_handle);
+        WinUsb_Free(first_intf_handle->winusb_handle);
         CloseHandle(first_intf_handle->device_handle);
         first_intf_handle->device_handle = nullptr;
     }
@@ -193,18 +205,18 @@ void usb_device::release_interface(int interface_number) {
 
 std::vector<uint8_t> usb_device::transfer_in(int endpoint_number, int timeout) {
 
-    auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
+    auto winusb_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->winusb_handle;
     UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
     auto endpoint = get_endpoint_ptr(usb_direction::in, endpoint_number);
 
     ULONG value = timeout;
-    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
+    if (!WinUsb_SetPipePolicy(winusb_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
         usb_error::throw_error("Failed to set endpoint timeout");
 
     std::vector<uint8_t> data(endpoint->packet_size());
 
     DWORD len = 0;
-    if (!WinUsb_ReadPipe(intf_handle, endpoint_address, static_cast<PUCHAR>(data.data()), endpoint->packet_size(), &len, nullptr))
+    if (!WinUsb_ReadPipe(winusb_handle, endpoint_address, static_cast<PUCHAR>(data.data()), endpoint->packet_size(), &len, nullptr))
         usb_error::throw_error("Cannot receive from USB endpoint");
 
     data.resize(len);
@@ -215,15 +227,15 @@ void usb_device::transfer_out(int endpoint_number, const std::vector<uint8_t>& d
     if (len < 0 || len > data.size())
         len = static_cast<int>(data.size());
 
-    auto intf_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->intf_handle;
+    auto winusb_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->winusb_handle;
     UCHAR endpoint_address = ep_address(usb_direction::out, endpoint_number);
 
     ULONG value = timeout;
-    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
+    if (!WinUsb_SetPipePolicy(winusb_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
         usb_error::throw_error("Failed to set endpoint timeout");
 
     DWORD tlen = 0;
-    if (!WinUsb_WritePipe(intf_handle, endpoint_address, const_cast<PUCHAR>(data.data()), len, &tlen, nullptr))
+    if (!WinUsb_WritePipe(winusb_handle, endpoint_address, const_cast<PUCHAR>(data.data()), len, &tlen, nullptr))
         usb_error::throw_error("Failed to transmit to USB endpoint");
 }
 
@@ -232,10 +244,10 @@ int usb_device::control_transfer_core(const usb_control_request &request, uint8_
     if (!is_open())
         throw usb_error("USB device is not open");
 
-    auto handle = get_control_transfer_interface_handle(request)->intf_handle;
+    auto winusb_handle = get_control_transfer_interface_handle(request)->winusb_handle;
     
     ULONG value = timeout;
-    if (!WinUsb_SetPipePolicy(handle, 0, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
+    if (!WinUsb_SetPipePolicy(winusb_handle, 0, PIPE_TRANSFER_TIMEOUT, sizeof(value), &value))
         usb_error::throw_error("Failed to set endpoint timeout");
 
     WINUSB_SETUP_PACKET setup_packet = { 0 };
@@ -246,7 +258,7 @@ int usb_device::control_transfer_core(const usb_control_request &request, uint8_
     setup_packet.Length = request.wLength;
 
     DWORD len = 0;
-    if (!WinUsb_ControlTransfer(handle, setup_packet, data, request.wLength, &len, nullptr))
+    if (!WinUsb_ControlTransfer(winusb_handle, setup_packet, data, request.wLength, &len, nullptr))
         usb_error::throw_error("Control transfer failed");
 
     return len;
@@ -400,24 +412,24 @@ void usb_device::remove_completion_handler(OVERLAPPED* overlapped) {
 }
 
 void usb_device::configure_for_async_io(usb_direction direction, int endpoint_number) {
-    auto intf_handle = check_valid_endpoint(direction, endpoint_number)->intf_handle;
+    auto winusb_handle = check_valid_endpoint(direction, endpoint_number)->winusb_handle;
     UCHAR endpoint_address = ep_address(direction, endpoint_number);
 
     ULONG timeout = 0;
-    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(timeout), &timeout))
+    if (!WinUsb_SetPipePolicy(winusb_handle, endpoint_address, PIPE_TRANSFER_TIMEOUT, sizeof(timeout), &timeout))
         usb_error::throw_error("Failed to set endpoint timeout");
 
     UCHAR raw_io = 1;
-    if (!WinUsb_SetPipePolicy(intf_handle, endpoint_address, RAW_IO, sizeof(raw_io), &raw_io))
+    if (!WinUsb_SetPipePolicy(winusb_handle, endpoint_address, RAW_IO, sizeof(raw_io), &raw_io))
         usb_error::throw_error("Failed to set endpoint for raw IO");
 }
 
 void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int buffer_len, OVERLAPPED* overlapped) {
 
-    auto intf_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->intf_handle;
+    auto winusb_handle = check_valid_endpoint(usb_direction::in, endpoint_number)->winusb_handle;
     UCHAR endpoint_address = ep_address(usb_direction::in, endpoint_number);
 
-    if (!WinUsb_ReadPipe(intf_handle, endpoint_address, buffer, buffer_len, nullptr, overlapped)) {
+    if (!WinUsb_ReadPipe(winusb_handle, endpoint_address, buffer, buffer_len, nullptr, overlapped)) {
         DWORD err = GetLastError();
         if (err == ERROR_IO_PENDING)
             return;
@@ -427,10 +439,10 @@ void usb_device::submit_transfer_in(int endpoint_number, uint8_t* buffer, int bu
 
 void usb_device::submit_transfer_out(int endpoint_number, uint8_t* data, int data_len, OVERLAPPED* overlapped) {
 
-    auto intf_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->intf_handle;
+    auto winusb_handle = check_valid_endpoint(usb_direction::out, endpoint_number)->winusb_handle;
     UCHAR endpoint_address = ep_address(usb_direction::out, endpoint_number);
 
-    if (!WinUsb_WritePipe(intf_handle, endpoint_address, data, data_len, nullptr, overlapped)) {
+    if (!WinUsb_WritePipe(winusb_handle, endpoint_address, data, data_len, nullptr, overlapped)) {
         DWORD err = GetLastError();
         if (err == ERROR_IO_PENDING)
             return;
@@ -543,4 +555,4 @@ int usb_device::extract_interface_number(const std::vector<std::wstring>& hardwa
 
 usb_device::interface_handle::interface_handle(int intf_num, int first_num, std::wstring&& path)
     : interface_num(intf_num), first_interface_num(first_num),
-        device_handle(nullptr), intf_handle(nullptr), device_open_count(0) { }
+        device_handle(nullptr), winusb_handle(nullptr), device_open_count(0) { }
