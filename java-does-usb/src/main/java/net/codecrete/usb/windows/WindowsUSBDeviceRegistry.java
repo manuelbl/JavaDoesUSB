@@ -174,7 +174,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
                 hubHandles.put(hubPath, hubHandle);
             }
 
-            return createDevice(devicePath, hubHandle, usbPortNum);
+            return createDevice(devicePath, deviceInfoSet.isCompositeDevice(), hubHandle, usbPortNum);
         }
     }
 
@@ -186,7 +186,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
      * @param usbPortNum the USB port number
      * @return the {@code USBDevice} instance
      */
-    private USBDevice createDevice(String devicePath, MemorySegment hubHandle, int usbPortNum) {
+    private USBDevice createDevice(String devicePath, boolean isComposite, MemorySegment hubHandle, int usbPortNum) {
 
         try (var arena = Arena.ofConfined()) {
 
@@ -209,7 +209,7 @@ public class WindowsUSBDeviceRegistry extends USBDeviceRegistry {
             var configDesc = getDescriptor(hubHandle, usbPortNum, CONFIGURATION_DESCRIPTOR_TYPE, 0, (short) 0, arena);
 
             // create new device
-            var device = new WindowsUSBDevice(devicePath, vendorId, productId, configDesc);
+            var device = new WindowsUSBDevice(devicePath, vendorId, productId, configDesc, isComposite);
             device.setFromDeviceDescriptor(descriptorSegment);
             device.setProductString(descriptorSegment, index -> getStringDescriptor(hubHandle, usbPortNum, index));
 

@@ -49,7 +49,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     private static final int SUCCESS = 2;
 
     private final WindowsAsyncTask asyncTask;
+    /**
+     *  Indicates if the device is a composite device
+     */
+    private final boolean isComposite;
+
     private List<InterfaceHandle> interfaceHandles;
+
     // device paths by interface number (first interface of function)
     private Map<Integer, String> devicePaths;
 
@@ -59,9 +65,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
      */
     private boolean showAsOpen;
 
-    WindowsUSBDevice(String devicePath, int vendorId, int productId, MemorySegment configDesc) {
+    WindowsUSBDevice(String devicePath, int vendorId, int productId, MemorySegment configDesc, boolean isComposite) {
         super(devicePath, vendorId, productId);
         asyncTask = WindowsAsyncTask.INSTANCE;
+        this.isComposite = isComposite;
+        if (isComposite)
+            devicePaths = new HashMap<>();
         readDescription(configDesc);
     }
 
@@ -238,14 +247,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             WinUSB.WinUsb_Free(firstIntfHandle.winusbHandle);
             firstIntfHandle.winusbHandle = null;
 
-            var path = (String)getUniqueId();
-            if (firstIntfHandle.interfaceNumber != 0) {
-                if (devicePaths != null)
-                    path = devicePaths.get(firstIntfHandle.interfaceNumber);
-                else
-                    path = null;
-            }
-            LOG.log(DEBUG, "closing device {0}", path);
+            LOG.log(DEBUG, "closing device {0}", getCachedInterfaceDevicePath(interfaceNumber));
 
             Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
@@ -516,20 +518,13 @@ public class WindowsUSBDevice extends USBDeviceImpl {
     }
 
     private String getInterfaceDevicePath(int interfaceNumber) {
-        var parentDevicePath = (String) getUniqueId(); // device path is id
-        if (interfaceNumber == 0)
-            return parentDevicePath;
+        var devicePath = getCachedInterfaceDevicePath(interfaceNumber);
+        if (devicePath != null)
+            return devicePath;
 
-        if (devicePaths != null) {
-            var devicePath = devicePaths.get(interfaceNumber);
-            if (devicePath != null)
-                return devicePath;
-        }
+        var parentDevicePath = (String) getUniqueId();
 
         try (var deviceInfoSet = DeviceInfoSet.ofPath(parentDevicePath)) {
-            if (!deviceInfoSet.isCompositeDevice())
-                throwException("internal error: interface belongs to a composite function but device is not composite");
-
             var childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
             if (childrenInstanceIDs == null) {
                 LOG.log(DEBUG, "missing children instance IDs for device {0}", parentDevicePath);
@@ -549,6 +544,12 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         }
 
         return null; // retry later
+    }
+
+    private String getCachedInterfaceDevicePath(int interfaceNumber) {
+        if (!isComposite)
+            return (String) getUniqueId();
+        return devicePaths.get(interfaceNumber);
     }
 
     private int fetchChildDevicePath(String instanceId, int interfaceNumber) {
