@@ -44,6 +44,10 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private static final System.Logger LOG = System.getLogger(WindowsUSBDevice.class.getName());
 
+    private static final int RETRY_LATER = 0;
+    private static final int TRY_NEXT_CHILD = 1;
+    private static final int SUCCESS = 2;
+
     private final WindowsAsyncTask asyncTask;
     private List<InterfaceHandle> interfaceHandles;
     // device paths by interface number (first interface of function)
@@ -100,7 +104,32 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         showAsOpen = false;
     }
 
-    public synchronized void claimInterface(int interfaceNumber) {
+    public void claimInterface(int interfaceNumber) {
+        // When a device is plugged in, a notification is sent. For composite devices, it is a notification
+        // that the composite device is ready. Each composite function will be registered separately and
+        // the related information will be available with a delay. So for composite functions, several
+        // retries might be needed until the device path is available.
+        var numRetries = 30; // 30 x 100ms
+        while (true) {
+            if (claimInteraceSynchronized(interfaceNumber))
+                return; // success
+
+            numRetries -= 1;
+            if (numRetries == 0)
+                throw new USBException("claiming interface failed (function has no device path, might be missing WinUSB driver)");
+
+            // sleep and retry
+            try {
+                LOG.log(DEBUG, "Sleeping for 100ms...");
+                //noinspection BusyWait
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private synchronized boolean claimInteraceSynchronized(int interfaceNumber) {
         checkIsOpen();
 
         getInterfaceWithCheck(interfaceNumber, false);
@@ -117,7 +146,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             if (firstIntfHandle.deviceHandle == null) {
                 var devicePath = getInterfaceDevicePath(firstIntfHandle.interfaceNumber);
                 if (devicePath == null)
-                    throw new USBException("claiming interface failed (function has no device path, might be missing WinUSB driver)");
+                    return false; // retry later
 
                 LOG.log(DEBUG, "opening device {0}", devicePath);
 
@@ -160,6 +189,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
         firstIntfHandle.deviceOpenCount += 1;
         setClaimed(interfaceNumber, true);
+        return true;
     }
 
     @Override
@@ -207,6 +237,15 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         if (firstIntfHandle.deviceOpenCount == 0) {
             WinUSB.WinUsb_Free(firstIntfHandle.winusbHandle);
             firstIntfHandle.winusbHandle = null;
+
+            var path = (String)getUniqueId();
+            if (firstIntfHandle.interfaceNumber != 0) {
+                if (devicePaths != null)
+                    path = devicePaths.get(firstIntfHandle.interfaceNumber);
+                else
+                    path = null;
+            }
+            LOG.log(DEBUG, "closing device {0}", path);
 
             Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
@@ -487,46 +526,29 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 return devicePath;
         }
 
-        // When a device is plugged in, a notification is sent. For composite devices, it is a notification
-        // that the information for the composite device is ready. Each composite function will be registered
-        // separately and the related information will be available with a delay. So for composite functions,
-        // several retries might be needed until the device path is available.
-        var numRetries = 30; // 30 x 100ms
-        while (true) {
-            try (var deviceInfoSet = DeviceInfoSet.ofPath(parentDevicePath)) {
-                if (!deviceInfoSet.isCompositeDevice())
-                    throwException("internal error: interface belongs to a separate function but device is not composite");
+        try (var deviceInfoSet = DeviceInfoSet.ofPath(parentDevicePath)) {
+            if (!deviceInfoSet.isCompositeDevice())
+                throwException("internal error: interface belongs to a composite function but device is not composite");
 
-                var childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
-                if (childrenInstanceIDs == null) {
-                    LOG.log(DEBUG, "missing children instance IDs for device {0}", parentDevicePath);
+            var childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
+            if (childrenInstanceIDs == null) {
+                LOG.log(DEBUG, "missing children instance IDs for device {0}", parentDevicePath);
+                return null;
 
-                } else {
-                    LOG.log(DEBUG, "children instance IDs: {0}", childrenInstanceIDs);
+            } else {
+                LOG.log(DEBUG, "children instance IDs: {0}", childrenInstanceIDs);
 
-                    for (var instanceId : childrenInstanceIDs) {
-                        var res = fetchChildDevicePath(instanceId, interfaceNumber);
-                        if (res == 1)
-                            return devicePaths.get(interfaceNumber); // success
-                        if (res == -1)
-                            break; // retry later
-                    }
-                }
-
-                numRetries -= 1;
-                if (numRetries == 0)
-                    return null; // failure
-
-                // sleep and retry
-                try {
-                    LOG.log(DEBUG, "Sleeping for 100ms...");
-                    //noinspection BusyWait
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                for (var instanceId : childrenInstanceIDs) {
+                    var res = fetchChildDevicePath(instanceId, interfaceNumber);
+                    if (res == SUCCESS)
+                        return devicePaths.get(interfaceNumber);
+                    if (res == RETRY_LATER)
+                        return null; // retry later
                 }
             }
         }
+
+        return null; // retry later
     }
 
     private int fetchChildDevicePath(String instanceId, int interfaceNumber) {
@@ -536,28 +558,28 @@ public class WindowsUSBDevice extends USBDeviceImpl {
             var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
             if (hardwareIds == null) {
                 LOG.log(DEBUG, "child device {0} has no hardware IDs", instanceId);
-                return 0; // continue with next child
+                return TRY_NEXT_CHILD;
             }
 
             var extractedNumber = extractInterfaceNumber(hardwareIds);
             if (extractedNumber == -1) {
                 LOG.log(DEBUG, "child device {0} has no interface number", instanceId);
-                return 0; // continue with next child
+                return TRY_NEXT_CHILD;
             }
 
             if (extractedNumber != interfaceNumber)
-                return 0; // continue with next child
+                return TRY_NEXT_CHILD;
 
             var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
             if (devicePath == null) {
                 LOG.log(INFO, "Child device {0} has no device path", instanceId);
-                return -1; // retry later
+                return RETRY_LATER;
             }
 
             if (devicePaths == null)
                 devicePaths = new HashMap<>();
             devicePaths.put(interfaceNumber, devicePath);
-            return 1; // success
+            return SUCCESS;
         }
     }
 
