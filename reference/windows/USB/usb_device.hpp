@@ -248,7 +248,7 @@ private:
         interface_handle(int intf_num, int first_num, std::wstring&& path);
     };
 
-    usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc);
+    usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite);
     void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
     void build_handles(const std::wstring& device_path);
     std::wstring get_interface_device_path(int interface_num);
@@ -285,6 +285,7 @@ private:
     std::string product_;
     std::string serial_number_;
 
+    bool is_composite_;
     std::vector<usb_interface> interfaces_;
     std::vector<usb_composite_function> functions_;
     std::vector<interface_handle> interface_handles_;

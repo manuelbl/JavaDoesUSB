@@ -53,7 +53,7 @@ private:
 
     void detect_present_devices();
     std::shared_ptr<usb_device> create_device_from_device_info(device_info_set& dev_info_set, std::wstring&& device_path, std::map<std::wstring, HANDLE>& hub_handles);
-    std::shared_ptr<usb_device> create_device(std::wstring&& device_path, HANDLE hub_handle, DWORD usb_port_num);
+    std::shared_ptr<usb_device> create_device(std::wstring&& device_path, bool is_composite, HANDLE hub_handle, DWORD usb_port_num);
 
     static std::string get_string(HANDLE hub_handle, ULONG usb_port_num, int index);
     static std::vector<uint8_t> get_descriptor(HANDLE hub_handle, ULONG usb_port_num, uint16_t descriptor_type, int index, int language_id, int request_size = 0);

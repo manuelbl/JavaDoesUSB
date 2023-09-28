@@ -167,10 +167,10 @@ std::shared_ptr<usb_device> usb_registry::create_device_from_device_info(device_
         hub_handles[hub_path] = hub_handle;
     }
 
-    return create_device(std::move(device_path), hub_handle, usb_port_num);
+    return create_device(std::move(device_path), dev_info_set.is_composite_device(), hub_handle, usb_port_num);
 }
 
-std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_path, HANDLE hub_handle, DWORD usb_port_num) {
+std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_path, bool is_composite, HANDLE hub_handle, DWORD usb_port_num) {
 
     // get device descriptor
     USB_NODE_CONNECTION_INFORMATION_EX conn_info = { 0 };
@@ -186,7 +186,7 @@ std::shared_ptr<usb_device> usb_registry::create_device(std::wstring&& device_pa
     auto config_desc = get_descriptor(hub_handle, usb_port_num, USB_CONFIGURATION_DESCRIPTOR_TYPE, 0, 0);
 
     // Create new device
-    std::shared_ptr<usb_device> device(new usb_device(this, std::move(device_path), vendorId, productId, config_desc));
+    std::shared_ptr<usb_device> device(new usb_device(this, std::move(device_path), vendorId, productId, config_desc, is_composite));
     device->set_product_names(
         get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iManufacturer),
         get_string(hub_handle, usb_port_num, conn_info.DeviceDescriptor.iProduct),

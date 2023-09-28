@@ -22,8 +22,8 @@
 #include <regex>
 #include <thread>
 
-usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc)
-: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)) {
+usb_device::usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite)
+: registry_(registry), vendor_id_(vendor_id), product_id_(product_id), is_open_(false), device_path_(std::move(device_path)), is_composite_(is_composite) {
 
     config_parser parser{};
     parser.parse(config_desc.data(), static_cast<int>(config_desc.size()));
@@ -458,7 +458,7 @@ void usb_device::cancel_transfer(usb_direction direction, int endpoint_number, O
 }
 
 std::wstring usb_device::get_interface_device_path(int interface_num) {
-    if (interface_num == 0)
+    if (!is_composite_)
         return device_path_;
 
     auto it = interface_device_paths_.find(interface_num);
@@ -470,9 +470,6 @@ std::wstring usb_device::get_interface_device_path(int interface_num) {
     while (num_retries > 0) {
 
         auto dev_info_set = device_info_set::of_path(device_path_);
-
-        if (!dev_info_set.is_composite_device())
-            throw usb_error("internal error: interface belongs to a separate function but device is not composite");
 
         auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
         if (children_instance_ids.empty()) {
