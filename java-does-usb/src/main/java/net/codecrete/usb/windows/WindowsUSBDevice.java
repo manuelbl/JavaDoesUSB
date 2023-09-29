@@ -44,10 +44,6 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
     private static final System.Logger LOG = System.getLogger(WindowsUSBDevice.class.getName());
 
-    private static final int RETRY_LATER = 0;
-    private static final int TRY_NEXT_CHILD = 1;
-    private static final int SUCCESS = 2;
-
     private final WindowsAsyncTask asyncTask;
     /**
      *  Indicates if the device is a composite device
@@ -125,7 +121,7 @@ public class WindowsUSBDevice extends USBDeviceImpl {
 
             numRetries -= 1;
             if (numRetries == 0)
-                throw new USBException("claiming interface failed (function has no device path, might be missing WinUSB driver)");
+                throw new USBException("claiming interface failed (function has no device path / interface GUID, might be missing WinUSB driver)");
 
             // sleep and retry
             try {
@@ -534,11 +530,9 @@ public class WindowsUSBDevice extends USBDeviceImpl {
                 LOG.log(DEBUG, "children instance IDs: {0}", childrenInstanceIDs);
 
                 for (var instanceId : childrenInstanceIDs) {
-                    var res = fetchChildDevicePath(instanceId, interfaceNumber);
-                    if (res == SUCCESS)
-                        return devicePaths.get(interfaceNumber);
-                    if (res == RETRY_LATER)
-                        return null; // retry later
+                    devicePath = getChildDevicePath(instanceId, interfaceNumber);
+                    if (devicePath != null)
+                        return devicePath;
                 }
             }
         }
@@ -552,35 +546,35 @@ public class WindowsUSBDevice extends USBDeviceImpl {
         return devicePaths.get(interfaceNumber);
     }
 
-    private int fetchChildDevicePath(String instanceId, int interfaceNumber) {
+    private String getChildDevicePath(String instanceId, int interfaceNumber) {
         try (var deviceInfoSet = DeviceInfoSet.ofInstance(instanceId)) {
 
             // get hardware IDs (to extract interface number)
             var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
             if (hardwareIds == null) {
                 LOG.log(DEBUG, "child device {0} has no hardware IDs", instanceId);
-                return TRY_NEXT_CHILD;
+                return null;
             }
 
             var extractedNumber = extractInterfaceNumber(hardwareIds);
             if (extractedNumber == -1) {
                 LOG.log(DEBUG, "child device {0} has no interface number", instanceId);
-                return TRY_NEXT_CHILD;
+                return null;
             }
 
             if (extractedNumber != interfaceNumber)
-                return TRY_NEXT_CHILD;
+                return null;
 
             var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
             if (devicePath == null) {
-                LOG.log(INFO, "Child device {0} has no device path", instanceId);
-                return RETRY_LATER;
+                LOG.log(INFO, "Child device {0} has no device path / interface GUID", instanceId);
+                throw new USBException("claiming interface failed (function has no device path / interface GUID, might be missing WinUSB driver)");
             }
 
             if (devicePaths == null)
                 devicePaths = new HashMap<>();
             devicePaths.put(interfaceNumber, devicePath);
-            return SUCCESS;
+            return devicePath;
         }
     }
 

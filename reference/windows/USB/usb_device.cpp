@@ -118,6 +118,26 @@ void usb_device::close() {
 }
 
 void usb_device::claim_interface(int interface_number) {
+    // When a device is plugged in, a notification is sent. For composite devices, it is a notification
+    // that the composite device is ready. Each composite function will be registered separately and
+    // the related information will be available with a delay. So for composite functions, several
+    // retries might be needed until the device path is available.
+    int num_retries = 30; // 30 x 100ms
+    while (true) {
+        if (try_claim_interface(interface_number))
+            return; // success
+
+        num_retries -= 1;
+        if (num_retries == 0)
+            throw usb_error("claiming interface failed (function has no device interface GUID/path, might be missing WinUSB driver)");
+
+        // sleep and retry
+        std::cerr << "Sleeping for 100ms..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+bool usb_device::try_claim_interface(int interface_number) {
 
     if (!is_open())
         throw usb_error("USB device is not open");
@@ -135,7 +155,7 @@ void usb_device::claim_interface(int interface_number) {
     if (first_intf_handle->device_handle == nullptr) {
         auto device_path = get_interface_device_path(first_intf_handle->interface_num);
         if (device_path.empty())
-            throw usb_error("failed to claim interface (function has no device path, might be missing WinUSB driver)");
+            return false;
 
         std::wcerr << "opening device " << device_path << std::endl;
 
@@ -169,6 +189,7 @@ void usb_device::claim_interface(int interface_number) {
 
     first_intf_handle->device_open_count += 1;
     intf->set_claimed(true);
+    return true;
 }
 
 void usb_device::release_interface(int interface_number) {
@@ -465,72 +486,56 @@ std::wstring usb_device::get_interface_device_path(int interface_num) {
     if (it != interface_device_paths_.end())
         return it->second;
 
-    int num_retries = 30; // 30 x 100ms
+    auto dev_info_set = device_info_set::of_path(device_path_);
 
-    while (num_retries > 0) {
+    auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
 
-        auto dev_info_set = device_info_set::of_path(device_path_);
+    std::wcerr << "children IDs: ";
+    for (auto it = children_instance_ids.begin(); it < children_instance_ids.end(); it++) {
+        if (it != children_instance_ids.begin())
+            std::wcerr << ", ";
+        std::wcerr << *it;
+    }
+    std::wcerr << std::endl;
 
-        auto children_instance_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_Children);
-        if (children_instance_ids.empty()) {
-            std::wcerr << "missing children IDs for device " << device_path_ << std::endl;
-
-        } else {
-
-            std::wcerr << "children IDs: ";
-            for (auto it = children_instance_ids.begin(); it < children_instance_ids.end(); it++) {
-                if (it != children_instance_ids.begin())
-                    std::wcerr << ", ";
-                std::wcerr << *it;
-            }
-            std::wcerr << std::endl;
-
-            std::wstring child_path;
-            for (auto& child_id : children_instance_ids) {
-                auto res = get_child_device_path(child_id, interface_num, child_path);
-                if (res == 1)
-                    return child_path;
-                if (res == -1)
-                    break;
-            }
-        }
-
-        std::cerr << "Sleeping for 100ms..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        num_retries -= 1;
+    std::wstring child_path;
+    for (auto& child_id : children_instance_ids) {
+        child_path = get_child_device_path(child_id, interface_num);
+        if (!child_path.empty())
+            return child_path;
     }
 
-    return {};
+    return {}; // retry later
 }
 
-int usb_device::get_child_device_path(const std::wstring& child_id, int interface_num, std::wstring& device_path) {
+std::wstring usb_device::get_child_device_path(const std::wstring& child_id, int interface_num) {
 
     auto dev_info_set = device_info_set::of_instance(child_id);
 
     auto hardware_ids = dev_info_set.get_device_property_string_list(DEVPKEY_Device_HardwareIds);
     if (hardware_ids.empty()) {
         std::wcerr << "child device " << child_id << " has no hardware IDs" << std::endl;
-        return 0; // continue with next child
+        return {}; // continue with next child
     }
 
     auto intf_num = extract_interface_number(hardware_ids);
     if (intf_num == -1) {
         std::wcerr << "child device " << child_id << " has no interface number" << std::endl;
-        return 0; // continue with next child
+        return {}; // continue with next child
     }
 
     if (intf_num != interface_num)
-        return 0; // continue with next child
+        return {}; // continue with next child
 
-    device_path = dev_info_set.get_device_path_by_guid(child_id);
+    auto device_path = dev_info_set.get_device_path_by_guid(child_id);
     if (device_path.empty()) {
         std::wcerr << "child device " << child_id << " has no device path" << std::endl;
-        return -1; // retry later
+        throw usb_error("claiming interface failed (function has no device interface GUID/path, might be missing WinUSB driver)");
     }
 
     std::wcerr << "child device: interface=" << intf_num << ", device path=" << device_path << std::endl;
     interface_device_paths_[interface_num] = device_path;
-    return 1;  // success
+    return device_path;  // success
 }
 
 static const std::wregex multiple_interface_id_pattern(L"USB\\\\VID_[0-9A-Fa-f]{4}&PID_[0-9A-Fa-f]{4}&MI_([0-9A-Fa-f]{2})");

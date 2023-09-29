@@ -251,8 +251,9 @@ private:
     usb_device(usb_registry* registry, std::wstring&& device_path, int vendor_id, int product_id, const std::vector<uint8_t>& config_desc, bool is_composite);
     void set_product_names(const std::string& manufacturer, const std::string& product, const std::string& serial_number);
     void build_handles(const std::wstring& device_path);
+    bool try_claim_interface(int interface_number);
     std::wstring get_interface_device_path(int interface_num);
-    int get_child_device_path(const std::wstring& child_id, int interface_num, std::wstring& device_path);
+    std::wstring get_child_device_path(const std::wstring& child_id, int interface_num);
     static int extract_interface_number(const std::vector<std::wstring>& hardware_ids);
 
     int control_transfer_core(const usb_control_request& request, uint8_t* data, int timeout);
