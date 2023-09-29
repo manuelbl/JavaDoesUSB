@@ -20,11 +20,11 @@ class InterfaceHandle {
     /**
      * The number of this interface.
      */
-    int interfaceNumber;
+    final int interfaceNumber;
     /**
      * The number of the first interface in the same composite function.
      */
-    int firstInterfaceNumber;
+    final int firstInterfaceNumber;
     /**
      * The file handle of the device.
      * <p>

@@ -309,7 +309,8 @@ public class LogicAnalyzer implements Closeable {
     void sleep(long milliseconds) {
         while (true) {
             try {
-                Thread.sleep(milliseconds);
+                //noinspection BusyWait
+                Thread.sleep(milliseconds); // NOSONAR
                 return;
             } catch (InterruptedException e) {
                 // ignore and try again
