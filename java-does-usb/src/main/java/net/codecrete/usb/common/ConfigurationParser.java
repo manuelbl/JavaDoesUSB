@@ -23,7 +23,12 @@ import java.util.ArrayList;
 import static net.codecrete.usb.usbstandard.Constants.*;
 
 /**
- * Parser for USB configuration descriptors
+ * Parser for USB configuration descriptors.
+ *
+ * <p>
+ * It extracts the information about endpoints, interfaces (incl. alternate interfaces) and associations
+ * between interfaces to derive the functions. Other descriptor types are ignored.
+ * </p>
  */
 public class ConfigurationParser {
 

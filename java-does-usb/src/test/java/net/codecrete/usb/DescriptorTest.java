@@ -2,22 +2,21 @@ package net.codecrete.usb;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DescriptorTest extends TestDeviceBase {
 
     @Test
     void deviceDescriptor_isAvailable() {
         var desc = testDevice.deviceDescriptor();
-        assertEquals(18, desc.length);
-        assertEquals(0x01, desc[1]);
+        assertThat(desc).hasSize(18);
+        assertThat(desc[1]).isEqualTo((byte) 0x01);
     }
 
     @Test
     void configurationDescriptor_isAvailable() {
         var desc = testDevice.configurationDescriptor();
-        assertTrue(desc.length > 60);
-        assertEquals(0x02, desc[1]);
+        assertThat(desc).hasSizeGreaterThan(60);
+        assertThat(desc[1]).isEqualTo((byte) 0x02);
     }
 }
