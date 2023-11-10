@@ -54,26 +54,26 @@ public class TestDeviceBase {
     protected static final int ECHO_EP_OUT = 3;
     protected static final int ECHO_EP_IN = 3;
     protected static final int ECHO_MAX_PACKET_SIZE = 16;
-    protected static USBDevice testDevice;
+    protected static UsbDevice testDevice;
 
-    static USBDevice getDevice() {
-        var optionalDevice = USB.getDevice(VID_COMPOSITE, PID_COMPOSITE);
+    static UsbDevice getDevice() {
+        var optionalDevice = Usb.findDevice(VID_COMPOSITE, PID_COMPOSITE);
         if (optionalDevice.isEmpty())
-            optionalDevice = USB.getDevice(VID_LOOPBACK, PID_LOOPBACK);
+            optionalDevice = Usb.findDevice(VID_LOOPBACK, PID_LOOPBACK);
         if (optionalDevice.isEmpty())
             throw new IllegalStateException("No test device connected");
         return optionalDevice.get();
     }
 
-    static int getInterfaceNumber(USBDevice device) {
-        return device.productId() == PID_COMPOSITE ? LOOPBACK_INTF_COMPOSITE : LOOPBACK_INTF_LOOPBACK;
+    static int getInterfaceNumber(UsbDevice device) {
+        return device.getProductId() == PID_COMPOSITE ? LOOPBACK_INTF_COMPOSITE : LOOPBACK_INTF_LOOPBACK;
     }
 
     @BeforeAll
     static void openDevice() {
         testDevice = getDevice();
-        vid = testDevice.vendorId();
-        pid = testDevice.productId();
+        vid = testDevice.getVendorId();
+        pid = testDevice.getProductId();
         interfaceNumber = getInterfaceNumber(testDevice);
 
         testDevice.open();
@@ -109,7 +109,7 @@ public class TestDeviceBase {
         while (true) {
             try {
                 testDevice.transferIn(LOOPBACK_EP_IN, 1);
-            } catch (USBTimeoutException e) {
+            } catch (UsbTimeoutException e) {
                 break;
             }
         }
@@ -119,7 +119,7 @@ public class TestDeviceBase {
             while (true) {
                 try {
                     testDevice.transferIn(ECHO_EP_IN, 1);
-                } catch (USBTimeoutException e) {
+                } catch (UsbTimeoutException e) {
                     break;
                 }
             }
@@ -130,7 +130,7 @@ public class TestDeviceBase {
     }
 
     static void resetBuffers() {
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE,
+        testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE,
                 (byte) 0x04, (short) 0, (short) interfaceNumber), null);
     }
 

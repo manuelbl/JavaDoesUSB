@@ -29,7 +29,7 @@ import net.codecrete.usb.*;
 public class USBSerialTest {
     public static void main(String[] args) {
 
-        for (var device : USB.getAllDevices()) {
+        for (var device : Usb.getDevices()) {
             int commInterfaceNum = getCDCCommInterfaceNum(device);
             if (commInterfaceNum >= 0) {
                 System.out.printf("USB CDC device: %s%n", device);
@@ -38,7 +38,7 @@ public class USBSerialTest {
         }
     }
 
-    static void interact(USBDevice device, int commInterfaceNum) {
+    static void interact(UsbDevice device, int commInterfaceNum) {
         // communication and data interface must have consecutive numbers
         int dataInterfaceNum = commInterfaceNum + 1;
 
@@ -50,7 +50,7 @@ public class USBSerialTest {
         // set line coding (9600bps, 8 bit)
         byte[] coding = { (byte)0x80, 0x25, 0, 0, 0, 0, 8 };
         device.controlTransferOut(
-                new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, 0x20, 0, commInterfaceNum),
+                new UsbControlTransfer(UsbRequestType.CLASS, UsbRecipient.INTERFACE, 0x20, 0, commInterfaceNum),
                 coding);
 
         // send some data
@@ -64,29 +64,29 @@ public class USBSerialTest {
         device.close();
     }
 
-    static int getCDCCommInterfaceNum(USBDevice device) {
+    static int getCDCCommInterfaceNum(UsbDevice device) {
         // CDC ACM implementations consist of two consecutive interfaces
         // with certain class, subclass and protocol codes
-        int numInterfaces = device.interfaces().size();
+        int numInterfaces = device.getInterfaces().size();
         if (numInterfaces < 2)
             return -1;
 
         for (int i = 0; i < numInterfaces - 1; i += 1) {
-            var commIntf = device.getInterface(i).alternate();
-            var dataIntf = device.getInterface(i + 1).alternate();
+            var commIntf = device.getInterface(i).getCurrentAlternate();
+            var dataIntf = device.getInterface(i + 1).getCurrentAlternate();
 
-            if (commIntf.classCode() == 2 && commIntf.subclassCode() == 2 && commIntf.protocolCode() == 1 && dataIntf.classCode() == 10)
+            if (commIntf.getClassCode() == 2 && commIntf.getSubclassCode() == 2 && commIntf.getProtocolCode() == 1 && dataIntf.getClassCode() == 10)
                 return i;
         }
 
         return -1;
     }
 
-    static int getDataOutEndpointNum(USBDevice device, int dataInterfaceNum) {
-        var altInterface = device.getInterface(dataInterfaceNum).alternate();
-        for (var endpoint : altInterface.endpoints()) {
-            if (endpoint.direction() == USBDirection.OUT)
-                return endpoint.number();
+    static int getDataOutEndpointNum(UsbDevice device, int dataInterfaceNum) {
+        var altInterface = device.getInterface(dataInterfaceNum).getCurrentAlternate();
+        for (var endpoint : altInterface.getEndpoints()) {
+            if (endpoint.getDirection() == UsbDirection.OUT)
+                return endpoint.getNumber();
         }
         return -1;
     }

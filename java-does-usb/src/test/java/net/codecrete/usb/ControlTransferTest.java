@@ -11,8 +11,7 @@ package net.codecrete.usb;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests control transfers
@@ -21,13 +20,14 @@ class ControlTransferTest extends TestDeviceBase {
 
     @Test
     void storeValue_succeeds() {
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 10730, (short) interfaceNumber), null);
+        var setup = new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x01, (short) 10730, (short) interfaceNumber);
+        assertDoesNotThrow(() -> testDevice.controlTransferOut(setup, null));
     }
 
     @Test
     void retrieveValue_isSameAsStored() {
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x01, (short) 0x9a41, (short) interfaceNumber), null);
-        var valueBytes = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
+        testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x01, (short) 0x9a41, (short) interfaceNumber), null);
+        var valueBytes = testDevice.controlTransferIn(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
         var expectedBytes = new byte[]{(byte) 0x41, (byte) 0x9a, (byte) 0x00, (byte) 0x00};
         assertArrayEquals(expectedBytes, valueBytes);
     }
@@ -35,19 +35,19 @@ class ControlTransferTest extends TestDeviceBase {
     @Test
     void storeValueInDataStage_canBeRetrieved() {
         var sentValue = new byte[]{(byte) 0x83, (byte) 0x03, (byte) 0xda, (byte) 0x3e};
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) interfaceNumber), sentValue);
-        var retrievedValue = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
+        testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x02, (short) 0, (short) interfaceNumber), sentValue);
+        var retrievedValue = testDevice.controlTransferIn(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x03, (short) 0, (short) interfaceNumber), 4);
         assertArrayEquals(sentValue, retrievedValue);
     }
 
     @Test
     void interfaceNumber_canBeRetrieved() {
-        var response = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) interfaceNumber), 1);
+        var response = testDevice.controlTransferIn(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) interfaceNumber), 1);
         assertEquals(interfaceNumber, response[0] & 0xff);
 
         if (isCompositeDevce()) {
             testDevice.claimInterface(2);
-            response = testDevice.controlTransferIn(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) 2), 1);
+            response = testDevice.controlTransferIn(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x05, (short) 0, (short) 2), 1);
             assertEquals(2, response[0] & 0xff);
             testDevice.releaseInterface(2);
         }

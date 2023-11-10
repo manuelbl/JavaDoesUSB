@@ -19,32 +19,32 @@ public class Enumerate {
 
     public static void main(String[] args) {
         // display the already present USB devices
-        for (var device : USB.getAllDevices())
+        for (var device : Usb.getDevices())
             printDevice(device);
     }
 
-    private static void printDevice(USBDevice device) {
+    private static void printDevice(UsbDevice device) {
         System.out.println("Device:");
-        System.out.printf("  VID: 0x%04x%n", device.vendorId());
-        System.out.printf("  PID: 0x%04x%n", device.productId());
-        if (device.manufacturer() != null)
-            System.out.printf("  Manufacturer:  %s%n", device.manufacturer());
-        if (device.product() != null)
-            System.out.printf("  Product name:  %s%n", device.product());
-        if (device.serialNumber() != null)
-            System.out.printf("  Serial number: %s%n", device.serialNumber());
-        System.out.printf("  Device class:    0x%02x", device.classCode());
-        printInParens(USBClassInfo.lookupClass(device.classCode()));
-        System.out.printf("  Device subclass: 0x%02x", device.subclassCode());
-        printInParens(USBClassInfo.lookupSubclass(device.classCode(), device.subclassCode()));
-        System.out.printf("  Device protocol: 0x%02x", device.protocolCode());
-        printInParens(USBClassInfo.lookupProtocol(device.classCode(), device.subclassCode(), device.protocolCode()));
+        System.out.printf("  VID: 0x%04x%n", device.getVendorId());
+        System.out.printf("  PID: 0x%04x%n", device.getProductId());
+        if (device.getManufacturer() != null)
+            System.out.printf("  Manufacturer:  %s%n", device.getManufacturer());
+        if (device.getProduct() != null)
+            System.out.printf("  Product name:  %s%n", device.getProduct());
+        if (device.getSerialNumber() != null)
+            System.out.printf("  Serial number: %s%n", device.getSerialNumber());
+        System.out.printf("  Device class:    0x%02x", device.getClassCode());
+        printInParens(USBClassInfo.lookupClass(device.getClassCode()));
+        System.out.printf("  Device subclass: 0x%02x", device.getSubclassCode());
+        printInParens(USBClassInfo.lookupSubclass(device.getClassCode(), device.getSubclassCode()));
+        System.out.printf("  Device protocol: 0x%02x", device.getProtocolCode());
+        printInParens(USBClassInfo.lookupProtocol(device.getClassCode(), device.getSubclassCode(), device.getProtocolCode()));
 
-        for (var intf: device.interfaces())
+        for (var intf: device.getInterfaces())
             printInterface(intf);
 
-        printRawDescriptor("Device descriptor", device.deviceDescriptor());
-        printRawDescriptor("Configuration descriptor", device.configurationDescriptor());
+        printRawDescriptor("Device descriptor", device.getDeviceDescriptor());
+        printRawDescriptor("Configuration descriptor", device.getConfigurationDescriptor());
 
         System.out.println();
         System.out.println();
@@ -59,36 +59,36 @@ public class Enumerate {
         }
     }
 
-    private static void printInterface(USBInterface intf) {
-        for (var alt : intf.alternates())
-            printAlternate(alt, intf.number(), alt == intf.alternate());
+    private static void printInterface(UsbInterface intf) {
+        for (var alt : intf.getAlternates())
+            printAlternate(alt, intf.getNumber(), alt == intf.getCurrentAlternate());
     }
 
-    private static void printAlternate(USBAlternateInterface alt, int intferaceNumber, boolean isDefault) {
+    private static void printAlternate(UsbAlternateInterface alt, int intferaceNumber, boolean isDefault) {
         System.out.println();
         if (isDefault) {
             System.out.printf("  Interface %d%n", intferaceNumber);
         } else {
-            System.out.printf("  Interface %d (alternate %d)%n", intferaceNumber, alt.number());
+            System.out.printf("  Interface %d (alternate %d)%n", intferaceNumber, alt.getNumber());
         }
 
-        System.out.printf("    Interface class:    0x%02x", alt.classCode());
-        printInParens(USBClassInfo.lookupClass(alt.classCode()));
-        System.out.printf("    Interface subclass: 0x%02x", alt.subclassCode());
-        printInParens(USBClassInfo.lookupProtocol(alt.classCode(), alt.subclassCode(), alt.protocolCode()));
-        System.out.printf("    Interface protocol: 0x%02x", alt.protocolCode());
-        printInParens(USBClassInfo.lookupProtocol(alt.classCode(), alt.subclassCode(), alt.protocolCode()));
+        System.out.printf("    Interface class:    0x%02x", alt.getClassCode());
+        printInParens(USBClassInfo.lookupClass(alt.getClassCode()));
+        System.out.printf("    Interface subclass: 0x%02x", alt.getSubclassCode());
+        printInParens(USBClassInfo.lookupProtocol(alt.getClassCode(), alt.getSubclassCode(), alt.getProtocolCode()));
+        System.out.printf("    Interface protocol: 0x%02x", alt.getProtocolCode());
+        printInParens(USBClassInfo.lookupProtocol(alt.getClassCode(), alt.getSubclassCode(), alt.getProtocolCode()));
 
-        for (var endpoint : alt.endpoints())
+        for (var endpoint : alt.getEndpoints())
             printEndpoint(endpoint);
     }
 
-    private static void printEndpoint(USBEndpoint endpoint) {
+    private static void printEndpoint(UsbEndpoint endpoint) {
         System.out.println();
-        System.out.printf("    Endpoint %d%n", endpoint.number());
-        System.out.printf("        Direction: %s%n", endpoint.direction().name());
-        System.out.printf("        Transfer type: %s%n", endpoint.transferType().name());
-        System.out.printf("        Packet size: %d bytes%n", endpoint.packetSize());
+        System.out.printf("    Endpoint %d%n", endpoint.getNumber());
+        System.out.printf("        Direction: %s%n", endpoint.getDirection().name());
+        System.out.printf("        Transfer type: %s%n", endpoint.getTransferType().name());
+        System.out.printf("        Packet size: %d bytes%n", endpoint.getPacketSize());
     }
 
     private static void printRawDescriptor(String title, byte[] descriptor) {

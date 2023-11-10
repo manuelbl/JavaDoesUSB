@@ -7,8 +7,8 @@
 
 package net.codecrete.usb.examples;
 
-import net.codecrete.usb.USB;
-import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.Usb;
+import net.codecrete.usb.UsbDevice;
 
 import java.io.IOException;
 
@@ -19,11 +19,11 @@ public class Monitor {
 
     public static void main(String[] args) throws IOException {
         // register callbacks for events
-        USB.setOnDeviceConnected((device) -> printDetails(device, "Connected"));
-        USB.setOnDeviceDisconnected((device) -> printDetails(device, "Disconnected"));
+        Usb.setOnDeviceConnected(device -> printDetails(device, "Connected"));
+        Usb.setOnDeviceDisconnected(device -> printDetails(device, "Disconnected"));
 
         // display the already present USB devices
-        for (var device : USB.getAllDevices())
+        for (var device : Usb.getDevices())
             printDetails(device, "Present");
 
         // wait for ENTER to quit program
@@ -31,7 +31,7 @@ public class Monitor {
         System.in.read();
     }
 
-    private static void printDetails(USBDevice device, String event) {
+    private static void printDetails(UsbDevice device, String event) {
         System.out.printf("%-14s", event + ":");
         System.out.println(device.toString());
     }

@@ -80,10 +80,10 @@ public class LogicAnalyzer implements Closeable {
         }
     }
 
-    private USBDevice device;
+    private UsbDevice device;
 
     LogicAnalyzer() {
-        var optionalDevice = USB.getDevice(VID, PID);
+        var optionalDevice = Usb.findDevice(VID, PID);
         if (optionalDevice.isEmpty())
             throw new IllegalStateException("no logic analyzer connected");
 
@@ -175,7 +175,7 @@ public class LogicAnalyzer implements Closeable {
 
         // send the start command
         final int commandCodeStart = 0xb1;
-        device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.DEVICE, commandCodeStart, 0, 0), cmd);
+        device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, commandCodeStart, 0, 0), cmd);
     }
 
     void saveSamples() {
@@ -196,7 +196,7 @@ public class LogicAnalyzer implements Closeable {
                 activityValue = size;
             }
 
-        } catch (USBException e) {
+        } catch (UsbException e) {
             if (!stopped && !bufferOverrunDetected)
                 throw e;
 
@@ -230,7 +230,7 @@ public class LogicAnalyzer implements Closeable {
     void stopAcquisition() {
         // stop the acquisition by halting the bulk endpoint and clearing the halt
         stopped = true;
-        device.abortTransfers(USBDirection.IN, EP);
+        device.abortTransfers(UsbDirection.IN, EP);
     }
 
     void detectBufferOverrun() {
@@ -255,7 +255,7 @@ public class LogicAnalyzer implements Closeable {
     }
 
     void checkFirmware() {
-        if (device.manufacturer() != null) {
+        if (device.getManufacturer() != null) {
             System.out.println("Device ready");
             return;
         }
@@ -274,19 +274,19 @@ public class LogicAnalyzer implements Closeable {
         device.claimInterface(0);
 
         byte[] cmd = new byte[] { 1 };
-        device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
+        device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
 
         final int len = firmware.length;
         int offset = 0;
         while (offset < len) {
             int n = Math.min(len - offset, 0x1000);
             byte[] chunk = Arrays.copyOfRange(firmware, offset, offset + n);
-            device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.DEVICE, 0xa0, offset, 0x0000), chunk);
+            device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, 0xa0, offset, 0x0000), chunk);
             offset += n;
         }
 
         cmd = new byte[] { 0 };
-        device.controlTransferOut(new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
+        device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
 
         device.close();
         DeviceMonitor.instance().awaitDevice(false);
@@ -296,11 +296,11 @@ public class LogicAnalyzer implements Closeable {
         DeviceMonitor.instance().awaitDevice(true);
         sleep(200);
 
-        var optionalDevice = USB.getDevice(VID, PID);
+        var optionalDevice = Usb.findDevice(VID, PID);
         if (optionalDevice.isEmpty())
             throw new IllegalStateException("no logic analyzer connected");
         device = optionalDevice.get();
-        if (device.manufacturer() == null)
+        if (device.getManufacturer() == null)
             throw new IllegalStateException("firmware upload failed");
 
         System.out.println("Device is ready");
@@ -338,13 +338,13 @@ public class LogicAnalyzer implements Closeable {
         private DeviceMonitor() { }
 
         private void start() {
-            USB.setOnDeviceConnected((device) -> onDeviceConnected(device, true));
-            USB.setOnDeviceDisconnected((device) -> onDeviceConnected(device, false));
-            isDeviceConnected = USB.getDevice(VID, PID).isPresent();
+            Usb.setOnDeviceConnected((device) -> onDeviceConnected(device, true));
+            Usb.setOnDeviceDisconnected((device) -> onDeviceConnected(device, false));
+            isDeviceConnected = Usb.findDevice(VID, PID).isPresent();
         }
 
-        private void onDeviceConnected(USBDevice device, boolean connected) {
-            if (device.vendorId() == VID && device.productId() == device.productId()) {
+        private void onDeviceConnected(UsbDevice device, boolean connected) {
+            if (device.getVendorId() == VID && device.getProductId() == device.getProductId()) {
                 try {
                     deviceLock.lock();
                     isDeviceConnected = connected;

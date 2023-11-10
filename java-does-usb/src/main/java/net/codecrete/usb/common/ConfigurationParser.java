@@ -7,10 +7,10 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBAlternateInterface;
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBException;
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.UsbAlternateInterface;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbException;
+import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.usbstandard.EndpointDescriptor;
 import net.codecrete.usb.usbstandard.InterfaceAssociationDescriptor;
@@ -58,7 +58,7 @@ public class ConfigurationParser {
     public Configuration parse() {
         parseHeader();
 
-        USBAlternateInterfaceImpl lastAlternate = null;
+        UsbAlternateInterfaceImpl lastAlternate = null;
         var offset = peekDescLength(0);
 
         while (offset < descriptor.byteSize()) {
@@ -69,18 +69,18 @@ public class ConfigurationParser {
             if (descType == INTERFACE_DESCRIPTOR_TYPE) {
                 var intf = parseInterface(offset);
 
-                var parent = configuration.findInterfaceByNumber(intf.number());
+                var parent = configuration.findInterfaceByNumber(intf.getNumber());
                 if (parent != null) {
-                    parent.addAlternate(intf.alternate());
+                    parent.addAlternate(intf.getCurrentAlternate());
                 } else {
                     configuration.addInterface(intf);
                 }
-                lastAlternate = (USBAlternateInterfaceImpl) intf.alternate();
+                lastAlternate = (UsbAlternateInterfaceImpl) intf.getCurrentAlternate();
 
-                var function = configuration.findFunction(intf.number());
+                var function = configuration.findFunction(intf.getNumber());
                 if (function == null) {
-                    function = new CompositeFunction(intf.number(), 1, lastAlternate.classCode(),
-                            lastAlternate.subclassCode(), lastAlternate.protocolCode());
+                    function = new CompositeFunction(intf.getNumber(), 1, lastAlternate.getClassCode(),
+                            lastAlternate.getSubclassCode(), lastAlternate.getProtocolCode());
                     configuration.addFunction(function);
                 }
 
@@ -102,22 +102,22 @@ public class ConfigurationParser {
     private void parseHeader() {
         var desc = new ConfigurationDescriptor(descriptor);
         if (CONFIGURATION_DESCRIPTOR_TYPE != desc.descriptorType())
-            throw new USBException("invalid USB configuration descriptor");
+            throw new UsbException("invalid USB configuration descriptor");
 
         var totalLength = desc.totalLength();
         if (descriptor.byteSize() != totalLength)
-            throw new USBException("invalid USB configuration descriptor (invalid length)");
+            throw new UsbException("invalid USB configuration descriptor (invalid length)");
 
         configuration = new Configuration(desc.configurationValue(), desc.attributes(), desc.maxPower());
     }
 
-    private USBInterfaceImpl parseInterface(int offset) {
+    private UsbInterfaceImpl parseInterface(int offset) {
         var desc = new InterfaceDescriptor(descriptor, offset);
-        var alternate = new USBAlternateInterfaceImpl(desc.alternateSetting(), desc.interfaceClass(),
+        var alternate = new UsbAlternateInterfaceImpl(desc.alternateSetting(), desc.interfaceClass(),
                 desc.interfaceSubClass(), desc.interfaceProtocol(), new ArrayList<>());
-        var alternates = new ArrayList<USBAlternateInterface>();
+        var alternates = new ArrayList<UsbAlternateInterface>();
         alternates.add(alternate);
-        return new USBInterfaceImpl(desc.interfaceNumber(), alternates);
+        return new UsbInterfaceImpl(desc.interfaceNumber(), alternates);
     }
 
     private void parseIAD(int offset) {
@@ -127,26 +127,26 @@ public class ConfigurationParser {
         configuration.addFunction(function);
     }
 
-    private USBEndpointImpl parseEndpoint(int offset) {
+    private UsbEndpointImpl parseEndpoint(int offset) {
         var desc = new EndpointDescriptor(descriptor, offset);
         var address = desc.endpointAddress();
-        return new USBEndpointImpl(getEndpointNumber(address), getEndpointDirection(address),
+        return new UsbEndpointImpl(getEndpointNumber(address), getEndpointDirection(address),
                 getEndpointType(desc.attributes()), desc.maxPacketSize());
     }
 
-    private static USBDirection getEndpointDirection(int address) {
-        return (address & 0x80) != 0 ? USBDirection.IN : USBDirection.OUT;
+    private static UsbDirection getEndpointDirection(int address) {
+        return (address & 0x80) != 0 ? UsbDirection.IN : UsbDirection.OUT;
     }
 
     private static int getEndpointNumber(int address) {
         return address & 0x7f;
     }
 
-    private static USBTransferType getEndpointType(int attributes) {
+    private static UsbTransferType getEndpointType(int attributes) {
         return switch (attributes & 0x3) {
-            case 1 -> USBTransferType.ISOCHRONOUS;
-            case 2 -> USBTransferType.BULK;
-            case 3 -> USBTransferType.INTERRUPT;
+            case 1 -> UsbTransferType.ISOCHRONOUS;
+            case 2 -> UsbTransferType.BULK;
+            case 3 -> UsbTransferType.INTERRUPT;
             default -> null;
         };
     }

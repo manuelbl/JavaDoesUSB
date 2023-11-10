@@ -7,7 +7,8 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.UsbDirection;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +38,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  */
 public abstract class EndpointOutputStream extends OutputStream {
 
-    protected USBDeviceImpl device;
+    protected UsbDeviceImpl device;
     protected final int endpointNumber;
     protected final Arena arena;
     // Endpoint packet size
@@ -60,12 +61,12 @@ public abstract class EndpointOutputStream extends OutputStream {
      * @param endpointNumber endpoint number
      * @param bufferSize     approximate buffer size (in bytes)
      */
-    protected EndpointOutputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
+    protected EndpointOutputStream(UsbDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
         arena = Arena.ofShared();
 
-        packetSize = device.getEndpoint(USBDirection.OUT, endpointNumber).packetSize();
+        packetSize = device.getEndpoint(UsbDirection.OUT, endpointNumber).getPacketSize();
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
         var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
@@ -124,7 +125,7 @@ public abstract class EndpointOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(byte @NotNull [] b, int off, int len) throws IOException {
         checkIsOpen();
 
         while (len > 0) {

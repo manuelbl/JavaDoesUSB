@@ -20,8 +20,8 @@ import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static net.codecrete.usb.windows.DevicePropertyKey.Service;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
-import static net.codecrete.usb.windows.WindowsUSBException.throwException;
-import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
+import static net.codecrete.usb.windows.WindowsUsbException.throwException;
+import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
 
 /**
  * Device information set (of Windows Setup API).

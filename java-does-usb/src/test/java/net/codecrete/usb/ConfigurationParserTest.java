@@ -20,16 +20,16 @@ class ConfigurationParserTest {
         softly.assertThat(configuration.interfaces())
                 .hasSize(1)
                 .singleElement().satisfies(intf -> {
-                    softly.assertThat(intf.number()).isEqualTo(0);
-                    softly.assertThat(intf.alternates())
+                    softly.assertThat(intf.getNumber()).isEqualTo(0);
+                    softly.assertThat(intf.getAlternates())
                             .hasSize(1)
                             .singleElement().satisfies(altIntf -> {
-                                softly.assertThat(altIntf).isSameAs(intf.alternate());
-                                softly.assertThat(altIntf.number()).isEqualTo(0);
-                                softly.assertThat(altIntf.endpoints()).isEmpty();
-                                softly.assertThat(altIntf.classCode()).isEqualTo(0x0ff);
-                                softly.assertThat(altIntf.subclassCode()).isEqualTo(0x0dd);
-                                softly.assertThat(altIntf.protocolCode()).isEqualTo(0x0cc);
+                                softly.assertThat(altIntf).isSameAs(intf.getCurrentAlternate());
+                                softly.assertThat(altIntf.getNumber()).isEqualTo(0);
+                                softly.assertThat(altIntf.getEndpoints()).isEmpty();
+                                softly.assertThat(altIntf.getClassCode()).isEqualTo(0x0ff);
+                                softly.assertThat(altIntf.getSubclassCode()).isEqualTo(0x0dd);
+                                softly.assertThat(altIntf.getProtocolCode()).isEqualTo(0x0cc);
                             });
                     softly.assertThat(intf.isClaimed()).isFalse();
                 });
@@ -67,65 +67,65 @@ class ConfigurationParserTest {
 
         // interface 0
         softly.assertThat(configuration.interfaces().get(0)).satisfies(intf -> {
-           softly.assertThat(intf.number()).isEqualTo(0);
-           softly.assertThat(intf.alternates()).hasSize(1);
-           softly.assertThat(intf.alternate().endpoints()).hasSize(1);
-           softly.assertThat(intf.alternate().endpoints().get(0)).satisfies(endpoint -> {
-              softly.assertThat(endpoint.number()).isEqualTo(5);
-               softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-              softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.INTERRUPT);
+           softly.assertThat(intf.getNumber()).isEqualTo(0);
+           softly.assertThat(intf.getAlternates()).hasSize(1);
+           softly.assertThat(intf.getCurrentAlternate().getEndpoints()).hasSize(1);
+           softly.assertThat(intf.getCurrentAlternate().getEndpoints().get(0)).satisfies(endpoint -> {
+              softly.assertThat(endpoint.getNumber()).isEqualTo(5);
+               softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+              softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
            });
         });
 
         // interface 1
         softly.assertThat(configuration.interfaces().get(1)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(1);
-            softly.assertThat(intf.alternates()).hasSize(2);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).isEmpty();
+            softly.assertThat(intf.getNumber()).isEqualTo(1);
+            softly.assertThat(intf.getAlternates()).hasSize(2);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).isEmpty();
             });
-            softly.assertThat(intf.alternates().get(1)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(1);
-                softly.assertThat(alternate.endpoints()).hasSize(1);
-                softly.assertThat(alternate.endpoints().get(0)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(1);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.ISOCHRONOUS);
+            softly.assertThat(intf.getAlternates().get(1)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(1);
+                softly.assertThat(alternate.getEndpoints()).hasSize(1);
+                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(1);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.ISOCHRONOUS);
                 });
             });
         });
 
         // interface 2
         softly.assertThat(configuration.interfaces().get(2)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(2);
-            softly.assertThat(intf.alternates()).hasSize(2);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).isEmpty();
+            softly.assertThat(intf.getNumber()).isEqualTo(2);
+            softly.assertThat(intf.getAlternates()).hasSize(2);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).isEmpty();
             });
-            softly.assertThat(intf.alternates().get(1)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(1);
-                softly.assertThat(alternate.endpoints()).hasSize(1);
-                softly.assertThat(alternate.endpoints().get(0)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(2);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.ISOCHRONOUS);
+            softly.assertThat(intf.getAlternates().get(1)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(1);
+                softly.assertThat(alternate.getEndpoints()).hasSize(1);
+                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(2);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.ISOCHRONOUS);
                 });
             });
         });
 
         // interface 3
         softly.assertThat(configuration.interfaces().get(3)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(3);
-            softly.assertThat(intf.alternates()).hasSize(1);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).hasSize(1);
-                softly.assertThat(alternate.endpoints().get(0)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(4);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.INTERRUPT);
+            softly.assertThat(intf.getNumber()).isEqualTo(3);
+            softly.assertThat(intf.getAlternates()).hasSize(1);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).hasSize(1);
+                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(4);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
                 });
             });
         });
@@ -161,62 +161,62 @@ class ConfigurationParserTest {
 
         // interface 0
         softly.assertThat(configuration.interfaces().get(0)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(0);
-            softly.assertThat(intf.alternates()).hasSize(1);
-            softly.assertThat(intf.alternate().endpoints()).hasSize(1);
-            softly.assertThat(intf.alternate().endpoints().get(0)).satisfies(endpoint -> {
-                softly.assertThat(endpoint.number()).isEqualTo(3);
-                softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.INTERRUPT);
+            softly.assertThat(intf.getNumber()).isEqualTo(0);
+            softly.assertThat(intf.getAlternates()).hasSize(1);
+            softly.assertThat(intf.getCurrentAlternate().getEndpoints()).hasSize(1);
+            softly.assertThat(intf.getCurrentAlternate().getEndpoints().get(0)).satisfies(endpoint -> {
+                softly.assertThat(endpoint.getNumber()).isEqualTo(3);
+                softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
             });
         });
 
         // interface 1
         softly.assertThat(configuration.interfaces().get(1)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(1);
-            softly.assertThat(intf.alternates()).hasSize(1);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).hasSize(2);
-                softly.assertThat(alternate.endpoints().get(0)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(2);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.OUT);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.BULK);
+            softly.assertThat(intf.getNumber()).isEqualTo(1);
+            softly.assertThat(intf.getAlternates()).hasSize(1);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).hasSize(2);
+                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(2);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.OUT);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.BULK);
                 });
-                softly.assertThat(alternate.endpoints().get(1)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(1);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.BULK);
+                softly.assertThat(alternate.getEndpoints().get(1)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(1);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.BULK);
                 });
             });
         });
 
         // interface 2
         softly.assertThat(configuration.interfaces().get(2)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(2);
-            softly.assertThat(intf.alternates()).hasSize(1);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).isEmpty();
+            softly.assertThat(intf.getNumber()).isEqualTo(2);
+            softly.assertThat(intf.getAlternates()).hasSize(1);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).isEmpty();
             });
         });
 
         // interface 3
         softly.assertThat(configuration.interfaces().get(3)).satisfies(intf -> {
-            softly.assertThat(intf.number()).isEqualTo(3);
-            softly.assertThat(intf.alternates()).hasSize(1);
-            softly.assertThat(intf.alternates().get(0)).satisfies(alternate -> {
-                softly.assertThat(alternate.number()).isEqualTo(0);
-                softly.assertThat(alternate.endpoints()).hasSize(2);
-                softly.assertThat(alternate.endpoints().get(0)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(1);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.OUT);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.BULK);
+            softly.assertThat(intf.getNumber()).isEqualTo(3);
+            softly.assertThat(intf.getAlternates()).hasSize(1);
+            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+                softly.assertThat(alternate.getNumber()).isEqualTo(0);
+                softly.assertThat(alternate.getEndpoints()).hasSize(2);
+                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(1);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.OUT);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.BULK);
                 });
-                softly.assertThat(alternate.endpoints().get(1)).satisfies(endpoint -> {
-                    softly.assertThat(endpoint.number()).isEqualTo(2);
-                    softly.assertThat(endpoint.direction()).isEqualTo(USBDirection.IN);
-                    softly.assertThat(endpoint.transferType()).isEqualTo(USBTransferType.BULK);
+                softly.assertThat(alternate.getEndpoints().get(1)).satisfies(endpoint -> {
+                    softly.assertThat(endpoint.getNumber()).isEqualTo(2);
+                    softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
+                    softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.BULK);
                 });
             });
         });
@@ -231,7 +231,7 @@ class ConfigurationParserTest {
         var segment = MemorySegment.ofArray(desc);
 
         assertThatThrownBy(() -> ConfigurationParser.parseConfigurationDescriptor(segment))
-                .isInstanceOf(USBException.class)
+                .isInstanceOf(UsbException.class)
                 .hasMessage("invalid USB configuration descriptor (invalid length)");
     }
 
@@ -242,7 +242,7 @@ class ConfigurationParserTest {
         var segment = MemorySegment.ofArray(desc);
 
         assertThatThrownBy(() -> ConfigurationParser.parseConfigurationDescriptor(segment))
-                .isInstanceOf(USBException.class)
+                .isInstanceOf(UsbException.class)
                 .hasMessage("invalid USB configuration descriptor (invalid length)");
     }
 
@@ -252,7 +252,7 @@ class ConfigurationParserTest {
         var segment = MemorySegment.ofArray(desc);
 
         assertThatThrownBy(() -> ConfigurationParser.parseConfigurationDescriptor(segment))
-                .isInstanceOf(USBException.class)
+                .isInstanceOf(UsbException.class)
                 .hasMessage("invalid USB configuration descriptor");
     }
 }

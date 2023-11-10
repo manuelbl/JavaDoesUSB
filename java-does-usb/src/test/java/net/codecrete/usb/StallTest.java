@@ -18,12 +18,12 @@ class StallTest extends TestDeviceBase {
 
     @Test
     void stalledBulkTransferOut_recovers() {
-        haltEndpoint(USBDirection.OUT, LOOPBACK_EP_OUT);
+        haltEndpoint(UsbDirection.OUT, LOOPBACK_EP_OUT);
 
         var data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        assertThrows(USBStallException.class, () -> testDevice.transferOut(LOOPBACK_EP_OUT, data));
+        assertThrows(UsbStallException.class, () -> testDevice.transferOut(LOOPBACK_EP_OUT, data));
 
-        testDevice.clearHalt(USBDirection.OUT, LOOPBACK_EP_OUT);
+        testDevice.clearHalt(UsbDirection.OUT, LOOPBACK_EP_OUT);
 
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
         var receivedData = testDevice.transferIn(LOOPBACK_EP_IN);
@@ -32,11 +32,11 @@ class StallTest extends TestDeviceBase {
 
     @Test
     void stalledBulkTransferIn_recovers() {
-        haltEndpoint(USBDirection.IN, LOOPBACK_EP_IN);
+        haltEndpoint(UsbDirection.IN, LOOPBACK_EP_IN);
 
-        assertThrows(USBStallException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN));
+        assertThrows(UsbStallException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN));
 
-        testDevice.clearHalt(USBDirection.IN, LOOPBACK_EP_IN);
+        testDevice.clearHalt(UsbDirection.IN, LOOPBACK_EP_IN);
 
         var data = new byte[] { 9, 8, 7, 6, 5, 4, 3, 2 };
         testDevice.transferOut(LOOPBACK_EP_OUT, data);
@@ -46,15 +46,15 @@ class StallTest extends TestDeviceBase {
 
     @Test
     void invalidControlTransfer_throws() {
-        var request = new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE, (byte) 0x08,
+        var request = new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x08,
                 (short) 0, (short) interfaceNumber);
-        assertThrows(USBStallException.class, () -> testDevice.controlTransferIn(request, 2));
+        assertThrows(UsbStallException.class, () -> testDevice.controlTransferIn(request, 2));
     }
 
-    void haltEndpoint(USBDirection direction, int endpointNumber) {
+    void haltEndpoint(UsbDirection direction, int endpointNumber) {
         final var SET_FEATURE = 0x03;
         final var ENDPOINT_HALT = 0x00;
-        var endpointAddress = (direction == USBDirection.IN ? 0x80 : 0x00) | endpointNumber;
-        testDevice.controlTransferOut(new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.ENDPOINT, SET_FEATURE, ENDPOINT_HALT, endpointAddress), null);
+        var endpointAddress = (direction == UsbDirection.IN ? 0x80 : 0x00) | endpointNumber;
+        testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.STANDARD, UsbRecipient.ENDPOINT, SET_FEATURE, ENDPOINT_HALT, endpointAddress), null);
     }
 }

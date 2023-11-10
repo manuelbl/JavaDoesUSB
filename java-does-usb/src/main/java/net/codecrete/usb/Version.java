@@ -34,7 +34,7 @@ public final class Version {
      *
      * @return major version
      */
-    public int major() {
+    public int getMajor() {
         return bcdVersion >> 8;
     }
 
@@ -43,7 +43,7 @@ public final class Version {
      *
      * @return minor version
      */
-    public int minor() {
+    public int getMinor() {
         return (bcdVersion >> 4) & 0x0f;
     }
 
@@ -52,13 +52,13 @@ public final class Version {
      *
      * @return subminor version
      */
-    public int subminor() {
+    public int getSubminor() {
         return bcdVersion & 0x0f;
     }
 
     @Override
     public String toString() {
-        return String.format("%d.%d.%d", major(), minor(), subminor());
+        return String.format("%d.%d.%d", getMajor(), getMinor(), getSubminor());
     }
 
     @Override

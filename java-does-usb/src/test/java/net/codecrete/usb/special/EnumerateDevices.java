@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.special;
 
-import net.codecrete.usb.USB;
+import net.codecrete.usb.Usb;
 
 /**
  * Sample program displaying the connected USB devices
@@ -15,7 +15,7 @@ import net.codecrete.usb.USB;
 public class EnumerateDevices {
 
     public static void main(String[] args) {
-        for (var device : USB.getAllDevices()) {
+        for (var device : Usb.getDevices()) {
             System.out.println(device);
         }
     }
