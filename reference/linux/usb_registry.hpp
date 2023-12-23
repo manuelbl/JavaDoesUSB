@@ -52,6 +52,7 @@ private:
     void async_io_run();
     void add_async_fd(int fd);
     void remove_async_fd(int fd);
+    void reap_urbs(int fd);
 
     std::shared_ptr<usb_device> create_device(udev_device* udev_dev);
     std::shared_ptr<usb_device> get_shared_ptr(usb_device* device);
@@ -69,11 +70,8 @@ private:
 
     std::thread async_io_thread;
     std::mutex async_io_mutex;
-    std::condition_variable async_io_condition;
-    std::vector<int> async_io_fds;
-    int async_io_update_event_fd;
-    int async_io_update_request;
-    int async_io_update_response;
+    int async_io_epoll_fd;
+    int async_io_exit_event_fd;
 
     friend usb_device;
 };

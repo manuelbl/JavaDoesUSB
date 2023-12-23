@@ -314,6 +314,6 @@ void usb_device::submit_urb(usbdevfs_urb* urb) {
 
 void usb_device::cancel_urb(usbdevfs_urb* urb) {
     int result = ioctl(fd_, USBDEVFS_DISCARDURB, urb);
-    if (result < 0)
-        usb_error::throw_error("Failed to submit URB");
+    if (result < 0 && errno != EINVAL)
+        usb_error::throw_error("Failed to cancel URB");
 }
