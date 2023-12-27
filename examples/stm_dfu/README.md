@@ -6,15 +6,15 @@ Even though the DFU
 
 ## Prerequisites
 
-- Java 20
+- Java 21
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 20
+### Install Java 21
 
-Check that *Java 20* is installed:
+Check that *Java 21* is installed:
 
 ```shell
 $ java -version

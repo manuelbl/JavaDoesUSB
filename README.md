@@ -6,6 +6,13 @@
 
 The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It is written entirely in Java and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is currently in preview and will leave preview with Java 22. Currently, it can be used with Java 19, Java 20 or Java 21 (with preview features enabled).
 
+| Version | Main New Features | Compatibility |
+| - | - | - |
+| 0.7.x | Prerelease: New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
+| 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
+| 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
+| 0.4.x | Early release | JDK 19 |
+
 *Note: The main branch and published versions ≥ 0.6.0 work with JDK 21 only. For JDK 20, use version 0.5.*. For JDK 19, use version 0.4.x.
 
 
@@ -133,13 +140,18 @@ The Foreign Function & Memory API has not been implemented for 32-bit operating 
 
 ## Code generation
 
-Many bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information.
+Many bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information. For functions that need to retain the error state (`errno` on Linux, `GetLastError()` on Windows), the bindings have been manually written as *jextract* does not support it.
 
 
 
 ## Testing
 
-In order to run the unit tests, a special test device must be connected to the computer. See the [loopback-stm32](test-devices/loopback-stm32) directory.
+In order to run the unit tests, a special test device must be connected to the computer, which can be easily created from very inexpensive microcontroller boards. Two variants exist:
+
+- [loopback-stm32](test-devices/loopback-stm32)
+- [composite-stm32](test-devices/composite-stm32)
+
+The test device with the *loopback-stm32* code supports all tests. If the test device with the *composite-stm32* code is connected, some tests are skipped. However, if it is used, the correct handling of composite devices is verified.
 
 Tests can be run from the command line:
 
