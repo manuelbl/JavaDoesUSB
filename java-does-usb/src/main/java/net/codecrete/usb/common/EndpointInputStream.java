@@ -7,8 +7,9 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBDirection;
-import net.codecrete.usb.USBException;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  */
 public abstract class EndpointInputStream extends InputStream {
 
-    protected USBDeviceImpl device;
+    protected UsbDeviceImpl device;
     protected final int endpointNumber;
     // Arena to allocate buffers and completion handlers
     protected final Arena arena;
@@ -58,12 +59,12 @@ public abstract class EndpointInputStream extends InputStream {
      * @param endpointNumber endpoint number
      * @param bufferSize     approximate buffer size (in bytes)
      */
-    protected EndpointInputStream(USBDeviceImpl device, int endpointNumber, int bufferSize) {
+    protected EndpointInputStream(UsbDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
         arena = Arena.ofShared();
 
-        var packetSize = device.getEndpoint(USBDirection.IN, endpointNumber).packetSize();
+        var packetSize = device.getEndpoint(UsbDirection.IN, endpointNumber).getPacketSize();
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
         var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
@@ -109,9 +110,9 @@ public abstract class EndpointInputStream extends InputStream {
 
         // abort all transfers on endpoint
         try {
-            device.abortTransfers(USBDirection.IN, endpointNumber);
+            device.abortTransfers(UsbDirection.IN, endpointNumber);
 
-        } catch (USBException e) {
+        } catch (UsbException e) {
             // If aborting the transfer is not possible, the device has
             // likely been closed or unplugged. So all outstanding
             // transfers will terminate anyway.
@@ -135,7 +136,7 @@ public abstract class EndpointInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte @NotNull [] b, int off, int len) throws IOException {
         if (isClosed())
             return -1;
 

@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.USBTransferType;
+import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.poll.poll;
 import net.codecrete.usb.linux.gen.poll.pollfd;
@@ -24,9 +24,9 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
-import static net.codecrete.usb.linux.LinuxUSBException.throwException;
-import static net.codecrete.usb.linux.LinuxUSBException.throwLastError;
-import static net.codecrete.usb.linux.USBDevFS.*;
+import static net.codecrete.usb.linux.LinuxUsbException.throwException;
+import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
+import static net.codecrete.usb.linux.UsbDevFS.*;
 import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
 
 /**
@@ -194,7 +194,7 @@ class LinuxAsyncTask {
      *
      * @param device USB device
      */
-    synchronized void addForAsyncIOCompletion(LinuxUSBDevice device) {
+    synchronized void addForAsyncIOCompletion(LinuxUsbDevice device) {
         var n = asyncFds != null ? asyncFds.length : 0;
         var fds = new int[n + 1];
         if (n > 0)
@@ -211,7 +211,7 @@ class LinuxAsyncTask {
      *
      * @param device USB device
      */
-    synchronized void removeFromAsyncIOCompletion(LinuxUSBDevice device) {
+    synchronized void removeFromAsyncIOCompletion(LinuxUsbDevice device) {
         removeFdFromAsyncIOCompletion(device.fileDescriptor());
         notifyAsyncIOTask();
     }
@@ -237,7 +237,7 @@ class LinuxAsyncTask {
         asyncFds = fds;
     }
 
-    synchronized void submitTransfer(LinuxUSBDevice device, int endpointAddress, USBTransferType transferType, LinuxTransfer transfer) {
+    synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
 
         addURB(transfer);
         var urb = transfer.urb;
@@ -258,7 +258,7 @@ class LinuxAsyncTask {
         }
     }
 
-    private static int urbTransferType(USBTransferType transferType) {
+    private static int urbTransferType(UsbTransferType transferType) {
         return switch (transferType) {
             case BULK -> USBDEVFS_URB_TYPE_BULK();
             case INTERRUPT -> USBDEVFS_URB_TYPE_INTERRUPT();
@@ -295,7 +295,7 @@ class LinuxAsyncTask {
     }
 
     @SuppressWarnings("java:S1066")
-    synchronized void abortTransfers(LinuxUSBDevice device, byte endpointAddress) {
+    synchronized void abortTransfers(LinuxUsbDevice device, byte endpointAddress) {
         var fd = device.fileDescriptor();
         try (var arena = Arena.ofConfined()) {
 

@@ -9,5 +9,6 @@
  * Java Does USB – work with USB devices
  */
 module net.codecrete.usb {
+    requires org.jetbrains.annotations;
     exports net.codecrete.usb;
 }

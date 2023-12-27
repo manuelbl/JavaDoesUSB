@@ -46,9 +46,15 @@ jobs:
       - name: Example "enumerate"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/enumerate
+      - name: Example "enumerate" (Kotlin)
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/enumerate_kotlin
       - name: Example "monitor"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/monitor
+      - name: Example "monitor" (Kotlin)
+        run: ./mvnw $MAVEN_ARGS clean compile
+        working-directory: ./examples/monitor_kotlin
       - name: Example "stm_dfu"
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/stm_dfu

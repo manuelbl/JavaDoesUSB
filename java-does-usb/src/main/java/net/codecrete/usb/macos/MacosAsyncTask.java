@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.USBException;
+import net.codecrete.usb.UsbException;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
@@ -116,7 +116,7 @@ class MacosAsyncTask {
                     Arena.global());
 
         } catch (IllegalAccessException | NoSuchMethodException e) {
-            throw new USBException("internal error (creating method handle)", e);
+            throw new UsbException("internal error (creating method handle)", e);
         }
 
         var thread = new Thread(() -> asyncIOCompletionTask(firstSource), "USB async IO");

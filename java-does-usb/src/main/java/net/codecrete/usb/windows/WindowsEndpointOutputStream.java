@@ -7,23 +7,23 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.UsbDirection;
 import net.codecrete.usb.common.EndpointOutputStream;
 import net.codecrete.usb.common.Transfer;
 
 public class WindowsEndpointOutputStream extends EndpointOutputStream {
 
-    WindowsEndpointOutputStream(WindowsUSBDevice device, int endpointNumber, int bufferSize) {
+    WindowsEndpointOutputStream(WindowsUsbDevice device, int endpointNumber, int bufferSize) {
         super(device, endpointNumber, bufferSize);
     }
 
     @Override
     protected void submitTransferOut(Transfer request) {
-        ((WindowsUSBDevice) device).submitTransferOut(endpointNumber, (WindowsTransfer) request);
+        ((WindowsUsbDevice) device).submitTransferOut(endpointNumber, (WindowsTransfer) request);
     }
 
     @Override
     protected void configureEndpoint() {
-        ((WindowsUSBDevice) device).configureForAsyncIo(USBDirection.OUT, endpointNumber);
+        ((WindowsUsbDevice) device).configureForAsyncIo(UsbDirection.OUT, endpointNumber);
     }
 }

@@ -8,14 +8,14 @@ class DescriptorTest extends TestDeviceBase {
 
     @Test
     void deviceDescriptor_isAvailable() {
-        var desc = testDevice.deviceDescriptor();
+        var desc = testDevice.getDeviceDescriptor();
         assertThat(desc).hasSize(18);
         assertThat(desc[1]).isEqualTo((byte) 0x01);
     }
 
     @Test
     void configurationDescriptor_isAvailable() {
-        var desc = testDevice.configurationDescriptor();
+        var desc = testDevice.getConfigurationDescriptor();
         assertThat(desc).hasSizeGreaterThan(60);
         assertThat(desc[1]).isEqualTo((byte) 0x02);
     }

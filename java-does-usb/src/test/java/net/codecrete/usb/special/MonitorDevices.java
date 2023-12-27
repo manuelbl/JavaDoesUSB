@@ -20,13 +20,13 @@ import java.io.IOException;
 public class MonitorDevices {
 
     public static void main(String[] args) throws IOException {
-        USB.setOnDeviceConnected((device) -> {
+        Usb.setOnDeviceConnected((device) -> {
             System.out.println("Connected:    " + device.toString());
             talkToTestDevice(device);
         });
-        USB.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
+        Usb.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
 
-        for (var device : USB.getAllDevices()) {
+        for (var device : Usb.getDevices()) {
             System.out.println("Present:      " + device.toString());
             talkToTestDevice(device);
         }
@@ -36,15 +36,15 @@ public class MonitorDevices {
         System.in.read();
     }
 
-    private static void talkToTestDevice(USBDevice device) {
-        if (device.vendorId() != 0xcafe)
+    private static void talkToTestDevice(UsbDevice device) {
+        if (device.getVendorId() != 0xcafe)
             return; // no test device
 
-        int interfaceNumber = device.productId() == 0xcea0 ? 2 : 0;
+        int interfaceNumber = device.getProductId() == 0xcea0 ? 2 : 0;
         device.open();
         device.claimInterface(interfaceNumber);
         var response = device.controlTransferIn(
-                new USBControlTransfer(USBRequestType.VENDOR, USBRecipient.INTERFACE,
+                new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE,
                         (byte) 0x05, (short) 0, (short) interfaceNumber),
                 1
         );

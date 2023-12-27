@@ -21,7 +21,7 @@ import java.util.Map;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
-import static net.codecrete.usb.windows.WindowsUSBException.throwLastError;
+import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
 
 /**
  * Background task for handling asynchronous transfers.

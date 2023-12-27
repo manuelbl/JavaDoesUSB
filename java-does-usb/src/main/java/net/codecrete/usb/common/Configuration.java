@@ -7,7 +7,7 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.USBInterface;
+import net.codecrete.usb.UsbInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Configuration {
     private final List<CompositeFunction> functionList;
-    private final List<USBInterface> interfaceList;
+    private final List<UsbInterface> interfaceList;
     private final int configurationValue;
     private final int configurationAttributes;
     private final int configurationMaxPower;
@@ -42,7 +42,7 @@ public class Configuration {
         return configurationMaxPower;
     }
 
-    public List<USBInterface> interfaces() {
+    public List<UsbInterface> interfaces() {
         return interfaceList;
     }
 
@@ -50,12 +50,12 @@ public class Configuration {
         return functionList;
     }
 
-    public void addInterface(USBInterface intf) {
+    public void addInterface(UsbInterface intf) {
         interfaceList.add(intf);
     }
 
-    public USBInterfaceImpl findInterfaceByNumber(int number) {
-        return (USBInterfaceImpl) interfaceList.stream().filter(intf -> intf.number() == number).findFirst().orElse(null);
+    public UsbInterfaceImpl findInterfaceByNumber(int number) {
+        return (UsbInterfaceImpl) interfaceList.stream().filter(intf -> intf.getNumber() == number).findFirst().orElse(null);
     }
 
     public void addFunction(CompositeFunction function) {

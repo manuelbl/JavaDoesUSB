@@ -124,8 +124,8 @@ class IoKitHelper {
             var refiid = CoreFoundation.CFUUIDGetUUIDBytes(arena, interfaceId);
             // MemorySegment for holding xxxInterface**
             var intfHolder = arena.allocate(ADDRESS, NULL);
-            ret = IoKitUSB.QueryInterface(plug, refiid, intfHolder);
-            IoKitUSB.Release(plug);
+            ret = IoKitUsb.QueryInterface(plug, refiid, intfHolder);
+            IoKitUsb.Release(plug);
             if (ret != 0)
                 return null;
             return dereference(intfHolder, COM_OBJECT);

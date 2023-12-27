@@ -27,7 +27,7 @@ public class BulkTransfer {
     private static final int ENDPOINT_IN = 2;
 
     public static void main(String[] args) {
-        var optionalDevice = USB.getDevice(VID, PID);
+        var optionalDevice = Usb.findDevice(VID, PID);
         if (optionalDevice.isEmpty()) {
             System.out.printf("No USB device with VID=0x%04x and PID=0x%04x found.%n", VID, PID);
             return;

@@ -7,8 +7,8 @@
 
 package net.codecrete.usb.examples;
 
-import net.codecrete.usb.USB;
-import net.codecrete.usb.USBDevice;
+import net.codecrete.usb.Usb;
+import net.codecrete.usb.UsbDevice;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -35,7 +35,7 @@ public class IT8951Driver {
             (byte)0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, (byte)0x94, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
 
-    private USBDevice device;
+    private UsbDevice device;
     private int sequenceNo = 1;
 
     private DisplayInfo displayInfo;
@@ -46,7 +46,7 @@ public class IT8951Driver {
      * @throws IllegalStateException if no IT8951 device is found
      */
     public void open() {
-        var optionalDevice = USB.getDevice(0x048d, 0x8951);
+        var optionalDevice = Usb.findDevice(0x048d, 0x8951);
         if (optionalDevice.isEmpty())
             throw new IllegalStateException("No IT8951 device found");
 
@@ -276,7 +276,7 @@ public class IT8951Driver {
         if (result.length == 13)
             return Status.from(result);
 
-        throw new RuntimeException(String.format("Unexpected length of status block (%d)", result.length));
+        throw new IllegalStateException(String.format("Unexpected length of status block (%d)", result.length));
     }
 
     /**

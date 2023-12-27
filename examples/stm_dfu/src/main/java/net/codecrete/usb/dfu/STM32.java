@@ -11,5 +11,8 @@ package net.codecrete.usb.dfu;
  * STM32 specific constants
  */
 public class STM32 {
+
+    private STM32() { }
+
     public static final int FLASH_BASE_ADDRESS = 0x08000000;
 }

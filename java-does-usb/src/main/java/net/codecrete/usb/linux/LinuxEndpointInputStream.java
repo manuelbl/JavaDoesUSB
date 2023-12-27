@@ -7,18 +7,18 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.USBDirection;
+import net.codecrete.usb.UsbDirection;
 import net.codecrete.usb.common.EndpointInputStream;
 import net.codecrete.usb.common.Transfer;
 
 public class LinuxEndpointInputStream extends EndpointInputStream {
 
-    LinuxEndpointInputStream(LinuxUSBDevice device, int endpointNumber, int bufferSize) {
+    LinuxEndpointInputStream(LinuxUsbDevice device, int endpointNumber, int bufferSize) {
         super(device, endpointNumber, bufferSize);
     }
 
     @Override
     protected void submitTransferIn(Transfer transfer) {
-        ((LinuxUSBDevice) device).submitTransfer(USBDirection.IN, endpointNumber, (LinuxTransfer) transfer);
+        ((LinuxUsbDevice) device).submitTransfer(UsbDirection.IN, endpointNumber, (LinuxTransfer) transfer);
     }
 }

@@ -11,7 +11,9 @@ import net.codecrete.usb.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static net.codecrete.usb.UsbRecipient.INTERFACE;
+import static net.codecrete.usb.UsbRequestType.CLASS;
 
 /**
  * DFU device.
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class DFUDevice {
 
-    private final USBDevice usbDevice_;
+    private final UsbDevice usbDevice_;
     private final int interfaceNumber_;
     private final int transferSize_;
     private final Version dfuVersion_;
@@ -33,10 +35,10 @@ public class DFUDevice {
      * @return List of DFU devices
      */
     public static List<DFUDevice> getAll() {
-        return USB.getAllDevices().stream()
-                .filter(DFUDevice::hasDFUDescriptor)
+        return Usb.findDevices(DFUDevice::hasDFUDescriptor)
+                .stream()
                 .map(DFUDevice::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -44,8 +46,8 @@ public class DFUDevice {
      * @param device USB device
      * @return {@code true} if it has a DFU descriptor, {@code false} otherwise
      */
-    public static boolean hasDFUDescriptor(USBDevice device) {
-        return getDFUDescriptorOffset(device.configurationDescriptor()) > 0
+    public static boolean hasDFUDescriptor(UsbDevice device) {
+        return getDFUDescriptorOffset(device.getConfigurationDescriptor()) > 0
                 && getDFUInterfaceNumber(device) >= 0;
     }
 
@@ -69,11 +71,11 @@ public class DFUDevice {
      * @param device the USB device
      * @return the interface number, of -1 if not found
      */
-    public static int getDFUInterfaceNumber(USBDevice device) {
-        for (var intf : device.interfaces()) {
-            var alt = intf.alternate();
-            if (alt.classCode() == 0xFE && alt.subclassCode() == 0x01 && alt.protocolCode() == 0x02)
-                return intf.number();
+    public static int getDFUInterfaceNumber(UsbDevice device) {
+        for (var intf : device.getInterfaces()) {
+            var alt = intf.getCurrentAlternate();
+            if (alt.getClassCode() == 0xFE && alt.getSubclassCode() == 0x01 && alt.getProtocolCode() == 0x02)
+                return intf.getNumber();
         }
 
         return -1;
@@ -86,11 +88,11 @@ public class DFUDevice {
      * </p>
      * @param usbDevice the USB device
      */
-    public DFUDevice(USBDevice usbDevice) {
+    public DFUDevice(UsbDevice usbDevice) {
         usbDevice_ = usbDevice;
         interfaceNumber_ = getDFUInterfaceNumber(usbDevice);
 
-        var configDesc = usbDevice.configurationDescriptor();
+        var configDesc = usbDevice.getConfigurationDescriptor();
         int offset = getDFUDescriptorOffset(configDesc);
         assert offset > 0;
 
@@ -111,7 +113,7 @@ public class DFUDevice {
      * @return the serial number
      */
     public String serialNumber() {
-        return usbDevice_.serialNumber();
+        return usbDevice_.getSerialNumber();
     }
 
     /**
@@ -135,7 +137,7 @@ public class DFUDevice {
      * Clears an error status.
      */
     public void clearStatus() {
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.CLEAR_STATUS.value(), 0, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.CLEAR_STATUS.value(), 0, interfaceNumber_);
         usbDevice_.controlTransferOut(setup, null);
     }
 
@@ -143,7 +145,7 @@ public class DFUDevice {
      * Aborts the download mode.
      */
     public void abort() {
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.ABORT.value(), 0, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.ABORT.value(), 0, interfaceNumber_);
         usbDevice_.controlTransferOut(setup, null);
     }
 
@@ -152,7 +154,7 @@ public class DFUDevice {
      * @return the status
      */
     public DFUStatus getStatus() {
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.GET_STATUS.value(), 0, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.GET_STATUS.value(), 0, interfaceNumber_);
         return DFUStatus.fromBytes(usbDevice_.controlTransferIn(setup, 6));
     }
 
@@ -176,7 +178,7 @@ public class DFUDevice {
         int blockNum = 2;
         while (offset < length) {
             int chunkSize = Math.min(transferSize_, length - offset);
-            var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
+            var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
             var chunk = usbDevice_.controlTransferIn(setup, chunkSize);
             System.arraycopy(chunk, 0, result, offset, chunkSize);
             offset += chunkSize;
@@ -184,7 +186,7 @@ public class DFUDevice {
         }
 
         // request zero lenght chunk to exit out of upload mode
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
         usbDevice_.controlTransferIn(setup, 0);
 
         return result;
@@ -223,7 +225,7 @@ public class DFUDevice {
             System.arraycopy(firmware, offset, chunk, 0, chunkSize);
 
             System.out.printf("Writing data at 0x%x (size 0x%x)%n", startAddress + offset, chunkSize);
-            var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.DOWNLOAD.value(), transaction, interfaceNumber_);
+            var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), transaction, interfaceNumber_);
             usbDevice_.controlTransferOut(setup, chunk);
 
             finishDownloadCommand("writing data");
@@ -272,7 +274,7 @@ public class DFUDevice {
     }
 
     private void execDownloadCommandWithAddress(byte command, String action, int address) {
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.DOWNLOAD.value(), 0, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), 0, interfaceNumber_);
         var data = new byte[] {
                 command,
                 (byte) address,
@@ -325,7 +327,7 @@ public class DFUDevice {
     public void startApplication() {
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_DNLOAD_IDLE);
 
-        var setup = new USBControlTransfer(USBRequestType.CLASS, USBRecipient.INTERFACE, DFURequest.DOWNLOAD.value(), 2, interfaceNumber_);
+        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), 2, interfaceNumber_);
         usbDevice_.controlTransferOut(setup, null);
 
         var status = getStatus();
@@ -359,6 +361,7 @@ public class DFUDevice {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new DFUException("Sleep failed", e);
         }
     }

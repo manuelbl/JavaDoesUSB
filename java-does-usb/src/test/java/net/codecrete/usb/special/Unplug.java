@@ -7,9 +7,9 @@
 
 package net.codecrete.usb.special;
 
-import net.codecrete.usb.USB;
-import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBException;
+import net.codecrete.usb.Usb;
+import net.codecrete.usb.UsbDevice;
+import net.codecrete.usb.UsbException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,21 +42,21 @@ public class Unplug {
     private static final int ECHO_EP_OUT = 3;
     private static final int ECHO_EP_IN = 3;
 
-    private static final HashMap<USBDevice, DeviceWorker> activeDevices = new HashMap<>();
+    private static final HashMap<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
         System.out.println("Plug and unplug test device multiple times.");
         System.out.println("Hit ENTER to exit.");
 
-        USB.setOnDeviceConnected(Unplug::onPluggedDevice);
-        USB.setOnDeviceDisconnected(Unplug::onUnpluggedDevice);
-        USB.getAllDevices().forEach(Unplug::onPluggedDevice);
+        Usb.setOnDeviceConnected(Unplug::onPluggedDevice);
+        Usb.setOnDeviceDisconnected(Unplug::onUnpluggedDevice);
+        Usb.getDevices().forEach(Unplug::onPluggedDevice);
 
         //noinspection ResultOfMethodCallIgnored
         System.in.read();
     }
 
-    private static void onPluggedDevice(USBDevice device) {
+    private static void onPluggedDevice(UsbDevice device) {
         if (!isTestDevice(device))
             return;
 
@@ -65,7 +65,7 @@ public class Unplug {
         worker.start();
     }
 
-    private static void onUnpluggedDevice(USBDevice device) {
+    private static void onUnpluggedDevice(UsbDevice device) {
         if (!isTestDevice(device))
             return;
 
@@ -75,13 +75,13 @@ public class Unplug {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private static boolean isTestDevice(USBDevice device) {
-        return device.vendorId() == VID_LOOPBACK && device.productId() == PID_LOOPBACK;
+    private static boolean isTestDevice(UsbDevice device) {
+        return device.getVendorId() == VID_LOOPBACK && device.getProductId() == PID_LOOPBACK;
     }
 
     static class DeviceWorker {
 
-        private final USBDevice device;
+        private final UsbDevice device;
 
         private final int seed;
 
@@ -89,7 +89,7 @@ public class Unplug {
 
         private final HashMap<Thread, Work> workTracking = new HashMap<>();
 
-        DeviceWorker(USBDevice device) {
+        DeviceWorker(UsbDevice device) {
             this.device = device;
             this.seed = (int) System.currentTimeMillis();
         }
@@ -174,7 +174,7 @@ public class Unplug {
         private void runAction(Runnable action) {
             try {
                 action.run();
-            } catch (USBException e) {
+            } catch (UsbException e) {
                 logFinish();
             }
         }

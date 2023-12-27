@@ -7,14 +7,15 @@
 
 package net.codecrete.usb.dfu;
 
-import net.codecrete.usb.USBControlTransfer;
-import net.codecrete.usb.USBDevice;
-import net.codecrete.usb.USBRecipient;
-import net.codecrete.usb.USBRequestType;
+import net.codecrete.usb.UsbControlTransfer;
+import net.codecrete.usb.UsbDevice;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.codecrete.usb.UsbRecipient.DEVICE;
+import static net.codecrete.usb.UsbRequestType.STANDARD;
 
 /**
  * Represents a memory segment of the USB device, be it flash memory, RAM or any other type.
@@ -27,12 +28,12 @@ public class Segment {
      * @param interfaceNumber the number of the DFU USB interface
      * @return list of segments
      */
-    public static List<Segment> getSegments(USBDevice device, int interfaceNumber) {
+    public static List<Segment> getSegments(UsbDevice device, int interfaceNumber) {
         var result = new ArrayList<Segment>();
 
         // STM uses multiple alternate interface settings to represent segments.
         // The alternate interface settings name describes the sectors within the segment.
-        var configDesc = device.configurationDescriptor();
+        var configDesc = device.getConfigurationDescriptor();
         int offset = 0;
         while (offset < configDesc.length) {
             if (configDesc[offset + 1] == 4 && (configDesc[offset + 2] & 0xff) == interfaceNumber) {
@@ -53,8 +54,8 @@ public class Segment {
      * @param index the index of the string descriptor
      * @return the string
      */
-    private static String getStringDescriptor(USBDevice device, int index) {
-        var setup = new USBControlTransfer(USBRequestType.STANDARD, USBRecipient.DEVICE, 6, (3 << 8) | index, 0);
+    private static String getStringDescriptor(UsbDevice device, int index) {
+        var setup = new UsbControlTransfer(STANDARD, DEVICE, 6, (3 << 8) | index, 0);
         byte[] stringDesc = device.controlTransferIn(setup, 255);
         int descLen = stringDesc[0] & 0xff;
         return new String(stringDesc, 2, descLen - 2, StandardCharsets.UTF_16LE);
@@ -97,7 +98,7 @@ public class Segment {
     private Segment(int altSetting, String segmentDesc) {
         // The format is described in "UM0424 STM32 USB-FS-Device development kit", ch. 10.3.2
         altSetting_ = altSetting;
-        sectors_ = new ArrayList<Page>();
+        sectors_ = new ArrayList<>();
         int offset = segmentDesc.indexOf('/', 1);
         name_ = segmentDesc.substring(1, offset).trim();
 

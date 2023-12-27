@@ -23,7 +23,7 @@ class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
-        assertThrows(USBTimeoutException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN, 200));
+        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN, 200));
     }
 
     @Test
@@ -43,12 +43,12 @@ class TimeoutTest extends TestDeviceBase {
         // The test device has an internal buffer of about 2KB for full-speed
         // and 16KB for high-speed. The first transfer should not time out.
         final var bufferSize = 32 * testDevice
-                .getEndpoint(USBDirection.OUT, LOOPBACK_EP_OUT).packetSize();
+                .getEndpoint(UsbDirection.OUT, LOOPBACK_EP_OUT).getPacketSize();
 
         var data = generateRandomBytes(100, 9383073929L);
         testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
 
-        assertThrows(USBTimeoutException.class, () -> {
+        assertThrows(UsbTimeoutException.class, () -> {
             for (var i = 0; i < bufferSize / data.length; i++) {
                 testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
             }
@@ -58,7 +58,7 @@ class TimeoutTest extends TestDeviceBase {
         while (true) {
             try {
                 testDevice.transferIn(LOOPBACK_EP_IN, 200);
-            } catch (USBTimeoutException e) {
+            } catch (UsbTimeoutException e) {
                 break;
             }
         }
@@ -70,7 +70,7 @@ class TimeoutTest extends TestDeviceBase {
         Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
-        assertThrows(USBTimeoutException.class, () -> testDevice.transferIn(ECHO_EP_IN, 200));
+        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(ECHO_EP_IN, 200));
     }
 
     @Test

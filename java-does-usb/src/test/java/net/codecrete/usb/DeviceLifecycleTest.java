@@ -16,48 +16,48 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DeviceLifecycleTest {
 
-    private USBDevice device;
+    private UsbDevice device;
 
     @Test
     void lifecycle_showsValidState() {
         device = TestDeviceBase.getDevice();
         var interfaceNumber = TestDeviceBase.getInterfaceNumber(device);
 
-        var intf = device.interfaces().get(interfaceNumber);
-        assertEquals(interfaceNumber, intf.number());
+        var intf = device.getInterfaces().get(interfaceNumber);
+        assertEquals(interfaceNumber, intf.getNumber());
 
-        assertFalse(device.isOpen());
+        assertFalse(device.isOpened());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.claimInterface(interfaceNumber));
-        assertThrows(USBException.class, () -> device.releaseInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.claimInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.releaseInterface(interfaceNumber));
 
         device.open();
 
-        assertTrue(device.isOpen());
+        assertTrue(device.isOpened());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.releaseInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.open());
+        assertThrows(UsbException.class, () -> device.releaseInterface(interfaceNumber));
 
         device.claimInterface(interfaceNumber);
 
-        assertTrue(device.isOpen());
+        assertTrue(device.isOpened());
         assertTrue(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.claimInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.open());
+        assertThrows(UsbException.class, () -> device.claimInterface(interfaceNumber));
 
         device.releaseInterface(interfaceNumber);
 
-        assertTrue(device.isOpen());
+        assertTrue(device.isOpened());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.open());
-        assertThrows(USBException.class, () -> device.releaseInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.open());
+        assertThrows(UsbException.class, () -> device.releaseInterface(interfaceNumber));
 
         device.close();
 
-        assertFalse(device.isOpen());
+        assertFalse(device.isOpened());
         assertFalse(intf.isClaimed());
-        assertThrows(USBException.class, () -> device.claimInterface(interfaceNumber));
-        assertThrows(USBException.class, () -> device.releaseInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.claimInterface(interfaceNumber));
+        assertThrows(UsbException.class, () -> device.releaseInterface(interfaceNumber));
     }
 
     @AfterEach

@@ -28,19 +28,19 @@ class AlternateInterfaceTest extends TestDeviceBase {
 
         testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
 
-        var altIntf = testDevice.getInterface(LOOPBACK_INTF_LOOPBACK).alternate();
+        var altIntf = testDevice.getInterface(LOOPBACK_INTF_LOOPBACK).getCurrentAlternate();
         assertNotNull(altIntf);
-        assertEquals(2, altIntf.endpoints().size());
-        assertEquals(0xff, altIntf.classCode());
+        assertEquals(2, altIntf.getEndpoints().size());
+        assertEquals(0xff, altIntf.getClassCode());
 
         testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 0);
     }
 
     @Test
     void selectInvalidAlternateIntf_fails() {
-        assertThrows(USBException.class, () -> testDevice.selectAlternateSetting(1, 0));
+        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(1, 0));
 
-        assertThrows(USBException.class, () -> testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 2));
+        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 2));
     }
 
     @Test
@@ -57,8 +57,8 @@ class AlternateInterfaceTest extends TestDeviceBase {
     void transferOnInvalidEndpoint_fails() {
         testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
 
-        assertThrows(USBException.class, () -> testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 }));
+        assertThrows(UsbException.class, () -> testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 }));
 
-        assertThrows(USBException.class, () -> testDevice.transferIn(ECHO_EP_IN));
+        assertThrows(UsbException.class, () -> testDevice.transferIn(ECHO_EP_IN));
     }
 }

@@ -20,7 +20,7 @@ class SpeedTest extends TestDeviceBase {
 
     @Test
     void loopback_isFast() throws Throwable {
-        final var isHighSpeed = testDevice.getEndpoint(USBDirection.IN, LOOPBACK_EP_IN).packetSize() == 512;
+        final var isHighSpeed = testDevice.getEndpoint(UsbDirection.IN, LOOPBACK_EP_IN).getPacketSize() == 512;
         final var numBytes = isHighSpeed ? 5000000 : 500000;
 
         var sampleData = generateRandomBytes(numBytes, 7219937602343L);

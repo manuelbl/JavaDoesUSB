@@ -17,33 +17,33 @@ class DeviceEnumerationTest extends TestDeviceBase {
 
     @Test
     void getAllDevices_includesLoopback() {
-        var deviceList = USB.getAllDevices();
+        var deviceList = Usb.getDevices();
         assertThat(deviceList)
                 .isNotEmpty()
-                .anyMatch(device -> device.vendorId() == vid && device.productId() == pid);
+                .anyMatch(device -> device.getVendorId() == vid && device.getProductId() == pid);
     }
 
     @Test
     void getDevices_includesLoopback() {
-        var deviceList = USB.getDevices(device -> device.vendorId() == vid && device.productId() == pid);
+        var deviceList = Usb.findDevices(device -> device.getVendorId() == vid && device.getProductId() == pid);
         assertThat(deviceList)
                 .isNotEmpty()
-                .anyMatch(device -> device.vendorId() == vid && device.productId() == pid);
+                .anyMatch(device -> device.getVendorId() == vid && device.getProductId() == pid);
     }
 
     @Test
     void getDevicePredicate_returnsLoopback() {
-        var device = USB.getDevice(dev -> dev.vendorId() == vid && dev.productId() == pid);
+        var device = Usb.findDevice(dev -> dev.getVendorId() == vid && dev.getProductId() == pid);
         assertThat(device).isPresent();
-        assertThat(device.get().productId()).isEqualTo(pid);
-        assertThat(device.get().vendorId()).isEqualTo(vid);
+        assertThat(device.get().getProductId()).isEqualTo(pid);
+        assertThat(device.get().getVendorId()).isEqualTo(vid);
     }
 
     @Test
     void getDeviceVidPid_returnsLoopback() {
-        var device = USB.getDevice(vid, pid);
+        var device = Usb.findDevice(vid, pid);
         assertThat(device).isPresent();
-        assertThat(device.get().productId()).isEqualTo(pid);
-        assertThat(device.get().vendorId()).isEqualTo(vid);
+        assertThat(device.get().getProductId()).isEqualTo(pid);
+        assertThat(device.get().getVendorId()).isEqualTo(vid);
     }
 }
