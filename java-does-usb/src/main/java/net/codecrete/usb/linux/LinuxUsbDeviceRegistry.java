@@ -10,8 +10,7 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.UsbDevice;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.UsbDeviceRegistry;
-import net.codecrete.usb.linux.gen.poll.poll;
-import net.codecrete.usb.linux.gen.poll.pollfd;
+import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.udev.udev;
 
 import java.lang.foreign.Arena;
@@ -20,7 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.Logger.Level.INFO;
+import static net.codecrete.usb.linux.EPoll.epoll_create;
+import static net.codecrete.usb.linux.EPoll.epoll_wait;
+import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
+import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
+import static net.codecrete.usb.linux.gen.epoll.epoll.*;
 
 /**
  * Linux implementation of USB device registry.
@@ -90,28 +94,40 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
             return;
         }
 
-        // monitor device changes
-        //noinspection InfiniteLoopStatement
-        while (true) {
-            try (var arena = Arena.ofConfined(); var cleanup = new ScopeCleanup()) {
+        try (var arena = Arena.ofConfined()) {
+            // create epoll
+            var errorState = allocateErrorState(arena);
+            var epfd = epoll_create(1, errorState);
+            if (epfd < 0)
+                throwLastError(errorState, "internal error (epoll_create)");
+            EPoll.addFileDescriptor(epfd, EPOLLIN(), fd);
 
-                // wait for next change
-                waitForFileDescriptor(fd, arena);
+            // allocate event (as output for epoll_wait)
+            var event = arena.allocate(epoll_event.$LAYOUT());
 
-                // retrieve change
-                var udevDevice = udev.udev_monitor_receive_device(monitor);
-                if (udevDevice == null)
-                    continue; // shouldn't happen
+            // monitor device changes
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                try (var cleanup = new ScopeCleanup()) {
 
-                cleanup.add(() -> udev.udev_device_unref(udevDevice));
+                    // wait for next change
+                    epoll_wait(epfd, event, 1, -1, errorState);
 
-                // get details
-                var action = getDeviceAction(udevDevice);
+                    // retrieve change
+                    var udevDevice = udev.udev_monitor_receive_device(monitor);
+                    if (udevDevice == null)
+                        continue; // shouldn't happen
 
-                if ("add".equals(action)) {
-                    onDeviceConnected(udevDevice);
-                } else if ("remove".equals(action)) {
-                    onDeviceDisconnected(udevDevice);
+                    cleanup.add(() -> udev.udev_device_unref(udevDevice));
+
+                    // get details
+                    var action = getDeviceAction(udevDevice);
+
+                    if ("add".equals(action)) {
+                        onDeviceConnected(udevDevice);
+                    } else if ("remove".equals(action)) {
+                        onDeviceDisconnected(udevDevice);
+                    }
                 }
             }
         }
@@ -243,20 +259,4 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
     private static String getDeviceAction(MemorySegment udevDevice) {
         return udev.udev_device_get_action(udevDevice).getUtf8String(0);
     }
-
-    /**
-     * Waits until the specified file descriptor becomes ready for reading.
-     *
-     * @param fd    the file descriptor
-     * @param arena an arena for allocating memory
-     */
-    private static void waitForFileDescriptor(int fd, Arena arena) {
-        var fds = pollfd.allocate(arena);
-        pollfd.fd$set(fds, fd);
-        pollfd.events$set(fds, (short) poll.POLLIN());
-        int res = poll.poll(fds, 1, -1);
-        if (res < 0)
-            throwException("internal error (poll)");
-    }
-
 }

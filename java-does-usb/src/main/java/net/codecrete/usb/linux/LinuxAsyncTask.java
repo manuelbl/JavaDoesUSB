@@ -8,25 +8,29 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.UsbTransferType;
+import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.errno.errno;
-import net.codecrete.usb.linux.gen.poll.poll;
-import net.codecrete.usb.linux.gen.poll.pollfd;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
 
 import java.lang.foreign.Arena;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.foreign.ValueLayout.ADDRESS;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
+import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
+import static net.codecrete.usb.linux.EPoll.epoll_create;
+import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
 import static net.codecrete.usb.linux.UsbDevFS.*;
+import static net.codecrete.usb.linux.gen.epoll.epoll.*;
+import static net.codecrete.usb.linux.gen.errno.errno.EINTR;
 import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
 
 /**
@@ -51,15 +55,20 @@ class LinuxAsyncTask {
      */
     static final LinuxAsyncTask INSTANCE = new LinuxAsyncTask();
 
+    private static final int NUM_EVENTS = 5;
+
+    private static final VarHandle epoll_event_data_fd$VH = epoll_event.$LAYOUT().varHandle(
+            MemoryLayout.PathElement.groupElement("data"),
+            MemoryLayout.PathElement.groupElement("fd")
+    );
+
     private final Arena urbArena = Arena.ofAuto();
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
     /// map of URB addresses to transfer (for outstanding transfers)
     private final Map<MemorySegment, LinuxTransfer> transfersByURB = new LinkedHashMap<>();
-    /// array of file descriptors using asynchronous completion
-    private int[] asyncFds;
-    /// file descriptor to notify async IO background thread about an update
-    private int asyncIOWakeUpEventFd;
+    /// file descriptor of epoll
+    private int epollFd = -1;
 
     /**
      * Background task for handling asynchronous IO completions.
@@ -67,83 +76,31 @@ class LinuxAsyncTask {
      * It polls on all registered file descriptors. If a file descriptor is
      * ready, the URB is "reaped".
      * </p>
-     * <p>
-     * Using an additional {@code eventfd} file descriptor, this background task
-     * can be woken up to refresh the list of polled file descriptors.
-     * </p>
      */
     @SuppressWarnings({"java:S2189", "java:S135", "java:S3776"})
     private void asyncCompletionTask() {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            var pollfdArray = pollfd.allocateArray(100, arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
-            var eventfdValueHolder = arena.allocate(JAVA_LONG);
+            var events = arena.allocateArray(epoll_event.$LAYOUT(), NUM_EVENTS);
 
             while (true) {
 
-                // get current file descriptor array
-                int[] fds;
-                synchronized (this) {
-                    fds = asyncFds;
+                var res = epoll_wait(epollFd, events, NUM_EVENTS, -1, errorState);
+                if (res < 0) {
+                    var err = Linux.getErrno(errorState);
+                    if (err == EINTR())
+                        continue;
+                    throwException(err, "internal error (epoll_wait)");
                 }
 
-                // poll for event
-                fillPollfdArray(pollfdArray, fds);
-                var n = fds.length;
-                var res = poll.poll(pollfdArray, n + 1L, -1);
-                if (res < 0)
-                    throwException("internal error (poll)");
-
-                // acquire lock
-                synchronized (this) {
-
-                    // check for wakeup event
-                    if ((pollfd.revents$get(pollfdArray, n) & poll.POLLIN()) != 0) {
-                        // wakeup to refresh list of file descriptors
-                        res = IO.eventfd_read(asyncIOWakeUpEventFd, eventfdValueHolder, errorState);
-                        if (res < 0)
-                            throwLastError(errorState, "internal error (eventfd_read)");
-                        continue;
-                    }
-
-                    // check for USB device events
-                    for (var i = 0; i < n + 1; i++) {
-                        var revent = pollfd.revents$get(pollfdArray, i);
-                        if (revent == 0)
-                            continue;
-
-                        if ((revent & poll.POLLERR()) != 0) {
-                            // most likely the device has been disconnected,
-                            // remove from polled FD list to prevent further problems
-                            var fd = pollfd.fd$get(pollfdArray, i);
-                            removeFdFromAsyncIOCompletion(fd);
-                            continue;
-                        }
-
-                        // reap URB
-                        var fd = pollfd.fd$get(pollfdArray, i);
-                        reapURBs(fd, urbPointerHolder, errorState);
-                    }
+                for (int i = 0; i < res; i++) {
+                    var fd = (int) epoll_event_data_fd$VH.get(events.asSlice(epoll_event.sizeof() * i, epoll_event.sizeof()));
+                    reapURBs(fd, urbPointerHolder, errorState);
                 }
             }
         }
-    }
-
-    void fillPollfdArray(MemorySegment asyncPolls, int[] fds) {
-        // device file descriptors
-        var n = fds.length;
-        for (var i = 0; i < n; i++) {
-            pollfd.fd$set(asyncPolls, i, fds[i]);
-            pollfd.events$set(asyncPolls, i, (short) poll.POLLOUT());
-            pollfd.revents$set(asyncPolls, i, (short) 0);
-        }
-
-        // entry n is the wake-up event file descriptor
-        pollfd.fd$set(asyncPolls, n, asyncIOWakeUpEventFd);
-        pollfd.events$set(asyncPolls, n, (short) poll.POLLIN());
-        pollfd.revents$set(asyncPolls, n, (short) 0);
     }
 
     /**
@@ -160,8 +117,11 @@ class LinuxAsyncTask {
                 var err = Linux.getErrno(errorState);
                 if (err == errno.EAGAIN())
                     return; // no more pending URBs
-                if (err == errno.ENODEV())
-                    return; // ignore, device might have been closed
+                if (err == errno.ENODEV()) {
+                    // device might have been unplugged
+                    removeFdFromAsyncIOCompletion(fd);
+                    return;
+                }
                 throwException(err, "internal error (reap URB)");
             }
 
@@ -173,37 +133,16 @@ class LinuxAsyncTask {
     }
 
     /**
-     * Notifies background process about changed FD list
-     */
-    private void notifyAsyncIOTask() {
-        // start background process if needed
-        if (asyncIOWakeUpEventFd == 0) {
-            startAsyncIOTask();
-            return;
-        }
-
-        try (var arena = Arena.ofConfined()) {
-            var errorState = allocateErrorState(arena);
-            if (IO.eventfd_write(asyncIOWakeUpEventFd, 1, errorState) < 0)
-                throwLastError(errorState, "internal error (eventfd_write)");
-        }
-    }
-
-    /**
      * Register a device for asynchronous IO completion handling
      *
      * @param device USB device
      */
     synchronized void addForAsyncIOCompletion(LinuxUsbDevice device) {
-        var n = asyncFds != null ? asyncFds.length : 0;
-        var fds = new int[n + 1];
-        if (n > 0)
-            System.arraycopy(asyncFds, 0, fds, 0, n);
-        fds[n] = device.fileDescriptor();
+        // start background process if needed
+        if (epollFd < 0)
+            startAsyncIOTask();
 
-        // activate new array
-        asyncFds = fds;
-        notifyAsyncIOTask();
+        EPoll.addFileDescriptor(epollFd, EPOLLOUT(), device.fileDescriptor());
     }
 
     /**
@@ -212,29 +151,11 @@ class LinuxAsyncTask {
      * @param device USB device
      */
     synchronized void removeFromAsyncIOCompletion(LinuxUsbDevice device) {
-        removeFdFromAsyncIOCompletion(device.fileDescriptor());
-        notifyAsyncIOTask();
+        EPoll.removeFileDescriptor(epollFd, device.fileDescriptor());
     }
 
     private synchronized void removeFdFromAsyncIOCompletion(int fd) {
-        // copy file descriptor (except the device's) into new array
-        var n = asyncFds.length;
-        if (n == 0)
-            return;
-
-        var fds = new int[n - 1];
-        var tgt = 0;
-        for (var asyncFd : asyncFds) {
-            if (asyncFd != fd) {
-                if (tgt == n)
-                    return;
-                fds[tgt] = asyncFd;
-                tgt += 1;
-            }
-        }
-
-        // make new array to active one
-        asyncFds = fds;
+        EPoll.removeFileDescriptor(epollFd, fd);
     }
 
     synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
@@ -319,11 +240,9 @@ class LinuxAsyncTask {
     private void startAsyncIOTask() {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            asyncIOWakeUpEventFd = IO.eventfd(0, 0, errorState);
-            if (asyncIOWakeUpEventFd == -1) {
-                asyncIOWakeUpEventFd = 0;
-                throwLastError(errorState, "internal error (eventfd)");
-            }
+            epollFd = epoll_create(NUM_EVENTS, errorState);
+            if (epollFd < 0)
+                throwLastError(errorState, "internal error (epoll_create)");
         }
 
         // start background thread for handling IO completion

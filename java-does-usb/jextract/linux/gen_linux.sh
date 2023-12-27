@@ -10,6 +10,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant EAGAIN \
   --include-constant EINVAL \
   --include-constant ENODEV \
+  --include-constant EINTR \
+  --include-constant ENOENT \
   /usr/include/errno.h
 
 # string.h
@@ -45,16 +47,6 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct usbdevfs_urb \
   --include-struct usbdevfs_disconnect_claim \
   --include-struct usbdevfs_ioctl \
-  --include-constant USBDEVFS_CONTROL \
-  --include-constant USBDEVFS_BULK \
-  --include-constant USBDEVFS_CLAIMINTERFACE \
-  --include-constant USBDEVFS_RELEASEINTERFACE \
-  --include-constant USBDEVFS_SETINTERFACE \
-  --include-constant USBDEVFS_CLEAR_HALT \
-  --include-constant USBDEVFS_SUBMITURB \
-  --include-constant USBDEVFS_DISCARDURB \
-  --include-constant USBDEVFS_REAPURB \
-  --include-constant USBDEVFS_DISCONNECT_CLAIM \
   --include-constant USBDEVFS_URB_TYPE_INTERRUPT \
   --include-constant USBDEVFS_URB_TYPE_CONTROL \
   --include-constant USBDEVFS_URB_TYPE_BULK \
@@ -89,14 +81,14 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function udev_monitor_get_fd \
   /usr/include/libudev.h
 
-# poll.h
+# epoll.h
 $JEXTRACT --source --output ../../src/main/java \
-  --header-class-name poll \
-  --target-package net.codecrete.usb.linux.gen.poll \
-  --include-function poll \
-  --include-struct pollfd \
-  --include-constant POLLIN \
-  --include-constant POLLOUT \
-  --include-constant POLLERR \
-  /usr/include/poll.h
+  --header-class-name epoll \
+  --target-package net.codecrete.usb.linux.gen.epoll \
+  --include-struct epoll_event \
+  --include-constant EPOLL_CTL_ADD \
+  --include-constant EPOLL_CTL_DEL \
+  --include-constant EPOLLIN \
+  --include-constant EPOLLOUT \
+  epoll.h
 
