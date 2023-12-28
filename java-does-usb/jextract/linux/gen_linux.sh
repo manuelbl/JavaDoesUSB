@@ -27,6 +27,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --target-package net.codecrete.usb.linux.gen.fcntl \
   --include-constant O_CLOEXEC \
   --include-constant O_RDWR \
+  --include-constant FD_CLOEXEC \
   /usr/include/fcntl.h
 
 # unistd.h
@@ -90,5 +91,6 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant EPOLL_CTL_DEL \
   --include-constant EPOLLIN \
   --include-constant EPOLLOUT \
+  --include-constant EPOLLWAKEUP \
   epoll.h
 

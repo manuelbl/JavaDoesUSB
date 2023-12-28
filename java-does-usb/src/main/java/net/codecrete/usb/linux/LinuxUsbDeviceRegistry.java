@@ -19,12 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.Logger.Level.INFO;
-import static net.codecrete.usb.linux.EPoll.epoll_create;
+import static net.codecrete.usb.linux.EPoll.epoll_create1;
 import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
 import static net.codecrete.usb.linux.gen.epoll.epoll.*;
+import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
 
 /**
  * Linux implementation of USB device registry.
@@ -97,7 +98,7 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
         try (var arena = Arena.ofConfined()) {
             // create epoll
             var errorState = allocateErrorState(arena);
-            var epfd = epoll_create(1, errorState);
+            var epfd = epoll_create1(FD_CLOEXEC(), errorState);
             if (epfd < 0)
                 throwLastError(errorState, "internal error (epoll_create)");
             EPoll.addFileDescriptor(epfd, EPOLLIN(), fd);

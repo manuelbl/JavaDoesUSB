@@ -43,9 +43,9 @@ public class EPoll {
 
     private static final Linker linker = Linker.nativeLinker();
 
-    private static final FunctionDescriptor epoll_create$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT);
-    private static final MethodHandle epoll_create$MH = linker.downcallHandle(linker.defaultLookup().find(
-            "epoll_create").get(), epoll_create$FUNC, Linux.ERRNO_STATE);
+    private static final FunctionDescriptor epoll_create1$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT);
+    private static final MethodHandle epoll_create1$MH = linker.downcallHandle(linker.defaultLookup().find(
+            "epoll_create").get(), epoll_create1$FUNC, Linux.ERRNO_STATE);
 
     private static final FunctionDescriptor epoll_ctl$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_INT, JAVA_INT, ADDRESS);
     private static final MethodHandle epoll_ctl$MH = linker.downcallHandle(linker.defaultLookup().find(
@@ -55,9 +55,9 @@ public class EPoll {
     private static final MethodHandle epoll_wait$MH = linker.downcallHandle(linker.defaultLookup().find(
             "epoll_wait").get(), epoll_wait$FUNC, Linux.ERRNO_STATE);
 
-    static int epoll_create(int size, MemorySegment errno) {
+    static int epoll_create1(int flags, MemorySegment errno) {
         try {
-            return (int) epoll_create$MH.invokeExact(errno, size);
+            return (int) epoll_create1$MH.invokeExact(errno, flags);
         } catch (Throwable ex) {
             throw new AssertionError(ex);
         }
@@ -102,6 +102,7 @@ public class EPoll {
             var ret = epoll_ctl(epfd, EPOLL_CTL_DEL(), fd, event, errorState);
             if (ret < 0) {
                 var err = Linux.getErrno(errorState);
+                // ignore ENOENT as this method might be called twice when cleaning up
                 if (err != errno.ENOENT())
                     throwLastError(errorState, "internal error (epoll_ctl_del)");
             }

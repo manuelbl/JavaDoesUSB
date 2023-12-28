@@ -25,6 +25,14 @@ public class fcntl  {
     }
     /**
      * {@snippet :
+     * #define FD_CLOEXEC 1
+     * }
+     */
+    public static int FD_CLOEXEC() {
+        return (int)1L;
+    }
+    /**
+     * {@snippet :
      * #define O_CLOEXEC 524288
      * }
      */

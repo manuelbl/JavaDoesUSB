@@ -47,6 +47,14 @@ public class epoll  {
     public static int EPOLLOUT() {
         return (int)4L;
     }
+    /**
+     * {@snippet :
+     * enum EPOLL_EVENTS.EPOLLWAKEUP = 536870912;
+     * }
+     */
+    public static int EPOLLWAKEUP() {
+        return (int)536870912L;
+    }
 }
 
 

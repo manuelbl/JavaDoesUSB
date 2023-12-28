@@ -21,14 +21,15 @@ import java.util.Map;
 
 import static java.lang.foreign.ValueLayout.*;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
-import static net.codecrete.usb.linux.EPoll.epoll_create;
+import static net.codecrete.usb.linux.EPoll.epoll_create1;
 import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
 import static net.codecrete.usb.linux.UsbDevFS.*;
 import static net.codecrete.usb.linux.gen.epoll.epoll.*;
-import static net.codecrete.usb.linux.gen.errno.errno.EINTR;
+import static net.codecrete.usb.linux.gen.errno.errno.*;
+import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
 import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
 
 /**
@@ -105,7 +106,7 @@ class LinuxAsyncTask {
      * @param urbPointerHolder native memory to receive the URB pointer
      * @param errorState       native memory to receive the errno
      */
-    private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
+    private synchronized void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
 
         while (true) {
             var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errorState);
@@ -123,7 +124,7 @@ class LinuxAsyncTask {
 
             // call completion handler
             var urb = dereference(urbPointerHolder);
-            var transfer = getTransferResult(urb);
+            var transfer = getTransferWithResult(urb);
             transfer.completion().completed(transfer);
         }
     }
@@ -138,7 +139,7 @@ class LinuxAsyncTask {
         if (epollFd < 0)
             startAsyncIOTask();
 
-        EPoll.addFileDescriptor(epollFd, EPOLLOUT(), device.fileDescriptor());
+        EPoll.addFileDescriptor(epollFd, EPOLLOUT() | EPOLLWAKEUP(), device.fileDescriptor());
     }
 
     /**
@@ -147,7 +148,31 @@ class LinuxAsyncTask {
      * @param device USB device
      */
     synchronized void removeFromAsyncIOCompletion(LinuxUsbDevice device) {
-        EPoll.removeFileDescriptor(epollFd, device.fileDescriptor());
+        int fd = device.fileDescriptor();
+
+        // remove file descriptor from epoll
+        EPoll.removeFileDescriptor(epollFd, fd);
+
+        // reap outstanding URBs
+        try (var arena = Arena.ofConfined()) {
+            var errorState = allocateErrorState(arena);
+            var urbPointerHolder = arena.allocate(ADDRESS);
+            reapURBs(fd, urbPointerHolder, errorState);
+        }
+
+        // reclaim stale URBs
+        transfersByURB.entrySet().removeIf(e -> {
+            var urb = e.getKey();
+            var isMatch = usbdevfs_urb.usercontext$get(urb).address() == fd;
+            if (isMatch) {
+                var transfer = e.getValue();
+                transfer.urb = null;
+                transfer.setResultCode(ENOENT());
+                transfer.setResultSize(0);
+                availableURBs.add(urb);
+            }
+            return isMatch;
+        });
     }
 
     synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
@@ -202,7 +227,7 @@ class LinuxAsyncTask {
     }
 
     /**
-     * Gets the transfer associated with the specified URB.
+     * Gets the transfer associated with the specified URB and adds the result.
      * <p>
      * The URB is returned into the list of URBs available for further transfers.
      * </p>
@@ -211,7 +236,7 @@ class LinuxAsyncTask {
      * @return transfer associated with the URB
      */
     @SuppressWarnings("java:S2259")
-    private synchronized LinuxTransfer getTransferResult(MemorySegment urb) {
+    private synchronized LinuxTransfer getTransferWithResult(MemorySegment urb) {
         var transfer = transfersByURB.remove(urb);
         if (transfer == null)
             throwException("internal error (unknown URB)");
@@ -221,6 +246,7 @@ class LinuxAsyncTask {
 
         availableURBs.add(transfer.urb);
         transfer.urb = null;
+
         return transfer;
     }
 
@@ -232,24 +258,25 @@ class LinuxAsyncTask {
             var errorState = allocateErrorState(arena);
 
             // iterate all URBs and discard the ones for the specified endpoint
-            for (var urb : transfersByURB.keySet()) {
-                if (fd != (int) usbdevfs_urb.usercontext$get(urb).address()
-                        || endpointAddress != usbdevfs_urb.endpoint$get(urb))
-                    continue;
-
-                if (IO.ioctl(fd, DISCARDURB, urb, errorState) < 0) {
-                    // ignore EINVAL; it occurs if the URB has completed at the same time
-                    if (Linux.getErrno(errorState) != errno.EINVAL())
-                        throwLastError(errorState, "error occurred while aborting transfer");
-                }
-            }
+            transfersByURB.keySet().stream()
+                    .filter(urb ->
+                            usbdevfs_urb.usercontext$get(urb).address() == fd
+                                    && usbdevfs_urb.endpoint$get(urb) == endpointAddress)
+                    .forEach(urb -> {
+                                if (IO.ioctl(fd, DISCARDURB, urb, errorState) < 0) {
+                                    // ignore EINVAL; it occurs if the URB has completed at the same time
+                                    if (Linux.getErrno(errorState) != errno.EINVAL())
+                                        throwLastError(errorState, "error occurred while aborting transfer");
+                                }
+                            }
+                    );
         }
     }
 
     private void startAsyncIOTask() {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            epollFd = epoll_create(NUM_EVENTS, errorState);
+            epollFd = epoll_create1(FD_CLOEXEC(), errorState);
             if (epollFd < 0)
                 throwLastError(errorState, "internal error (epoll_create)");
         }
