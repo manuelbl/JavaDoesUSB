@@ -13,9 +13,7 @@ import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
 
 import java.lang.foreign.Arena;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,11 +55,6 @@ class LinuxAsyncTask {
 
     private static final int NUM_EVENTS = 5;
 
-    private static final VarHandle epoll_event_data_fd$VH = epoll_event.$LAYOUT().varHandle(
-            MemoryLayout.PathElement.groupElement("data"),
-            MemoryLayout.PathElement.groupElement("fd")
-    );
-
     private final Arena urbArena = Arena.ofAuto();
     /// available URBs
     private final List<MemorySegment> availableURBs = new ArrayList<>();
@@ -87,16 +80,18 @@ class LinuxAsyncTask {
 
             while (true) {
 
+                // wait for file descriptor to be ready
                 var res = epoll_wait(epollFd, events, NUM_EVENTS, -1, errorState);
                 if (res < 0) {
                     var err = Linux.getErrno(errorState);
                     if (err == EINTR())
-                        continue;
+                        continue; // continue on interrupt
                     throwException(err, "internal error (epoll_wait)");
                 }
 
+                // for all ready file descriptors, reap URBs
                 for (int i = 0; i < res; i++) {
-                    var fd = (int) epoll_event_data_fd$VH.get(events.asSlice(epoll_event.sizeof() * i, epoll_event.sizeof()));
+                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, i);
                     reapURBs(fd, urbPointerHolder, errorState);
                 }
             }
@@ -111,6 +106,7 @@ class LinuxAsyncTask {
      * @param errorState       native memory to receive the errno
      */
     private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
+
         while (true) {
             var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errorState);
             if (res < 0) {
@@ -119,7 +115,7 @@ class LinuxAsyncTask {
                     return; // no more pending URBs
                 if (err == errno.ENODEV()) {
                     // device might have been unplugged
-                    removeFdFromAsyncIOCompletion(fd);
+                    EPoll.removeFileDescriptor(epollFd, fd);
                     return;
                 }
                 throwException(err, "internal error (reap URB)");
@@ -154,13 +150,9 @@ class LinuxAsyncTask {
         EPoll.removeFileDescriptor(epollFd, device.fileDescriptor());
     }
 
-    private synchronized void removeFdFromAsyncIOCompletion(int fd) {
-        EPoll.removeFileDescriptor(epollFd, fd);
-    }
-
     synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
 
-        addURB(transfer);
+        linkToUrb(transfer);
         var urb = transfer.urb;
 
         usbdevfs_urb.type$set(urb, (byte) urbTransferType(transferType));
@@ -188,7 +180,15 @@ class LinuxAsyncTask {
         };
     }
 
-    private void addURB(LinuxTransfer transfer) {
+    /**
+     * Links the specified transfer instance to a URB.
+     * <p>
+     * The transfer is assigned an URB instance, and a list
+     * of associations from URB to transfer is maintained.
+     * </p>
+     * @param transfer the transfer to assign a URB.
+     */
+    private void linkToUrb(LinuxTransfer transfer) {
         MemorySegment urb;
         var size = availableURBs.size();
         if (size > 0) {
@@ -201,6 +201,15 @@ class LinuxAsyncTask {
         transfersByURB.put(urb, transfer);
     }
 
+    /**
+     * Gets the transfer associated with the specified URB.
+     * <p>
+     * The URB is returned into the list of URBs available for further transfers.
+     * </p>
+     *
+     * @param urb URB instance
+     * @return transfer associated with the URB
+     */
     @SuppressWarnings("java:S2259")
     private synchronized LinuxTransfer getTransferResult(MemorySegment urb) {
         var transfer = transfersByURB.remove(urb);

@@ -19,6 +19,7 @@ class UsbDevFS {
     private UsbDevFS() {
     }
 
+    // constants that jextract cannot generate as they are built from function-like macros
     static final long CLAIMINTERFACE = 0x8004550FL;
     static final long RELEASEINTERFACE = 0x80045510L;
     static final long SETINTERFACE = 0x80085504L;

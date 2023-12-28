@@ -22,6 +22,23 @@ import static net.codecrete.usb.linux.gen.epoll.epoll.*;
 
 @SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue", "java:S100"})
 public class EPoll {
+    // Memory layout for an array of epoll_event structs
+    private static final SequenceLayout EVENT_ARRAY$LAYOUT = MemoryLayout.sequenceLayout(epoll_event.$LAYOUT());
+
+    // varhandle to access the "fd" field in an array of epoll_event structs
+    static final VarHandle EVENT_ARRAY_DATA_FD$VH = EVENT_ARRAY$LAYOUT.varHandle(
+            MemoryLayout.PathElement.sequenceElement(),
+            MemoryLayout.PathElement.groupElement("data"),
+            MemoryLayout.PathElement.groupElement("fd")
+    );
+
+    // varhandle to access the "fd" field in an epoll_event struct
+    static final VarHandle EVENT_DATA_FD$VH = epoll_event.$LAYOUT().varHandle(
+            MemoryLayout.PathElement.groupElement("data"),
+            MemoryLayout.PathElement.groupElement("fd")
+    );
+
+
     private EPoll() {}
 
     private static final Linker linker = Linker.nativeLinker();
@@ -37,11 +54,6 @@ public class EPoll {
     private static final FunctionDescriptor epoll_wait$FUNC = FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT);
     private static final MethodHandle epoll_wait$MH = linker.downcallHandle(linker.defaultLookup().find(
             "epoll_wait").get(), epoll_wait$FUNC, Linux.ERRNO_STATE);
-
-    private static final VarHandle epoll_event_data_fd$VH = epoll_event.$LAYOUT().varHandle(
-            MemoryLayout.PathElement.groupElement("data"),
-            MemoryLayout.PathElement.groupElement("fd")
-    );
 
     static int epoll_create(int size, MemorySegment errno) {
         try {
@@ -73,7 +85,7 @@ public class EPoll {
 
             var event = arena.allocate(epoll_event.$LAYOUT());
             epoll_event.events$set(event, op);
-            epoll_event_data_fd$VH.set(event, fd);
+            EVENT_DATA_FD$VH.set(event, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_ADD(), fd, event, errorState);
             if (ret < 0)
                 throwLastError(errorState, "internal error (epoll_ctl_add)");
@@ -86,7 +98,7 @@ public class EPoll {
 
             var event = arena.allocate(epoll_event.$LAYOUT());
             epoll_event.events$set(event, 0);
-            epoll_event_data_fd$VH.set(event, fd);
+            EVENT_DATA_FD$VH.set(event, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_DEL(), fd, event, errorState);
             if (ret < 0) {
                 var err = Linux.getErrno(errorState);
