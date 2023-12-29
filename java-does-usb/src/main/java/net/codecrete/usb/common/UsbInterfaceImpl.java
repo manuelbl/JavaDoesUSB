@@ -27,7 +27,7 @@ public class UsbInterfaceImpl implements UsbInterface {
     public UsbInterfaceImpl(int number, List<UsbAlternateInterface> alternates) {
         interfaceNumber = number;
         alternateInterfaces = alternates;
-        currentAlternate = alternates.get(0);
+        currentAlternate = alternates.getFirst();
         alternateInterfaces.sort(Comparator.comparingInt(UsbAlternateInterface::getNumber));
     }
 

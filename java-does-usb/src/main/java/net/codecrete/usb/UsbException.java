@@ -37,7 +37,7 @@ public class UsbException extends RuntimeException {
      * @param errorCode the error code
      */
     public UsbException(@NotNull String message, int errorCode) {
-        super(message + " (error code: " + errorCode + ")");
+        super(STR."\{message} (error code: \{errorCode})");
         code = errorCode;
     }
 

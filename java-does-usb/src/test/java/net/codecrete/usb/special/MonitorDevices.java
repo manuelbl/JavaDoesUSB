@@ -21,13 +21,13 @@ public class MonitorDevices {
 
     public static void main(String[] args) throws IOException {
         Usb.setOnDeviceConnected((device) -> {
-            System.out.println("Connected:    " + device.toString());
+            System.out.println(STR."Connected:    \{device.toString()}");
             talkToTestDevice(device);
         });
-        Usb.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
+        Usb.setOnDeviceDisconnected((device) -> System.out.println(STR."Disconnected: \{device.toString()}"));
 
         for (var device : Usb.getDevices()) {
-            System.out.println("Present:      " + device.toString());
+            System.out.println(STR."Present:      \{device.toString()}");
             talkToTestDevice(device);
         }
         System.out.println("Monitoring...");

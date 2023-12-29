@@ -350,15 +350,14 @@ public abstract class UsbDeviceImpl implements UsbDevice {
             if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
                 waitNoTimeout(transfer);
-                throw new UsbTimeoutException(getOperationDescription(direction, endpointNumber)
-                        + "aborted due to timeout");
+                throw new UsbTimeoutException(STR."\{getOperationDescription(direction, endpointNumber)}aborted due to timeout");
             }
         }
 
         // test for error
         if (transfer.resultCode() != 0) {
             var operation = getOperationDescription(direction, endpointNumber);
-            throwOSException(transfer.resultCode(), operation + " failed");
+            throwOSException(transfer.resultCode(), STR."\{operation} failed");
         }
     }
 
@@ -450,7 +449,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
 
     @Override
     public String toString() {
-        return "VID: 0x" + String.format("%04x", vid) + ", PID: 0x" + String.format("%04x", pid) + ", " + "manufacturer: " + manufacturerString + ", product: " + productString + ", serial: " + serialString + ", ID: " + uniqueDeviceId;
+        return STR."VID: 0x\{String.format("%04x", vid)}, PID: 0x\{String.format("%04x", pid)}, manufacturer: \{manufacturerString}, product: \{productString}, serial: \{serialString}, ID: \{uniqueDeviceId}";
     }
 
     public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize,

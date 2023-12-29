@@ -70,7 +70,7 @@ class ConfigurationParserTest {
            softly.assertThat(intf.getNumber()).isEqualTo(0);
            softly.assertThat(intf.getAlternates()).hasSize(1);
            softly.assertThat(intf.getCurrentAlternate().getEndpoints()).hasSize(1);
-           softly.assertThat(intf.getCurrentAlternate().getEndpoints().get(0)).satisfies(endpoint -> {
+           softly.assertThat(intf.getCurrentAlternate().getEndpoints().getFirst()).satisfies(endpoint -> {
               softly.assertThat(endpoint.getNumber()).isEqualTo(5);
                softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
               softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
@@ -88,7 +88,7 @@ class ConfigurationParserTest {
             softly.assertThat(intf.getAlternates().get(1)).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(1);
                 softly.assertThat(alternate.getEndpoints()).hasSize(1);
-                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                softly.assertThat(alternate.getEndpoints().getFirst()).satisfies(endpoint -> {
                     softly.assertThat(endpoint.getNumber()).isEqualTo(1);
                     softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
                     softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.ISOCHRONOUS);
@@ -107,7 +107,7 @@ class ConfigurationParserTest {
             softly.assertThat(intf.getAlternates().get(1)).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(1);
                 softly.assertThat(alternate.getEndpoints()).hasSize(1);
-                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                softly.assertThat(alternate.getEndpoints().getFirst()).satisfies(endpoint -> {
                     softly.assertThat(endpoint.getNumber()).isEqualTo(2);
                     softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
                     softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.ISOCHRONOUS);
@@ -119,10 +119,10 @@ class ConfigurationParserTest {
         softly.assertThat(configuration.interfaces().get(3)).satisfies(intf -> {
             softly.assertThat(intf.getNumber()).isEqualTo(3);
             softly.assertThat(intf.getAlternates()).hasSize(1);
-            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+            softly.assertThat(intf.getAlternates().getFirst()).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(0);
                 softly.assertThat(alternate.getEndpoints()).hasSize(1);
-                softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
+                softly.assertThat(alternate.getEndpoints().getFirst()).satisfies(endpoint -> {
                     softly.assertThat(endpoint.getNumber()).isEqualTo(4);
                     softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
                     softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
@@ -164,7 +164,7 @@ class ConfigurationParserTest {
             softly.assertThat(intf.getNumber()).isEqualTo(0);
             softly.assertThat(intf.getAlternates()).hasSize(1);
             softly.assertThat(intf.getCurrentAlternate().getEndpoints()).hasSize(1);
-            softly.assertThat(intf.getCurrentAlternate().getEndpoints().get(0)).satisfies(endpoint -> {
+            softly.assertThat(intf.getCurrentAlternate().getEndpoints().getFirst()).satisfies(endpoint -> {
                 softly.assertThat(endpoint.getNumber()).isEqualTo(3);
                 softly.assertThat(endpoint.getDirection()).isEqualTo(UsbDirection.IN);
                 softly.assertThat(endpoint.getTransferType()).isEqualTo(UsbTransferType.INTERRUPT);
@@ -175,7 +175,7 @@ class ConfigurationParserTest {
         softly.assertThat(configuration.interfaces().get(1)).satisfies(intf -> {
             softly.assertThat(intf.getNumber()).isEqualTo(1);
             softly.assertThat(intf.getAlternates()).hasSize(1);
-            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+            softly.assertThat(intf.getAlternates().getFirst()).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(0);
                 softly.assertThat(alternate.getEndpoints()).hasSize(2);
                 softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {
@@ -195,7 +195,7 @@ class ConfigurationParserTest {
         softly.assertThat(configuration.interfaces().get(2)).satisfies(intf -> {
             softly.assertThat(intf.getNumber()).isEqualTo(2);
             softly.assertThat(intf.getAlternates()).hasSize(1);
-            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+            softly.assertThat(intf.getAlternates().getFirst()).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(0);
                 softly.assertThat(alternate.getEndpoints()).isEmpty();
             });
@@ -205,7 +205,7 @@ class ConfigurationParserTest {
         softly.assertThat(configuration.interfaces().get(3)).satisfies(intf -> {
             softly.assertThat(intf.getNumber()).isEqualTo(3);
             softly.assertThat(intf.getAlternates()).hasSize(1);
-            softly.assertThat(intf.getAlternates().get(0)).satisfies(alternate -> {
+            softly.assertThat(intf.getAlternates().getFirst()).satisfies(alternate -> {
                 softly.assertThat(alternate.getNumber()).isEqualTo(0);
                 softly.assertThat(alternate.getEndpoints()).hasSize(2);
                 softly.assertThat(alternate.getEndpoints().get(0)).satisfies(endpoint -> {

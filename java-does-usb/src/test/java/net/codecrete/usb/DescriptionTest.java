@@ -69,7 +69,7 @@ class DescriptionTest extends TestDeviceBase {
         var altIntf = intf.getCurrentAlternate();
         assertNotNull(intf.getAlternates());
         assertEquals(isLoopbackDevice() ? 2 : 1, intf.getAlternates().size());
-        assertSame(intf.getAlternates().get(0), altIntf);
+        assertSame(intf.getAlternates().getFirst(), altIntf);
         assertEquals(0, altIntf.getNumber());
 
         assertEquals(0xff, altIntf.getClassCode());
@@ -92,7 +92,7 @@ class DescriptionTest extends TestDeviceBase {
         assertNotNull(altIntf.getEndpoints());
         assertEquals(isLoopbackDevice() ? 4 : 2, altIntf.getEndpoints().size());
 
-        var endpoint = altIntf.getEndpoints().get(0);
+        var endpoint = altIntf.getEndpoints().getFirst();
         assertEquals(1, endpoint.getNumber());
         assertEquals(UsbDirection.OUT, endpoint.getDirection());
         assertEquals(UsbTransferType.BULK, endpoint.getTransferType());
@@ -121,7 +121,7 @@ class DescriptionTest extends TestDeviceBase {
             altIntf = testDevice.getInterfaces().get(interfaceNumber).getAlternates().get(1);
             assertEquals(2, altIntf.getEndpoints().size());
 
-            endpoint = altIntf.getEndpoints().get(0);
+            endpoint = altIntf.getEndpoints().getFirst();
             assertEquals(1, endpoint.getNumber());
             assertEquals(UsbDirection.OUT, endpoint.getDirection());
             assertEquals(UsbTransferType.BULK, endpoint.getTransferType());
@@ -137,7 +137,8 @@ class DescriptionTest extends TestDeviceBase {
 
     @Test
     void invalidEndpoint_shouldThrow() {
-        assertThrows(UsbException.class, () -> testDevice.getEndpoint(UsbDirection.IN, 1));
+        int nonExistentInEndpoint = isLoopbackDevice() ? 1 : 4;
+        assertThrows(UsbException.class, () -> testDevice.getEndpoint(UsbDirection.IN, nonExistentInEndpoint));
         assertThrows(UsbException.class, () -> testDevice.getEndpoint(UsbDirection.OUT, 4));
         assertThrows(UsbException.class, () -> testDevice.getEndpoint(UsbDirection.IN, 0));
         assertThrows(UsbException.class, () -> testDevice.getEndpoint(UsbDirection.OUT, 0));
