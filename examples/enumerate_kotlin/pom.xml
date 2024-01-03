@@ -3,17 +3,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>net.codecrete.usb.examples</groupId>
-  <artifactId>kotlin</artifactId>
-  <version>0.6.1-SNAPSHOT</version>
+  <artifactId>enumerate</artifactId>
+  <version>0.7.0</version>
   <packaging>jar</packaging>
 
-  <name>kotlin</name>
-  <url>https://github.com/manuelbl/JavaDoesUSB/examples/kotlin</url>
+  <name>enumerate</name>
+  <url>https://github.com/manuelbl/JavaDoesUSB/examples/enumerate_kotlin</url>
 
   <properties>
-    <kotlin.version>1.9.10</kotlin.version>
+    <kotlin.version>1.9.22</kotlin.version>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <main.class>net.codecrete.usb.examples.EnumerateKt</main.class>
   </properties>
 
   <build>
@@ -27,6 +28,30 @@
         <version>${kotlin.version}</version>
         <extensions>true</extensions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>${main.class}</mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -39,7 +64,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>0.7.0</version>
     </dependency>
     <dependency>
       <groupId>org.tinylog</groupId>

@@ -58,7 +58,7 @@ Run the command below (adapting the file path depending on your specific board):
 
 ```shell
 $ mvn package
-$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.6.1.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
+$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-0.7.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
 DFU device found with serial 35A737883336.
 Target memory segment: Internal Flash
 Erasing page at 0x8000000 (size 0x4000)

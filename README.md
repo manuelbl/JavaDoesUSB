@@ -8,7 +8,7 @@ The library uses the [Foreign Function & Memory API](https://github.com/openjdk/
 
 | Version | Main New Features | Compatibility |
 | - | - | - |
-| 0.7.x | Prerelease: New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
+| 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
 | 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
 | 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
 | 0.4.x | Early release | JDK 19 |
@@ -48,14 +48,14 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.6.1</version>
+      <version>0.7.0</version>
 </dependency>
 ```
 
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '0.6.1'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '0.7.0'
 ```
 
 ```java
@@ -134,9 +134,26 @@ The library has not been tested on Windows for ARM64. It might or might not work
 
 ### Troubleshooting
 
--  The error `java.lang.ClassFormatError: Illegal field name "" in class net/codecrete/usb/windows/WindowsUsbDeviceRegistry` is caused by a bug in JDK 21, which has been fixed in the mean-time. Please upgrade to the latest release of JDK 21.
+#### `ClassFormatError` (all platforms)
 
-- The error `Cannot open library: CoreFoundation.framework/CoreFoundation` is caused by an unfortunate build of the OpenJDK by Homebrew. Please use any other JDK edition instead, e.g. Zulu (`brew install zulu` or directly from https://www.azul.com/downloads/#zulu), Temurin (`brew install temurin` or from https://adoptium.net/en-GB/temurin/releases/), or download the official OpenJDK directly from https://openjdk.org/projects/jdk/21/. And don't forget to uninstall the Homebrew build (`brew uninstall openjdk`).
+The error `java.lang.ClassFormatError: Illegal field name "" in class net/codecrete/usb/windows/WindowsUsbDeviceRegistry` is caused by a bug in JDK 21, which has been fixed in the mean-time. Please upgrade to the latest release of JDK 21 (at least 21.0.1).
+
+
+#### `Cannot open library` (macOS only)
+
+The error `Cannot open library: CoreFoundation.framework/CoreFoundation` is caused by an unfortunate build of the OpenJDK by Homebrew. Please use any other JDK edition instead, e.g. Zulu (`brew install zulu` or directly from https://www.azul.com/downloads/#zulu), Temurin (`brew install temurin` or from https://adoptium.net/en-GB/temurin/releases/), or download the official OpenJDK directly from https://openjdk.org/projects/jdk/21/.
+
+It will usually not be possible to uninstall the problematic build (`brew uninstall openjdk`) as it is a dependency of other brew packages. So to run an application, set `JAVA_HOME`:
+
+```shell
+export JAVA_HOME=/Users/me/Documents/zulu21.30.15-ca-jdk21.0.1-macosx_aarch64
+```
+
+If the JDK was "installed" as opposed to downloaded, the path for `JAVA_HOME` will likely be listed by:
+
+```sheel
+/usr/libexec/java_home -V
+```
 
 
 ### 32-bit versions

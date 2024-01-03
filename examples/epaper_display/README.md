@@ -45,7 +45,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------< net.codecrete.usb.examples:epaper-display >--------------
-[INFO] Building epaper-display 0.6.1
+[INFO] Building epaper-display 0.7.0
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -81,6 +81,6 @@ $ sudo -i
 Password:
 $ cd /Users/me/Documents/JavaDoesUSB/examples/epaper_display
 $ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-20.jdk/Contents/Home
-$ $JAVA_HOME/bin/java --enable-preview --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/0.6.1/java-does-usb-0.6.1.jar net.codecrete.usb.examples.EPaperDisplay
+$ $JAVA_HOME/bin/java --enable-preview --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/0.7.0/java-does-usb-0.7.0.jar net.codecrete.usb.examples.EPaperDisplay
 Display size: 1200 x 825
 ```
