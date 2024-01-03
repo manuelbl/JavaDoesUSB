@@ -77,7 +77,12 @@ public class DeviceInfoSet implements AutoCloseable {
      */
     static DeviceInfoSet ofInstance(String instanceId) {
         var devInfoSet = ofEmpty();
-        devInfoSet.addInstanceId(instanceId);
+        try {
+            devInfoSet.addInstanceId(instanceId);
+        } catch (Throwable t) {
+            devInfoSet.close();
+            throw t;
+        }
         return devInfoSet;
     }
 
@@ -92,7 +97,12 @@ public class DeviceInfoSet implements AutoCloseable {
      */
     static DeviceInfoSet ofPath(String devicePath) {
         var devInfoSet = ofEmpty();
-        devInfoSet.addDevicePath(devicePath);
+        try {
+            devInfoSet.addDevicePath(devicePath);
+        } catch (Throwable t) {
+            devInfoSet.close();
+            throw t;
+        }
         return devInfoSet;
     }
 
