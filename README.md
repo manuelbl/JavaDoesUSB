@@ -82,8 +82,8 @@ public class EnumerateDevices {
 ## Examples
 
 - [Bulk Transfer](examples/bulk_transfer/) demonstrates how to find a USB device, open it and communicate using bulk transfer.
-- [Enumeration](examples/enumerate/) lists all connected USB devices and displays information about interfaces and endpoints.
-- [Monitor](examples/monitor/) lists the connected USB devices and then monitors for USB devices being connected and disconnnected.
+- Enumeration ([Java](examples/enumerate/) / [Kotlin](examples/enumerate_kotlin/)) lists all connected USB devices and displays information about interfaces and endpoints.
+- Monitor ([Java](examples/monitor/) / [Kotlin](examples/monitor_kotlin/)) lists the connected USB devices and then monitors for devices being connected and disconnnected.
 - [Device Firmware Upload (DFU) for STM32](examples/stm_dfu) uploads firmware to STM32 microcontrollers supporting the built-in DFU mode.
 - [ePaper Display](examples/epaper_display) communicates with an IT8951 controller for e-Paper displays and shows an image on the display.
 
