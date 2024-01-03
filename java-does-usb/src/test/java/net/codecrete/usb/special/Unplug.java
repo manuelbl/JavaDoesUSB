@@ -13,6 +13,8 @@ import net.codecrete.usb.UsbException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.time.Duration.*;
 
@@ -24,23 +26,25 @@ import static java.time.Duration.*;
  * </p>
  */
 public class Unplug {
-    /**
-     * Loopback test device vendor ID
-     */
-    static final int VID_LOOPBACK = 0xcafe;
-    /**
-     * Loopback test device product ID
-     */
-    static final int PID_LOOPBACK = 0xceaf;
-    /**
-     * Loopback test device loopback interface number
-     */
-    static final int LOOPBACK_INTF = 0;
+    static final DeviceConfig loopbackDevice = new DeviceConfig(
+            0xcafe,
+            0xceaf,
+            0,
+            1,
+            2,
+            3,
+            3
+    );
 
-    private static final int LOOPBACK_EP_OUT = 1;
-    private static final int LOOPBACK_EP_IN = 2;
-    private static final int ECHO_EP_OUT = 3;
-    private static final int ECHO_EP_IN = 3;
+    static final DeviceConfig compositeDevice = new DeviceConfig(
+            0xcafe,
+            0xcea0,
+            3,
+            1,
+            2,
+            -1,
+            -1
+    );
 
     private static final HashMap<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
 
@@ -57,16 +61,18 @@ public class Unplug {
     }
 
     private static void onPluggedDevice(UsbDevice device) {
-        if (!isTestDevice(device))
+        var config = getTestDeviceConfig(device);
+        if (config.isEmpty())
             return;
 
-        var worker = new DeviceWorker(device);
+        var worker = new DeviceWorker(device, config.get());
         activeDevices.put(device, worker);
         worker.start();
     }
 
     private static void onUnpluggedDevice(UsbDevice device) {
-        if (!isTestDevice(device))
+        var config = getTestDeviceConfig(device);
+        if (config.isEmpty())
             return;
 
         var worker = activeDevices.remove(device);
@@ -74,14 +80,16 @@ public class Unplug {
         worker.join();
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private static boolean isTestDevice(UsbDevice device) {
-        return device.getVendorId() == VID_LOOPBACK && device.getProductId() == PID_LOOPBACK;
+    private static Optional<DeviceConfig> getTestDeviceConfig(UsbDevice device) {
+        return Stream.of(loopbackDevice, compositeDevice)
+                .filter(config -> device.getVendorId() == config.vid() && device.getProductId() == config.pid())
+                .findFirst();
     }
 
     static class DeviceWorker {
 
         private final UsbDevice device;
+        private final DeviceConfig config;
 
         private final int seed;
 
@@ -89,8 +97,9 @@ public class Unplug {
 
         private final HashMap<Thread, Work> workTracking = new HashMap<>();
 
-        DeviceWorker(UsbDevice device) {
+        DeviceWorker(UsbDevice device, DeviceConfig config) {
             this.device = device;
+            this.config = config;
             this.seed = (int) System.currentTimeMillis();
         }
 
@@ -98,15 +107,17 @@ public class Unplug {
             System.out.println("Device connected");
 
             device.open();
-            device.claimInterface(LOOPBACK_INTF);
+            device.claimInterface(config.interfaceNumber());
 
             // start loopback sender and receiver
             startThread((seed & 1) != 0 ? this::sendLoopbackDataStream : this::sendLoopbackData);
             startThread((seed & 2) != 0 ? this::receiveLoopbackDataStream : this::receiveLoopbackData);
 
             // start echo sender and receiver
-            startThread(this::sendEcho);
-            startThread(this::receiveEcho);
+            if (config.endpointEchoOut() > 0) {
+                startThread(this::sendEcho);
+                startThread(this::receiveEcho);
+            }
         }
 
         private void startThread(Runnable action) {
@@ -186,7 +197,7 @@ public class Unplug {
             //noinspection InfiniteLoopStatement
             while (true) {
                 prng.fill(data);
-                device.transferOut(LOOPBACK_EP_OUT, data, 1000);
+                device.transferOut(config.endpointLoopbackOut(), data, 1000);
                 logWork(data.length);
             }
         }
@@ -196,7 +207,7 @@ public class Unplug {
             var prng = new PRNG();
             //noinspection InfiniteLoopStatement
             while (true) {
-                byte[] data = device.transferIn(LOOPBACK_EP_IN);
+                byte[] data = device.transferIn(config.endpointLoopbackIn());
                 int index = prng.verify(data);
                 if (index >= 0)
                     throw new RuntimeException("invalid data received");
@@ -208,7 +219,7 @@ public class Unplug {
             logStart("sending loopback data with output stream", 300_000);
             var prng = new PRNG();
             var data = new byte[5000];
-            try (var os = device.openOutputStream(LOOPBACK_EP_OUT)) {
+            try (var os = device.openOutputStream(config.endpointLoopbackOut())) {
                 //noinspection InfiniteLoopStatement
                 while (true) {
                     prng.fill(data);
@@ -223,7 +234,7 @@ public class Unplug {
         private void receiveLoopbackDataStream() {
             logStart("receiving loopback data with input stream", 300_000);
             var prng = new PRNG();
-            try (var is = device.openInputStream(LOOPBACK_EP_IN)) {
+            try (var is = device.openInputStream(config.endpointLoopbackIn())) {
                 //noinspection InfiniteLoopStatement
                 while (true) {
                     var data = new byte[2000];
@@ -243,7 +254,7 @@ public class Unplug {
             var data = new byte[] { 0x03, 0x45, 0x73, (byte)0xb3, (byte)0x9f, 0x3f, 0x00, 0x6a };
             //noinspection InfiniteLoopStatement
             while (true) {
-                device.transferOut(ECHO_EP_OUT, data);
+                device.transferOut(config.endpointEchoOut(), data);
                 logWork(1);
                 sleep(100);
             }
@@ -253,12 +264,12 @@ public class Unplug {
             logStart("receiving echo", 14);
             //noinspection InfiniteLoopStatement
             while (true) {
-                device.transferIn(ECHO_EP_IN);
+                device.transferIn(config.endpointEchoIn());
                 logWork(1);
             }
         }
 
-        @SuppressWarnings("SameParameterValue")
+        @SuppressWarnings({"SameParameterValue", "java:S2925"})
         private static void sleep(long millis) {
             try {
                 Thread.sleep(millis);
@@ -324,4 +335,9 @@ public class Unplug {
             return -1;
         }
     }
+
+    record DeviceConfig(int vid, int pid, int interfaceNumber,
+                        int endpointLoopbackOut, int endpointLoopbackIn,
+                        int endpointEchoOut, int endpointEchoIn
+    ) {}
 }

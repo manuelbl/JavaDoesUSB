@@ -342,29 +342,30 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return the device path
      */
     static String getDevicePath(String instanceId, MemorySegment interfaceGuid) {
-        try (var arena = Arena.ofConfined();
-             var deviceInfoSet = DeviceInfoSet.ofPresentDevices(interfaceGuid, instanceId)) {
-
-            // retrieve first element of enumeration
-            var errorState = allocateErrorState(arena);
-            var devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
-            _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
-            if (SetupAPI2.SetupDiEnumDeviceInterfaces(deviceInfoSet.devInfoSet, NULL, interfaceGuid, 0, devIntfData,
-                    errorState) == 0)
-                throwLastError(errorState, "internal error (SetupDiEnumDeviceInterfaces)");
-
-            // get device path
-            // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
-            // the device path fits)
-            final var devicePathOffset = 4;
-            var intfDetailData = arena.allocate(4L + 260 * 2);
-            _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData,
-                    (int) _SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
-            if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(deviceInfoSet.devInfoSet, devIntfData, intfDetailData,
-                    (int) intfDetailData.byteSize(), NULL, NULL, errorState) == 0)
-                throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
-
-            return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
+        try (var deviceInfoSet = DeviceInfoSet.ofPresentDevices(interfaceGuid, instanceId)) {
+            return deviceInfoSet.getDevicePathForGuid(interfaceGuid);
         }
+    }
+
+    private String getDevicePathForGuid(MemorySegment interfaceGuid) {
+        // retrieve first element of enumeration
+        devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
+        _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
+        if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
+                errorState) == 0)
+            throwLastError(errorState, "internal error (SetupDiEnumDeviceInterfaces)");
+
+        // get device path
+        // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
+        // the device path fits)
+        final var devicePathOffset = 4;
+        var intfDetailData = arena.allocate(4L + 260 * 2);
+        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData,
+                (int) _SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
+        if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, intfDetailData,
+                (int) intfDetailData.byteSize(), NULL, NULL, errorState) == 0)
+            throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
+
+        return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
     }
 }
