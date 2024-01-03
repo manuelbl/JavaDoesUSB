@@ -26,39 +26,42 @@ class AlternateInterfaceTest extends TestDeviceBase {
     @Test
     void selectAlternateIntf_succeeds() {
 
-        testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
+        testDevice.selectAlternateSetting(config.interfaceNumber(), 1);
 
-        var altIntf = testDevice.getInterface(LOOPBACK_INTF_LOOPBACK).getCurrentAlternate();
+        var altIntf = testDevice.getInterface(config.interfaceNumber()).getCurrentAlternate();
         assertNotNull(altIntf);
         assertEquals(2, altIntf.getEndpoints().size());
         assertEquals(0xff, altIntf.getClassCode());
 
-        testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 0);
+        testDevice.selectAlternateSetting(config.interfaceNumber(), 0);
     }
 
     @Test
     void selectInvalidAlternateIntf_fails() {
         assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(1, 0));
 
-        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 2));
+        var interface_number = config.interfaceNumber();
+        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(interface_number, 2));
     }
 
     @Test
     void transferOnValidEndpoint_succeeds() {
-        testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
+        testDevice.selectAlternateSetting(config.interfaceNumber(), 1);
 
         var sampleData = generateRandomBytes(12, 293872394);
-        testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
-        var received = testDevice.transferIn(LOOPBACK_EP_IN);
+        testDevice.transferOut(config.endpointLoopbackOut(), sampleData);
+        var received = testDevice.transferIn(config.endpointLoopbackIn());
         assertArrayEquals(sampleData, received);
     }
 
     @Test
     void transferOnInvalidEndpoint_fails() {
-        testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 1);
+        testDevice.selectAlternateSetting(config.interfaceNumber(), 1);
 
-        assertThrows(UsbException.class, () -> testDevice.transferOut(ECHO_EP_OUT, new byte[] { 1, 2, 3 }));
+        var endpointOut = config.endpointEchoOut();
+        assertThrows(UsbException.class, () -> testDevice.transferOut(endpointOut, new byte[] { 1, 2, 3 }));
 
-        assertThrows(UsbException.class, () -> testDevice.transferIn(ECHO_EP_IN));
+        var endpointIn = config.endpointEchoIn();
+        assertThrows(UsbException.class, () -> testDevice.transferIn(endpointIn));
     }
 }

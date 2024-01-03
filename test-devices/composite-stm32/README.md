@@ -15,22 +15,14 @@ To upload the firmware, the STM32F4x microcontroller have a built-in USB bootloa
 
 ### Endpoints
 
-#define EP_CDC_COMM 0x83
-#define EP_CDC_DATA_RX 0x02
-#define EP_CDC_DATA_TX 0x81
-
-#define EP_LOOPBACK_RX 0x01
-#define EP_LOOPBACK_TX 0x82
-
-
-| Endpoint | Transfer Type | Direction | Packet Size | Function |
-| - | - | - | - | - |
-| 0x00 | Control | Bidirectional |  | See *Control requests* below |
-| 0x81 | Bulk | Device to host | 64 bytes | CDC: Serial data from device to host. |
-| 0x02 | Bulk | Host to device | 64 bytes | CDC: Serial data from host to device. |
-| 0x83 | Interrupt | Device to host | 64 bytes | CDC: Serial state events (not used). |
-| 0x01 | Bulk | Host to device | 64 bytes | Loopback: all data received on this endpoint is transmitted on endpoint 0x82. |
-| 0x82 | Bulk | Device to host | 64 bytes |  Loopback: Transmits the data received on endpoint 0x01. |
+| Endpoint | Transfer Type | Direction | Packet Size | Interface | Function |
+| - | - | - | - | - | - |
+| 0x00 | Control | Bidirectional |  | 2 | See *Control requests* below |
+| 0x81 | Bulk | Device to host | 64 bytes | 1 | CDC: Serial data from device to host. |
+| 0x02 | Bulk | Host to device | 64 bytes | 1 | CDC: Serial data from host to device. |
+| 0x83 | Interrupt | Device to host | 64 bytes | 0 | CDC: Serial state events (not used). |
+| 0x01 | Bulk | Host to device | 64 bytes | 3 | Loopback: all data received on this endpoint is transmitted on endpoint 0x82. |
+| 0x82 | Bulk | Device to host | 64 bytes | 3 |  Loopback: Transmits the data received on endpoint 0x01. |
 
 The virtual serial port on interfaces 0 and 1 implements the CDC ACM class. All operating systems will recognize it as serial port and will automatically make it available as such. No drivers need to be installed. The implementations connects the incoming and outgoing data in a loopback configuration. So all data sent from the host to the device is send back to the host. Control requests to configure baud rates, parity etc. are accepted but have no effect. And the implementation does not send any state events.
 
@@ -46,6 +38,8 @@ Several vendor-specific control requests are supported for testing:
 | 0x41 | 0x01 | *value* | 0 | 0 | none | Host to device: *value* is saved in device |
 | 0x41 | 0x02 | 0 | 0 | 4 | *value* (32-bit LE) | Host to device: *value* is saved in device |
 | 0xC1 | 0x03 | 0 | 0 | 4 | *value* (32-bit LE) | Device to host: saved *value* is transmitted |
+| 0xC1 | 0x05 | 0 | 0 | 1 | *interface number* | Device to host: interface number is transmitted |
+
 
 
 ## Building the firmware
@@ -114,4 +108,4 @@ If you built the firmware yourself, you will find the firmware file in `.pio/bui
 
 This code uses the CMSIS 5 library (mainly for startup code and register definitions) and TinyUSB for USB. For easier use with PlatformIO, a copy of TinyUSB is integrated into the project. The used TinyUSB code in `lib/tinyusb` is an unmodified subset of the library.
 
-Since the official TinyUSB vendor class is rather limited, an alternative implementation is provided (see [vendor_custom.h](include/vendor_custom.h) and [vendor_custom.c](src/vendor_custom.c)).
+Since the official TinyUSB vendor class is rather limited, an alternative implementation is provided (see [vendor_custom.h](src/vendor_custom.h) and [vendor_custom.c](src/vendor_custom.c)).

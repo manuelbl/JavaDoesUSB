@@ -22,14 +22,14 @@ class InterruptTransferTest extends TestDeviceBase {
                 "Interrupt transfer only supported by loopback test device");
 
         var sampleData = generateRandomBytes(12, 293872394);
-        testDevice.transferOut(ECHO_EP_OUT, sampleData);
+        testDevice.transferOut(config.endpointEchoOut(), sampleData);
 
         // receive first echo
-        var echo = testDevice.transferIn(ECHO_EP_IN);
+        var echo = testDevice.transferIn(config.endpointEchoIn());
         assertArrayEquals(sampleData, echo);
 
         // receive second echo
-        echo = testDevice.transferIn(ECHO_EP_IN);
+        echo = testDevice.transferIn(config.endpointEchoIn());
         assertArrayEquals(sampleData, echo);
     }
 }

@@ -50,10 +50,10 @@ class DescriptionTest extends TestDeviceBase {
     @Test
     void interfaceDescriptor_isCorrect() {
         assertNotNull(testDevice.getInterfaces());
-        assertEquals(interfaceNumber + 1, testDevice.getInterfaces().size());
+        assertEquals(config.interfaceNumber() + 1, testDevice.getInterfaces().size());
 
-        var intf = testDevice.getInterfaces().get(interfaceNumber);
-        assertEquals(interfaceNumber, intf.getNumber());
+        var intf = testDevice.getInterfaces().get(config.interfaceNumber());
+        assertEquals(config.interfaceNumber(), intf.getNumber());
         assertNotNull(intf.getCurrentAlternate());
         assertTrue(intf.isClaimed());
     }
@@ -65,7 +65,7 @@ class DescriptionTest extends TestDeviceBase {
 
     @Test
     void alternateInterfaceDescriptor_isCorrect() {
-        var intf = testDevice.getInterfaces().get(interfaceNumber);
+        var intf = testDevice.getInterfaces().get(config.interfaceNumber());
         var altIntf = intf.getCurrentAlternate();
         assertNotNull(intf.getAlternates());
         assertEquals(isLoopbackDevice() ? 2 : 1, intf.getAlternates().size());
@@ -86,9 +86,10 @@ class DescriptionTest extends TestDeviceBase {
         }
     }
 
+    @SuppressWarnings("java:S5961")
     @Test
     void endpointDescriptors_areCorrect() {
-        var altIntf = testDevice.getInterfaces().get(interfaceNumber).getCurrentAlternate();
+        var altIntf = testDevice.getInterfaces().get(config.interfaceNumber()).getCurrentAlternate();
         assertNotNull(altIntf.getEndpoints());
         assertEquals(isLoopbackDevice() ? 4 : 2, altIntf.getEndpoints().size());
 
@@ -118,7 +119,7 @@ class DescriptionTest extends TestDeviceBase {
             assertEquals(16, endpoint.getPacketSize());
 
             // test alternate interface 1
-            altIntf = testDevice.getInterfaces().get(interfaceNumber).getAlternates().get(1);
+            altIntf = testDevice.getInterfaces().get(config.interfaceNumber()).getAlternates().get(1);
             assertEquals(2, altIntf.getEndpoints().size());
 
             endpoint = altIntf.getEndpoints().getFirst();

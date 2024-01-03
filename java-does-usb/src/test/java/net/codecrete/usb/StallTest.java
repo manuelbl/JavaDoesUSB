@@ -18,36 +18,40 @@ class StallTest extends TestDeviceBase {
 
     @Test
     void stalledBulkTransferOut_recovers() {
-        haltEndpoint(UsbDirection.OUT, LOOPBACK_EP_OUT);
+        var endpointIn = config.endpointLoopbackIn();
+        var endpointOut = config.endpointLoopbackOut();
+        haltEndpoint(UsbDirection.OUT, endpointOut);
 
         var data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        assertThrows(UsbStallException.class, () -> testDevice.transferOut(LOOPBACK_EP_OUT, data));
+        assertThrows(UsbStallException.class, () -> testDevice.transferOut(endpointOut, data));
 
-        testDevice.clearHalt(UsbDirection.OUT, LOOPBACK_EP_OUT);
+        testDevice.clearHalt(UsbDirection.OUT, endpointOut);
 
-        testDevice.transferOut(LOOPBACK_EP_OUT, data);
-        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN);
+        testDevice.transferOut(endpointOut, data);
+        var receivedData = testDevice.transferIn(endpointIn);
         assertArrayEquals(data, receivedData);
     }
 
     @Test
     void stalledBulkTransferIn_recovers() {
-        haltEndpoint(UsbDirection.IN, LOOPBACK_EP_IN);
+        var endpointIn = config.endpointLoopbackIn();
+        var endpointOut = config.endpointLoopbackOut();
+        haltEndpoint(UsbDirection.IN, endpointIn);
 
-        assertThrows(UsbStallException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN));
+        assertThrows(UsbStallException.class, () -> testDevice.transferIn(endpointIn));
 
-        testDevice.clearHalt(UsbDirection.IN, LOOPBACK_EP_IN);
+        testDevice.clearHalt(UsbDirection.IN, endpointIn);
 
         var data = new byte[] { 9, 8, 7, 6, 5, 4, 3, 2 };
-        testDevice.transferOut(LOOPBACK_EP_OUT, data);
-        var receivedData = testDevice.transferIn(LOOPBACK_EP_IN);
+        testDevice.transferOut(endpointOut, data);
+        var receivedData = testDevice.transferIn(endpointIn);
         assertArrayEquals(data, receivedData);
     }
 
     @Test
     void invalidControlTransfer_throws() {
         var request = new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE, (byte) 0x08,
-                (short) 0, (short) interfaceNumber);
+                (short) 0, (short) config.interfaceNumber());
         assertThrows(UsbStallException.class, () -> testDevice.controlTransferIn(request, 2));
     }
 

@@ -7,14 +7,13 @@
 
 package net.codecrete.usb.special;
 
+import net.codecrete.usb.TestDeviceConfig;
 import net.codecrete.usb.Usb;
 import net.codecrete.usb.UsbDevice;
 import net.codecrete.usb.UsbException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static java.time.Duration.*;
 
@@ -26,26 +25,6 @@ import static java.time.Duration.*;
  * </p>
  */
 public class Unplug {
-    static final DeviceConfig loopbackDevice = new DeviceConfig(
-            0xcafe,
-            0xceaf,
-            0,
-            1,
-            2,
-            3,
-            3
-    );
-
-    static final DeviceConfig compositeDevice = new DeviceConfig(
-            0xcafe,
-            0xcea0,
-            3,
-            1,
-            2,
-            -1,
-            -1
-    );
-
     private static final HashMap<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
@@ -61,7 +40,7 @@ public class Unplug {
     }
 
     private static void onPluggedDevice(UsbDevice device) {
-        var config = getTestDeviceConfig(device);
+        var config = TestDeviceConfig.getConfig(device);
         if (config.isEmpty())
             return;
 
@@ -71,7 +50,7 @@ public class Unplug {
     }
 
     private static void onUnpluggedDevice(UsbDevice device) {
-        var config = getTestDeviceConfig(device);
+        var config = TestDeviceConfig.getConfig(device);
         if (config.isEmpty())
             return;
 
@@ -80,16 +59,10 @@ public class Unplug {
         worker.join();
     }
 
-    private static Optional<DeviceConfig> getTestDeviceConfig(UsbDevice device) {
-        return Stream.of(loopbackDevice, compositeDevice)
-                .filter(config -> device.getVendorId() == config.vid() && device.getProductId() == config.pid())
-                .findFirst();
-    }
-
     static class DeviceWorker {
 
         private final UsbDevice device;
-        private final DeviceConfig config;
+        private final TestDeviceConfig config;
 
         private final int seed;
 
@@ -97,7 +70,7 @@ public class Unplug {
 
         private final HashMap<Thread, Work> workTracking = new HashMap<>();
 
-        DeviceWorker(UsbDevice device, DeviceConfig config) {
+        DeviceWorker(UsbDevice device, TestDeviceConfig config) {
             this.device = device;
             this.config = config;
             this.seed = (int) System.currentTimeMillis();
@@ -335,9 +308,4 @@ public class Unplug {
             return -1;
         }
     }
-
-    record DeviceConfig(int vid, int pid, int interfaceNumber,
-                        int endpointLoopbackOut, int endpointLoopbackIn,
-                        int endpointEchoOut, int endpointEchoIn
-    ) {}
 }

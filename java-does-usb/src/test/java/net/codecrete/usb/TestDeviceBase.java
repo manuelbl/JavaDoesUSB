@@ -18,66 +18,28 @@ import java.util.Random;
  * Base class for tests using the test device.
  */
 public class TestDeviceBase {
-    /**
-     * Loopback test device vendor ID
-     */
-    static final int VID_LOOPBACK = 0xcafe;
-    /**
-     * Loopback test device product ID
-     */
-    static final int PID_LOOPBACK = 0xceaf;
-    /**
-     * Loopback test device loopback interface number
-     */
-    static final int LOOPBACK_INTF_LOOPBACK = 0;
-    /**
-     * Composite test device vendor ID
-     */
-    static final int VID_COMPOSITE = 0xcafe;
-    /**
-     * Composite test device product ID
-     */
-    static final int PID_COMPOSITE = 0xcea0;
-    /**
-     * Composite test device loopback interface number
-     */
-    static final int LOOPBACK_INTF_COMPOSITE = 3;
-    /**
-     * Interface number of connected test device
-     */
-    protected static int vid = -1;
-    protected static int pid = -1;
-    protected static int interfaceNumber = -1;
-    protected static final int LOOPBACK_EP_OUT = 1;
-    protected static final int LOOPBACK_EP_IN = 2;
-    protected static final int LOOPBACK_MAX_PACKET_SIZE = 64;
-    protected static final int ECHO_EP_OUT = 3;
-    protected static final int ECHO_EP_IN = 3;
-    protected static final int ECHO_MAX_PACKET_SIZE = 16;
+
     protected static UsbDevice testDevice;
+    protected static TestDeviceConfig config;
 
     static UsbDevice getDevice() {
-        var optionalDevice = Usb.findDevice(VID_COMPOSITE, PID_COMPOSITE);
-        if (optionalDevice.isEmpty())
-            optionalDevice = Usb.findDevice(VID_LOOPBACK, PID_LOOPBACK);
-        if (optionalDevice.isEmpty())
+        var device = Usb.findDevice(dev -> TestDeviceConfig.getConfig(dev).isPresent());
+        if (device.isEmpty())
             throw new IllegalStateException("No test device connected");
-        return optionalDevice.get();
+        return device.get();
     }
 
-    static int getInterfaceNumber(UsbDevice device) {
-        return device.getProductId() == PID_COMPOSITE ? LOOPBACK_INTF_COMPOSITE : LOOPBACK_INTF_LOOPBACK;
+    static TestDeviceConfig getDeviceConfig() {
+        return TestDeviceConfig.getConfig(getDevice()).orElse(null);
     }
 
     @BeforeAll
     static void openDevice() {
         testDevice = getDevice();
-        vid = testDevice.getVendorId();
-        pid = testDevice.getProductId();
-        interfaceNumber = getInterfaceNumber(testDevice);
+        config = getDeviceConfig();
 
         testDevice.open();
-        testDevice.claimInterface(interfaceNumber);
+        testDevice.claimInterface(config.interfaceNumber());
 
         resetDevice();
     }
@@ -91,16 +53,16 @@ public class TestDeviceBase {
     }
 
     static boolean isLoopbackDevice() {
-        return pid == PID_LOOPBACK;
+        return !config.isComposite();
     }
 
     static boolean isCompositeDevce() {
-        return pid == PID_COMPOSITE;
+        return config.isComposite();
     }
 
     private static void resetDevice() {
         if (isLoopbackDevice())
-            testDevice.selectAlternateSetting(LOOPBACK_INTF_LOOPBACK, 0);
+            testDevice.selectAlternateSetting(config.interfaceNumber(), 0);
 
         // reset buffers
         resetBuffers();
@@ -108,7 +70,7 @@ public class TestDeviceBase {
         // drain loopback data
         while (true) {
             try {
-                testDevice.transferIn(LOOPBACK_EP_IN, 1);
+                testDevice.transferIn(config.endpointLoopbackIn(), 1);
             } catch (UsbTimeoutException e) {
                 break;
             }
@@ -118,7 +80,7 @@ public class TestDeviceBase {
         if (isLoopbackDevice()) {
             while (true) {
                 try {
-                    testDevice.transferIn(ECHO_EP_IN, 1);
+                    testDevice.transferIn(config.endpointEchoIn(), 1);
                 } catch (UsbTimeoutException e) {
                     break;
                 }
@@ -131,7 +93,7 @@ public class TestDeviceBase {
 
     static void resetBuffers() {
         testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE,
-                (byte) 0x04, (short) 0, (short) interfaceNumber), null);
+                (byte) 0x04, (short) 0, (short) config.interfaceNumber()), null);
     }
 
     static byte[] generateRandomBytes(int numBytes, long seed) {

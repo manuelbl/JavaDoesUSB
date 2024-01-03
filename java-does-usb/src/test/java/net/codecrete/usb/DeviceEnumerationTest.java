@@ -20,30 +20,30 @@ class DeviceEnumerationTest extends TestDeviceBase {
         var deviceList = Usb.getDevices();
         assertThat(deviceList)
                 .isNotEmpty()
-                .anyMatch(device -> device.getVendorId() == vid && device.getProductId() == pid);
+                .anyMatch(device -> device.getVendorId() == config.vid() && device.getProductId() == config.pid());
     }
 
     @Test
     void getDevices_includesLoopback() {
-        var deviceList = Usb.findDevices(device -> device.getVendorId() == vid && device.getProductId() == pid);
+        var deviceList = Usb.findDevices(device -> device.getVendorId() == config.vid() && device.getProductId() == config.pid());
         assertThat(deviceList)
                 .isNotEmpty()
-                .anyMatch(device -> device.getVendorId() == vid && device.getProductId() == pid);
+                .anyMatch(device -> device.getVendorId() == config.vid() && device.getProductId() == config.pid());
     }
 
     @Test
     void getDevicePredicate_returnsLoopback() {
-        var device = Usb.findDevice(dev -> dev.getVendorId() == vid && dev.getProductId() == pid);
+        var device = Usb.findDevice(dev -> dev.getVendorId() == config.vid() && dev.getProductId() == config.pid());
         assertThat(device).isPresent();
-        assertThat(device.get().getProductId()).isEqualTo(pid);
-        assertThat(device.get().getVendorId()).isEqualTo(vid);
+        assertThat(device.get().getProductId()).isEqualTo(config.pid());
+        assertThat(device.get().getVendorId()).isEqualTo(config.vid());
     }
 
     @Test
     void getDeviceVidPid_returnsLoopback() {
-        var device = Usb.findDevice(vid, pid);
+        var device = Usb.findDevice(config.vid(), config.pid());
         assertThat(device).isPresent();
-        assertThat(device.get().getProductId()).isEqualTo(pid);
-        assertThat(device.get().getVendorId()).isEqualTo(vid);
+        assertThat(device.get().getProductId()).isEqualTo(config.pid());
+        assertThat(device.get().getVendorId()).isEqualTo(config.vid());
     }
 }

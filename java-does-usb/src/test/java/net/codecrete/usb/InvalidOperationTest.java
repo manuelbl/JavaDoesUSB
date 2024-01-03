@@ -16,6 +16,7 @@ class InvalidOperationTest extends TestDeviceBase {
 
     @Test
     void claimInvalidInterface_throws() {
+        var interfaceNumber = config.interfaceNumber();
         // throws error because it's already claimed
         Assertions.assertThrows(UsbException.class, () -> testDevice.claimInterface(interfaceNumber));
         // throws error because it's an invalid interface number

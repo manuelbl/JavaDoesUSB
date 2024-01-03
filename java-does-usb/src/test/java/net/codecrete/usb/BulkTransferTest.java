@@ -39,13 +39,13 @@ class BulkTransferTest extends TestDeviceBase {
 
     @Test
     void transferWithZLP_succeeds() {
-        var inEndpoint = testDevice.getEndpoint(UsbDirection.IN, LOOPBACK_EP_IN);
+        var inEndpoint = testDevice.getEndpoint(UsbDirection.IN, config.endpointLoopbackIn());
         var sampleData = generateRandomBytes(inEndpoint.getPacketSize(), 97333894);
-        testDevice.transferOut(LOOPBACK_EP_OUT, sampleData);
-        testDevice.transferOut(LOOPBACK_EP_OUT, new byte[0]);
-        var data = testDevice.transferIn(LOOPBACK_EP_IN);
+        testDevice.transferOut(config.endpointLoopbackOut(), sampleData);
+        testDevice.transferOut(config.endpointLoopbackOut(), new byte[0]);
+        var data = testDevice.transferIn(config.endpointLoopbackIn());
         assertArrayEquals(sampleData, data);
-        data = testDevice.transferIn(LOOPBACK_EP_IN);
+        data = testDevice.transferIn(config.endpointLoopbackIn());
         assertNotNull(data);
         assertEquals(0, data.length);
     }
@@ -67,7 +67,7 @@ class BulkTransferTest extends TestDeviceBase {
         var numBytes = 0;
         while (numBytes < data.length) {
             var size = Math.min(chunkSize, data.length - numBytes);
-            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(data, numBytes, numBytes + size));
+            testDevice.transferOut(config.endpointLoopbackOut(), Arrays.copyOfRange(data, numBytes, numBytes + size));
             numBytes += size;
         }
     }
@@ -75,7 +75,7 @@ class BulkTransferTest extends TestDeviceBase {
         var buffer = new ByteArrayOutputStream();
         var bytesRead = 0;
         while (bytesRead < numBytes) {
-            var data = testDevice.transferIn(LOOPBACK_EP_IN);
+            var data = testDevice.transferIn(config.endpointLoopbackIn());
             buffer.writeBytes(data);
             bytesRead += data.length;
         }

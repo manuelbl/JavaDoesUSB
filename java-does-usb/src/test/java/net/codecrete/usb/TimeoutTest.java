@@ -18,21 +18,23 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SuppressWarnings("DefaultAnnotationParam")
 class TimeoutTest extends TestDeviceBase {
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
-        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(LOOPBACK_EP_IN, 200));
+        var endpointIn = config.endpointLoopbackIn();
+        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(endpointIn, 200));
     }
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransfer_doesNotTimeOut() {
         var data = generateRandomBytes(20, 7280277392L);
-        testDevice.transferOut(LOOPBACK_EP_OUT, data);
+        testDevice.transferOut(config.endpointLoopbackOut(), data);
 
-       var received = testDevice.transferIn(LOOPBACK_EP_IN, 200);
+       var received = testDevice.transferIn(config.endpointLoopbackIn(), 200);
         assertArrayEquals(data, received);
 
     }
@@ -40,24 +42,27 @@ class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
+        var endpointOut = config.endpointLoopbackOut();
+        var endpointIn = config.endpointLoopbackIn();
+
         // The test device has an internal buffer of about 2KB for full-speed
         // and 16KB for high-speed. The first transfer should not time out.
         final var bufferSize = 32 * testDevice
-                .getEndpoint(UsbDirection.OUT, LOOPBACK_EP_OUT).getPacketSize();
+                .getEndpoint(UsbDirection.OUT, endpointOut).getPacketSize();
 
         var data = generateRandomBytes(100, 9383073929L);
-        testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
+        testDevice.transferOut(endpointOut, data, 200);
 
         assertThrows(UsbTimeoutException.class, () -> {
             for (var i = 0; i < bufferSize / data.length; i++) {
-                testDevice.transferOut(LOOPBACK_EP_OUT, data, 200);
+                testDevice.transferOut(endpointOut, data, 200);
             }
         });
 
         // drain data in loopback loop
         while (true) {
             try {
-                testDevice.transferIn(LOOPBACK_EP_IN, 200);
+                testDevice.transferIn(endpointIn, 200);
             } catch (UsbTimeoutException e) {
                 break;
             }
@@ -70,7 +75,8 @@ class TimeoutTest extends TestDeviceBase {
         Assumptions.assumeTrue(isLoopbackDevice(),
                 "Interrupt transfer only supported by loopback test device");
 
-        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(ECHO_EP_IN, 200));
+        var endpointIn = config.endpointEchoIn();
+        assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(endpointIn, 200));
     }
 
     @Test
@@ -79,14 +85,14 @@ class TimeoutTest extends TestDeviceBase {
                 "Interrupt transfer only supported by loopback test device");
 
         var sampleData = generateRandomBytes(12, 293872394);
-        testDevice.transferOut(ECHO_EP_OUT, sampleData, 200);
+        testDevice.transferOut(config.endpointEchoOut(), sampleData, 200);
 
         // receive first echo
-        var echo = testDevice.transferIn(ECHO_EP_IN, 200);
+        var echo = testDevice.transferIn(config.endpointEchoIn(), 200);
         assertArrayEquals(sampleData, echo);
 
         // receive second echo
-        echo = testDevice.transferIn(ECHO_EP_IN, 200);
+        echo = testDevice.transferIn(config.endpointEchoIn(), 200);
         assertArrayEquals(sampleData, echo);
     }
 }

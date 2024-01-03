@@ -15,13 +15,13 @@ To upload the firmware, the STM32F4x microcontroller have a built-in USB bootloa
 
 ### Endpoints
 
-| Endpoint | Transfer Type | Direction | Packet Size | Function |
-| - | - | - | - | - |
-| 0x00 | Control | Bidirectional |  | See *Control requests* below |
-| 0x01 | Bulk | Host to device | 64 bytes | Loopback: all data received on this endpoint are then transmitted on endpoint 0x82. |
-| 0x82 | Bulk | Device to host | 64 bytes |  Loopback: Transmits the data received on endpoint 0x01. |
-| 0x03 | Interrupt | Host to device | 16 bytes |  Echo: All packets received on this endpoint are transmitted twice on endpoint 0x83. |
-| 0x83 | Interrupt | Device to host | 16 bytes |  Echo: Transmits all packets received on endpoint 0x03 twice. |
+| Endpoint | Transfer Type | Direction | Packet Size | Interface | Function |
+| - | - | - | - | - | - |
+| 0x00 | Control | Bidirectional |  | 0 | See *Control requests* below |
+| 0x01 | Bulk | Host to device | 64 bytes | 0 | Loopback: all data received on this endpoint are then transmitted on endpoint 0x82. |
+| 0x82 | Bulk | Device to host | 64 bytes | 0 |  Loopback: Transmits the data received on endpoint 0x01. |
+| 0x03 | Interrupt | Host to device | 16 bytes | 0 |  Echo: All packets received on this endpoint are transmitted twice on endpoint 0x83. |
+| 0x83 | Interrupt | Device to host | 16 bytes | 0 |  Echo: Transmits all packets received on endpoint 0x03 twice. |
 
 The bulk endpoints 0x01 and 0x82 use an internal buffer of about 500 bytes. Data up to this amount can be sent and received sequentially. If more data is sent without receiving at the same time, flow control kicks in and endpoint 0x01 will stop receiving data until there is room in the buffer.
 
@@ -111,4 +111,4 @@ If you built the firmware yourself, you will find the firmware file in `.pio/bui
 
 This code uses the CMSIS 5 library (mainly for startup code and register definitions) and TinyUSB for USB. For easier use with PlatformIO, a copy of TinyUSB is integrated into the project. The used TinyUSB code in `lib/tinyusb` is an unmodified subset of the library.
 
-Since the official TinyUSB vendor class is rather limited, an alternative implementation is provided (see [vendor_custom.h](include/vendor_custom.h) and [vendor_custom.c](src/vendor_custom.c)).
+Since the official TinyUSB vendor class is rather limited, an alternative implementation is provided (see [vendor_custom.h](src/vendor_custom.h) and [vendor_custom.c](src/vendor_custom.c)).

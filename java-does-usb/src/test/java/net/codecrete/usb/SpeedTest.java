@@ -20,7 +20,7 @@ class SpeedTest extends TestDeviceBase {
 
     @Test
     void loopback_isFast() throws Throwable {
-        final var isHighSpeed = testDevice.getEndpoint(UsbDirection.IN, LOOPBACK_EP_IN).getPacketSize() == 512;
+        final var isHighSpeed = testDevice.getEndpoint(UsbDirection.IN, config.endpointLoopbackIn()).getPacketSize() == 512;
         final var numBytes = isHighSpeed ? 5000000 : 500000;
 
         var sampleData = generateRandomBytes(numBytes, 7219937602343L);
@@ -43,14 +43,14 @@ class SpeedTest extends TestDeviceBase {
     }
 
     static void writeBytes(byte[] data) {
-        try (var os = testDevice.openOutputStream(LOOPBACK_EP_OUT)) {
+        try (var os = testDevice.openOutputStream(config.endpointLoopbackOut())) {
             os.write(data);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
     static byte[] readBytes(int numBytes) {
-        try (var is = testDevice.openInputStream(LOOPBACK_EP_IN)) {
+        try (var is = testDevice.openInputStream(config.endpointLoopbackIn())) {
            var buffer = new byte[numBytes];
             var bytesRead = 0;
             while (bytesRead < numBytes) {

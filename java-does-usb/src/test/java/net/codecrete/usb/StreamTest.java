@@ -40,11 +40,12 @@ class StreamTest extends TestDeviceBase {
 
     @Test
     void transferWithZLP_succeeds() {
-        final var sampleData = generateRandomBytes(2 * LOOPBACK_MAX_PACKET_SIZE, 197007894);
+        var maxPacketSize = testDevice.getEndpoint(UsbDirection.OUT, config.endpointLoopbackOut()).getPacketSize();
+        final var sampleData = generateRandomBytes(2 * maxPacketSize, 197007894);
         var writer = CompletableFuture.runAsync(() -> {
-            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, 0, LOOPBACK_MAX_PACKET_SIZE));
+            testDevice.transferOut(config.endpointLoopbackOut(), Arrays.copyOfRange(sampleData, 0, maxPacketSize));
             sleep(200);
-            testDevice.transferOut(LOOPBACK_EP_OUT, Arrays.copyOfRange(sampleData, LOOPBACK_MAX_PACKET_SIZE, 2 * LOOPBACK_MAX_PACKET_SIZE));
+            testDevice.transferOut(config.endpointLoopbackOut(), Arrays.copyOfRange(sampleData, maxPacketSize, 2 * maxPacketSize));
         });
 
         var reader = CompletableFuture.supplyAsync(() -> readBytes(sampleData.length));
@@ -76,7 +77,7 @@ class StreamTest extends TestDeviceBase {
     }
 
     static void writeBytes(byte[] data, int chunkSize) {
-        try (var os = testDevice.openOutputStream(LOOPBACK_EP_OUT)) {
+        try (var os = testDevice.openOutputStream(config.endpointLoopbackOut())) {
             var numBytes = 0;
             while (numBytes < data.length) {
                 var size = Math.min(chunkSize, data.length - numBytes);
@@ -90,7 +91,7 @@ class StreamTest extends TestDeviceBase {
     }
     static byte[] readBytes(int numBytes) {
         var buffer = new byte[numBytes];
-        try (var is = testDevice.openInputStream(LOOPBACK_EP_IN)) {
+        try (var is = testDevice.openInputStream(config.endpointLoopbackIn())) {
             var bytesRead = 0;
             while (bytesRead < numBytes) {
                 var n = is.read(buffer, bytesRead, numBytes - bytesRead);
