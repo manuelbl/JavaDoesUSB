@@ -132,6 +132,13 @@ The test devices implement the required control requests. So the driver is insta
 The library has not been tested on Windows for ARM64. It might or might not work.
 
 
+### Troubleshooting
+
+-  The error `java.lang.ClassFormatError: Illegal field name "" in class net/codecrete/usb/windows/WindowsUsbDeviceRegistry` is caused by a bug in JDK 21, which has been fixed in the mean-time. Please upgrade to the latest release of JDK 21.
+
+- The error `Cannot open library: CoreFoundation.framework/CoreFoundation` is caused by an unfortunate build of the OpenJDK by Homebrew. Please use any other JDK edition instead, e.g. Zulu (`brew install zulu` or directly from https://www.azul.com/downloads/#zulu), Temurin (`brew install temurin` or from https://adoptium.net/en-GB/temurin/releases/), or download the official OpenJDK directly from https://openjdk.org/projects/jdk/21/. And don't forget to uninstall the Homebrew build (`brew uninstall openjdk`).
+
+
 ### 32-bit versions
 
 The Foreign Function & Memory API has not been implemented for 32-bit operating systems / JDKs  (and likely never will be).
