@@ -134,7 +134,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
-            cleanup.add(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
+            cleanup.add(() -> hubHandles.forEach((_, handle) -> Kernel32.CloseHandle(handle)));
 
             // iterate all devices
             while (deviceInfoSet.next()) {
@@ -313,7 +313,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
-            cleanup.add(() -> hubHandles.forEach((path, handle) -> Kernel32.CloseHandle(handle)));
+            cleanup.add(() -> hubHandles.forEach((_, handle) -> Kernel32.CloseHandle(handle)));
 
             try {
                 // create device instance

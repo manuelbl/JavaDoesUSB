@@ -102,7 +102,7 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return device info set
      */
     private static DeviceInfoSet ofEmpty() {
-        return new DeviceInfoSet((arena, errorState) -> SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, errorState));
+        return new DeviceInfoSet((_, errorState) -> SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, errorState));
     }
 
     private DeviceInfoSet(InfoSetCreator creator) {
@@ -321,10 +321,10 @@ public class DeviceInfoSet implements AutoCloseable {
         if (propertyTypeHolder.get(JAVA_INT, 0) != propertyType)
             throwException("internal error (unexpected property type)");
 
-        var stringLen = requiredSizeHolder.get(JAVA_INT, 0) / 2 - 1;
+        var stringLen = (requiredSizeHolder.get(JAVA_INT, 0) + 1) / 2;
 
         // allocate buffer
-        var propertyValueHolder = arena.allocateArray(JAVA_CHAR, stringLen + 1L);
+        var propertyValueHolder = arena.allocateArray(JAVA_CHAR, stringLen);
 
         // get property value
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
