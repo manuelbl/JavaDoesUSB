@@ -23,7 +23,7 @@ final class RuntimeHelper {
     static {
 //        System.loadLibrary("CoreFoundation.framework");
 //        SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
-        SymbolLookup loaderLookup = SymbolLookup.libraryLookup("CoreFoundation.framework/CoreFoundation", Arena.global());
+        SymbolLookup loaderLookup = SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", Arena.global());
         SYMBOL_LOOKUP = name -> loaderLookup.find(name).or(() -> LINKER.defaultLookup().find(name));
     }
 

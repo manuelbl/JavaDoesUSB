@@ -70,7 +70,7 @@ SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", MemorySessi
 
 Most of the required native functions on macOS are part of a framework. Frameworks internally have a more complex file organization of header and binary files than appears from the outside. Thus, they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
 
-The generated code has the same problem as the Linux code for *udev*. It must be manually changed to use `SymbolLookup.libraryLookup()` for the libraries `CoreFoundation.framework/CoreFoundation` and `IOKit.framework/IOKit` respectively.
+The generated code has the same problem as the Linux code for *udev*. It must be manually changed to use `SymbolLookup.libraryLookup()` for the frameworks `CoreFoundation` and `IOKit` respectively, and use an absolute path starting with `/System/Library/Frameworks/`.
 
 
 ## Windows

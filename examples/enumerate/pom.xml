@@ -6,7 +6,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>enumerate</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.1</version>
 
   <name>enumerate</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/enumerate</url>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.7.0</version>
+      <version>0.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.tinylog</groupId>
