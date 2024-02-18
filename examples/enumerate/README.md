@@ -4,15 +4,15 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## Prerequisites
 
-- Java 21
+- Java 22
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 21
+### Install Java 22
 
-Check that *Java 21* is installed:
+Check that *Java 22* is installed:
 
 ```shell
 $ java -version
@@ -38,22 +38,21 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ----------------< net.codecrete.usb.examples:enumerate >----------------
-[INFO] Building enumerate 0.7.1
+[INFO] Building enumerate 1.0.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ enumerate ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /Users/me/Documents/JavaDoesUSB/examples/enumerate/src/main/resources
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ enumerate ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
 [INFO] 
-[INFO] --- maven-compiler-plugin:3.8.0:compile (default-compile) @ enumerate ---
-[INFO] Changes detected - recompiling the module!
-[INFO] Compiling 2 source files to /Users/me/Documents/JavaDoesUSB/examples/enumerate/target/classes
+[INFO] --- maven-compiler-plugin:3.12.1:compile (default-compile) @ enumerate ---
+[INFO] Nothing to compile - all classes are up to date.
 [INFO] 
-[INFO] --- exec-maven-plugin:3.1.0:exec (default-cli) @ enumerate ---
+[INFO] --- exec-maven-plugin:3.1.1:exec (default-cli) @ enumerate ---
 Device:
   VID: 0xcafe
   PID: 0xceaf
   Manufacturer:  JavaDoesUSB
   Product name:  Loopback
+  Serial number: 35A737883336
 ...
 ```

@@ -4,7 +4,7 @@ This sample shows how to communicate with an IT8951 controller for e-paper displ
 
 ## Prerequisites
 
-- Java 21
+- Java 22
 - Apache Maven
 - 64-bit operating system (macOS, Linux, Windows)
 - IT8951 controller
@@ -17,9 +17,9 @@ be temporarily detached.)
 
 ## How to run
 
-### Install Java 21
+### Install Java 22
 
-Check that *Java 21* is installed:
+Check that *Java 22* is installed:
 
 ```shell
 $ java -version
@@ -45,24 +45,22 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------< net.codecrete.usb.examples:epaper-display >--------------
-[INFO] Building epaper-display 0.7.1
-[INFO]   from pom.xml
+[INFO] Building epaper-display 1.0.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ epaper-display ---
-[INFO] skip non existing resourceDirectory /Users/me/Documents/JavaDoesUSB/examples/epaper_display/src/main/resources
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ epaper-display ---
+[INFO] skip non existing resourceDirectory /home/user/Documents/JavaDoesUSB/examples/epaper_display/src/main/resources
 [INFO] 
-[INFO] --- compiler:3.11.0:compile (default-compile) @ epaper-display ---
-[INFO] Changes detected - recompiling the module! :source
-[INFO] Compiling 2 source files with javac [debug release 20] to target/classes
+[INFO] --- maven-compiler-plugin:3.12.1:compile (default-compile) @ epaper-display ---
+[INFO] Nothing to compile - all classes are up to date.
 [INFO] 
-[INFO] --- exec:3.1.0:exec (default-cli) @ epaper-display ---
+[INFO] --- exec-maven-plugin:3.1.1:exec (default-cli) @ epaper-display ---
 Display size: 1200 x 825
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.502 s
-[INFO] Finished at: 2023-07-02T14:08:50+02:00
+[INFO] Total time:  2.247 s
+[INFO] Finished at: 2024-02-18T16:48:43+01:00
 [INFO] ------------------------------------------------------------------------
 ```
 
@@ -81,6 +79,6 @@ $ sudo -i
 Password:
 $ cd /Users/me/Documents/JavaDoesUSB/examples/epaper_display
 $ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-20.jdk/Contents/Home
-$ $JAVA_HOME/bin/java --enable-preview --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/0.7.1/java-does-usb-0.7.1.jar net.codecrete.usb.examples.EPaperDisplay
+$ $JAVA_HOME/bin/java --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/1.0.0-SNAPSHOT/java-does-usb-1.0.0-SNAPSHOT.jar net.codecrete.usb.examples.EPaperDisplay
 Display size: 1200 x 825
 ```

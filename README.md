@@ -4,16 +4,17 @@
 
 *Java Does USB* is a Java library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
-The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It is written entirely in Java and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) is currently in preview and will leave preview with Java 22. Currently, it can be used with Java 19, Java 20 or Java 21 (with preview features enabled).
+The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It is written entirely in Java and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) has been introduced with Java 22. Older versions of this library can be used with preview versions of the API that were available in Java 19, Java 20 or Java 21 (with preview features enabled).
 
 | Version | Main New Features | Compatibility |
 | - | - | - |
+| 1.0.x | Release for final Java API | JDK 22 |
 | 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
 | 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
 | 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
 | 0.4.x | Early release | JDK 19 |
 
-*Note: The main branch and published versions ≥ 0.6.0 work with JDK 21 only. For JDK 20, use version 0.5.*. For JDK 19, use version 0.4.x.
+*Note: The main branch and published versions ≥ 1.0 work with JDK 22 and later only. For JDK 21, user version 0.7.*. For JDK 20, use version 0.5.*. For JDK 19, use version 0.4.x.
 
 
 ## Features
@@ -48,14 +49,14 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>0.7.1</version>
+      <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '0.7.1'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.0.0-SNAPSHOT'
 ```
 
 ```java
@@ -90,10 +91,10 @@ public class EnumerateDevices {
 
 ## Prerequisite
 
-- Java 21, preview features enabled (available at https://www.azul.com/downloads/?package=jdk)
+- Java 22 (available at https://www.azul.com/downloads/?package=jdk)
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
-For JDK 20, use the latest published version 0.5.x. For JDK 19, use the latest published version 0.4.x.
+For JDK 21, use the latest published version 0.7.x. For JDK 20, use the latest published version 0.5.x. For JDK 19, use the latest published version 0.4.x.
 
 
 ## Platform-specific Considerations
@@ -101,12 +102,12 @@ For JDK 20, use the latest published version 0.5.x. For JDK 19, use the latest p
 
 ### macOS
 
-No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation-system drivers can be unloaded if the application is run with root privileges.
+No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation-system drivers can be unloaded if the application is run with root privileges. It runs both on Macs with Apple Silicion and Intel processors.
 
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library only runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement.
+*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library only runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel and ARM64 processors.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
 
@@ -129,16 +130,10 @@ USB devices can implement certain control requests to instruct Windows to automa
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
-The library has not been tested on Windows for ARM64. It might or might not work.
+Windows for ARM64 is not yet supported. A port is probably easy, provided you have hardware to test it.
 
 
 ### Troubleshooting
-
-#### `ClassFormatError` (all platforms)
-
-The error `java.lang.ClassFormatError: Illegal field name "" in class net/codecrete/usb/windows/WindowsUsbDeviceRegistry` is caused by a bug in JDK 21, which has been fixed in the mean-time. Please upgrade to the latest release of JDK 21 (at least 21.0.1).
-
-
 
 ### 32-bit versions
 
@@ -170,11 +165,11 @@ mvn clean test
 If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to enable preview features and allow native access:
 
 ```
---enable-preview --enable-native-access=net.codecrete.usb
+--enable-native-access=net.codecrete.usb
 ```
 
 Or (if modules are ignored):
 
 ```
---enable-preview --enable-native-access=ALL-UNNAMED
+--enable-native-access=ALL-UNNAMED
 ```
