@@ -7,7 +7,12 @@
 
 package net.codecrete.usb.macos;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.UsbControlTransfer;
+import net.codecrete.usb.UsbDevice;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbRecipient;
+import net.codecrete.usb.UsbRequestType;
+import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.UsbDeviceImpl;
@@ -27,7 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.macos.MacosUsbException.throwException;
 
@@ -434,7 +442,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
                 UsbTransferType.INTERRUPT);
 
         try (var arena = Arena.ofConfined()) {
-            var nativeData = arena.allocateArray(JAVA_BYTE, length);
+            var nativeData = arena.allocate(JAVA_BYTE, length);
             nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
 
             var transfer = new MacosTransfer();
@@ -464,7 +472,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
                 UsbTransferType.INTERRUPT);
 
         try (var arena = Arena.ofConfined()) {
-            var nativeData = arena.allocateArray(JAVA_BYTE, epInfo.packetSize());
+            var nativeData = arena.allocate(JAVA_BYTE, epInfo.packetSize());
 
             var transfer = new MacosTransfer();
             transfer.setData(nativeData);

@@ -334,7 +334,7 @@ public class DeviceInfoSet implements AutoCloseable {
         var stringLen = (requiredSizeHolder.get(JAVA_INT, 0) + 1) / 2;
 
         // allocate buffer
-        var propertyValueHolder = arena.allocateArray(JAVA_CHAR, stringLen);
+        var propertyValueHolder = arena.allocate(JAVA_CHAR, stringLen);
 
         // get property value
         if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,

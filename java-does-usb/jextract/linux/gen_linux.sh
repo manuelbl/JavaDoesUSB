@@ -1,9 +1,9 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../../jextract-22/bin/jextract
 
 # errno.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name errno \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-constant EPIPE \
@@ -15,14 +15,14 @@ $JEXTRACT --source --output ../../src/main/java \
   /usr/include/errno.h
 
 # string.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name string \
   --target-package net.codecrete.usb.linux.gen.string \
   --include-function strerror \
   /usr/include/string.h
 
 # fcntl.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name fcntl \
   --target-package net.codecrete.usb.linux.gen.fcntl \
   --include-constant O_CLOEXEC \
@@ -31,7 +31,7 @@ $JEXTRACT --source --output ../../src/main/java \
   /usr/include/fcntl.h
 
 # unistd.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name unistd \
   --target-package net.codecrete.usb.linux.gen.unistd \
   --include-function close \
@@ -39,7 +39,7 @@ $JEXTRACT --source --output ../../src/main/java \
 
 # usbdevice_fs.h
 # Missing constants like USBDEVFS_CLAIMINTERFACE
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name usbdevice_fs \
   --target-package net.codecrete.usb.linux.gen.usbdevice_fs \
   --include-struct usbdevfs_bulktransfer \
@@ -48,6 +48,7 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct usbdevfs_urb \
   --include-struct usbdevfs_disconnect_claim \
   --include-struct usbdevfs_ioctl \
+  --include-struct usbdevfs_iso_packet_desc \
   --include-constant USBDEVFS_URB_TYPE_INTERRUPT \
   --include-constant USBDEVFS_URB_TYPE_CONTROL \
   --include-constant USBDEVFS_URB_TYPE_BULK \
@@ -57,7 +58,7 @@ $JEXTRACT --source --output ../../src/main/java \
 
 # libudev.h
 # (install libudev-dev if file is missing)
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name udev \
   --target-package net.codecrete.usb.linux.gen.udev \
   -l udev \
@@ -83,10 +84,11 @@ $JEXTRACT --source --output ../../src/main/java \
   /usr/include/libudev.h
 
 # epoll.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   --header-class-name epoll \
   --target-package net.codecrete.usb.linux.gen.epoll \
   --include-struct epoll_event \
+  --include-union epoll_data \
   --include-constant EPOLL_CTL_ADD \
   --include-constant EPOLL_CTL_DEL \
   --include-constant EPOLLIN \

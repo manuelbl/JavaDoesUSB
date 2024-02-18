@@ -7,7 +7,11 @@
 
 package net.codecrete.usb.special;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.Usb;
+import net.codecrete.usb.UsbControlTransfer;
+import net.codecrete.usb.UsbDevice;
+import net.codecrete.usb.UsbRecipient;
+import net.codecrete.usb.UsbRequestType;
 
 import java.io.IOException;
 
@@ -21,13 +25,13 @@ public class MonitorDevices {
 
     public static void main(String[] args) throws IOException {
         Usb.setOnDeviceConnected((device) -> {
-            System.out.println(STR."Connected:    \{device.toString()}");
+            System.out.println("Connected:    " + device.toString());
             talkToTestDevice(device);
         });
-        Usb.setOnDeviceDisconnected((device) -> System.out.println(STR."Disconnected: \{device.toString()}"));
+        Usb.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
 
         for (var device : Usb.getDevices()) {
-            System.out.println(STR."Present:      \{device.toString()}");
+            System.out.println("Present:      " + device.toString());
             talkToTestDevice(device);
         }
         System.out.println("Monitoring...");

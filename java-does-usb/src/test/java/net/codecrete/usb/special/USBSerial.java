@@ -7,7 +7,12 @@
 
 package net.codecrete.usb.special;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.Usb;
+import net.codecrete.usb.UsbControlTransfer;
+import net.codecrete.usb.UsbDevice;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbRecipient;
+import net.codecrete.usb.UsbRequestType;
 
 /**
  * Interacts with a USB CDC device (serial device) directly, without using the
@@ -26,7 +31,7 @@ import net.codecrete.usb.*;
  * apply for this test.
  * </p>
  */
-public class USBSerialTest {
+public class USBSerial {
     public static void main(String[] args) {
 
         for (var device : Usb.getDevices()) {

@@ -111,9 +111,9 @@ class IoKitHelper {
     static MemorySegment getInterface(int service, MemorySegment pluginType, MemorySegment interfaceId) {
         try (var arena = Arena.ofConfined()) {
             // MemorySegment for holding IOCFPlugInInterface**
-            var plugHolder = arena.allocate(ADDRESS, NULL);
+            var plugHolder = arena.allocate(ADDRESS);
             // MemorySegment for holding score
-            var score = arena.allocate(JAVA_INT, 0);
+            var score = arena.allocate(JAVA_INT);
             var ret = IOKit.IOCreatePlugInInterfaceForService(service, pluginType, kIOCFPlugInInterfaceID, plugHolder
                     , score);
             if (ret != 0)
@@ -123,7 +123,7 @@ class IoKitHelper {
             // UUID bytes
             var refiid = CoreFoundation.CFUUIDGetUUIDBytes(arena, interfaceId);
             // MemorySegment for holding xxxInterface**
-            var intfHolder = arena.allocate(ADDRESS, NULL);
+            var intfHolder = arena.allocate(ADDRESS);
             ret = IoKitUsb.QueryInterface(plug, refiid, intfHolder);
             IoKitUsb.Release(plug);
             if (ret != 0)
@@ -152,7 +152,7 @@ class IoKitHelper {
         Integer result = null;
         var type = CoreFoundation.CFGetTypeID(value);
         if (type == CoreFoundation.CFNumberGetTypeID()) {
-            var numberValue = arena.allocate(JAVA_INT, 0);
+            var numberValue = arena.allocate(JAVA_INT);
             if (CoreFoundation.CFNumberGetValue(value, CoreFoundation.kCFNumberSInt32Type(), numberValue) != 0)
                 result = numberValue.get(JAVA_INT, 0);
         }

@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.foreign.MemorySegment;
 
-import static net.codecrete.usb.ConfigurationDescriptors.*;
+import static net.codecrete.usb.ConfigurationDescriptors.COMPOSITE_LARGE;
+import static net.codecrete.usb.ConfigurationDescriptors.COMPOSITE_TEST_DEVICE;
+import static net.codecrete.usb.ConfigurationDescriptors.SIMPLE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ConfigurationParserTest {

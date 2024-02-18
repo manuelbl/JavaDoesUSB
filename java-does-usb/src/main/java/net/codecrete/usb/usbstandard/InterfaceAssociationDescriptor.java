@@ -9,16 +9,14 @@ package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 /**
  * USB interface association descriptor (IAD)
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class InterfaceAssociationDescriptor {
 
     private final MemorySegment descriptor;
@@ -32,27 +30,27 @@ public class InterfaceAssociationDescriptor {
     }
 
     public int firstInterface() {
-        return 0xff & (byte) bFirstInterface$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bFirstInterface$OFFSET);
     }
 
     public int interfaceCount() {
-        return 0xff & (byte) bInterfaceCount$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterfaceCount$OFFSET);
     }
 
     public int functionClass() {
-        return 0xff & (byte) bFunctionClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bFunctionClass$OFFSET);
     }
 
     public int functionSubClass() {
-        return 0xff & (byte) bFunctionSubClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bFunctionSubClass$OFFSET);
     }
 
     public int functionProtocol() {
-        return 0xff & (byte) bFunctionProtocol$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bFunctionProtocol$OFFSET);
     }
 
     public int function() {
-        return 0xff & (byte) iFunction$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, iFunction$OFFSET);
     }
 
     // struct USBInterfaceAssociationDescriptor {
@@ -76,12 +74,12 @@ public class InterfaceAssociationDescriptor {
             JAVA_BYTE.withName("iFunction")
     );
 
-    private static final VarHandle bFirstInterface$VH = LAYOUT.varHandle(groupElement("bFirstInterface"));
-    private static final VarHandle bInterfaceCount$VH = LAYOUT.varHandle(groupElement("bInterfaceCount"));
-    private static final VarHandle bFunctionClass$VH = LAYOUT.varHandle(groupElement("bFunctionClass"));
-    private static final VarHandle bFunctionSubClass$VH = LAYOUT.varHandle(groupElement("bFunctionSubClass"));
-    private static final VarHandle bFunctionProtocol$VH = LAYOUT.varHandle(groupElement("bFunctionProtocol"));
-    private static final VarHandle iFunction$VH = LAYOUT.varHandle(groupElement("iFunction"));
+    private static final long bFirstInterface$OFFSET = 2;
+    private static final long bInterfaceCount$OFFSET = 3;
+    private static final long bFunctionClass$OFFSET = 4;
+    private static final long bFunctionSubClass$OFFSET = 5;
+    private static final long bFunctionProtocol$OFFSET = 6;
+    private static final long iFunction$OFFSET = 7;
 
     static {
         assert LAYOUT.byteSize() == 8;

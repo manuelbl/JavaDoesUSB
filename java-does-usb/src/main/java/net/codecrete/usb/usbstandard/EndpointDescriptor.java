@@ -9,9 +9,7 @@ package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
@@ -19,7 +17,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 /**
  * USB endpoint descriptor
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class EndpointDescriptor {
 
     private final MemorySegment descriptor;
@@ -33,19 +31,19 @@ public class EndpointDescriptor {
     }
 
     public int endpointAddress() {
-        return 0xff & (byte) bEndpointAddress$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bEndpointAddress$OFFSET);
     }
 
     public int attributes() {
-        return 0xff & (byte) bmAttributes$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bmAttributes$OFFSET);
     }
 
     public int maxPacketSize() {
-        return 0xffff & (short) wMaxPacketSize$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, wMaxPacketSize$OFFSET);
     }
 
     public int interval() {
-        return 0xff & (byte) bInterval$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterval$OFFSET);
     }
 
     // struct USBEndpointDescriptor {
@@ -65,10 +63,10 @@ public class EndpointDescriptor {
             JAVA_BYTE.withName("bInterval")
     );
 
-    private static final VarHandle bEndpointAddress$VH = LAYOUT.varHandle(groupElement("bEndpointAddress"));
-    private static final VarHandle bmAttributes$VH = LAYOUT.varHandle(groupElement("bmAttributes"));
-    private static final VarHandle wMaxPacketSize$VH = LAYOUT.varHandle(groupElement("wMaxPacketSize"));
-    private static final VarHandle bInterval$VH = LAYOUT.varHandle(groupElement("bInterval"));
+    private static final long bEndpointAddress$OFFSET = 2;
+    private static final long bmAttributes$OFFSET = 3;
+    private static final long wMaxPacketSize$OFFSET = 4;
+    private static final long bInterval$OFFSET = 6;
 
     static {
         assert LAYOUT.byteSize() == 7;

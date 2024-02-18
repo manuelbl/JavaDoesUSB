@@ -32,7 +32,7 @@ public class MacosUsbException extends UsbException {
 
     private static String machErrorMessage(int errorCode) {
         var msg = mach.mach_error_string(errorCode);
-        return msg.getUtf8String(0);
+        return msg.getString(0);
     }
 
     /**

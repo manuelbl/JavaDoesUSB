@@ -7,34 +7,31 @@ import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
 import java.util.function.Consumer;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
-import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
 import static java.lang.foreign.ValueLayout.OfInt;
 
 /**
  * {@snippet lang=c :
- * struct usbdevfs_disconnect_claim {
- *     unsigned int interface;
- *     unsigned int flags;
- *     char driver[256];
+ * struct usbdevfs_iso_packet_desc {
+ *     unsigned int length;
+ *     unsigned int actual_length;
+ *     unsigned int status;
  * }
  * }
  */
-public class usbdevfs_disconnect_claim {
+public class usbdevfs_iso_packet_desc {
 
-    usbdevfs_disconnect_claim() {
+    usbdevfs_iso_packet_desc() {
         // Should not be called directly
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        usbdevice_fs.C_INT.withName("interface"),
-        usbdevice_fs.C_INT.withName("flags"),
-        MemoryLayout.sequenceLayout(256, usbdevice_fs.C_CHAR).withName("driver")
-    ).withName("usbdevfs_disconnect_claim");
+        usbdevice_fs.C_INT.withName("length"),
+        usbdevice_fs.C_INT.withName("actual_length"),
+        usbdevice_fs.C_INT.withName("status")
+    ).withName("usbdevfs_iso_packet_desc");
 
     /**
      * The layout of this struct
@@ -43,169 +40,136 @@ public class usbdevfs_disconnect_claim {
         return $LAYOUT;
     }
 
-    private static final OfInt interface_$LAYOUT = (OfInt)$LAYOUT.select(groupElement("interface"));
+    private static final OfInt length$LAYOUT = (OfInt)$LAYOUT.select(groupElement("length"));
 
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * unsigned int interface
+     * unsigned int length
      * }
      */
-    public static final OfInt interface_$layout() {
-        return interface_$LAYOUT;
+    public static final OfInt length$layout() {
+        return length$LAYOUT;
     }
 
-    private static final long interface_$OFFSET = 0;
+    private static final long length$OFFSET = 0;
 
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * unsigned int interface
+     * unsigned int length
      * }
      */
-    public static final long interface_$offset() {
-        return interface_$OFFSET;
+    public static final long length$offset() {
+        return length$OFFSET;
     }
 
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * unsigned int interface
+     * unsigned int length
      * }
      */
-    public static int interface_(MemorySegment struct) {
-        return struct.get(interface_$LAYOUT, interface_$OFFSET);
+    public static int length(MemorySegment struct) {
+        return struct.get(length$LAYOUT, length$OFFSET);
     }
 
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * unsigned int interface
+     * unsigned int length
      * }
      */
-    public static void interface_(MemorySegment struct, int fieldValue) {
-        struct.set(interface_$LAYOUT, interface_$OFFSET, fieldValue);
+    public static void length(MemorySegment struct, int fieldValue) {
+        struct.set(length$LAYOUT, length$OFFSET, fieldValue);
     }
 
-    private static final OfInt flags$LAYOUT = (OfInt)$LAYOUT.select(groupElement("flags"));
+    private static final OfInt actual_length$LAYOUT = (OfInt)$LAYOUT.select(groupElement("actual_length"));
 
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * unsigned int flags
+     * unsigned int actual_length
      * }
      */
-    public static final OfInt flags$layout() {
-        return flags$LAYOUT;
+    public static final OfInt actual_length$layout() {
+        return actual_length$LAYOUT;
     }
 
-    private static final long flags$OFFSET = 4;
+    private static final long actual_length$OFFSET = 4;
 
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * unsigned int flags
+     * unsigned int actual_length
      * }
      */
-    public static final long flags$offset() {
-        return flags$OFFSET;
+    public static final long actual_length$offset() {
+        return actual_length$OFFSET;
     }
 
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * unsigned int flags
+     * unsigned int actual_length
      * }
      */
-    public static int flags(MemorySegment struct) {
-        return struct.get(flags$LAYOUT, flags$OFFSET);
+    public static int actual_length(MemorySegment struct) {
+        return struct.get(actual_length$LAYOUT, actual_length$OFFSET);
     }
 
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * unsigned int flags
+     * unsigned int actual_length
      * }
      */
-    public static void flags(MemorySegment struct, int fieldValue) {
-        struct.set(flags$LAYOUT, flags$OFFSET, fieldValue);
+    public static void actual_length(MemorySegment struct, int fieldValue) {
+        struct.set(actual_length$LAYOUT, actual_length$OFFSET, fieldValue);
     }
 
-    private static final SequenceLayout driver$LAYOUT = (SequenceLayout)$LAYOUT.select(groupElement("driver"));
+    private static final OfInt status$LAYOUT = (OfInt)$LAYOUT.select(groupElement("status"));
 
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * char driver[256]
+     * unsigned int status
      * }
      */
-    public static final SequenceLayout driver$layout() {
-        return driver$LAYOUT;
+    public static final OfInt status$layout() {
+        return status$LAYOUT;
     }
 
-    private static final long driver$OFFSET = 8;
+    private static final long status$OFFSET = 8;
 
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * char driver[256]
+     * unsigned int status
      * }
      */
-    public static final long driver$offset() {
-        return driver$OFFSET;
+    public static final long status$offset() {
+        return status$OFFSET;
     }
 
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * char driver[256]
+     * unsigned int status
      * }
      */
-    public static MemorySegment driver(MemorySegment struct) {
-        return struct.asSlice(driver$OFFSET, driver$LAYOUT.byteSize());
+    public static int status(MemorySegment struct) {
+        return struct.get(status$LAYOUT, status$OFFSET);
     }
 
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * char driver[256]
+     * unsigned int status
      * }
      */
-    public static void driver(MemorySegment struct, MemorySegment fieldValue) {
-        MemorySegment.copy(fieldValue, 0L, struct, driver$OFFSET, driver$LAYOUT.byteSize());
-    }
-
-    private static long[] driver$DIMS = { 256 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * char driver[256]
-     * }
-     */
-    public static long[] driver$dimensions() {
-        return driver$DIMS;
-    }
-    private static final VarHandle driver$ELEM_HANDLE = driver$LAYOUT.varHandle(sequenceElement());
-
-    /**
-     * Indexed getter for field:
-     * {@snippet lang=c :
-     * char driver[256]
-     * }
-     */
-    public static byte driver(MemorySegment struct, long index0) {
-        return (byte)driver$ELEM_HANDLE.get(struct, 0L, index0);
-    }
-
-    /**
-     * Indexed setter for field:
-     * {@snippet lang=c :
-     * char driver[256]
-     * }
-     */
-    public static void driver(MemorySegment struct, long index0, byte fieldValue) {
-        driver$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
+    public static void status(MemorySegment struct, int fieldValue) {
+        struct.set(status$LAYOUT, status$OFFSET, fieldValue);
     }
 
     /**

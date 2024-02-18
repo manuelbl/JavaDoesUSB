@@ -24,7 +24,7 @@ import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
-import static net.codecrete.usb.linux.gen.epoll.epoll.*;
+import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLIN;
 import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
 
 /**
@@ -45,18 +45,17 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
     private static final MemorySegment ATTR_SERIAL;
 
     static {
-        @SuppressWarnings("resource")
         var global = Arena.global();
 
-        SUBSYSTEM_USB = global.allocateUtf8String("usb");
-        MONITOR_NAME = global.allocateUtf8String("udev");
-        DEVTYPE_USB_DEVICE = global.allocateUtf8String("usb_device");
+        SUBSYSTEM_USB = global.allocateFrom("usb");
+        MONITOR_NAME = global.allocateFrom("udev");
+        DEVTYPE_USB_DEVICE = global.allocateFrom("usb_device");
 
-        ATTR_ID_VENDOR = global.allocateUtf8String("idVendor");
-        ATTR_ID_PRODUCT = global.allocateUtf8String("idProduct");
-        ATTR_MANUFACTURER = global.allocateUtf8String("manufacturer");
-        ATTR_PRODUCT = global.allocateUtf8String("product");
-        ATTR_SERIAL = global.allocateUtf8String("serial");
+        ATTR_ID_VENDOR = global.allocateFrom("idVendor");
+        ATTR_ID_PRODUCT = global.allocateFrom("idProduct");
+        ATTR_MANUFACTURER = global.allocateFrom("manufacturer");
+        ATTR_PRODUCT = global.allocateFrom("product");
+        ATTR_SERIAL = global.allocateFrom("serial");
     }
 
     @SuppressWarnings({"java:S1181", "java:S2189"})
@@ -104,7 +103,7 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
             EPoll.addFileDescriptor(epfd, EPOLLIN(), fd);
 
             // allocate event (as output for epoll_wait)
-            var event = arena.allocate(epoll_event.$LAYOUT());
+            var event = arena.allocate(epoll_event.layout());
 
             // monitor device changes
             //noinspection InfiniteLoopStatement
@@ -250,14 +249,14 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
         if (value.address() == 0)
             return null;
 
-        return value.getUtf8String(0);
+        return value.getString(0);
     }
 
     private static String getDeviceName(MemorySegment udevDevice) {
-        return udev.udev_device_get_devnode(udevDevice).getUtf8String(0);
+        return udev.udev_device_get_devnode(udevDevice).getString(0);
     }
 
     private static String getDeviceAction(MemorySegment udevDevice) {
-        return udev.udev_device_get_action(udevDevice).getUtf8String(0);
+        return udev.udev_device_get_action(udevDevice).getString(0);
     }
 }

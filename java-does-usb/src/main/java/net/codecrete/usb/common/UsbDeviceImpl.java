@@ -7,7 +7,14 @@
 
 package net.codecrete.usb.common;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.UsbDevice;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbEndpoint;
+import net.codecrete.usb.UsbException;
+import net.codecrete.usb.UsbInterface;
+import net.codecrete.usb.UsbTimeoutException;
+import net.codecrete.usb.UsbTransferType;
+import net.codecrete.usb.Version;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import org.jetbrains.annotations.NotNull;
 
@@ -350,14 +357,14 @@ public abstract class UsbDeviceImpl implements UsbDevice {
             if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
                 waitNoTimeout(transfer);
-                throw new UsbTimeoutException(STR."\{getOperationDescription(direction, endpointNumber)}aborted due to timeout");
+                throw new UsbTimeoutException(getOperationDescription(direction, endpointNumber) + " aborted due to timeout");
             }
         }
 
         // test for error
         if (transfer.resultCode() != 0) {
             var operation = getOperationDescription(direction, endpointNumber);
-            throwOSException(transfer.resultCode(), STR."\{operation} failed");
+            throwOSException(transfer.resultCode(), operation + " failed");
         }
     }
 
@@ -449,7 +456,8 @@ public abstract class UsbDeviceImpl implements UsbDevice {
 
     @Override
     public String toString() {
-        return STR."VID: 0x\{String.format("%04x", vid)}, PID: 0x\{String.format("%04x", pid)}, manufacturer: \{manufacturerString}, product: \{productString}, serial: \{serialString}, ID: \{uniqueDeviceId}";
+        return String.format("VID: 0x%04x, PID: 0x%04x, manufacturer: %s, product: %s, serial: %s, ID: %s",
+                vid, pid, manufacturerString, productString, serialString, uniqueDeviceId);
     }
 
     public record EndpointInfo(int interfaceNumber, int endpointNumber, byte endpointAddress, int packetSize,

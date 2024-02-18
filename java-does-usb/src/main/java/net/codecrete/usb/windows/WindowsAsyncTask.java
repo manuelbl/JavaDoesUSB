@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
 
@@ -66,9 +68,9 @@ class WindowsAsyncTask {
 
         try (var arena = Arena.ofConfined()) {
 
-            var overlappedHolder = arena.allocate(ADDRESS, NULL);
-            var numBytesHolder = arena.allocate(JAVA_INT, 0);
-            var completionKeyHolder = arena.allocate(JAVA_LONG, 0);
+            var overlappedHolder = arena.allocate(ADDRESS);
+            var numBytesHolder = arena.allocate(JAVA_INT);
+            var completionKeyHolder = arena.allocate(JAVA_LONG);
             var errorState = allocateErrorState(arena);
 
             while (true) {

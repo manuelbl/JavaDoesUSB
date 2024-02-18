@@ -3,66 +3,115 @@
 package net.codecrete.usb.linux.gen.errno;
 
 import java.lang.foreign.AddressLayout;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-import static java.lang.foreign.ValueLayout.*;
-public class errno  {
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfLong C_LONG = JAVA_LONG;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class errno {
+
+    errno() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.loaderLookup()
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfLong C_LONG = ValueLayout.JAVA_LONG;
+    private static final int ENOENT = (int)2L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ENOENT 2
      * }
      */
     public static int ENOENT() {
-        return (int)2L;
+        return ENOENT;
     }
+    private static final int EINTR = (int)4L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define EINTR 4
      * }
      */
     public static int EINTR() {
-        return (int)4L;
+        return EINTR;
     }
+    private static final int EAGAIN = (int)11L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define EAGAIN 11
      * }
      */
     public static int EAGAIN() {
-        return (int)11L;
+        return EAGAIN;
     }
+    private static final int ENODEV = (int)19L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ENODEV 19
      * }
      */
     public static int ENODEV() {
-        return (int)19L;
+        return ENODEV;
     }
+    private static final int EINVAL = (int)22L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define EINVAL 22
      * }
      */
     public static int EINVAL() {
-        return (int)22L;
+        return EINVAL;
     }
+    private static final int EPIPE = (int)32L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define EPIPE 32
      * }
      */
     public static int EPIPE() {
-        return (int)32L;
+        return EPIPE;
     }
 }
-
 

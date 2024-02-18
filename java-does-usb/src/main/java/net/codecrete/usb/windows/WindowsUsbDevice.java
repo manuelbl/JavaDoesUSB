@@ -7,7 +7,11 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.*;
+import net.codecrete.usb.UsbControlTransfer;
+import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbException;
+import net.codecrete.usb.UsbRecipient;
+import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.UsbDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
@@ -29,7 +33,9 @@ import java.util.regex.Pattern;
 import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.windows.DevicePropertyKey.Children;
 import static net.codecrete.usb.windows.DevicePropertyKey.HardwareIds;
@@ -412,12 +418,13 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
 
-            var timeoutHolder = arena.allocate(JAVA_INT, 0);
+            var timeoutHolder = arena.allocate(JAVA_INT);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(),
                     WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, errorState) == 0)
                 throwLastError(errorState, "setting timeout failed");
 
-            var rawIoHolder = arena.allocate(JAVA_BYTE, (byte) 1);
+            var rawIoHolder = arena.allocate(JAVA_BYTE);
+            rawIoHolder.setAtIndex(JAVA_BYTE, 1, (byte) 1);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
                     (int) rawIoHolder.byteSize(), rawIoHolder, errorState) == 0)
                 throwLastError(errorState, "setting raw IO failed");

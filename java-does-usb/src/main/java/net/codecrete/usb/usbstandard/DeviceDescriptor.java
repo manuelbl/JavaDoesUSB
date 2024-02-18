@@ -9,9 +9,7 @@ package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
@@ -19,7 +17,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 /**
  * USB device descriptor
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class DeviceDescriptor {
 
     private final MemorySegment descriptor;
@@ -29,43 +27,43 @@ public class DeviceDescriptor {
     }
 
     public int usbVersion() {
-        return 0xffff & (short) bcdUSB$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, bcdUSB$OFFSET);
     }
 
     public int deviceClass() {
-        return 0xff & (byte) bDeviceClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bDeviceClass$OFFSET);
     }
 
     public int deviceSubClass() {
-        return 0xff & (byte) bDeviceSubClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bDeviceSubClass$OFFSET);
     }
 
     public int deviceProtocol() {
-        return 0xff & (byte) bDeviceProtocol$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bDeviceProtocol$OFFSET);
     }
 
     public int vendorID() {
-        return 0xffff & (short) idVendor$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, idVendor$OFFSET);
     }
 
     public int productID() {
-        return 0xffff & (short) idProduct$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, idProduct$OFFSET);
     }
 
     public int deviceVersion() {
-        return 0xffff & (short) bcdDevice$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, bcdDevice$OFFSET);
     }
 
     public int iManufacturer() {
-        return 0xffff & (short) iManufacturer$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, iManufacturer$OFFSET);
     }
 
     public int iProduct() {
-        return 0xffff & (short) iProduct$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, iProduct$OFFSET);
     }
 
     public int iSerialNumber() {
-        return 0xffff & (short) iSerialNumber$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, iSerialNumber$OFFSET);
     }
 
     // struct USBDeviceDescriptor {
@@ -101,16 +99,16 @@ public class DeviceDescriptor {
             JAVA_BYTE.withName("bNumConfigurations")
     );
 
-    private static final VarHandle bcdUSB$VH = LAYOUT.varHandle(groupElement("bcdUSB"));
-    private static final VarHandle bDeviceClass$VH = LAYOUT.varHandle(groupElement("bDeviceClass"));
-    private static final VarHandle bDeviceSubClass$VH = LAYOUT.varHandle(groupElement("bDeviceSubClass"));
-    private static final VarHandle bDeviceProtocol$VH = LAYOUT.varHandle(groupElement("bDeviceProtocol"));
-    private static final VarHandle idVendor$VH = LAYOUT.varHandle(groupElement("idVendor"));
-    private static final VarHandle idProduct$VH = LAYOUT.varHandle(groupElement("idProduct"));
-    private static final VarHandle bcdDevice$VH = LAYOUT.varHandle(groupElement("bcdDevice"));
-    private static final VarHandle iManufacturer$VH = LAYOUT.varHandle(groupElement("iManufacturer"));
-    private static final VarHandle iProduct$VH = LAYOUT.varHandle(groupElement("iProduct"));
-    private static final VarHandle iSerialNumber$VH = LAYOUT.varHandle(groupElement("iSerialNumber"));
+    private static final long bcdUSB$OFFSET = 2;
+    private static final long bDeviceClass$OFFSET = 4;
+    private static final long bDeviceSubClass$OFFSET = 5;
+    private static final long bDeviceProtocol$OFFSET = 6;
+    private static final long idVendor$OFFSET = 8;
+    private static final long idProduct$OFFSET = 10;
+    private static final long bcdDevice$OFFSET = 12;
+    private static final long iManufacturer$OFFSET = 14;
+    private static final long iProduct$OFFSET = 15;
+    private static final long iSerialNumber$OFFSET = 16;
 
 
     static {

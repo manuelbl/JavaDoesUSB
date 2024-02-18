@@ -9,9 +9,7 @@ package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
@@ -19,7 +17,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT_UNALIGNED;
 /**
  * USB configuration descriptor
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class ConfigurationDescriptor {
 
     private final MemorySegment descriptor;
@@ -29,31 +27,31 @@ public class ConfigurationDescriptor {
     }
 
     public int descriptorType() {
-        return 0xff & (byte) bDescriptorType$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bDescriptorType$OFFSET);
     }
 
     public int totalLength() {
-        return 0xffff & (short) wTotalLength$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT_UNALIGNED, wTotalLength$OFFSET);
     }
 
     public int numInterfaces() {
-        return 0xff & (byte) bNumInterfaces$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bNumInterfaces$OFFSET);
     }
 
     public int configurationValue() {
-        return 0xff & (byte) bConfigurationValue$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bConfigurationValue$OFFSET);
     }
 
     public int iConfiguration() {
-        return 0xff & (byte) iConfiguration$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, iConfiguration$OFFSET);
     }
 
     public int attributes() {
-        return 0xff & (byte) bmAttributes$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bmAttributes$OFFSET);
     }
 
     public int maxPower() {
-        return 0xff & (byte) bMaxPower$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bMaxPower$OFFSET);
     }
 
 
@@ -78,13 +76,13 @@ public class ConfigurationDescriptor {
             JAVA_BYTE.withName("bMaxPower")
     );
 
-    private static final VarHandle bDescriptorType$VH = LAYOUT.varHandle(groupElement("bDescriptorType"));
-    private static final VarHandle wTotalLength$VH = LAYOUT.varHandle(groupElement("wTotalLength"));
-    private static final VarHandle bNumInterfaces$VH = LAYOUT.varHandle(groupElement("bNumInterfaces"));
-    private static final VarHandle bConfigurationValue$VH = LAYOUT.varHandle(groupElement("bConfigurationValue"));
-    private static final VarHandle iConfiguration$VH = LAYOUT.varHandle(groupElement("iConfiguration"));
-    private static final VarHandle bmAttributes$VH = LAYOUT.varHandle(groupElement("bmAttributes"));
-    private static final VarHandle bMaxPower$VH = LAYOUT.varHandle(groupElement("bMaxPower"));
+    private static final long bDescriptorType$OFFSET = 1;
+    private static final long wTotalLength$OFFSET = 2;
+    private static final long bNumInterfaces$OFFSET = 4;
+    private static final long bConfigurationValue$OFFSET = 5;
+    private static final long iConfiguration$OFFSET = 6;
+    private static final long bmAttributes$OFFSET = 7;
+    private static final long bMaxPower$OFFSET = 8;
 
     static {
         assert LAYOUT.byteSize() == 9;

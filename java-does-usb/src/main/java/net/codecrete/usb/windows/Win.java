@@ -9,8 +9,12 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.windows.gen.kernel32._GUID;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout.PathElement;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +74,7 @@ public class Win {
      */
     public static MemorySegment createSegmentFromString(String str, Arena arena) {
         // allocate segment (including space for terminating null)
-        var segment = arena.allocateArray(ValueLayout.JAVA_CHAR, str.length() + 1L);
+        var segment = arena.allocate(ValueLayout.JAVA_CHAR, str.length() + 1L);
         // copy characters
         segment.copyFrom(MemorySegment.ofArray(str.toCharArray()));
         return segment;
@@ -135,7 +139,6 @@ public class Win {
     public static MemorySegment createGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
                                            byte data4_7) {
-        @SuppressWarnings("resource")
         var guid = Arena.global().allocate(_GUID.$LAYOUT());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
