@@ -21,7 +21,6 @@ import java.util.List;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 /**
  * Windows helpers.
@@ -50,9 +49,7 @@ public class Win {
      * @return the error code
      */
     public static int getLastError(MemorySegment callState) {
-        return callState.get(JAVA_INT, 0);
-        // TODO: revert to varhandle
-        // return (int) callState_GetLastError$VH.get(callState);
+        return (int) callState_GetLastError$VH.get(callState, 0);
     }
 
     /**
