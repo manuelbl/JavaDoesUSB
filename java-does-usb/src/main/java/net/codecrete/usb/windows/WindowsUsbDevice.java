@@ -424,7 +424,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 throwLastError(errorState, "setting timeout failed");
 
             var rawIoHolder = arena.allocate(JAVA_BYTE);
-            rawIoHolder.setAtIndex(JAVA_BYTE, 1, (byte) 1);
+            rawIoHolder.setAtIndex(JAVA_BYTE, 0, (byte) 1);
             if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
                     (int) rawIoHolder.byteSize(), rawIoHolder, errorState) == 0)
                 throwLastError(errorState, "setting raw IO failed");

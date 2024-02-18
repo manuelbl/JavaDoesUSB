@@ -3,119 +3,221 @@
 package net.codecrete.usb.windows.gen.setupapi;
 
 import java.lang.foreign.AddressLayout;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
-import static java.lang.foreign.ValueLayout.OfByte;
-import static java.lang.foreign.ValueLayout.OfDouble;
-import static java.lang.foreign.ValueLayout.OfFloat;
-import static java.lang.foreign.ValueLayout.OfInt;
-import static java.lang.foreign.ValueLayout.OfLong;
-import static java.lang.foreign.ValueLayout.OfShort;
-public class SetupAPI  {
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfInt C_LONG = JAVA_INT;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class SetupAPI {
+
+    SetupAPI() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("SetupAPI"), LIBRARY_ARENA)
+            .or(SymbolLookup.loaderLookup())
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfInt C_LONG = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfDouble C_LONG_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    private static final int DEVPROP_TYPEMOD_LIST = (int)8192L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DEVPROP_TYPEMOD_LIST 8192
      * }
      */
     public static int DEVPROP_TYPEMOD_LIST() {
-        return (int)8192L;
+        return DEVPROP_TYPEMOD_LIST;
     }
+    private static final int DEVPROP_TYPE_UINT32 = (int)7L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DEVPROP_TYPE_UINT32 7
      * }
      */
     public static int DEVPROP_TYPE_UINT32() {
-        return (int)7L;
+        return DEVPROP_TYPE_UINT32;
     }
+    private static final int DEVPROP_TYPE_STRING = (int)18L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DEVPROP_TYPE_STRING 18
      * }
      */
     public static int DEVPROP_TYPE_STRING() {
-        return (int)18L;
+        return DEVPROP_TYPE_STRING;
     }
+    private static final int DICS_FLAG_GLOBAL = (int)1L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DICS_FLAG_GLOBAL 1
      * }
      */
     public static int DICS_FLAG_GLOBAL() {
-        return (int)1L;
+        return DICS_FLAG_GLOBAL;
     }
+    private static final int DIGCF_PRESENT = (int)2L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DIGCF_PRESENT 2
      * }
      */
     public static int DIGCF_PRESENT() {
-        return (int)2L;
+        return DIGCF_PRESENT;
     }
+    private static final int DIGCF_DEVICEINTERFACE = (int)16L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DIGCF_DEVICEINTERFACE 16
      * }
      */
     public static int DIGCF_DEVICEINTERFACE() {
-        return (int)16L;
+        return DIGCF_DEVICEINTERFACE;
     }
+    private static final int DIREG_DEV = (int)1L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DIREG_DEV 1
      * }
      */
     public static int DIREG_DEV() {
-        return (int)1L;
+        return DIREG_DEV;
     }
-    public static MethodHandle SetupDiDestroyDeviceInfoList$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$1,"SetupDiDestroyDeviceInfoList");
+
+    private static class SetupDiDestroyDeviceInfoList {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            SetupAPI.C_INT,
+            SetupAPI.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    SetupAPI.findOrThrow("SetupDiDestroyDeviceInfoList"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * BOOL SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet)
+     * }
+     */
+    public static FunctionDescriptor SetupDiDestroyDeviceInfoList$descriptor() {
+        return SetupDiDestroyDeviceInfoList.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * BOOL SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet)
+     * }
+     */
+    public static MethodHandle SetupDiDestroyDeviceInfoList$handle() {
+        return SetupDiDestroyDeviceInfoList.HANDLE;
     }
     /**
-     * {@snippet :
-     * BOOL SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet);
+     * {@snippet lang=c :
+     * BOOL SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet)
      * }
      */
     public static int SetupDiDestroyDeviceInfoList(MemorySegment DeviceInfoSet) {
-        var mh$ = SetupDiDestroyDeviceInfoList$MH();
+        var mh$ = SetupDiDestroyDeviceInfoList.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("SetupDiDestroyDeviceInfoList", DeviceInfoSet);
+            }
             return (int)mh$.invokeExact(DeviceInfoSet);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle SetupDiDeleteDeviceInterfaceData$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$3,"SetupDiDeleteDeviceInterfaceData");
+
+    private static class SetupDiDeleteDeviceInterfaceData {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            SetupAPI.C_INT,
+            SetupAPI.C_POINTER,
+            SetupAPI.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    SetupAPI.findOrThrow("SetupDiDeleteDeviceInterfaceData"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * BOOL SetupDiDeleteDeviceInterfaceData(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData)
+     * }
+     */
+    public static FunctionDescriptor SetupDiDeleteDeviceInterfaceData$descriptor() {
+        return SetupDiDeleteDeviceInterfaceData.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * BOOL SetupDiDeleteDeviceInterfaceData(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData)
+     * }
+     */
+    public static MethodHandle SetupDiDeleteDeviceInterfaceData$handle() {
+        return SetupDiDeleteDeviceInterfaceData.HANDLE;
     }
     /**
-     * {@snippet :
-     * BOOL SetupDiDeleteDeviceInterfaceData(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
+     * {@snippet lang=c :
+     * BOOL SetupDiDeleteDeviceInterfaceData(HDEVINFO DeviceInfoSet, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData)
      * }
      */
     public static int SetupDiDeleteDeviceInterfaceData(MemorySegment DeviceInfoSet, MemorySegment DeviceInterfaceData) {
-        var mh$ = SetupDiDeleteDeviceInterfaceData$MH();
+        var mh$ = SetupDiDeleteDeviceInterfaceData.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("SetupDiDeleteDeviceInterfaceData", DeviceInfoSet, DeviceInterfaceData);
+            }
             return (int)mh$.invokeExact(DeviceInfoSet, DeviceInterfaceData);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
 }
-
 

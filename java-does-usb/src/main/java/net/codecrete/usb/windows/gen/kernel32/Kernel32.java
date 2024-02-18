@@ -3,247 +3,428 @@
 package net.codecrete.usb.windows.gen.kernel32;
 
 import java.lang.foreign.AddressLayout;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
-import static java.lang.foreign.ValueLayout.OfByte;
-import static java.lang.foreign.ValueLayout.OfDouble;
-import static java.lang.foreign.ValueLayout.OfFloat;
-import static java.lang.foreign.ValueLayout.OfInt;
-import static java.lang.foreign.ValueLayout.OfLong;
-import static java.lang.foreign.ValueLayout.OfShort;
-public class Kernel32  {
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfInt C_LONG = JAVA_INT;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class Kernel32 {
+
+    Kernel32() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("Kernel32"), LIBRARY_ARENA)
+            .or(SymbolLookup.loaderLookup())
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfInt C_LONG = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfDouble C_LONG_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    private static final int FILE_SHARE_READ = (int)1L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FILE_SHARE_READ 1
      * }
      */
     public static int FILE_SHARE_READ() {
-        return (int)1L;
+        return FILE_SHARE_READ;
     }
+    private static final int FILE_SHARE_WRITE = (int)2L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FILE_SHARE_WRITE 2
      * }
      */
     public static int FILE_SHARE_WRITE() {
-        return (int)2L;
+        return FILE_SHARE_WRITE;
     }
+    private static final int FILE_ATTRIBUTE_NORMAL = (int)128L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FILE_ATTRIBUTE_NORMAL 128
      * }
      */
     public static int FILE_ATTRIBUTE_NORMAL() {
-        return (int)128L;
+        return FILE_ATTRIBUTE_NORMAL;
     }
+    private static final int OPEN_EXISTING = (int)3L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define OPEN_EXISTING 3
      * }
      */
     public static int OPEN_EXISTING() {
-        return (int)3L;
+        return OPEN_EXISTING;
     }
+    private static final int FILE_FLAG_OVERLAPPED = (int)1073741824L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FILE_FLAG_OVERLAPPED 1073741824
      * }
      */
     public static int FILE_FLAG_OVERLAPPED() {
-        return (int)1073741824L;
+        return FILE_FLAG_OVERLAPPED;
     }
+    private static final int FORMAT_MESSAGE_ALLOCATE_BUFFER = (int)256L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FORMAT_MESSAGE_ALLOCATE_BUFFER 256
      * }
      */
     public static int FORMAT_MESSAGE_ALLOCATE_BUFFER() {
-        return (int)256L;
+        return FORMAT_MESSAGE_ALLOCATE_BUFFER;
     }
+    private static final int FORMAT_MESSAGE_IGNORE_INSERTS = (int)512L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FORMAT_MESSAGE_IGNORE_INSERTS 512
      * }
      */
     public static int FORMAT_MESSAGE_IGNORE_INSERTS() {
-        return (int)512L;
+        return FORMAT_MESSAGE_IGNORE_INSERTS;
     }
+    private static final int FORMAT_MESSAGE_FROM_HMODULE = (int)2048L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FORMAT_MESSAGE_FROM_HMODULE 2048
      * }
      */
     public static int FORMAT_MESSAGE_FROM_HMODULE() {
-        return (int)2048L;
+        return FORMAT_MESSAGE_FROM_HMODULE;
     }
+    private static final int FORMAT_MESSAGE_FROM_SYSTEM = (int)4096L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define FORMAT_MESSAGE_FROM_SYSTEM 4096
      * }
      */
     public static int FORMAT_MESSAGE_FROM_SYSTEM() {
-        return (int)4096L;
+        return FORMAT_MESSAGE_FROM_SYSTEM;
     }
-    public static MethodHandle CloseHandle$MH() {
-        return RuntimeHelper.requireNonNull(constants$1.const$6,"CloseHandle");
+
+    private static class CloseHandle {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            Kernel32.C_INT,
+            Kernel32.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    Kernel32.findOrThrow("CloseHandle"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * BOOL CloseHandle(HANDLE hObject)
+     * }
+     */
+    public static FunctionDescriptor CloseHandle$descriptor() {
+        return CloseHandle.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * BOOL CloseHandle(HANDLE hObject)
+     * }
+     */
+    public static MethodHandle CloseHandle$handle() {
+        return CloseHandle.HANDLE;
     }
     /**
-     * {@snippet :
-     * BOOL CloseHandle(HANDLE hObject);
+     * {@snippet lang=c :
+     * BOOL CloseHandle(HANDLE hObject)
      * }
      */
     public static int CloseHandle(MemorySegment hObject) {
-        var mh$ = CloseHandle$MH();
+        var mh$ = CloseHandle.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CloseHandle", hObject);
+            }
             return (int)mh$.invokeExact(hObject);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle GetModuleHandleW$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$1,"GetModuleHandleW");
+
+    private static class GetModuleHandleW {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            Kernel32.C_POINTER,
+            Kernel32.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    Kernel32.findOrThrow("GetModuleHandleW"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * HMODULE GetModuleHandleW(LPCWSTR lpModuleName)
+     * }
+     */
+    public static FunctionDescriptor GetModuleHandleW$descriptor() {
+        return GetModuleHandleW.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * HMODULE GetModuleHandleW(LPCWSTR lpModuleName)
+     * }
+     */
+    public static MethodHandle GetModuleHandleW$handle() {
+        return GetModuleHandleW.HANDLE;
     }
     /**
-     * {@snippet :
-     * HMODULE GetModuleHandleW(LPCWSTR lpModuleName);
+     * {@snippet lang=c :
+     * HMODULE GetModuleHandleW(LPCWSTR lpModuleName)
      * }
      */
     public static MemorySegment GetModuleHandleW(MemorySegment lpModuleName) {
-        var mh$ = GetModuleHandleW$MH();
+        var mh$ = GetModuleHandleW.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(lpModuleName);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("GetModuleHandleW", lpModuleName);
+            }
+            return (MemorySegment)mh$.invokeExact(lpModuleName);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle LocalFree$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$2,"LocalFree");
+
+    private static class LocalFree {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            Kernel32.C_POINTER,
+            Kernel32.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    Kernel32.findOrThrow("LocalFree"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * HLOCAL LocalFree(HLOCAL hMem)
+     * }
+     */
+    public static FunctionDescriptor LocalFree$descriptor() {
+        return LocalFree.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * HLOCAL LocalFree(HLOCAL hMem)
+     * }
+     */
+    public static MethodHandle LocalFree$handle() {
+        return LocalFree.HANDLE;
     }
     /**
-     * {@snippet :
-     * HLOCAL LocalFree(HLOCAL hMem);
+     * {@snippet lang=c :
+     * HLOCAL LocalFree(HLOCAL hMem)
      * }
      */
     public static MemorySegment LocalFree(MemorySegment hMem) {
-        var mh$ = LocalFree$MH();
+        var mh$ = LocalFree.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(hMem);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("LocalFree", hMem);
+            }
+            return (MemorySegment)mh$.invokeExact(hMem);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle FormatMessageW$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$4,"FormatMessageW");
+
+    private static class FormatMessageW {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            Kernel32.C_LONG,
+            Kernel32.C_LONG,
+            Kernel32.C_POINTER,
+            Kernel32.C_LONG,
+            Kernel32.C_LONG,
+            Kernel32.C_POINTER,
+            Kernel32.C_LONG,
+            Kernel32.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    Kernel32.findOrThrow("FormatMessageW"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * DWORD FormatMessageW(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPWSTR lpBuffer, DWORD nSize, va_list *Arguments)
+     * }
+     */
+    public static FunctionDescriptor FormatMessageW$descriptor() {
+        return FormatMessageW.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * DWORD FormatMessageW(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPWSTR lpBuffer, DWORD nSize, va_list *Arguments)
+     * }
+     */
+    public static MethodHandle FormatMessageW$handle() {
+        return FormatMessageW.HANDLE;
     }
     /**
-     * {@snippet :
-     * DWORD FormatMessageW(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPWSTR lpBuffer, DWORD nSize, va_list* Arguments);
+     * {@snippet lang=c :
+     * DWORD FormatMessageW(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPWSTR lpBuffer, DWORD nSize, va_list *Arguments)
      * }
      */
     public static int FormatMessageW(int dwFlags, MemorySegment lpSource, int dwMessageId, int dwLanguageId, MemorySegment lpBuffer, int nSize, MemorySegment Arguments) {
-        var mh$ = FormatMessageW$MH();
+        var mh$ = FormatMessageW.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("FormatMessageW", dwFlags, lpSource, dwMessageId, dwLanguageId, lpBuffer, nSize, Arguments);
+            }
             return (int)mh$.invokeExact(dwFlags, lpSource, dwMessageId, dwLanguageId, lpBuffer, nSize, Arguments);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
+    private static final int GENERIC_READ = (int)2147483648L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define GENERIC_READ 2147483648
      * }
      */
     public static int GENERIC_READ() {
-        return (int)2147483648L;
+        return GENERIC_READ;
     }
+    private static final int GENERIC_WRITE = (int)1073741824L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define GENERIC_WRITE 1073741824
      * }
      */
     public static int GENERIC_WRITE() {
-        return (int)1073741824L;
+        return GENERIC_WRITE;
     }
+    private static final int INFINITE = (int)4294967295L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define INFINITE 4294967295
      * }
      */
     public static int INFINITE() {
-        return (int)4294967295L;
+        return INFINITE;
     }
+    private static final int ERROR_FILE_NOT_FOUND = (int)2L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_FILE_NOT_FOUND 2
      * }
      */
     public static int ERROR_FILE_NOT_FOUND() {
-        return (int)2L;
+        return ERROR_FILE_NOT_FOUND;
     }
+    private static final int ERROR_GEN_FAILURE = (int)31L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_GEN_FAILURE 31
      * }
      */
     public static int ERROR_GEN_FAILURE() {
-        return (int)31L;
+        return ERROR_GEN_FAILURE;
     }
+    private static final int ERROR_INSUFFICIENT_BUFFER = (int)122L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_INSUFFICIENT_BUFFER 122
      * }
      */
     public static int ERROR_INSUFFICIENT_BUFFER() {
-        return (int)122L;
+        return ERROR_INSUFFICIENT_BUFFER;
     }
+    private static final int ERROR_MORE_DATA = (int)234L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_MORE_DATA 234
      * }
      */
     public static int ERROR_MORE_DATA() {
-        return (int)234L;
+        return ERROR_MORE_DATA;
     }
+    private static final int ERROR_NO_MORE_ITEMS = (int)259L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_NO_MORE_ITEMS 259
      * }
      */
     public static int ERROR_NO_MORE_ITEMS() {
-        return (int)259L;
+        return ERROR_NO_MORE_ITEMS;
     }
+    private static final int ERROR_IO_PENDING = (int)997L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_IO_PENDING 997
      * }
      */
     public static int ERROR_IO_PENDING() {
-        return (int)997L;
+        return ERROR_IO_PENDING;
     }
+    private static final int ERROR_NOT_FOUND = (int)1168L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define ERROR_NOT_FOUND 1168
      * }
      */
     public static int ERROR_NOT_FOUND() {
-        return (int)1168L;
+        return ERROR_NOT_FOUND;
     }
 }
-
 

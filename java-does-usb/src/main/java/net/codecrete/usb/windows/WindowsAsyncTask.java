@@ -158,8 +158,8 @@ class WindowsAsyncTask {
         if (transfer == null)
             return;
 
-        transfer.setResultCode((int) _OVERLAPPED.Internal$get(transfer.overlapped()));
-        transfer.setResultSize((int) _OVERLAPPED.InternalHigh$get(transfer.overlapped()));
+        transfer.setResultCode((int) _OVERLAPPED.Internal(transfer.overlapped()));
+        transfer.setResultSize((int) _OVERLAPPED.InternalHigh(transfer.overlapped()));
 
         availableOverlappedStructs.add(transfer.overlapped());
         transfer.setOverlapped(null);

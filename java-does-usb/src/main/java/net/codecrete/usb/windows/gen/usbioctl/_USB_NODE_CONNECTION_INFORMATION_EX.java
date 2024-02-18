@@ -3,12 +3,22 @@
 package net.codecrete.usb.windows.gen.usbioctl;
 
 import java.lang.foreign.Arena;
+import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.lang.invoke.VarHandle;
+import java.lang.foreign.SequenceLayout;
+import java.lang.invoke.MethodHandle;
+import java.util.function.Consumer;
+
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
+import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
+import static java.lang.foreign.ValueLayout.OfByte;
+import static java.lang.foreign.ValueLayout.OfInt;
+import static java.lang.foreign.ValueLayout.OfShort;
+
 /**
- * {@snippet :
+ * {@snippet lang=c :
  * struct _USB_NODE_CONNECTION_INFORMATION_EX {
  *     ULONG ConnectionIndex;
  *     USB_DEVICE_DESCRIPTOR DeviceDescriptor;
@@ -19,212 +29,509 @@ import java.lang.invoke.VarHandle;
  *     ULONG NumberOfOpenPipes;
  *     USB_CONNECTION_STATUS ConnectionStatus;
  *     USB_PIPE_INFO PipeList[0];
- * };
+ * }
  * }
  */
 public class _USB_NODE_CONNECTION_INFORMATION_EX {
 
-    public static MemoryLayout $LAYOUT() {
-        return constants$1.const$2;
+    _USB_NODE_CONNECTION_INFORMATION_EX() {
+        // Should not be called directly
     }
-    public static VarHandle ConnectionIndex$VH() {
-        return constants$1.const$3;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * ULONG ConnectionIndex;
-     * }
-     */
-    public static int ConnectionIndex$get(MemorySegment seg) {
-        return (int)constants$1.const$3.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * ULONG ConnectionIndex;
-     * }
-     */
-    public static void ConnectionIndex$set(MemorySegment seg, int x) {
-        constants$1.const$3.set(seg, x);
-    }
-    public static int ConnectionIndex$get(MemorySegment seg, long index) {
-        return (int)constants$1.const$3.get(seg.asSlice(index*sizeof()));
-    }
-    public static void ConnectionIndex$set(MemorySegment seg, long index, int x) {
-        constants$1.const$3.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static MemorySegment DeviceDescriptor$slice(MemorySegment seg) {
-        return seg.asSlice(4, 18);
-    }
-    public static VarHandle CurrentConfigurationValue$VH() {
-        return constants$1.const$4;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UCHAR CurrentConfigurationValue;
-     * }
-     */
-    public static byte CurrentConfigurationValue$get(MemorySegment seg) {
-        return (byte)constants$1.const$4.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UCHAR CurrentConfigurationValue;
-     * }
-     */
-    public static void CurrentConfigurationValue$set(MemorySegment seg, byte x) {
-        constants$1.const$4.set(seg, x);
-    }
-    public static byte CurrentConfigurationValue$get(MemorySegment seg, long index) {
-        return (byte)constants$1.const$4.get(seg.asSlice(index*sizeof()));
-    }
-    public static void CurrentConfigurationValue$set(MemorySegment seg, long index, byte x) {
-        constants$1.const$4.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle Speed$VH() {
-        return constants$1.const$5;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UCHAR Speed;
-     * }
-     */
-    public static byte Speed$get(MemorySegment seg) {
-        return (byte)constants$1.const$5.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UCHAR Speed;
-     * }
-     */
-    public static void Speed$set(MemorySegment seg, byte x) {
-        constants$1.const$5.set(seg, x);
-    }
-    public static byte Speed$get(MemorySegment seg, long index) {
-        return (byte)constants$1.const$5.get(seg.asSlice(index*sizeof()));
-    }
-    public static void Speed$set(MemorySegment seg, long index, byte x) {
-        constants$1.const$5.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle DeviceIsHub$VH() {
-        return constants$2.const$0;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * BOOLEAN DeviceIsHub;
-     * }
-     */
-    public static byte DeviceIsHub$get(MemorySegment seg) {
-        return (byte)constants$2.const$0.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * BOOLEAN DeviceIsHub;
-     * }
-     */
-    public static void DeviceIsHub$set(MemorySegment seg, byte x) {
-        constants$2.const$0.set(seg, x);
-    }
-    public static byte DeviceIsHub$get(MemorySegment seg, long index) {
-        return (byte)constants$2.const$0.get(seg.asSlice(index*sizeof()));
-    }
-    public static void DeviceIsHub$set(MemorySegment seg, long index, byte x) {
-        constants$2.const$0.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle DeviceAddress$VH() {
-        return constants$2.const$1;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * USHORT DeviceAddress;
-     * }
-     */
-    public static short DeviceAddress$get(MemorySegment seg) {
-        return (short)constants$2.const$1.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * USHORT DeviceAddress;
-     * }
-     */
-    public static void DeviceAddress$set(MemorySegment seg, short x) {
-        constants$2.const$1.set(seg, x);
-    }
-    public static short DeviceAddress$get(MemorySegment seg, long index) {
-        return (short)constants$2.const$1.get(seg.asSlice(index*sizeof()));
-    }
-    public static void DeviceAddress$set(MemorySegment seg, long index, short x) {
-        constants$2.const$1.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle NumberOfOpenPipes$VH() {
-        return constants$2.const$2;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * ULONG NumberOfOpenPipes;
-     * }
-     */
-    public static int NumberOfOpenPipes$get(MemorySegment seg) {
-        return (int)constants$2.const$2.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * ULONG NumberOfOpenPipes;
-     * }
-     */
-    public static void NumberOfOpenPipes$set(MemorySegment seg, int x) {
-        constants$2.const$2.set(seg, x);
-    }
-    public static int NumberOfOpenPipes$get(MemorySegment seg, long index) {
-        return (int)constants$2.const$2.get(seg.asSlice(index*sizeof()));
-    }
-    public static void NumberOfOpenPipes$set(MemorySegment seg, long index, int x) {
-        constants$2.const$2.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle ConnectionStatus$VH() {
-        return constants$2.const$3;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * USB_CONNECTION_STATUS ConnectionStatus;
-     * }
-     */
-    public static int ConnectionStatus$get(MemorySegment seg) {
-        return (int)constants$2.const$3.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * USB_CONNECTION_STATUS ConnectionStatus;
-     * }
-     */
-    public static void ConnectionStatus$set(MemorySegment seg, int x) {
-        constants$2.const$3.set(seg, x);
-    }
-    public static int ConnectionStatus$get(MemorySegment seg, long index) {
-        return (int)constants$2.const$3.get(seg.asSlice(index*sizeof()));
-    }
-    public static void ConnectionStatus$set(MemorySegment seg, long index, int x) {
-        constants$2.const$3.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static long sizeof() { return $LAYOUT().byteSize(); }
-    public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
-        return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
-    }
-    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
-}
 
+    private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
+        USBIoctl.C_LONG.withByteAlignment(1).withName("ConnectionIndex"),
+        _USB_DEVICE_DESCRIPTOR.layout().withName("DeviceDescriptor"),
+        USBIoctl.C_CHAR.withName("CurrentConfigurationValue"),
+        USBIoctl.C_CHAR.withName("Speed"),
+        USBIoctl.C_CHAR.withName("DeviceIsHub"),
+        USBIoctl.C_SHORT.withByteAlignment(1).withName("DeviceAddress"),
+        USBIoctl.C_LONG.withByteAlignment(1).withName("NumberOfOpenPipes"),
+        USBIoctl.C_INT.withByteAlignment(1).withName("ConnectionStatus"),
+        MemoryLayout.sequenceLayout(0, _USB_PIPE_INFO.layout()).withName("PipeList")
+    ).withName("_USB_NODE_CONNECTION_INFORMATION_EX");
+
+    /**
+     * The layout of this struct
+     */
+    public static final GroupLayout layout() {
+        return $LAYOUT;
+    }
+
+    private static final OfInt ConnectionIndex$LAYOUT = (OfInt)$LAYOUT.select(groupElement("ConnectionIndex"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * ULONG ConnectionIndex
+     * }
+     */
+    public static final OfInt ConnectionIndex$layout() {
+        return ConnectionIndex$LAYOUT;
+    }
+
+    private static final long ConnectionIndex$OFFSET = 0;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * ULONG ConnectionIndex
+     * }
+     */
+    public static final long ConnectionIndex$offset() {
+        return ConnectionIndex$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * ULONG ConnectionIndex
+     * }
+     */
+    public static int ConnectionIndex(MemorySegment struct) {
+        return struct.get(ConnectionIndex$LAYOUT, ConnectionIndex$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * ULONG ConnectionIndex
+     * }
+     */
+    public static void ConnectionIndex(MemorySegment struct, int fieldValue) {
+        struct.set(ConnectionIndex$LAYOUT, ConnectionIndex$OFFSET, fieldValue);
+    }
+
+    private static final GroupLayout DeviceDescriptor$LAYOUT = (GroupLayout)$LAYOUT.select(groupElement("DeviceDescriptor"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * USB_DEVICE_DESCRIPTOR DeviceDescriptor
+     * }
+     */
+    public static final GroupLayout DeviceDescriptor$layout() {
+        return DeviceDescriptor$LAYOUT;
+    }
+
+    private static final long DeviceDescriptor$OFFSET = 4;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * USB_DEVICE_DESCRIPTOR DeviceDescriptor
+     * }
+     */
+    public static final long DeviceDescriptor$offset() {
+        return DeviceDescriptor$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * USB_DEVICE_DESCRIPTOR DeviceDescriptor
+     * }
+     */
+    public static MemorySegment DeviceDescriptor(MemorySegment struct) {
+        return struct.asSlice(DeviceDescriptor$OFFSET, DeviceDescriptor$LAYOUT.byteSize());
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * USB_DEVICE_DESCRIPTOR DeviceDescriptor
+     * }
+     */
+    public static void DeviceDescriptor(MemorySegment struct, MemorySegment fieldValue) {
+        MemorySegment.copy(fieldValue, 0L, struct, DeviceDescriptor$OFFSET, DeviceDescriptor$LAYOUT.byteSize());
+    }
+
+    private static final OfByte CurrentConfigurationValue$LAYOUT = (OfByte)$LAYOUT.select(groupElement("CurrentConfigurationValue"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UCHAR CurrentConfigurationValue
+     * }
+     */
+    public static final OfByte CurrentConfigurationValue$layout() {
+        return CurrentConfigurationValue$LAYOUT;
+    }
+
+    private static final long CurrentConfigurationValue$OFFSET = 22;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UCHAR CurrentConfigurationValue
+     * }
+     */
+    public static final long CurrentConfigurationValue$offset() {
+        return CurrentConfigurationValue$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UCHAR CurrentConfigurationValue
+     * }
+     */
+    public static byte CurrentConfigurationValue(MemorySegment struct) {
+        return struct.get(CurrentConfigurationValue$LAYOUT, CurrentConfigurationValue$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UCHAR CurrentConfigurationValue
+     * }
+     */
+    public static void CurrentConfigurationValue(MemorySegment struct, byte fieldValue) {
+        struct.set(CurrentConfigurationValue$LAYOUT, CurrentConfigurationValue$OFFSET, fieldValue);
+    }
+
+    private static final OfByte Speed$LAYOUT = (OfByte)$LAYOUT.select(groupElement("Speed"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UCHAR Speed
+     * }
+     */
+    public static final OfByte Speed$layout() {
+        return Speed$LAYOUT;
+    }
+
+    private static final long Speed$OFFSET = 23;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UCHAR Speed
+     * }
+     */
+    public static final long Speed$offset() {
+        return Speed$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UCHAR Speed
+     * }
+     */
+    public static byte Speed(MemorySegment struct) {
+        return struct.get(Speed$LAYOUT, Speed$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UCHAR Speed
+     * }
+     */
+    public static void Speed(MemorySegment struct, byte fieldValue) {
+        struct.set(Speed$LAYOUT, Speed$OFFSET, fieldValue);
+    }
+
+    private static final OfByte DeviceIsHub$LAYOUT = (OfByte)$LAYOUT.select(groupElement("DeviceIsHub"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * BOOLEAN DeviceIsHub
+     * }
+     */
+    public static final OfByte DeviceIsHub$layout() {
+        return DeviceIsHub$LAYOUT;
+    }
+
+    private static final long DeviceIsHub$OFFSET = 24;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * BOOLEAN DeviceIsHub
+     * }
+     */
+    public static final long DeviceIsHub$offset() {
+        return DeviceIsHub$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * BOOLEAN DeviceIsHub
+     * }
+     */
+    public static byte DeviceIsHub(MemorySegment struct) {
+        return struct.get(DeviceIsHub$LAYOUT, DeviceIsHub$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * BOOLEAN DeviceIsHub
+     * }
+     */
+    public static void DeviceIsHub(MemorySegment struct, byte fieldValue) {
+        struct.set(DeviceIsHub$LAYOUT, DeviceIsHub$OFFSET, fieldValue);
+    }
+
+    private static final OfShort DeviceAddress$LAYOUT = (OfShort)$LAYOUT.select(groupElement("DeviceAddress"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * USHORT DeviceAddress
+     * }
+     */
+    public static final OfShort DeviceAddress$layout() {
+        return DeviceAddress$LAYOUT;
+    }
+
+    private static final long DeviceAddress$OFFSET = 25;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * USHORT DeviceAddress
+     * }
+     */
+    public static final long DeviceAddress$offset() {
+        return DeviceAddress$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * USHORT DeviceAddress
+     * }
+     */
+    public static short DeviceAddress(MemorySegment struct) {
+        return struct.get(DeviceAddress$LAYOUT, DeviceAddress$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * USHORT DeviceAddress
+     * }
+     */
+    public static void DeviceAddress(MemorySegment struct, short fieldValue) {
+        struct.set(DeviceAddress$LAYOUT, DeviceAddress$OFFSET, fieldValue);
+    }
+
+    private static final OfInt NumberOfOpenPipes$LAYOUT = (OfInt)$LAYOUT.select(groupElement("NumberOfOpenPipes"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * ULONG NumberOfOpenPipes
+     * }
+     */
+    public static final OfInt NumberOfOpenPipes$layout() {
+        return NumberOfOpenPipes$LAYOUT;
+    }
+
+    private static final long NumberOfOpenPipes$OFFSET = 27;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * ULONG NumberOfOpenPipes
+     * }
+     */
+    public static final long NumberOfOpenPipes$offset() {
+        return NumberOfOpenPipes$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * ULONG NumberOfOpenPipes
+     * }
+     */
+    public static int NumberOfOpenPipes(MemorySegment struct) {
+        return struct.get(NumberOfOpenPipes$LAYOUT, NumberOfOpenPipes$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * ULONG NumberOfOpenPipes
+     * }
+     */
+    public static void NumberOfOpenPipes(MemorySegment struct, int fieldValue) {
+        struct.set(NumberOfOpenPipes$LAYOUT, NumberOfOpenPipes$OFFSET, fieldValue);
+    }
+
+    private static final OfInt ConnectionStatus$LAYOUT = (OfInt)$LAYOUT.select(groupElement("ConnectionStatus"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * USB_CONNECTION_STATUS ConnectionStatus
+     * }
+     */
+    public static final OfInt ConnectionStatus$layout() {
+        return ConnectionStatus$LAYOUT;
+    }
+
+    private static final long ConnectionStatus$OFFSET = 31;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * USB_CONNECTION_STATUS ConnectionStatus
+     * }
+     */
+    public static final long ConnectionStatus$offset() {
+        return ConnectionStatus$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * USB_CONNECTION_STATUS ConnectionStatus
+     * }
+     */
+    public static int ConnectionStatus(MemorySegment struct) {
+        return struct.get(ConnectionStatus$LAYOUT, ConnectionStatus$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * USB_CONNECTION_STATUS ConnectionStatus
+     * }
+     */
+    public static void ConnectionStatus(MemorySegment struct, int fieldValue) {
+        struct.set(ConnectionStatus$LAYOUT, ConnectionStatus$OFFSET, fieldValue);
+    }
+
+    private static final SequenceLayout PipeList$LAYOUT = (SequenceLayout)$LAYOUT.select(groupElement("PipeList"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static final SequenceLayout PipeList$layout() {
+        return PipeList$LAYOUT;
+    }
+
+    private static final long PipeList$OFFSET = 35;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static final long PipeList$offset() {
+        return PipeList$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static MemorySegment PipeList(MemorySegment struct) {
+        return struct.asSlice(PipeList$OFFSET, PipeList$LAYOUT.byteSize());
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static void PipeList(MemorySegment struct, MemorySegment fieldValue) {
+        MemorySegment.copy(fieldValue, 0L, struct, PipeList$OFFSET, PipeList$LAYOUT.byteSize());
+    }
+
+    private static long[] PipeList$DIMS = { 0 };
+
+    /**
+     * Dimensions for array field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static long[] PipeList$dimensions() {
+        return PipeList$DIMS;
+    }
+    private static final MethodHandle PipeList$ELEM_HANDLE = PipeList$LAYOUT.sliceHandle(sequenceElement());
+
+    /**
+     * Indexed getter for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static MemorySegment PipeList(MemorySegment struct, long index0) {
+        try {
+            return (MemorySegment)PipeList$ELEM_HANDLE.invokeExact(struct, 0L, index0);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    /**
+     * Indexed setter for field:
+     * {@snippet lang=c :
+     * USB_PIPE_INFO PipeList[0]
+     * }
+     */
+    public static void PipeList(MemorySegment struct, long index0, MemorySegment fieldValue) {
+        MemorySegment.copy(fieldValue, 0L, PipeList(struct, index0), 0L, _USB_PIPE_INFO.layout().byteSize());
+    }
+
+    /**
+     * Obtains a slice of {@code arrayParam} which selects the array element at {@code index}.
+     * The returned segment has address {@code arrayParam.address() + index * layout().byteSize()}
+     */
+    public static MemorySegment asSlice(MemorySegment array, long index) {
+        return array.asSlice(layout().byteSize() * index);
+    }
+
+    /**
+     * The size (in bytes) of this struct
+     */
+    public static long sizeof() { return layout().byteSize(); }
+
+    /**
+     * Allocate a segment of size {@code layout().byteSize()} using {@code allocator}
+     */
+    public static MemorySegment allocate(SegmentAllocator allocator) {
+        return allocator.allocate(layout());
+    }
+
+    /**
+     * Allocate an array of size {@code elementCount} using {@code allocator}.
+     * The returned segment has size {@code elementCount * layout().byteSize()}.
+     */
+    public static MemorySegment allocateArray(long elementCount, SegmentAllocator allocator) {
+        return allocator.allocate(MemoryLayout.sequenceLayout(elementCount, layout()));
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
+        return reinterpret(addr, 1, arena, cleanup);
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code elementCount * layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {
+        return addr.reinterpret(layout().byteSize() * elementCount, arena, cleanup);
+    }
+}
 

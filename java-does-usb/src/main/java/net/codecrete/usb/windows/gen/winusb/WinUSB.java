@@ -3,63 +3,128 @@
 package net.codecrete.usb.windows.gen.winusb;
 
 import java.lang.foreign.AddressLayout;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
-import static java.lang.foreign.ValueLayout.OfByte;
-import static java.lang.foreign.ValueLayout.OfDouble;
-import static java.lang.foreign.ValueLayout.OfFloat;
-import static java.lang.foreign.ValueLayout.OfInt;
-import static java.lang.foreign.ValueLayout.OfLong;
-import static java.lang.foreign.ValueLayout.OfShort;
-public class WinUSB  {
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfInt C_LONG = JAVA_INT;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class WinUSB {
+
+    WinUSB() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("Winusb"), LIBRARY_ARENA)
+            .or(SymbolLookup.loaderLookup())
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfInt C_LONG = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfDouble C_LONG_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    private static final int PIPE_TRANSFER_TIMEOUT = (int)3L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define PIPE_TRANSFER_TIMEOUT 3
      * }
      */
     public static int PIPE_TRANSFER_TIMEOUT() {
-        return (int)3L;
+        return PIPE_TRANSFER_TIMEOUT;
     }
+    private static final int RAW_IO = (int)7L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define RAW_IO 7
      * }
      */
     public static int RAW_IO() {
-        return (int)7L;
+        return RAW_IO;
     }
-    public static MethodHandle WinUsb_Free$MH() {
-        return RuntimeHelper.requireNonNull(constants$0.const$1,"WinUsb_Free");
+
+    private static class WinUsb_Free {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            WinUSB.C_INT,
+            WinUSB.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    WinUSB.findOrThrow("WinUsb_Free"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle)
+     * }
+     */
+    public static FunctionDescriptor WinUsb_Free$descriptor() {
+        return WinUsb_Free.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle)
+     * }
+     */
+    public static MethodHandle WinUsb_Free$handle() {
+        return WinUsb_Free.HANDLE;
     }
     /**
-     * {@snippet :
-     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle);
+     * {@snippet lang=c :
+     * BOOL WinUsb_Free(WINUSB_INTERFACE_HANDLE InterfaceHandle)
      * }
      */
     public static int WinUsb_Free(MemorySegment InterfaceHandle) {
-        var mh$ = WinUsb_Free$MH();
+        var mh$ = WinUsb_Free.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("WinUsb_Free", InterfaceHandle);
+            }
             return (int)mh$.invokeExact(InterfaceHandle);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
 }
-
 

@@ -126,7 +126,7 @@ public class DeviceInfoSet implements AutoCloseable {
 
             // allocate SP_DEVINFO_DATA (will receive device details)
             devInfoData = _SP_DEVINFO_DATA.allocate(arena);
-            _SP_DEVINFO_DATA.cbSize$set(devInfoData, (int) _SP_DEVINFO_DATA.$LAYOUT().byteSize());
+            _SP_DEVINFO_DATA.cbSize(devInfoData, (int) _SP_DEVINFO_DATA.layout().byteSize());
 
         } catch (Exception e) {
             arena.close();
@@ -154,7 +154,7 @@ public class DeviceInfoSet implements AutoCloseable {
 
         // load device information into dev info set
         var intfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
-        _SP_DEVICE_INTERFACE_DATA.cbSize$set(intfData, (int) intfData.byteSize());
+        _SP_DEVICE_INTERFACE_DATA.cbSize(intfData, (int) intfData.byteSize());
         var devicePathSegment = Win.createSegmentFromString(devicePath, arena);
         if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSet, devicePathSegment, 0, intfData, errorState) == 0)
             throwLastError(errorState, "internal error (SetupDiOpenDeviceInterfaceW)");
@@ -360,7 +360,7 @@ public class DeviceInfoSet implements AutoCloseable {
     private String getDevicePathForGuid(MemorySegment interfaceGuid) {
         // retrieve first element of enumeration
         devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
-        _SP_DEVICE_INTERFACE_DATA.cbSize$set(devIntfData, (int) devIntfData.byteSize());
+        _SP_DEVICE_INTERFACE_DATA.cbSize(devIntfData, (int) devIntfData.byteSize());
         if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
                 errorState) == 0)
             throwLastError(errorState, "internal error (SetupDiEnumDeviceInterfaces)");
@@ -370,7 +370,7 @@ public class DeviceInfoSet implements AutoCloseable {
         // the device path fits)
         final var devicePathOffset = 4;
         var intfDetailData = arena.allocate(4L + 260 * 2);
-        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize$set(intfDetailData,
+        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize(intfDetailData,
                 (int) _SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
         if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, intfDetailData,
                 (int) intfDetailData.byteSize(), NULL, NULL, errorState) == 0)

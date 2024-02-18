@@ -14,24 +14,22 @@ import static java.lang.foreign.ValueLayout.OfInt;
 
 /**
  * {@snippet lang=c :
- * struct _DEV_BROADCAST_HDR {
- *     DWORD dbch_size;
- *     DWORD dbch_devicetype;
- *     DWORD dbch_reserved;
+ * struct tagPOINT {
+ *     LONG x;
+ *     LONG y;
  * }
  * }
  */
-public class _DEV_BROADCAST_HDR {
+public class tagPOINT {
 
-    _DEV_BROADCAST_HDR() {
+    tagPOINT() {
         // Should not be called directly
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        User32.C_LONG.withName("dbch_size"),
-        User32.C_LONG.withName("dbch_devicetype"),
-        User32.C_LONG.withName("dbch_reserved")
-    ).withName("_DEV_BROADCAST_HDR");
+        User32.C_LONG.withName("x"),
+        User32.C_LONG.withName("y")
+    ).withName("tagPOINT");
 
     /**
      * The layout of this struct
@@ -40,136 +38,92 @@ public class _DEV_BROADCAST_HDR {
         return $LAYOUT;
     }
 
-    private static final OfInt dbch_size$LAYOUT = (OfInt)$LAYOUT.select(groupElement("dbch_size"));
+    private static final OfInt x$LAYOUT = (OfInt)$LAYOUT.select(groupElement("x"));
 
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * DWORD dbch_size
+     * LONG x
      * }
      */
-    public static final OfInt dbch_size$layout() {
-        return dbch_size$LAYOUT;
+    public static final OfInt x$layout() {
+        return x$LAYOUT;
     }
 
-    private static final long dbch_size$OFFSET = 0;
+    private static final long x$OFFSET = 0;
 
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * DWORD dbch_size
+     * LONG x
      * }
      */
-    public static final long dbch_size$offset() {
-        return dbch_size$OFFSET;
+    public static final long x$offset() {
+        return x$OFFSET;
     }
 
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * DWORD dbch_size
+     * LONG x
      * }
      */
-    public static int dbch_size(MemorySegment struct) {
-        return struct.get(dbch_size$LAYOUT, dbch_size$OFFSET);
+    public static int x(MemorySegment struct) {
+        return struct.get(x$LAYOUT, x$OFFSET);
     }
 
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * DWORD dbch_size
+     * LONG x
      * }
      */
-    public static void dbch_size(MemorySegment struct, int fieldValue) {
-        struct.set(dbch_size$LAYOUT, dbch_size$OFFSET, fieldValue);
+    public static void x(MemorySegment struct, int fieldValue) {
+        struct.set(x$LAYOUT, x$OFFSET, fieldValue);
     }
 
-    private static final OfInt dbch_devicetype$LAYOUT = (OfInt)$LAYOUT.select(groupElement("dbch_devicetype"));
+    private static final OfInt y$LAYOUT = (OfInt)$LAYOUT.select(groupElement("y"));
 
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * DWORD dbch_devicetype
+     * LONG y
      * }
      */
-    public static final OfInt dbch_devicetype$layout() {
-        return dbch_devicetype$LAYOUT;
+    public static final OfInt y$layout() {
+        return y$LAYOUT;
     }
 
-    private static final long dbch_devicetype$OFFSET = 4;
+    private static final long y$OFFSET = 4;
 
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * DWORD dbch_devicetype
+     * LONG y
      * }
      */
-    public static final long dbch_devicetype$offset() {
-        return dbch_devicetype$OFFSET;
+    public static final long y$offset() {
+        return y$OFFSET;
     }
 
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * DWORD dbch_devicetype
+     * LONG y
      * }
      */
-    public static int dbch_devicetype(MemorySegment struct) {
-        return struct.get(dbch_devicetype$LAYOUT, dbch_devicetype$OFFSET);
+    public static int y(MemorySegment struct) {
+        return struct.get(y$LAYOUT, y$OFFSET);
     }
 
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * DWORD dbch_devicetype
+     * LONG y
      * }
      */
-    public static void dbch_devicetype(MemorySegment struct, int fieldValue) {
-        struct.set(dbch_devicetype$LAYOUT, dbch_devicetype$OFFSET, fieldValue);
-    }
-
-    private static final OfInt dbch_reserved$LAYOUT = (OfInt)$LAYOUT.select(groupElement("dbch_reserved"));
-
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * DWORD dbch_reserved
-     * }
-     */
-    public static final OfInt dbch_reserved$layout() {
-        return dbch_reserved$LAYOUT;
-    }
-
-    private static final long dbch_reserved$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * DWORD dbch_reserved
-     * }
-     */
-    public static final long dbch_reserved$offset() {
-        return dbch_reserved$OFFSET;
-    }
-
-    /**
-     * Getter for field:
-     * {@snippet lang=c :
-     * DWORD dbch_reserved
-     * }
-     */
-    public static int dbch_reserved(MemorySegment struct) {
-        return struct.get(dbch_reserved$LAYOUT, dbch_reserved$OFFSET);
-    }
-
-    /**
-     * Setter for field:
-     * {@snippet lang=c :
-     * DWORD dbch_reserved
-     * }
-     */
-    public static void dbch_reserved(MemorySegment struct, int fieldValue) {
-        struct.set(dbch_reserved$LAYOUT, dbch_reserved$OFFSET, fieldValue);
+    public static void y(MemorySegment struct, int fieldValue) {
+        struct.set(y$LAYOUT, y$OFFSET, fieldValue);
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.List;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 /**
  * Windows helpers.
@@ -49,7 +50,9 @@ public class Win {
      * @return the error code
      */
     public static int getLastError(MemorySegment callState) {
-        return (int) callState_GetLastError$VH.get(callState);
+        return callState.get(JAVA_INT, 0);
+        // TODO: revert to varhandle
+        // return (int) callState_GetLastError$VH.get(callState);
     }
 
     /**
@@ -135,11 +138,11 @@ public class Win {
      * @param data4_7 Byte 7 of group 4
      * @return GUID as memory segment
      */
-    @SuppressWarnings({"java:S117", "java:S107"})
+    @SuppressWarnings({"java:S117", "java:S107", "resource"})
     public static MemorySegment createGUID(int data1, short data2, short data3, byte data4_0, byte data4_1,
                                            byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6,
                                            byte data4_7) {
-        var guid = Arena.global().allocate(_GUID.$LAYOUT());
+        var guid = Arena.global().allocate(_GUID.layout());
         setGUID(guid, data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4, data4_5, data4_6, data4_7);
         return guid;
     }
@@ -147,10 +150,10 @@ public class Win {
     @SuppressWarnings({"java:S117", "java:S107"})
     public static void setGUID(MemorySegment guid, int data1, short data2, short data3, byte data4_0, byte data4_1,
                                byte data4_2, byte data4_3, byte data4_4, byte data4_5, byte data4_6, byte data4_7) {
-        _GUID.Data1$set(guid, data1);
-        _GUID.Data2$set(guid, data2);
-        _GUID.Data3$set(guid, data3);
-        var data4 = _GUID.Data4$slice(guid);
+        _GUID.Data1(guid, data1);
+        _GUID.Data2(guid, data2);
+        _GUID.Data3(guid, data3);
+        var data4 = _GUID.Data4(guid);
         data4.set(JAVA_BYTE, 0, data4_0);
         data4.set(JAVA_BYTE, 1, data4_1);
         data4.set(JAVA_BYTE, 2, data4_2);
