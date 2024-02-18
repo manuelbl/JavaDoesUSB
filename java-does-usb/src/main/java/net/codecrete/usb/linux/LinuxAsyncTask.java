@@ -8,7 +8,6 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.UsbTransferType;
-import net.codecrete.usb.linux.gen.epoll.epoll_data;
 import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
@@ -100,11 +99,7 @@ class LinuxAsyncTask {
 
                 // for all ready file descriptors, reap URBs
                 for (int i = 0; i < res; i++) {
-                    var event = events.asSlice(i * epoll_event.layout().byteSize(), epoll_event.layout());
-                    var data = epoll_event.data(event);
-                    var fd = epoll_data.fd(data);
-                    // TODO: revert to varhandle
-                    // var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, i);
+                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, 0, i);
                     reapURBs(fd, urbPointerHolder, errorState);
                 }
             }

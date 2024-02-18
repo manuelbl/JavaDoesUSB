@@ -7,7 +7,6 @@
 
 package net.codecrete.usb.linux;
 
-import net.codecrete.usb.linux.gen.epoll.epoll_data;
 import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.errno.errno;
 
@@ -92,10 +91,7 @@ public class EPoll {
 
             var event = arena.allocate(epoll_event.layout());
             epoll_event.events(event, op);
-            // TODO: revert to varhandle
-            //EVENT_DATA_FD$VH.set(event, fd);
-            var data = epoll_event.data(event);
-            epoll_data.fd(data, fd);
+            EVENT_DATA_FD$VH.set(event, 0, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_ADD(), fd, event, errorState);
             if (ret < 0)
                 throwLastError(errorState, "internal error (epoll_ctl_add)");
@@ -108,9 +104,7 @@ public class EPoll {
 
             var event = arena.allocate(epoll_event.layout());
             epoll_event.events(event, 0);
-            // TODO: revert to varhandle
-            // EVENT_DATA_FD$VH.set(event, fd);
-            event.set(JAVA_INT, 0, fd);
+            EVENT_DATA_FD$VH.set(event, 0, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_DEL(), fd, event, errorState);
             if (ret < 0) {
                 var err = Linux.getErrno(errorState);

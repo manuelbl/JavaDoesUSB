@@ -14,7 +14,6 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
-import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 
 /**
@@ -57,8 +56,6 @@ class Linux {
      * @return error code
      */
     static int getErrno(MemorySegment errorState) {
-        return errorState.get(ValueLayout.JAVA_INT, 0);
-        // TODO: revert to varhandle
-        // return (int) callState_errno$VH.get(errorState);
+        return (int) callState_errno$VH.get(errorState, 0);
     }
 }
