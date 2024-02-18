@@ -29,7 +29,7 @@ jobs:
         uses: oracle-actions/setup-java@v1
         with:
           website: jdk.java.net
-          java-version: '22'
+          release: 22
           version: latest
       - name: Configure GPG key
         run: |
