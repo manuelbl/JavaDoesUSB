@@ -26,6 +26,8 @@ The resulting code is then committed to the source code repository. Before the c
   - `--include-typedef mystruct` if `mystruct` is actually a `struct`.
   - `--include-typedef mytypedef` if `mytypedef` is a `typedef` for a primitive type.
 
+- *jextract* resolves all _typedef_s to their actual types. So this library does not use any _--include-typedef_ option. And there does not seem any obvious use for it.
+
 
 ## Linux
 
