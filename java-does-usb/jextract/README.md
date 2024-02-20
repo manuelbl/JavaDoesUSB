@@ -60,21 +60,7 @@ static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so
 
 Most of the required native functions on macOS are part of a framework. Frameworks internally have a more complex file organization of header and binary files than appears from the outside. Thus, they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
 
-The generated code however is unable to locate the framework at run-time. There does not seem to be a way to instruct *jextract* to generate the required code. So it must be manually changed, from:
 
-```
-static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("CoreFoundation.framework"), LIBRARY_ARENA)
-```
-
-to:
-
-```
-static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", LIBRARY_ARENA)
-```
-
-This is in the class `CoreFoundation`. The analogous change must be made in the class `IOKit`.
-
-These aren't actual paths. But they are the correct and future-proof path to locate the framework at run-time (see man pages of `ld` on macOS).
 
 ## Windows
 

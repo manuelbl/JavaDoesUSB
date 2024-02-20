@@ -7,7 +7,7 @@ SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Dev
 # CoreFoundation
 $JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
-  -lCoreFoundation.framework \
+  -l :/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation \
   --header-class-name CoreFoundation \
   --target-package net.codecrete.usb.macos.gen.corefoundation \
   --include-struct CFRange \
@@ -32,7 +32,7 @@ $JEXTRACT --output ../../src/main/java \
 # IOKit
 $JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
-  -lIOKit.framework \
+  -l :/System/Library/Frameworks/IOKit.framework/IOKit \
   --header-class-name IOKit \
   --target-package net.codecrete.usb.macos.gen.iokit \
   --include-var kIOMasterPortDefault \

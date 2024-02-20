@@ -54,9 +54,6 @@ public class IOKit {
         };
     }
 
-
-    // Manually fix. Otherwise, system library will not be found
-    // static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("IOKit.framework"), LIBRARY_ARENA)
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/IOKit.framework/IOKit", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());

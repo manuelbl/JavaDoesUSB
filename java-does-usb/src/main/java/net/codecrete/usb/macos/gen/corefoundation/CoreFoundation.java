@@ -53,8 +53,6 @@ public class CoreFoundation {
         };
     }
 
-    // Manually fix. Otherwise, system library will not be found
-    // static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("CoreFoundation.framework"), LIBRARY_ARENA)
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());
