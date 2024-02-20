@@ -31,10 +31,10 @@ public class epoll_data {
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.unionLayout(
-        epoll.C_POINTER.withName("ptr").withByteAlignment(4),
+        epoll.C_POINTER.withName("ptr"),
         epoll.C_INT.withName("fd"),
         epoll.C_INT.withName("u32"),
-        epoll.C_LONG.withName("u64").withByteAlignment(4)
+        epoll.C_LONG.withName("u64")
     ).withName("epoll_data");
 
     /**

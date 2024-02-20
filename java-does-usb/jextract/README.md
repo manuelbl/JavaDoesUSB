@@ -13,19 +13,11 @@ The resulting code is then committed to the source code repository. Before the c
 
 ## General limitations
 
-- The binaries for *jextract* on https://jdk.java.net/jextract/ have not been updated for JDK 21. So it must be built from source. Instructions can be found at [Building & Testing](https://github.com/openjdk/jextract#building--testing).
-
 - According to the jextract mailing list, it would be required to create separate code for Intel x64 and ARM64 architecture. And jextract would need to be run on each architecture separately (no cross-compilation). Fortunately, this doesn't seem to be the case. Linux code generated on Intel x64 also runs on ARM64 without change. The same holds for macOS. However, jextract needs to be run on each operating system separately.
 
 - JDK 20 introduced a new feature for saving the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). To use it, an additional parameter must be added to function calls. Unfortunately, this is not yet supported by jextract. So a good number of function bindings have to be written manually.
 
-- `typedef` and `struct`:
-
-  1. If only the `typedef` is included (`--include-typedef`), an empty Java class is generated.
-  2. If both *typedef* and the `struct` it refers to are included, the `typedef` class inherits from the `struct` class, which contains all the `struct` members.
-  3. If the `typedef` refers to an unnamed `struct`, the generated class contains all the `struct` members.
-  
-  Case 1 looks like a bug.
+- Dependencies: to be updated...
 
 - *jextract* is not really transparent about what it does. It often skips elements without providing any information. In particular, it will silently skip a requested element in these cases:
 
@@ -35,7 +27,6 @@ The resulting code is then committed to the source code repository. Before the c
   - `--include-struct mystruct` if `mystruct` is actually a `typedef` to a `struct`.
   - `--include-typedef mystruct` if `mystruct` is actually a `struct`.
   - `--include-typedef mytypedef` if `mytypedef` is a `typedef` for a primitive type.
-
 
 
 ## Linux
@@ -48,21 +39,20 @@ sudo apt-get install libudev-dev
 
 On Linux, the limitations are:
 
-- `usbdevice_fs.h`: The macro `USBDEVFS_CONTROL` and all similar ones are not generated. They are probably considered function-like macros. *jextract* does not generate code for function-like macros. But `USBDEVFS_CONTROL` evaluates to a constant.
+- `usbdevice_fs.h`: The macro `USBDEVFS_CONTROL` and all similar ones are not generated. They are probably considered function-like macros. *jextract* does not generate code for function-like macros. `USBDEVFS_CONTROL` would evaluate to a constant.
 
 - `sd-device.h` (header file for *libsystemd*): *jextract* fails with *"Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'"*. The reason is yet unknown. This code is currently not needed as *libudev* is used instead of *libsystemd*. They are related, *libsystemd* is the future solution, but it is missing support for monitoring devices.
 
-- `libudev.h`: After code generation, the class `RuntimeHelper.java` in `.../linux/gen/udev` must be manually modified as the code to access the library does not work for the directory the library is located in. So replace:
+- `libudev.h`: After code generation, the class `udev` in `.../linux/gen/udev` must be manually modified. In most Linux installations, there is no `libudev.so` alias to an actual version like `libudev.so.1.7.2`. The only alias is `libudev.so.1`. This is probably a deliberate decision by the authors as they do not plan to provide backward compatibility across major versions. But there does not seem to be a way to make *jextract* generate valid code for this setup. So manually replace:
 
 ```
-System.loadLibrary("udev");
-SymbolLookup loaderLookup = SymbolLookup.loaderLookup();
+static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("udev"), LIBRARY_ARENA)
 ```
 
 with:
 
 ```
-SymbolLookup loaderLookup = SymbolLookup.libraryLookup("libudev.so", MemorySession.openImplicit());
+static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so.1", LIBRARY_ARENA)
 ```
 
 

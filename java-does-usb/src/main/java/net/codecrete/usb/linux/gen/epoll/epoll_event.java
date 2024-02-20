@@ -27,8 +27,8 @@ public class epoll_event {
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        epoll.C_INT.withByteAlignment(1).withName("events"),
-        epoll_data.layout().withName("data")
+        epoll.align(epoll.C_INT, 1).withName("events"),
+        epoll.align(epoll_data.layout(), 1).withName("data")
     ).withName("epoll_event");
 
     /**
