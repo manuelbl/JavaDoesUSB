@@ -39,7 +39,7 @@ public class _USB_DESCRIPTOR_REQUEST {
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        USBIoctl.C_LONG.withByteAlignment(1).withName("ConnectionIndex"),
+        USBIoctl.align(USBIoctl.C_LONG, 1).withName("ConnectionIndex"),
         _USB_DESCRIPTOR_REQUEST.SetupPacket.layout().withName("SetupPacket"),
         MemoryLayout.sequenceLayout(0, USBIoctl.C_CHAR).withName("Data")
     ).withName("_USB_DESCRIPTOR_REQUEST");
@@ -115,9 +115,9 @@ public class _USB_DESCRIPTOR_REQUEST {
         private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
             USBIoctl.C_CHAR.withName("bmRequest"),
             USBIoctl.C_CHAR.withName("bRequest"),
-            USBIoctl.C_SHORT.withByteAlignment(1).withName("wValue"),
-            USBIoctl.C_SHORT.withByteAlignment(1).withName("wIndex"),
-            USBIoctl.C_SHORT.withByteAlignment(1).withName("wLength")
+            USBIoctl.align(USBIoctl.C_SHORT, 1).withName("wValue"),
+            USBIoctl.align(USBIoctl.C_SHORT, 1).withName("wIndex"),
+            USBIoctl.align(USBIoctl.C_SHORT, 1).withName("wLength")
         ).withName("$anon$971:5");
 
         /**

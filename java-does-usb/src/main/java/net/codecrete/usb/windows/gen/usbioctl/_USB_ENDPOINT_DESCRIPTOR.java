@@ -36,7 +36,7 @@ public class _USB_ENDPOINT_DESCRIPTOR {
         USBIoctl.C_CHAR.withName("bDescriptorType"),
         USBIoctl.C_CHAR.withName("bEndpointAddress"),
         USBIoctl.C_CHAR.withName("bmAttributes"),
-        USBIoctl.C_SHORT.withByteAlignment(1).withName("wMaxPacketSize"),
+        USBIoctl.align(USBIoctl.C_SHORT, 1).withName("wMaxPacketSize"),
         USBIoctl.C_CHAR.withName("bInterval")
     ).withName("_USB_ENDPOINT_DESCRIPTOR");
 

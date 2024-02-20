@@ -28,7 +28,7 @@ public class _USB_PIPE_INFO {
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
         _USB_ENDPOINT_DESCRIPTOR.layout().withName("EndpointDescriptor"),
-        USBIoctl.C_LONG.withByteAlignment(1).withName("ScheduleOffset")
+        USBIoctl.align(USBIoctl.C_LONG, 1).withName("ScheduleOffset")
     ).withName("_USB_PIPE_INFO");
 
     /**

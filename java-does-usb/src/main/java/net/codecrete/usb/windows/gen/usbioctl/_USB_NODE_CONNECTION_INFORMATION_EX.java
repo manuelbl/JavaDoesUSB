@@ -39,14 +39,14 @@ public class _USB_NODE_CONNECTION_INFORMATION_EX {
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        USBIoctl.C_LONG.withByteAlignment(1).withName("ConnectionIndex"),
+        USBIoctl.align(USBIoctl.C_LONG, 1).withName("ConnectionIndex"),
         _USB_DEVICE_DESCRIPTOR.layout().withName("DeviceDescriptor"),
         USBIoctl.C_CHAR.withName("CurrentConfigurationValue"),
         USBIoctl.C_CHAR.withName("Speed"),
         USBIoctl.C_CHAR.withName("DeviceIsHub"),
-        USBIoctl.C_SHORT.withByteAlignment(1).withName("DeviceAddress"),
-        USBIoctl.C_LONG.withByteAlignment(1).withName("NumberOfOpenPipes"),
-        USBIoctl.C_INT.withByteAlignment(1).withName("ConnectionStatus"),
+        USBIoctl.align(USBIoctl.C_SHORT, 1).withName("DeviceAddress"),
+        USBIoctl.align(USBIoctl.C_LONG, 1).withName("NumberOfOpenPipes"),
+        USBIoctl.align(USBIoctl.C_INT, 1).withName("ConnectionStatus"),
         MemoryLayout.sequenceLayout(0, _USB_PIPE_INFO.layout()).withName("PipeList")
     ).withName("_USB_NODE_CONNECTION_INFORMATION_EX");
 

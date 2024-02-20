@@ -65,7 +65,7 @@ The generated code has the same problem as the Linux code for *udev*. It must be
 
 ## Windows
 
-Most Windows SDK header files are not independent. They require that `Windows.h` is included first. So instead of specifying the target header files directly, a helper header file (`windows_headers.h` in this directory) is specified.
+Most Windows SDK header files are not independent. They require `Windows.h` to be included first. So instead of specifying the target header files directly, a helper header file (`windows_headers.h` in this directory) is specified.
 
 Compared to Linux and macOS, the code generation on Windows is very slow (about 1 min vs 3 seconds). And jextract crashes sometimes.
 

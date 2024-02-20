@@ -1,4 +1,4 @@
-set JEXTRACT=..\..\..\..\jextract-22\bin\jextract.bat
+set JEXTRACT=..\..\..\..\jextract\build\jextract\bin\jextract.bat
 set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
 
 call %JEXTRACT% --output ../../src/main/java ^
