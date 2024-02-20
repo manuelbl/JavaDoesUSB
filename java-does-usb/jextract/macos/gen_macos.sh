@@ -5,13 +5,13 @@ JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 # CoreFoundation
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
   -lCoreFoundation.framework \
   --header-class-name CoreFoundation \
   --target-package net.codecrete.usb.macos.gen.corefoundation \
-  --include-typedef CFRange \
-  --include-typedef CFUUIDBytes \
+  --include-struct CFRange \
+  --include-struct CFUUIDBytes \
   --include-function CFUUIDCreateFromUUIDBytes \
   --include-function CFRelease \
   --include-function CFStringGetLength \
@@ -30,7 +30,7 @@ $JEXTRACT --source --output ../../src/main/java \
   cf_helper.h
 
 # IOKit
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
   -lIOKit.framework \
   --header-class-name IOKit \
@@ -55,8 +55,8 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-struct IOUSBDeviceStruct187 \
   --include-typedef IOUSBDeviceInterface187 \
   --include-constant kIOUSBFindInterfaceDontCare \
-  --include-typedef IOUSBFindInterfaceRequest \
-  --include-typedef IOUSBDevRequest \
+  --include-struct IOUSBFindInterfaceRequest \
+  --include-struct IOUSBDevRequest \
   --include-struct IOUSBInterfaceStruct190 \
   --include-typedef IOUSBInterfaceInterface190 \
   --include-constant kIOUSBTransactionTimeout \
@@ -64,10 +64,11 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant kIOUSBPipeStalled \
   --include-constant kUSBReEnumerateCaptureDeviceMask \
   --include-constant kUSBReEnumerateReleaseDeviceMask \
+  --include-struct CFUUIDBytes \
   iokit_helper.h
 
 # mach.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
   --header-class-name mach \
   --target-package net.codecrete.usb.macos.gen.mach \

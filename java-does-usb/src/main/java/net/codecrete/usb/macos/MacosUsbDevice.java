@@ -183,7 +183,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             if (ret != 0)
                 throwException(ret, "querying device descriptor failed");
 
-            var len = IOUSBDevRequest.wLenDone$get(deviceRequest);
+            var len = IOUSBDevRequest.wLenDone(deviceRequest);
             rawDeviceDescriptor = data.asSlice(0, len).toArray(JAVA_BYTE);
 
             configurationValue = 0;
@@ -208,10 +208,10 @@ public class MacosUsbDevice extends UsbDeviceImpl {
 
         try (var arena = Arena.ofConfined(); var outerCleanup = new ScopeCleanup()) {
             var request = IOUSBFindInterfaceRequest.allocate(arena);
-            IOUSBFindInterfaceRequest.bInterfaceClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
-            IOUSBFindInterfaceRequest.bInterfaceSubClass$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
-            IOUSBFindInterfaceRequest.bInterfaceProtocol$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
-            IOUSBFindInterfaceRequest.bAlternateSetting$set(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
+            IOUSBFindInterfaceRequest.bInterfaceClass(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
+            IOUSBFindInterfaceRequest.bInterfaceSubClass(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
+            IOUSBFindInterfaceRequest.bInterfaceProtocol(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
+            IOUSBFindInterfaceRequest.bAlternateSetting(request, (short) IOKit.kIOUSBFindInterfaceDontCare());
 
             var iterHolder = arena.allocate(JAVA_INT);
             var ret = IoKitUsb.CreateInterfaceIterator(device, request, iterHolder);
@@ -389,12 +389,12 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         var deviceRequest = IOUSBDevRequest.allocate(arena);
         var bmRequestType =
                 (direction == UsbDirection.IN ? 0x80 : 0x00) | (setup.requestType().ordinal() << 5) | setup.recipient().ordinal();
-        IOUSBDevRequest.bmRequestType$set(deviceRequest, (byte) bmRequestType);
-        IOUSBDevRequest.bRequest$set(deviceRequest, (byte) setup.request());
-        IOUSBDevRequest.wValue$set(deviceRequest, (short) setup.value());
-        IOUSBDevRequest.wIndex$set(deviceRequest, (short) setup.index());
-        IOUSBDevRequest.wLength$set(deviceRequest, (short) data.byteSize());
-        IOUSBDevRequest.pData$set(deviceRequest, data);
+        IOUSBDevRequest.bmRequestType(deviceRequest, (byte) bmRequestType);
+        IOUSBDevRequest.bRequest(deviceRequest, (byte) setup.request());
+        IOUSBDevRequest.wValue(deviceRequest, (short) setup.value());
+        IOUSBDevRequest.wIndex(deviceRequest, (short) setup.index());
+        IOUSBDevRequest.wLength(deviceRequest, (short) data.byteSize());
+        IOUSBDevRequest.pData(deviceRequest, data);
         return deviceRequest;
     }
 

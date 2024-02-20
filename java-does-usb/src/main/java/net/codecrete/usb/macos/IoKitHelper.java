@@ -93,7 +93,7 @@ class IoKitHelper {
      * @return <i>vtable</i>
      */
     static MemorySegment getVtable(MemorySegment self) {
-        return (MemorySegment) vtable$VH.get(self);
+        return (MemorySegment) vtable$VH.get(self, 0);
     }
 
     /**

@@ -3,14 +3,64 @@
 package net.codecrete.usb.macos.gen.iokit;
 
 /**
- * {@snippet :
- * typedef struct IOUSBInterfaceStruct190 IOUSBInterfaceInterface190;
+ * {@snippet lang=c :
+ * typedef struct IOUSBInterfaceStruct190 {
+ *     void *_reserved;
+ *     HRESULT (*QueryInterface)(void *, REFIID, LPVOID *);
+ *     ULONG (*AddRef)(void *);
+ *     ULONG (*Release)(void *);
+ *     IOReturn (*CreateInterfaceAsyncEventSource)(void *, CFRunLoopSourceRef *);
+ *     CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void *);
+ *     IOReturn (*CreateInterfaceAsyncPort)(void *, mach_port_t *);
+ *     mach_port_t (*GetInterfaceAsyncPort)(void *);
+ *     IOReturn (*USBInterfaceOpen)(void *);
+ *     IOReturn (*USBInterfaceClose)(void *);
+ *     IOReturn (*GetInterfaceClass)(void *, UInt8 *);
+ *     IOReturn (*GetInterfaceSubClass)(void *, UInt8 *);
+ *     IOReturn (*GetInterfaceProtocol)(void *, UInt8 *);
+ *     IOReturn (*GetDeviceVendor)(void *, UInt16 *);
+ *     IOReturn (*GetDeviceProduct)(void *, UInt16 *);
+ *     IOReturn (*GetDeviceReleaseNumber)(void *, UInt16 *);
+ *     IOReturn (*GetConfigurationValue)(void *, UInt8 *);
+ *     IOReturn (*GetInterfaceNumber)(void *, UInt8 *);
+ *     IOReturn (*GetAlternateSetting)(void *, UInt8 *);
+ *     IOReturn (*GetNumEndpoints)(void *, UInt8 *);
+ *     IOReturn (*GetLocationID)(void *, UInt32 *);
+ *     IOReturn (*GetDevice)(void *, io_service_t *);
+ *     IOReturn (*SetAlternateInterface)(void *, UInt8);
+ *     IOReturn (*GetBusFrameNumber)(void *, UInt64 *, AbsoluteTime *);
+ *     IOReturn (*ControlRequest)(void *, UInt8, IOUSBDevRequest *);
+ *     IOReturn (*ControlRequestAsync)(void *, UInt8, IOUSBDevRequest *, IOAsyncCallback1, void *);
+ *     IOReturn (*GetPipeProperties)(void *, UInt8, UInt8 *, UInt8 *, UInt8 *, UInt16 *, UInt8 *);
+ *     IOReturn (*GetPipeStatus)(void *, UInt8);
+ *     IOReturn (*AbortPipe)(void *, UInt8);
+ *     IOReturn (*ResetPipe)(void *, UInt8);
+ *     IOReturn (*ClearPipeStall)(void *, UInt8);
+ *     IOReturn (*ReadPipe)(void *, UInt8, void *, UInt32 *);
+ *     IOReturn (*WritePipe)(void *, UInt8, void *, UInt32);
+ *     IOReturn (*ReadPipeAsync)(void *, UInt8, void *, UInt32, IOAsyncCallback1, void *);
+ *     IOReturn (*WritePipeAsync)(void *, UInt8, void *, UInt32, IOAsyncCallback1, void *);
+ *     IOReturn (*ReadIsochPipeAsync)(void *, UInt8, void *, UInt64, UInt32, IOUSBIsocFrame *, IOAsyncCallback1, void *);
+ *     IOReturn (*WriteIsochPipeAsync)(void *, UInt8, void *, UInt64, UInt32, IOUSBIsocFrame *, IOAsyncCallback1, void *);
+ *     IOReturn (*ControlRequestTO)(void *, UInt8, IOUSBDevRequestTO *);
+ *     IOReturn (*ControlRequestAsyncTO)(void *, UInt8, IOUSBDevRequestTO *, IOAsyncCallback1, void *);
+ *     IOReturn (*ReadPipeTO)(void *, UInt8, void *, UInt32 *, UInt32, UInt32);
+ *     IOReturn (*WritePipeTO)(void *, UInt8, void *, UInt32, UInt32, UInt32);
+ *     IOReturn (*ReadPipeAsyncTO)(void *, UInt8, void *, UInt32, UInt32, UInt32, IOAsyncCallback1, void *);
+ *     IOReturn (*WritePipeAsyncTO)(void *, UInt8, void *, UInt32, UInt32, UInt32, IOAsyncCallback1, void *);
+ *     IOReturn (*USBInterfaceGetStringIndex)(void *, UInt8 *);
+ *     IOReturn (*USBInterfaceOpenSeize)(void *);
+ *     IOReturn (*ClearPipeStallBothEnds)(void *, UInt8);
+ *     IOReturn (*SetPipePolicy)(void *, UInt8, UInt16, UInt8);
+ *     IOReturn (*GetBandwidthAvailable)(void *, UInt32 *);
+ *     IOReturn (*GetEndpointProperties)(void *, UInt8, UInt8, UInt8, UInt8 *, UInt16 *, UInt8 *);
+ * } IOUSBInterfaceInterface190
  * }
  */
-public final class IOUSBInterfaceInterface190 extends IOUSBInterfaceStruct190 {
+public class IOUSBInterfaceInterface190 extends IOUSBInterfaceStruct190 {
 
-    // Suppresses default constructor, ensuring non-instantiability.
-    private IOUSBInterfaceInterface190() {}
+    IOUSBInterfaceInterface190() {
+        // Should not be called directly
+    }
 }
-
 

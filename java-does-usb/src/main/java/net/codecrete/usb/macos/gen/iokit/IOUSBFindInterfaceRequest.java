@@ -2,140 +2,260 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
-import java.lang.invoke.VarHandle;
+import java.lang.foreign.*;
+import java.util.function.Consumer;
+
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
+import static java.lang.foreign.ValueLayout.OfShort;
+
 /**
- * {@snippet :
+ * {@snippet lang=c :
  * struct {
  *     UInt16 bInterfaceClass;
  *     UInt16 bInterfaceSubClass;
  *     UInt16 bInterfaceProtocol;
  *     UInt16 bAlternateSetting;
- * };
+ * }
  * }
  */
 public class IOUSBFindInterfaceRequest {
 
-    public static MemoryLayout $LAYOUT() {
-        return constants$1.const$2;
+    IOUSBFindInterfaceRequest() {
+        // Should not be called directly
     }
-    public static VarHandle bInterfaceClass$VH() {
-        return constants$1.const$3;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UInt16 bInterfaceClass;
-     * }
-     */
-    public static short bInterfaceClass$get(MemorySegment seg) {
-        return (short)constants$1.const$3.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UInt16 bInterfaceClass;
-     * }
-     */
-    public static void bInterfaceClass$set(MemorySegment seg, short x) {
-        constants$1.const$3.set(seg, x);
-    }
-    public static short bInterfaceClass$get(MemorySegment seg, long index) {
-        return (short)constants$1.const$3.get(seg.asSlice(index*sizeof()));
-    }
-    public static void bInterfaceClass$set(MemorySegment seg, long index, short x) {
-        constants$1.const$3.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle bInterfaceSubClass$VH() {
-        return constants$1.const$4;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UInt16 bInterfaceSubClass;
-     * }
-     */
-    public static short bInterfaceSubClass$get(MemorySegment seg) {
-        return (short)constants$1.const$4.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UInt16 bInterfaceSubClass;
-     * }
-     */
-    public static void bInterfaceSubClass$set(MemorySegment seg, short x) {
-        constants$1.const$4.set(seg, x);
-    }
-    public static short bInterfaceSubClass$get(MemorySegment seg, long index) {
-        return (short)constants$1.const$4.get(seg.asSlice(index*sizeof()));
-    }
-    public static void bInterfaceSubClass$set(MemorySegment seg, long index, short x) {
-        constants$1.const$4.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle bInterfaceProtocol$VH() {
-        return constants$1.const$5;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UInt16 bInterfaceProtocol;
-     * }
-     */
-    public static short bInterfaceProtocol$get(MemorySegment seg) {
-        return (short)constants$1.const$5.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UInt16 bInterfaceProtocol;
-     * }
-     */
-    public static void bInterfaceProtocol$set(MemorySegment seg, short x) {
-        constants$1.const$5.set(seg, x);
-    }
-    public static short bInterfaceProtocol$get(MemorySegment seg, long index) {
-        return (short)constants$1.const$5.get(seg.asSlice(index*sizeof()));
-    }
-    public static void bInterfaceProtocol$set(MemorySegment seg, long index, short x) {
-        constants$1.const$5.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle bAlternateSetting$VH() {
-        return constants$2.const$0;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * UInt16 bAlternateSetting;
-     * }
-     */
-    public static short bAlternateSetting$get(MemorySegment seg) {
-        return (short)constants$2.const$0.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * UInt16 bAlternateSetting;
-     * }
-     */
-    public static void bAlternateSetting$set(MemorySegment seg, short x) {
-        constants$2.const$0.set(seg, x);
-    }
-    public static short bAlternateSetting$get(MemorySegment seg, long index) {
-        return (short)constants$2.const$0.get(seg.asSlice(index*sizeof()));
-    }
-    public static void bAlternateSetting$set(MemorySegment seg, long index, short x) {
-        constants$2.const$0.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static long sizeof() { return $LAYOUT().byteSize(); }
-    public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
-        return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
-    }
-    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
-}
 
+    private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
+        IOKit.C_SHORT.withName("bInterfaceClass"),
+        IOKit.C_SHORT.withName("bInterfaceSubClass"),
+        IOKit.C_SHORT.withName("bInterfaceProtocol"),
+        IOKit.C_SHORT.withName("bAlternateSetting")
+    ).withName("IOUSBFindInterfaceRequest");
+
+    /**
+     * The layout of this struct
+     */
+    public static final GroupLayout layout() {
+        return $LAYOUT;
+    }
+
+    private static final OfShort bInterfaceClass$LAYOUT = (OfShort)$LAYOUT.select(groupElement("bInterfaceClass"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceClass
+     * }
+     */
+    public static final OfShort bInterfaceClass$layout() {
+        return bInterfaceClass$LAYOUT;
+    }
+
+    private static final long bInterfaceClass$OFFSET = 0;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceClass
+     * }
+     */
+    public static final long bInterfaceClass$offset() {
+        return bInterfaceClass$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceClass
+     * }
+     */
+    public static short bInterfaceClass(MemorySegment struct) {
+        return struct.get(bInterfaceClass$LAYOUT, bInterfaceClass$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceClass
+     * }
+     */
+    public static void bInterfaceClass(MemorySegment struct, short fieldValue) {
+        struct.set(bInterfaceClass$LAYOUT, bInterfaceClass$OFFSET, fieldValue);
+    }
+
+    private static final OfShort bInterfaceSubClass$LAYOUT = (OfShort)$LAYOUT.select(groupElement("bInterfaceSubClass"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceSubClass
+     * }
+     */
+    public static final OfShort bInterfaceSubClass$layout() {
+        return bInterfaceSubClass$LAYOUT;
+    }
+
+    private static final long bInterfaceSubClass$OFFSET = 2;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceSubClass
+     * }
+     */
+    public static final long bInterfaceSubClass$offset() {
+        return bInterfaceSubClass$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceSubClass
+     * }
+     */
+    public static short bInterfaceSubClass(MemorySegment struct) {
+        return struct.get(bInterfaceSubClass$LAYOUT, bInterfaceSubClass$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceSubClass
+     * }
+     */
+    public static void bInterfaceSubClass(MemorySegment struct, short fieldValue) {
+        struct.set(bInterfaceSubClass$LAYOUT, bInterfaceSubClass$OFFSET, fieldValue);
+    }
+
+    private static final OfShort bInterfaceProtocol$LAYOUT = (OfShort)$LAYOUT.select(groupElement("bInterfaceProtocol"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceProtocol
+     * }
+     */
+    public static final OfShort bInterfaceProtocol$layout() {
+        return bInterfaceProtocol$LAYOUT;
+    }
+
+    private static final long bInterfaceProtocol$OFFSET = 4;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceProtocol
+     * }
+     */
+    public static final long bInterfaceProtocol$offset() {
+        return bInterfaceProtocol$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceProtocol
+     * }
+     */
+    public static short bInterfaceProtocol(MemorySegment struct) {
+        return struct.get(bInterfaceProtocol$LAYOUT, bInterfaceProtocol$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UInt16 bInterfaceProtocol
+     * }
+     */
+    public static void bInterfaceProtocol(MemorySegment struct, short fieldValue) {
+        struct.set(bInterfaceProtocol$LAYOUT, bInterfaceProtocol$OFFSET, fieldValue);
+    }
+
+    private static final OfShort bAlternateSetting$LAYOUT = (OfShort)$LAYOUT.select(groupElement("bAlternateSetting"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * UInt16 bAlternateSetting
+     * }
+     */
+    public static final OfShort bAlternateSetting$layout() {
+        return bAlternateSetting$LAYOUT;
+    }
+
+    private static final long bAlternateSetting$OFFSET = 6;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * UInt16 bAlternateSetting
+     * }
+     */
+    public static final long bAlternateSetting$offset() {
+        return bAlternateSetting$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * UInt16 bAlternateSetting
+     * }
+     */
+    public static short bAlternateSetting(MemorySegment struct) {
+        return struct.get(bAlternateSetting$LAYOUT, bAlternateSetting$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * UInt16 bAlternateSetting
+     * }
+     */
+    public static void bAlternateSetting(MemorySegment struct, short fieldValue) {
+        struct.set(bAlternateSetting$LAYOUT, bAlternateSetting$OFFSET, fieldValue);
+    }
+
+    /**
+     * Obtains a slice of {@code arrayParam} which selects the array element at {@code index}.
+     * The returned segment has address {@code arrayParam.address() + index * layout().byteSize()}
+     */
+    public static MemorySegment asSlice(MemorySegment array, long index) {
+        return array.asSlice(layout().byteSize() * index);
+    }
+
+    /**
+     * The size (in bytes) of this struct
+     */
+    public static long sizeof() { return layout().byteSize(); }
+
+    /**
+     * Allocate a segment of size {@code layout().byteSize()} using {@code allocator}
+     */
+    public static MemorySegment allocate(SegmentAllocator allocator) {
+        return allocator.allocate(layout());
+    }
+
+    /**
+     * Allocate an array of size {@code elementCount} using {@code allocator}.
+     * The returned segment has size {@code elementCount * layout().byteSize()}.
+     */
+    public static MemorySegment allocateArray(long elementCount, SegmentAllocator allocator) {
+        return allocator.allocate(MemoryLayout.sequenceLayout(elementCount, layout()));
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
+        return reinterpret(addr, 1, arena, cleanup);
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code elementCount * layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {
+        return addr.reinterpret(layout().byteSize() * elementCount, arena, cleanup);
+    }
+}
 

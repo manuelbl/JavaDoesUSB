@@ -2,312 +2,699 @@
 
 package net.codecrete.usb.macos.gen.iokit;
 
-import java.lang.foreign.AddressLayout;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
+import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
-import static java.lang.foreign.ValueLayout.JAVA_SHORT;
-import static java.lang.foreign.ValueLayout.OfByte;
-import static java.lang.foreign.ValueLayout.OfDouble;
-import static java.lang.foreign.ValueLayout.OfFloat;
 import static java.lang.foreign.ValueLayout.OfInt;
-import static java.lang.foreign.ValueLayout.OfLong;
-import static java.lang.foreign.ValueLayout.OfShort;
-public class IOKit  {
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfLong C_LONG = JAVA_LONG;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class IOKit {
+
+    IOKit() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static MemoryLayout align(MemoryLayout layout, long align) {
+        return switch (layout) {
+            case PaddingLayout p -> p;
+            case ValueLayout v -> v.withByteAlignment(align);
+            case GroupLayout g -> {
+                MemoryLayout[] alignedMembers = g.memberLayouts().stream()
+                        .map(m -> align(m, align)).toArray(MemoryLayout[]::new);
+                yield g instanceof StructLayout ?
+                        MemoryLayout.structLayout(alignedMembers) : MemoryLayout.unionLayout(alignedMembers);
+            }
+            case SequenceLayout s -> MemoryLayout.sequenceLayout(s.elementCount(), align(s.elementLayout(), align));
+        };
+    }
+
+
+    // Manually fix. Otherwise, system library will not be found
+    // static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("IOKit.framework"), LIBRARY_ARENA)
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/IOKit.framework/IOKit", LIBRARY_ARENA)
+            .or(SymbolLookup.loaderLookup())
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfLong C_LONG = ValueLayout.JAVA_LONG;
+    private static final int kIOUSBFindInterfaceDontCare = (int)65535L;
     /**
-     * {@snippet :
-     * enum .kIOUSBFindInterfaceDontCare = 65535;
+     * {@snippet lang=c :
+     * enum enum (unnamed at /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/IOKit.framework/Headers/usb/USB.h:898:1).kIOUSBFindInterfaceDontCare = 65535
      * }
      */
     public static int kIOUSBFindInterfaceDontCare() {
-        return (int)65535L;
+        return kIOUSBFindInterfaceDontCare;
     }
+    private static final int kUSBReEnumerateCaptureDeviceMask = (int)1073741824L;
     /**
-     * {@snippet :
-     * enum .kUSBReEnumerateCaptureDeviceMask = 1073741824;
+     * {@snippet lang=c :
+     * enum USBReEnumerateOptions.kUSBReEnumerateCaptureDeviceMask = 1073741824
      * }
      */
     public static int kUSBReEnumerateCaptureDeviceMask() {
-        return (int)1073741824L;
+        return kUSBReEnumerateCaptureDeviceMask;
     }
+    private static final int kUSBReEnumerateReleaseDeviceMask = (int)536870912L;
     /**
-     * {@snippet :
-     * enum .kUSBReEnumerateReleaseDeviceMask = 536870912;
+     * {@snippet lang=c :
+     * enum USBReEnumerateOptions.kUSBReEnumerateReleaseDeviceMask = 536870912
      * }
      */
     public static int kUSBReEnumerateReleaseDeviceMask() {
-        return (int)536870912L;
+        return kUSBReEnumerateReleaseDeviceMask;
     }
-    public static MemoryLayout kCFRunLoopDefaultMode$LAYOUT() {
-        return RuntimeHelper.POINTER;
+
+    private static class kCFRunLoopDefaultMode$constants {
+        public static final AddressLayout LAYOUT = IOKit.C_POINTER;
+        public static final MemorySegment SEGMENT = IOKit.findOrThrow("kCFRunLoopDefaultMode").reinterpret(LAYOUT.byteSize());
     }
-    public static VarHandle kCFRunLoopDefaultMode$VH() {
-        return constants$2.const$1;
+
+    /**
+     * Layout for variable:
+     * {@snippet lang=c :
+     * extern const CFRunLoopMode kCFRunLoopDefaultMode
+     * }
+     */
+    public static AddressLayout kCFRunLoopDefaultMode$layout() {
+        return kCFRunLoopDefaultMode$constants.LAYOUT;
     }
-    public static MemorySegment kCFRunLoopDefaultMode$SEGMENT() {
-        return RuntimeHelper.requireNonNull(constants$2.const$2,"kCFRunLoopDefaultMode");
+
+    /**
+     * Segment for variable:
+     * {@snippet lang=c :
+     * extern const CFRunLoopMode kCFRunLoopDefaultMode
+     * }
+     */
+    public static MemorySegment kCFRunLoopDefaultMode$segment() {
+        return kCFRunLoopDefaultMode$constants.SEGMENT;
     }
+
     /**
      * Getter for variable:
-     * {@snippet :
-     * const CFRunLoopMode kCFRunLoopDefaultMode;
+     * {@snippet lang=c :
+     * extern const CFRunLoopMode kCFRunLoopDefaultMode
      * }
      */
-    public static MemorySegment kCFRunLoopDefaultMode$get() {
-        return (java.lang.foreign.MemorySegment) constants$2.const$1.get(RuntimeHelper.requireNonNull(constants$2.const$2, "kCFRunLoopDefaultMode"));
+    public static MemorySegment kCFRunLoopDefaultMode() {
+        return kCFRunLoopDefaultMode$constants.SEGMENT.get(kCFRunLoopDefaultMode$constants.LAYOUT, 0L);
     }
+
     /**
      * Setter for variable:
-     * {@snippet :
-     * const CFRunLoopMode kCFRunLoopDefaultMode;
+     * {@snippet lang=c :
+     * extern const CFRunLoopMode kCFRunLoopDefaultMode
      * }
      */
-    public static void kCFRunLoopDefaultMode$set(MemorySegment x) {
-        constants$2.const$1.set(RuntimeHelper.requireNonNull(constants$2.const$2, "kCFRunLoopDefaultMode"), x);
+    public static void kCFRunLoopDefaultMode(MemorySegment varValue) {
+        kCFRunLoopDefaultMode$constants.SEGMENT.set(kCFRunLoopDefaultMode$constants.LAYOUT, 0L, varValue);
     }
-    public static MemoryLayout kIOMasterPortDefault$LAYOUT() {
-        return JAVA_INT;
+
+    private static class kIOMasterPortDefault$constants {
+        public static final OfInt LAYOUT = IOKit.C_INT;
+        public static final MemorySegment SEGMENT = IOKit.findOrThrow("kIOMasterPortDefault").reinterpret(LAYOUT.byteSize());
     }
-    public static VarHandle kIOMasterPortDefault$VH() {
-        return constants$2.const$3;
+
+    /**
+     * Layout for variable:
+     * {@snippet lang=c :
+     * extern const mach_port_t kIOMasterPortDefault
+     * }
+     */
+    public static OfInt kIOMasterPortDefault$layout() {
+        return kIOMasterPortDefault$constants.LAYOUT;
     }
-    public static MemorySegment kIOMasterPortDefault$SEGMENT() {
-        return RuntimeHelper.requireNonNull(constants$2.const$4,"kIOMasterPortDefault");
+
+    /**
+     * Segment for variable:
+     * {@snippet lang=c :
+     * extern const mach_port_t kIOMasterPortDefault
+     * }
+     */
+    public static MemorySegment kIOMasterPortDefault$segment() {
+        return kIOMasterPortDefault$constants.SEGMENT;
     }
+
     /**
      * Getter for variable:
-     * {@snippet :
-     * const mach_port_t kIOMasterPortDefault;
+     * {@snippet lang=c :
+     * extern const mach_port_t kIOMasterPortDefault
      * }
      */
-    public static int kIOMasterPortDefault$get() {
-        return (int) constants$2.const$3.get(RuntimeHelper.requireNonNull(constants$2.const$4, "kIOMasterPortDefault"));
+    public static int kIOMasterPortDefault() {
+        return kIOMasterPortDefault$constants.SEGMENT.get(kIOMasterPortDefault$constants.LAYOUT, 0L);
     }
+
     /**
      * Setter for variable:
-     * {@snippet :
-     * const mach_port_t kIOMasterPortDefault;
+     * {@snippet lang=c :
+     * extern const mach_port_t kIOMasterPortDefault
      * }
      */
-    public static void kIOMasterPortDefault$set(int x) {
-        constants$2.const$3.set(RuntimeHelper.requireNonNull(constants$2.const$4, "kIOMasterPortDefault"), x);
+    public static void kIOMasterPortDefault(int varValue) {
+        kIOMasterPortDefault$constants.SEGMENT.set(kIOMasterPortDefault$constants.LAYOUT, 0L, varValue);
     }
-    public static MethodHandle IONotificationPortCreate$MH() {
-        return RuntimeHelper.requireNonNull(constants$2.const$6,"IONotificationPortCreate");
+
+    private static class IONotificationPortCreate {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_POINTER,
+            IOKit.C_INT
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IONotificationPortCreate"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort)
+     * }
+     */
+    public static FunctionDescriptor IONotificationPortCreate$descriptor() {
+        return IONotificationPortCreate.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort)
+     * }
+     */
+    public static MethodHandle IONotificationPortCreate$handle() {
+        return IONotificationPortCreate.HANDLE;
     }
     /**
-     * {@snippet :
-     * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort);
+     * {@snippet lang=c :
+     * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort)
      * }
      */
     public static MemorySegment IONotificationPortCreate(int mainPort) {
-        var mh$ = IONotificationPortCreate$MH();
+        var mh$ = IONotificationPortCreate.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(mainPort);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IONotificationPortCreate", mainPort);
+            }
+            return (MemorySegment)mh$.invokeExact(mainPort);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IONotificationPortGetRunLoopSource$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.const$1,"IONotificationPortGetRunLoopSource");
+
+    private static class IONotificationPortGetRunLoopSource {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_POINTER,
+            IOKit.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IONotificationPortGetRunLoopSource"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify)
+     * }
+     */
+    public static FunctionDescriptor IONotificationPortGetRunLoopSource$descriptor() {
+        return IONotificationPortGetRunLoopSource.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify)
+     * }
+     */
+    public static MethodHandle IONotificationPortGetRunLoopSource$handle() {
+        return IONotificationPortGetRunLoopSource.HANDLE;
     }
     /**
-     * {@snippet :
-     * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify);
+     * {@snippet lang=c :
+     * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify)
      * }
      */
     public static MemorySegment IONotificationPortGetRunLoopSource(MemorySegment notify) {
-        var mh$ = IONotificationPortGetRunLoopSource$MH();
+        var mh$ = IONotificationPortGetRunLoopSource.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(notify);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IONotificationPortGetRunLoopSource", notify);
+            }
+            return (MemorySegment)mh$.invokeExact(notify);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IOObjectRelease$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.const$3,"IOObjectRelease");
+
+    private static class IOObjectRelease {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_INT,
+            IOKit.C_INT
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IOObjectRelease"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * kern_return_t IOObjectRelease(io_object_t object)
+     * }
+     */
+    public static FunctionDescriptor IOObjectRelease$descriptor() {
+        return IOObjectRelease.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * kern_return_t IOObjectRelease(io_object_t object)
+     * }
+     */
+    public static MethodHandle IOObjectRelease$handle() {
+        return IOObjectRelease.HANDLE;
     }
     /**
-     * {@snippet :
-     * kern_return_t IOObjectRelease(io_object_t object);
+     * {@snippet lang=c :
+     * kern_return_t IOObjectRelease(io_object_t object)
      * }
      */
     public static int IOObjectRelease(int object) {
-        var mh$ = IOObjectRelease$MH();
+        var mh$ = IOObjectRelease.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IOObjectRelease", object);
+            }
             return (int)mh$.invokeExact(object);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IOIteratorNext$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.const$4,"IOIteratorNext");
+
+    private static class IOIteratorNext {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_INT,
+            IOKit.C_INT
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IOIteratorNext"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * io_object_t IOIteratorNext(io_iterator_t iterator)
+     * }
+     */
+    public static FunctionDescriptor IOIteratorNext$descriptor() {
+        return IOIteratorNext.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * io_object_t IOIteratorNext(io_iterator_t iterator)
+     * }
+     */
+    public static MethodHandle IOIteratorNext$handle() {
+        return IOIteratorNext.HANDLE;
     }
     /**
-     * {@snippet :
-     * io_object_t IOIteratorNext(io_iterator_t iterator);
+     * {@snippet lang=c :
+     * io_object_t IOIteratorNext(io_iterator_t iterator)
      * }
      */
     public static int IOIteratorNext(int iterator) {
-        var mh$ = IOIteratorNext$MH();
+        var mh$ = IOIteratorNext.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IOIteratorNext", iterator);
+            }
             return (int)mh$.invokeExact(iterator);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IOServiceAddMatchingNotification$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.const$6,"IOServiceAddMatchingNotification");
+
+    private static class IOServiceAddMatchingNotification {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_INT,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IOServiceAddMatchingNotification"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification)
+     * }
+     */
+    public static FunctionDescriptor IOServiceAddMatchingNotification$descriptor() {
+        return IOServiceAddMatchingNotification.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification)
+     * }
+     */
+    public static MethodHandle IOServiceAddMatchingNotification$handle() {
+        return IOServiceAddMatchingNotification.HANDLE;
     }
     /**
-     * {@snippet :
-     * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void* refCon, io_iterator_t* notification);
+     * {@snippet lang=c :
+     * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification)
      * }
      */
     public static int IOServiceAddMatchingNotification(MemorySegment notifyPort, MemorySegment notificationType, MemorySegment matching, MemorySegment callback, MemorySegment refCon, MemorySegment notification) {
-        var mh$ = IOServiceAddMatchingNotification$MH();
+        var mh$ = IOServiceAddMatchingNotification.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IOServiceAddMatchingNotification", notifyPort, notificationType, matching, callback, refCon, notification);
+            }
             return (int)mh$.invokeExact(notifyPort, notificationType, matching, callback, refCon, notification);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IORegistryEntryGetRegistryEntryID$MH() {
-        return RuntimeHelper.requireNonNull(constants$4.const$1,"IORegistryEntryGetRegistryEntryID");
+
+    private static class IORegistryEntryGetRegistryEntryID {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_INT,
+            IOKit.C_INT,
+            IOKit.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IORegistryEntryGetRegistryEntryID"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID)
+     * }
+     */
+    public static FunctionDescriptor IORegistryEntryGetRegistryEntryID$descriptor() {
+        return IORegistryEntryGetRegistryEntryID.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID)
+     * }
+     */
+    public static MethodHandle IORegistryEntryGetRegistryEntryID$handle() {
+        return IORegistryEntryGetRegistryEntryID.HANDLE;
     }
     /**
-     * {@snippet :
-     * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t* entryID);
+     * {@snippet lang=c :
+     * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID)
      * }
      */
     public static int IORegistryEntryGetRegistryEntryID(int entry, MemorySegment entryID) {
-        var mh$ = IORegistryEntryGetRegistryEntryID$MH();
+        var mh$ = IORegistryEntryGetRegistryEntryID.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IORegistryEntryGetRegistryEntryID", entry, entryID);
+            }
             return (int)mh$.invokeExact(entry, entryID);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IORegistryEntryCreateCFProperty$MH() {
-        return RuntimeHelper.requireNonNull(constants$4.const$3,"IORegistryEntryCreateCFProperty");
+
+    private static class IORegistryEntryCreateCFProperty {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_POINTER,
+            IOKit.C_INT,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_INT
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IORegistryEntryCreateCFProperty"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options)
+     * }
+     */
+    public static FunctionDescriptor IORegistryEntryCreateCFProperty$descriptor() {
+        return IORegistryEntryCreateCFProperty.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options)
+     * }
+     */
+    public static MethodHandle IORegistryEntryCreateCFProperty$handle() {
+        return IORegistryEntryCreateCFProperty.HANDLE;
     }
     /**
-     * {@snippet :
-     * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options);
+     * {@snippet lang=c :
+     * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options)
      * }
      */
     public static MemorySegment IORegistryEntryCreateCFProperty(int entry, MemorySegment key, MemorySegment allocator, int options) {
-        var mh$ = IORegistryEntryCreateCFProperty$MH();
+        var mh$ = IORegistryEntryCreateCFProperty.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(entry, key, allocator, options);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IORegistryEntryCreateCFProperty", entry, key, allocator, options);
+            }
+            return (MemorySegment)mh$.invokeExact(entry, key, allocator, options);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IOServiceMatching$MH() {
-        return RuntimeHelper.requireNonNull(constants$4.const$4,"IOServiceMatching");
+
+    private static class IOServiceMatching {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_POINTER,
+            IOKit.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IOServiceMatching"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * CFMutableDictionaryRef IOServiceMatching(const char *name)
+     * }
+     */
+    public static FunctionDescriptor IOServiceMatching$descriptor() {
+        return IOServiceMatching.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * CFMutableDictionaryRef IOServiceMatching(const char *name)
+     * }
+     */
+    public static MethodHandle IOServiceMatching$handle() {
+        return IOServiceMatching.HANDLE;
     }
     /**
-     * {@snippet :
-     * CFMutableDictionaryRef IOServiceMatching(char* name);
+     * {@snippet lang=c :
+     * CFMutableDictionaryRef IOServiceMatching(const char *name)
      * }
      */
     public static MemorySegment IOServiceMatching(MemorySegment name) {
-        var mh$ = IOServiceMatching$MH();
+        var mh$ = IOServiceMatching.HANDLE;
         try {
-            return (java.lang.foreign.MemorySegment)mh$.invokeExact(name);
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IOServiceMatching", name);
+            }
+            return (MemorySegment)mh$.invokeExact(name);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
-    public static MethodHandle IOCreatePlugInInterfaceForService$MH() {
-        return RuntimeHelper.requireNonNull(constants$43.const$5,"IOCreatePlugInInterfaceForService");
+
+    private static class IOCreatePlugInInterfaceForService {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            IOKit.C_INT,
+            IOKit.C_INT,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER,
+            IOKit.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    IOKit.findOrThrow("IOCreatePlugInInterfaceForService"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore)
+     * }
+     */
+    public static FunctionDescriptor IOCreatePlugInInterfaceForService$descriptor() {
+        return IOCreatePlugInInterfaceForService.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore)
+     * }
+     */
+    public static MethodHandle IOCreatePlugInInterfaceForService$handle() {
+        return IOCreatePlugInInterfaceForService.HANDLE;
     }
     /**
-     * {@snippet :
-     * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface*** theInterface, SInt32* theScore);
+     * {@snippet lang=c :
+     * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore)
      * }
      */
     public static int IOCreatePlugInInterfaceForService(int service, MemorySegment pluginType, MemorySegment interfaceType, MemorySegment theInterface, MemorySegment theScore) {
-        var mh$ = IOCreatePlugInInterfaceForService$MH();
+        var mh$ = IOCreatePlugInInterfaceForService.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("IOCreatePlugInInterfaceForService", service, pluginType, interfaceType, theInterface, theScore);
+            }
             return (int)mh$.invokeExact(service, pluginType, interfaceType, theInterface, theScore);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
+    private static final int kIOReturnExclusiveAccess = (int)-536870203L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOReturnExclusiveAccess -536870203
      * }
      */
     public static int kIOReturnExclusiveAccess() {
-        return (int)-536870203L;
+        return kIOReturnExclusiveAccess;
     }
+    private static final int kIOReturnAborted = (int)-536870165L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOReturnAborted -536870165
      * }
      */
     public static int kIOReturnAborted() {
-        return (int)-536870165L;
+        return kIOReturnAborted;
     }
+    private static final int kIOUSBPipeStalled = (int)-536854449L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOUSBPipeStalled -536854449
      * }
      */
     public static int kIOUSBPipeStalled() {
-        return (int)-536854449L;
+        return kIOUSBPipeStalled;
     }
+    private static final int kIOUSBTransactionTimeout = (int)-536854447L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOUSBTransactionTimeout -536854447
      * }
      */
     public static int kIOUSBTransactionTimeout() {
-        return (int)-536854447L;
+        return kIOUSBTransactionTimeout;
     }
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOFirstMatchNotification "IOServiceFirstMatch"
      * }
      */
     public static MemorySegment kIOFirstMatchNotification() {
-        return constants$44.const$0;
+        class Holder {
+            static final MemorySegment kIOFirstMatchNotification
+                = IOKit.LIBRARY_ARENA.allocateFrom("IOServiceFirstMatch");
+        }
+        return Holder.kIOFirstMatchNotification;
     }
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOTerminatedNotification "IOServiceTerminate"
      * }
      */
     public static MemorySegment kIOTerminatedNotification() {
-        return constants$44.const$1;
+        class Holder {
+            static final MemorySegment kIOTerminatedNotification
+                = IOKit.LIBRARY_ARENA.allocateFrom("IOServiceTerminate");
+        }
+        return Holder.kIOTerminatedNotification;
     }
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define kIOUSBDeviceClassName "IOUSBDevice"
      * }
      */
     public static MemorySegment kIOUSBDeviceClassName() {
-        return constants$44.const$2;
+        class Holder {
+            static final MemorySegment kIOUSBDeviceClassName
+                = IOKit.LIBRARY_ARENA.allocateFrom("IOUSBDevice");
+        }
+        return Holder.kIOUSBDeviceClassName;
     }
 }
-
 

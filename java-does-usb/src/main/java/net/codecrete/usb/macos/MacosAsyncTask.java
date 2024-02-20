@@ -78,7 +78,7 @@ class MacosAsyncTask {
                 }
             }
 
-            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode$get());
+            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode());
 
         } finally {
             asyncIoLock.unlock();
@@ -96,7 +96,7 @@ class MacosAsyncTask {
      * @param source event source
      */
     void removeEventSource(MemorySegment source) {
-        CoreFoundation.CFRunLoopRemoveSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode$get());
+        CoreFoundation.CFRunLoopRemoveSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode());
     }
 
     /**
@@ -137,7 +137,7 @@ class MacosAsyncTask {
         try {
             asyncIoLock.lock();
             asyncIoRunLoop = CoreFoundation.CFRunLoopGetCurrent();
-            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, firstSource, IOKit.kCFRunLoopDefaultMode$get());
+            CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, firstSource, IOKit.kCFRunLoopDefaultMode());
             state = TaskState.RUNNING;
             asyncIoReady.signalAll();
         } finally {

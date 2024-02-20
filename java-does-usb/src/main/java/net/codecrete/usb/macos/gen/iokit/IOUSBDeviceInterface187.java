@@ -3,14 +3,53 @@
 package net.codecrete.usb.macos.gen.iokit;
 
 /**
- * {@snippet :
- * typedef struct IOUSBDeviceStruct187 IOUSBDeviceInterface187;
+ * {@snippet lang=c :
+ * typedef struct IOUSBDeviceStruct187 {
+ *     void *_reserved;
+ *     HRESULT (*QueryInterface)(void *, REFIID, LPVOID *);
+ *     ULONG (*AddRef)(void *);
+ *     ULONG (*Release)(void *);
+ *     IOReturn (*CreateDeviceAsyncEventSource)(void *, CFRunLoopSourceRef *);
+ *     CFRunLoopSourceRef (*GetDeviceAsyncEventSource)(void *);
+ *     IOReturn (*CreateDeviceAsyncPort)(void *, mach_port_t *);
+ *     mach_port_t (*GetDeviceAsyncPort)(void *);
+ *     IOReturn (*USBDeviceOpen)(void *);
+ *     IOReturn (*USBDeviceClose)(void *);
+ *     IOReturn (*GetDeviceClass)(void *, UInt8 *);
+ *     IOReturn (*GetDeviceSubClass)(void *, UInt8 *);
+ *     IOReturn (*GetDeviceProtocol)(void *, UInt8 *);
+ *     IOReturn (*GetDeviceVendor)(void *, UInt16 *);
+ *     IOReturn (*GetDeviceProduct)(void *, UInt16 *);
+ *     IOReturn (*GetDeviceReleaseNumber)(void *, UInt16 *);
+ *     IOReturn (*GetDeviceAddress)(void *, USBDeviceAddress *);
+ *     IOReturn (*GetDeviceBusPowerAvailable)(void *, UInt32 *);
+ *     IOReturn (*GetDeviceSpeed)(void *, UInt8 *);
+ *     IOReturn (*GetNumberOfConfigurations)(void *, UInt8 *);
+ *     IOReturn (*GetLocationID)(void *, UInt32 *);
+ *     IOReturn (*GetConfigurationDescriptorPtr)(void *, UInt8, IOUSBConfigurationDescriptorPtr *);
+ *     IOReturn (*GetConfiguration)(void *, UInt8 *);
+ *     IOReturn (*SetConfiguration)(void *, UInt8);
+ *     IOReturn (*GetBusFrameNumber)(void *, UInt64 *, AbsoluteTime *);
+ *     IOReturn (*ResetDevice)(void *);
+ *     IOReturn (*DeviceRequest)(void *, IOUSBDevRequest *);
+ *     IOReturn (*DeviceRequestAsync)(void *, IOUSBDevRequest *, IOAsyncCallback1, void *);
+ *     IOReturn (*CreateInterfaceIterator)(void *, IOUSBFindInterfaceRequest *, io_iterator_t *);
+ *     IOReturn (*USBDeviceOpenSeize)(void *);
+ *     IOReturn (*DeviceRequestTO)(void *, IOUSBDevRequestTO *);
+ *     IOReturn (*DeviceRequestAsyncTO)(void *, IOUSBDevRequestTO *, IOAsyncCallback1, void *);
+ *     IOReturn (*USBDeviceSuspend)(void *, Boolean);
+ *     IOReturn (*USBDeviceAbortPipeZero)(void *);
+ *     IOReturn (*USBGetManufacturerStringIndex)(void *, UInt8 *);
+ *     IOReturn (*USBGetProductStringIndex)(void *, UInt8 *);
+ *     IOReturn (*USBGetSerialNumberStringIndex)(void *, UInt8 *);
+ *     IOReturn (*USBDeviceReEnumerate)(void *, UInt32);
+ * } IOUSBDeviceInterface187
  * }
  */
-public final class IOUSBDeviceInterface187 extends IOUSBDeviceStruct187 {
+public class IOUSBDeviceInterface187 extends IOUSBDeviceStruct187 {
 
-    // Suppresses default constructor, ensuring non-instantiability.
-    private IOUSBDeviceInterface187() {}
+    IOUSBDeviceInterface187() {
+        // Should not be called directly
+    }
 }
-
 

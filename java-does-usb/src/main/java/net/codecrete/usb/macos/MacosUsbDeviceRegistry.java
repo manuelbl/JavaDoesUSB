@@ -80,10 +80,10 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
             try {
 
                 // setup run loop, run loop source and notification port
-                var notifyPort = IOKit.IONotificationPortCreate(IOKit.kIOMasterPortDefault$get());
+                var notifyPort = IOKit.IONotificationPortCreate(IOKit.kIOMasterPortDefault());
                 var runLoopSource = IOKit.IONotificationPortGetRunLoopSource(notifyPort);
                 var runLoop = CoreFoundation.CFRunLoopGetCurrent();
-                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode$get());
+                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode());
 
                 // setup notification for connected devices
                 var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUsbDeviceRegistry.class,
@@ -267,7 +267,7 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
     private void onDevicesDisconnected(MemorySegment ignoredRefCon, int iterator) {
 
         // process device iterator for disconnected devices
-        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
+        iterateDevices(iterator, (entryId, _, _) -> {
             var device = findDevice(entryId);
             if (device == null)
                 return;

@@ -3,14 +3,24 @@
 package net.codecrete.usb.macos.gen.iokit;
 
 /**
- * {@snippet :
- * typedef struct IOCFPlugInInterfaceStruct IOCFPlugInInterface;
+ * {@snippet lang=c :
+ * typedef struct IOCFPlugInInterfaceStruct {
+ *     void *_reserved;
+ *     HRESULT (*QueryInterface)(void *, REFIID, LPVOID *);
+ *     ULONG (*AddRef)(void *);
+ *     ULONG (*Release)(void *);
+ *     UInt16 version;
+ *     UInt16 revision;
+ *     IOReturn (*Probe)(void *, CFDictionaryRef, io_service_t, SInt32 *);
+ *     IOReturn (*Start)(void *, CFDictionaryRef, io_service_t);
+ *     IOReturn (*Stop)(void *);
+ * } IOCFPlugInInterface
  * }
  */
-public final class IOCFPlugInInterface extends IOCFPlugInInterfaceStruct {
+public class IOCFPlugInInterface extends IOCFPlugInInterfaceStruct {
 
-    // Suppresses default constructor, ensuring non-instantiability.
-    private IOCFPlugInInterface() {}
+    IOCFPlugInInterface() {
+        // Should not be called directly
+    }
 }
-
 
