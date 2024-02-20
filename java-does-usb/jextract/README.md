@@ -17,8 +17,6 @@ The resulting code is then committed to the source code repository. Before the c
 
 - JDK 20 introduced a new feature for saving the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). To use it, an additional parameter must be added to function calls. Unfortunately, this is not yet supported by jextract. So a good number of function bindings have to be written manually.
 
-- Dependencies: to be updated...
-
 - *jextract* is not really transparent about what it does. It often skips elements without providing any information. In particular, it will silently skip a requested element in these cases:
 
   - `--include-var myvar` if `myvar` is declared as `static`.
@@ -60,8 +58,21 @@ static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so
 
 Most of the required native functions on macOS are part of a framework. Frameworks internally have a more complex file organization of header and binary files than appears from the outside. Thus, they require a special logic to locate framework header files. *clang* supports it with the `-F`. *jextract* allows to specify the options via `compiler_flags.txt` file. Since the file must be in the local directory and since it does not apply to Linux and Windows, separate directories must be used for the operating systems.
 
-The generated code has the same problem as the Linux code for *udev*. It must be manually changed to use `SymbolLookup.libraryLookup()` for the frameworks `CoreFoundation` and `IOKit` respectively, and use an absolute path starting with `/System/Library/Frameworks/`.
+The generated code however is unable to locate the framework at run-time. There does not seem to be a way to instruct *jextract* to generate the required code. So it must be manually changed, from:
 
+```
+static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("CoreFoundation.framework"), LIBRARY_ARENA)
+```
+
+to:
+
+```
+static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", LIBRARY_ARENA)
+```
+
+This is in the class `CoreFoundation`. The analogous change must be made in the class `IOKit`.
+
+These aren't actual paths. But they are the correct and future-proof path to locate the framework at run-time (see man pages of `ld` on macOS).
 
 ## Windows
 
