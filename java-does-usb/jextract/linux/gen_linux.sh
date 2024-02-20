@@ -61,7 +61,7 @@ $JEXTRACT --output ../../src/main/java \
 $JEXTRACT --output ../../src/main/java \
   --header-class-name udev \
   --target-package net.codecrete.usb.linux.gen.udev \
-  -l udev \
+  -l :libudev.so.1 \
   --include-function udev_new \
   --include-function udev_enumerate_new \
   --include-function udev_enumerate_add_match_subsystem \

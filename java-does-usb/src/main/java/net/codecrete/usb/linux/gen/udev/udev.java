@@ -64,8 +64,6 @@ public class udev {
         };
     }
 
-    // Manually fix. Otherwise, libudev will not be found if "libudev-dev" is not installed
-    // static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("udev"), LIBRARY_ARENA)
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so.1", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());

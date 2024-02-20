@@ -43,17 +43,6 @@ On Linux, the limitations are:
 
 - `sd-device.h` (header file for *libsystemd*): *jextract* fails with *"Error: /usr/include/inttypes.h:290:8: error: unknown type name 'intmax_t'"*. The reason is yet unknown. This code is currently not needed as *libudev* is used instead of *libsystemd*. They are related, *libsystemd* is the future solution, but it is missing support for monitoring devices.
 
-- `libudev.h`: After code generation, the class `udev` in `.../linux/gen/udev` must be manually modified. In most Linux installations, there is no `libudev.so` alias to an actual version like `libudev.so.1.7.2`. The only alias is `libudev.so.1`. This is probably a deliberate decision by the authors as they do not plan to provide backward compatibility across major versions. But there does not seem to be a way to make *jextract* generate valid code for this setup. So manually replace:
-
-```
-static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("udev"), LIBRARY_ARENA)
-```
-
-with:
-
-```
-static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so.1", LIBRARY_ARENA)
-```
 
 
 ## MacOS
