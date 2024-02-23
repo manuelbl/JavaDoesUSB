@@ -74,18 +74,19 @@ The known limitations are:
 
 *jextract* generates a comprehensive set of methods for each function, struct, struct member etc. Most of it will not be used as a typical application just uses a subset of struct members, might only read or write them etc. So a considerable amount of code is generated. For some types, it's a bit excessive.
 
-The worst example is [`IOUSBInterfaceStruct190`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBInterfaceStruct190.java) (macOS). This is a `struct` consisting of about 50 member functions. It's basically a vtable of a C++ class. For this single `struct`, *jextract* generates codes resulting in 70 class files with a total size of 227kByte.
+The worst example is [`IOUSBInterfaceStruct190`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBInterfaceStruct190.java) (macOS). This is a `struct` consisting of about 50 member functions. It's basically a vtable of a C++ class. For this single `struct`, *jextract* generates codes resulting in 100 class files with a total size of 213kByte.
 
-The table below shows statistics for version 0.6.0 of the library:
+The table below shows class file size statistics for version 1.0.0 of the library:
 
-| Operating Systems | Manually Created |      % | Generated |      % |     Total |       % |
-|-------------------|-----------------:|-------:|----------:|-------:|----------:|--------:|
-| Linux             |           48,516 |  3.64% |   197,169 | 14.79% |   245,685 |  18.42% |
-| macOS             |           78,718 |  5.90% |   546,907 | 41.01% |   625,625 |  46.91% |
-| Windows           |          104,811 |  7.86% |   256,079 | 19.20% |   360,890 |  27.06% |
-| Common            |          101,364 |  7.60% |           |        |   101,364 |   7.60% |
-| Grand Total       |          333,409 | 25.00% | 1,000,155 | 75.00% | 1,333,564 | 100.00% |
+| Operating Systems | Manually Created |     % | Generated |     % |     Total |       % |
+|-------------------|-----------------:|------:|----------:|------:|----------:|--------:|
+| Linux             |           54,022 |  4.3% |   162,099 | 12.8% |   216,121 |   17.1% |
+| macOS             |           77,149 |  6.1% |   529,347 | 41.8% |   606,496 |   47.9% |
+| Windows           |          106,358 |  8.4% |   232,395 | 18.3% |   338,753 |   26.7% |
+| Common            |          105,423 |  8.3% |           |       |   105,423 |    8.3% |
+| Grand Total       |          342,952 | 27.1% |   923,841 | 72.9% | 1,266,793 | 100.00% |
 
-*Code Size (compiled), in bytes and percentage of total size*
+
+*Class File Size (compiled), in bytes and percentage of total size*
 
 If *jextract* could generate code for error state capturing, there would be even more generated and less manually written code.
