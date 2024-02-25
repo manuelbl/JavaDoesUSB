@@ -2,19 +2,10 @@
 
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
-*Java Does USB* is a Java library for working with USB devices. It allows to query information about all conntected USB devices and to communicate with USB devices using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
+*Java Does USB* is a Java library for working with USB devices. It allows to query the conntected USB devices and to communicate with them using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
 
-The library uses the [Foreign Function & Memory API](https://github.com/openjdk/panama-foreign) to access native APIs of the underlying operating system. It is written entirely in Java and does not need JNI or any native third-party library. The *Foreign Function & Memory API* (aka as project Panama) has been introduced with Java 22. Older versions of this library can be used with preview versions of the API that were available in Java 19, Java 20 or Java 21 (with preview features enabled).
+The library uses the [Foreign Function and Memory API](https://docs.oracle.com/en/java/javase/21/core/foreign-function-and-memory-api.html#GUID-FBE990DA-C356-46E8-9109-C75567849BA8) to access native APIs of the underlying operating system. It is written entirely in Java and does not use JNI or any native third-party library. The *Foreign Function and Memory API* has been introduced with Java 22. Preview versions were available in several earlier releases.
 
-| Version | Main New Features | Compatibility |
-| - | - | - |
-| 1.0.x | Release for final Java API | JDK 22 |
-| 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
-| 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
-| 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
-| 0.4.x | Early release | JDK 19 |
-
-*Note: The main branch and published versions ≥ 1.0 work with JDK 22 and later only. For JDK 21, user version 0.7.*. For JDK 20, use version 0.5.*. For JDK 19, use version 0.4.x.
 
 
 ## Features
@@ -26,17 +17,8 @@ The library uses the [Foreign Function & Memory API](https://github.com/openjdk/
 - Descriptive information about interfaces, settings and endpoints
 - High-throughput input/output streams
 - Support for alternate interface settings, composite devices and interface association
-- Published on Maven Central
+- Published on Maven Central and licensed under the permissive MIT license
 
-### Planned
-
-- Isochronous transfer
-
-### Not planned
-
-- Changing configuration: The library selects the first configuration. Changing configurations is rarely used and not supported on Windows (limitation of WinUSB).
-- USB 3.0 streams: Not supported on Windows (limitation of WinUSB).
-- Providing information about USB buses, controllers and hubs
 
 
 ## Getting Started
@@ -75,9 +57,12 @@ public class EnumerateDevices {
 ```
 
 
+
 ## Documentation
 
 - [Javadoc](https://javadoc.io/doc/net.codecrete.usb/java-does-usb) 
+
+
 
 
 ## Examples
@@ -89,12 +74,12 @@ public class EnumerateDevices {
 - [ePaper Display](examples/epaper_display) communicates with an IT8951 controller for e-Paper displays and shows an image on the display.
 
 
+
 ## Prerequisite
 
-- Java 22 (available at https://www.azul.com/downloads/?package=jdk)
+- Java 22 available at [jdk.java.net](https://jdk.java.net/21/), [Azul](https://www.azul.com/downloads/?package=jdk), [Adoptium](https://adoptium.net/temurin/releases/) or with your favorite package manager.
 - Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
-For JDK 21, use the latest published version 0.7.x. For JDK 20, use the latest published version 0.5.x. For JDK 19, use the latest published version 0.4.x.
 
 
 ## Platform-specific Considerations
@@ -102,7 +87,7 @@ For JDK 21, use the latest published version 0.7.x. For JDK 20, use the latest p
 
 ### macOS
 
-No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation-system drivers can be unloaded if the application is run with root privileges. It runs both on Macs with Apple Silicion and Intel processors.
+No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded if the application is run with root privileges. It runs both on Macs with Apple Silicon and Intel processors.
 
 
 ### Linux
@@ -111,7 +96,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 Similar to macOS, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
 
-Most Linux distributions by default set up user accounts without permissions to access USB devices directly. The *udev* system daemon is responsible for assigning permissions to USB devices. It can be configured to assign specific permissions or ownership:
+Most Linux distributions set up user accounts without permissions to access USB devices. The *udev* system daemon is responsible for assigning permissions to USB devices. It can be configured to assign specific permissions or ownership:
 
 Create a file called `/etc/udev/rules.d/80-javadoesusb-udev.rules` with the below content:
 
@@ -121,29 +106,54 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", MODE="0666"
 
 This adds the rule to assign permission mode 0666 to all USB devices with vendor ID `0xCAFE`. This unregistered vendor ID is used by the test devices.
 
+Without the *udev* rule, it is still possible to enumerate and query all USB devices.
+
 
 ### Windows
 
-The Windows driver model is more rigid than the ones of macOS or Linux. It's not possible to open any USB device that is not claimed. Instead, only devices using the *WinUSB* driver can be opened. This even applies to devices with no installed driver.
+The Windows driver model is rather rigid. It's not possible to open any USB device unless it uses the *WinUSB* driver. This even applies to devices with no installed driver. Enumerating and querying USB devices is possible independent of the driver.
 
-USB devices can implement certain control requests to instruct Windows to automatically install the WinUSB driver (search for *WCID* or *Microsoft OS Compatibility Descriptors*). The WinUSB driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
+USB devices can implement special control requests to instruct Windows to automatically install the WinUSB driver (search for *WCID* or *Microsoft OS Compatibility Descriptors*). The WinUSB driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
 Windows for ARM64 is not yet supported. A port is probably easy, provided you have hardware to test it.
 
 
-### Troubleshooting
+
+## Troubleshooting
 
 ### 32-bit versions
 
-The Foreign Function & Memory API has not been implemented for 32-bit operating systems / JDKs  (and likely never will be).
+The *Foreign Function And Memory API* has not been implemented for 32-bit operating systems / JDKs (and likely never will be).
 
 
 
-## Code generation
+## Running on older JDK versions
 
-Many bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information. For functions that need to retain the error state (`errno` on Linux, `GetLastError()` on Windows), the bindings have been manually written as *jextract* does not support it.
+The *Foreign Function And Memory API* has been available as a preview feature in JDKs before 22. However, incompatible changes were made from preview to preview to release. Earlier versions can be used with specific versions of this library:
+
+| Version | Main New Features | Compatibility |
+| - | - | - |
+| 1.0.x | Release for final Java API | JDK 22 |
+| 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
+| 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
+| 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
+| 0.4.x | Early release | JDK 19 |
+
+When using an older JDK, preview features must be enabled using the `--enable-preview` VM option.
+
+
+
+## Building from source
+
+To build from source, run the following command:
+
+```
+mvn clean install -DskipTests
+```
+
+The tests are skipped as they require that a special test device is connected to the computer. See the next section for more information.
 
 
 
@@ -162,7 +172,7 @@ Tests can be run from the command line:
 mvn clean test
 ```
 
-If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to enable preview features and allow native access:
+If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to allow native access:
 
 ```
 --enable-native-access=net.codecrete.usb
@@ -173,3 +183,11 @@ Or (if modules are ignored):
 ```
 --enable-native-access=ALL-UNNAMED
 ```
+
+
+
+## Code generation
+
+Many bindings for the native APIs have been generated with *jextract*. See the [jextract](java-does-usb/jextract) subdirectory for more information. For functions that need to retain the error state (`errno` on Linux, `GetLastError()` on Windows), the bindings have been manually written as *jextract* does not support it.
+
+Since the code can only be generated for the current operating system, it must be generated on separate computers for Linux, Windows and macOS. Thus, the generated code is included in the repository. The generated code is compilable on all operating systems.
