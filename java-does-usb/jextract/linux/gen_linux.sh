@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../../jextract/bin/jextract
 
 # errno.h
 $JEXTRACT --output ../../src/main/java \
