@@ -150,6 +150,7 @@ When using an older JDK, preview features must be enabled using the `--enable-pr
 To build from source, run the following command:
 
 ```
+cd java-does-usb
 mvn clean install -DskipTests
 ```
 
@@ -169,6 +170,7 @@ The test device with the *loopback-stm32* code supports all tests. If the test d
 Tests can be run from the command line:
 
 ```
+cd java-does-usb
 mvn clean test
 ```
 
