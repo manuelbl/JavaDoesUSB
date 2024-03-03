@@ -2,6 +2,8 @@
 
 JEXTRACT=../../../../jextract/bin/jextract
 
+rm -rf ../../src/main/java/net/codecrete/usb/linux/gen
+
 # errno.h
 $JEXTRACT --output ../../src/main/java \
   --header-class-name errno \

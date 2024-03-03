@@ -4,6 +4,8 @@ JEXTRACT=../../../../jextract/bin/jextract
 # If SDK_DIR is changed, it needs to be changed in compile_flags.txt as well.
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
+rm -rf ../../src/main/java/net/codecrete/usb/macos/gen
+
 # CoreFoundation
 $JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \

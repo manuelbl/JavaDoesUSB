@@ -2,19 +2,15 @@
 
 package net.codecrete.usb.windows.gen.setupapi;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.function.Consumer;
+import java.lang.invoke.*;
+import java.lang.foreign.*;
+import java.nio.ByteOrder;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
-import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
-import static java.lang.foreign.ValueLayout.OfInt;
-import static java.lang.foreign.ValueLayout.OfShort;
+import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.MemoryLayout.PathElement.*;
 
 /**
  * {@snippet lang=c :

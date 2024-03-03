@@ -1,5 +1,8 @@
-set JEXTRACT=..\..\..\..\jextract\build\jextract\bin\jextract.bat
+set JEXTRACT=..\..\..\..\jextract\bin\jextract.bat
 set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
+
+del /s /q ..\..\src\main\java\net\codecrete\usb\windows\gen
+rmdir /s /q ..\..\src\main\java\net\codecrete\usb\windows\gen
 
 call %JEXTRACT% --output ../../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
