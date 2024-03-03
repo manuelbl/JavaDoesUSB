@@ -1,21 +1,21 @@
 # Code Generation with *jextract*
 
-Some of the binding code for accessing native functions and data structures is generated with [jextract](https://jdk.java.net/jextract/). The tool is still under construction and has its limitations. 
+A major part of the binding code for accessing native functions and data structures is generated with [jextract](https://jdk.java.net/jextract/). *jextract* is not bundled with the JDK. The binaries can be downloaded from [jdk.java.net/jextract](https://jdk.java.net/jextract/)
 
-In order to generate the code, the scripts in the subdirectories have to be run (`linux/gen_linux.sh`, `macos/gen_macos.sh` and `/windowsgen_win.cmd`). Each script has to be run on the particular operating system.
+In order to generate the code, the scripts in the subdirectories have to be run (`linux/gen_linux.sh`, `macos/gen_macos.sh` and `windows/gen_win.cmd`). Each script has to be run on the particular operating system. The scripts expect the *jextract* binary to be in a *jextract* directory at the same parent directory as the *Java Does USB* project. If that is not the case, the *jextract* path can be modified at the top of the scripts.
 
-The code is generated in directories below `gen`, i.e. `main/java/net/codecrete/usb/linux/gen` and similar for the other operating systems. For each library (`xxx.so` or `xxx.dll`) and each macOS framework, a separate package is created.
+The code is generated in directories below `gen`, i.e. `main/java/net/codecrete/usb/linux/gen` and similarly for the other operating systems. For each library (`xxx.so` or `xxx.dll`) and each macOS framework, a separate package is created.
 
-The scripts explicitly specify the functions, structs etc. to include as generating code for entire operating system header files can result in an excessive amount of Java source files and classes.
+The scripts explicitly specify the functions, structs etc. to include as generating code for entire operating system header files will result in an excessive amount of Java source files and classes.
 
-The resulting code is then committed to the source code repository. Before the commit, imports are cleaned up to get rid of superfluous imports. Most IDEs provide a convenient command to execute this on entire directories.
+The resulting code is then committed to the source code repository.
 
 
 ## General limitations
 
 - According to the jextract mailing list, it would be required to create separate code for Intel x64 and ARM64 architecture. And jextract would need to be run on each architecture separately (no cross-compilation). Fortunately, this doesn't seem to be the case. Linux code generated on Intel x64 also runs on ARM64 without change. The same holds for macOS. However, jextract needs to be run on each operating system separately.
 
-- JDK 20 introduced a new feature for saving the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). To use it, an additional parameter must be added to function calls. Unfortunately, this is not yet supported by jextract. So a good number of function bindings have to be written manually.
+- The *Foreign Function And Memory* API has the abilitiy to save the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). This is required as the JVM calls operation system functions as well, which overwrite the result values. To save the values, an additional parameter must be added to function calls. Unfortunately, this is not supported by jextract. So a good number of function bindings have to be written manually.
 
 - *jextract* is not really transparent about what it does. It often skips elements without providing any information. In particular, it will silently skip a requested element in these cases:
 
@@ -26,7 +26,7 @@ The resulting code is then committed to the source code repository. Before the c
   - `--include-typedef mystruct` if `mystruct` is actually a `struct`.
   - `--include-typedef mytypedef` if `mytypedef` is a `typedef` for a primitive type.
 
-- *jextract* resolves all _typedef_s to their actual types. So this library does not use any _--include-typedef_ option. And there does not seem any obvious use for it.
+- *jextract* resolves all _typedef_s to their actual types. So this library does not use any _--include-typedef_ option. And there does not seem any obvious use for it beyond cosmetics.
 
 
 ## Linux
@@ -70,6 +70,7 @@ The known limitations are:
     - *jextract* turns off *echo mode*. So the first call will behave differently than the following calls.
 
 
+
 ## Code Size
 
 *jextract* generates a comprehensive set of methods for each function, struct, struct member etc. Most of it will not be used as a typical application just uses a subset of struct members, might only read or write them etc. So a considerable amount of code is generated. For some types, it's a bit excessive.
@@ -78,13 +79,13 @@ The worst example is [`IOUSBInterfaceStruct190`](https://github.com/manuelbl/Jav
 
 The table below shows class file size statistics for version 1.0.0 of the library:
 
-| Operating Systems | Manually Created |     % | Generated |     % |     Total |       % |
+| Operating Systems | Manually Written |     % | Generated |     % |     Total |       % |
 |-------------------|-----------------:|------:|----------:|------:|----------:|--------:|
 | Linux             |           54,022 |  4.3% |   162,099 | 12.8% |   216,121 |   17.1% |
 | macOS             |           77,149 |  6.1% |   529,347 | 41.8% |   606,496 |   47.9% |
 | Windows           |          106,358 |  8.4% |   232,395 | 18.3% |   338,753 |   26.7% |
 | Common            |          105,423 |  8.3% |           |       |   105,423 |    8.3% |
-| Grand Total       |          342,952 | 27.1% |   923,841 | 72.9% | 1,266,793 | 100.00% |
+| Grand Total       |          342,952 | 27.1% |   923,841 | 72.9% | 1,266,793 |  100.0% |
 
 
 *Class File Size (compiled), in bytes and percentage of total size*

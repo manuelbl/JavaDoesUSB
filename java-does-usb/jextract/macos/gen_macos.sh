@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../../jextract/bin/jextract
 # If SDK_DIR is changed, it needs to be changed in compile_flags.txt as well.
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
