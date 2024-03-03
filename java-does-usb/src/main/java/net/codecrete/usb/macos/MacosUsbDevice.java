@@ -143,22 +143,21 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             return;
 
         for (var interfaceInfo : claimedInterfaces) {
+            setClaimed(interfaceInfo.interfaceNumber, false);
             var source = IoKitUsb.GetInterfaceAsyncEventSource(interfaceInfo.iokitInterface());
-            if (source.address() != 0)
-                asyncTask.removeEventSource(source);
             IoKitUsb.USBInterfaceClose(interfaceInfo.iokitInterface);
             IoKitUsb.Release(interfaceInfo.iokitInterface);
-            setClaimed(interfaceInfo.interfaceNumber, false);
+            if (source.address() != 0)
+                asyncTask.removeEventSource(source);
         }
 
         claimedInterfaces = null;
         endpoints = null;
 
         var source = IoKitUsb.GetDeviceAsyncEventSource(device);
+        IoKitUsb.USBDeviceClose(device);
         if (source.address() != 0)
             asyncTask.removeEventSource(source);
-
-        IoKitUsb.USBDeviceClose(device);
     }
 
     synchronized void closeFully() {

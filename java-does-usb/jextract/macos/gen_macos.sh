@@ -27,6 +27,12 @@ $JEXTRACT --output ../../src/main/java \
   --include-function CFRunLoopAddSource \
   --include-function CFRunLoopRemoveSource \
   --include-function CFRunLoopRun \
+  --include-function CFMessagePortCreateLocal \
+  --include-function CFMessagePortCreateRunLoopSource \
+  --include-function CFMessagePortCreateRemote \
+  --include-function CFMessagePortSendRequest \
+  --include-function CFDataCreate \
+  --include-function CFDataGetBytePtr \
   --include-function CFUUIDGetUUIDBytes \
   --include-constant kCFNumberSInt32Type \
   cf_helper.h

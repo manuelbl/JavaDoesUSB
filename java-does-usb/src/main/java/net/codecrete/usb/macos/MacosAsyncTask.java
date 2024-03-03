@@ -22,8 +22,9 @@ import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static java.lang.foreign.ValueLayout.ADDRESS;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.MemorySegment.NULL;
+import static java.lang.foreign.ValueLayout.*;
+
 
 /**
  * Background task for handling asynchronous transfers.
@@ -54,6 +55,7 @@ class MacosAsyncTask {
     private TaskState state = TaskState.NOT_STARTED;
     private MemorySegment asyncIoRunLoop;
     private MemorySegment completionUpcallStub;
+    private MemorySegment messagePort;
     private long lastTransferId;
     private final Map<Long, MacosTransfer> transfersById = new HashMap<>();
 
@@ -67,15 +69,9 @@ class MacosAsyncTask {
             asyncIoLock.lock();
 
             if (state != TaskState.RUNNING) {
-                if (state == TaskState.NOT_STARTED) {
-                    startAsyncIOThread(source);
-                    waitForRunLoopReady();
-                    return;
-
-                } else {
-                    // special case: run loop is not ready yet but background process is already starting
-                    waitForRunLoopReady();
-                }
+                if (state == TaskState.NOT_STARTED)
+                    startAsyncIOThread();
+                waitForRunLoopReady();
             }
 
             CoreFoundation.CFRunLoopAddSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode());
@@ -92,34 +88,60 @@ class MacosAsyncTask {
 
     /**
      * Removes an event source from this background task.
-     *
+     * <p>
+     * The event source is not immediately removed. Instead, it is posted to a message queue
+     * processed by the same background thread processing the completion callbacks. This ensures
+     * that the events from releasing interfaces and closing devices are processed.
+     * </p>
      * @param source event source
      */
     void removeEventSource(MemorySegment source) {
-        CoreFoundation.CFRunLoopRemoveSource(asyncIoRunLoop, source, IOKit.kCFRunLoopDefaultMode());
+        try (var arena = Arena.ofConfined()) {
+            var eventSourceRef = arena.allocate(JAVA_LONG, 1);
+            eventSourceRef.set(JAVA_LONG, 0, source.address());
+            var dataRef = CoreFoundation.CFDataCreate(NULL, eventSourceRef, eventSourceRef.byteSize());
+            CoreFoundation.CFMessagePortSendRequest(messagePort, 0, dataRef, 0, 0, NULL, NULL);
+            CoreFoundation.CFRelease(dataRef);
+        }
     }
 
     /**
      * Starts the background thread.
-     *
-     * @param firstSource first event source
      */
-    private void startAsyncIOThread(MemorySegment firstSource) {
+    @SuppressWarnings("java:S125")
+    private void startAsyncIOThread() {
+        MemorySegment messagePortSource;
+
         try {
             state = TaskState.STARTING;
+
+            // create descriptor for completion callback function
             var completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
             var asyncIOCompletedMH = MethodHandles.lookup().findVirtual(MacosAsyncTask.class, "asyncIOCompleted",
                     MethodType.methodType(void.class, MemorySegment.class, int.class, MemorySegment.class));
 
             var methodHandle = asyncIOCompletedMH.bindTo(this);
-            completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc,
-                    Arena.global());
+            completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, Arena.global());
+
+            // create descriptor for message port callback function
+            var messagePortCallbackFuncDec = FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS);
+            var messagePortCallbackMH = MethodHandles.lookup().findVirtual(MacosAsyncTask.class, "messagePortCallback",
+                    MethodType.methodType(MemorySegment.class, MemorySegment.class, int.class, MemorySegment.class, MemorySegment.class));
+            var messagePortCallbackHandle = messagePortCallbackMH.bindTo(this);
+            var messagePortCallbackStub = Linker.nativeLinker().upcallStub(messagePortCallbackHandle, messagePortCallbackFuncDec, Arena.global());
+
+            // create local and remote message ports
+            var pid = ProcessHandle.current().pid();
+            var portName = CoreFoundationHelper.createCFStringRef("net.codecrete.usb.macos.eventsource." + pid, Arena.global());
+            var localPort = CoreFoundation.CFMessagePortCreateLocal(NULL, portName, messagePortCallbackStub, NULL, NULL);
+            messagePortSource = CoreFoundation.CFMessagePortCreateRunLoopSource(NULL, localPort, 0);
+            messagePort = CoreFoundation.CFMessagePortCreateRemote(NULL, portName);
 
         } catch (IllegalAccessException | NoSuchMethodException e) {
             throw new UsbException("internal error (creating method handle)", e);
         }
 
-        var thread = new Thread(() -> asyncIOCompletionTask(firstSource), "USB async IO");
+        var thread = new Thread(() -> asyncIOCompletionTask(messagePortSource), "USB async IO");
         thread.setDaemon(true);
         thread.start();
     }
@@ -182,6 +204,20 @@ class MacosAsyncTask {
         transfer.setResultCode(result);
         transfer.setResultSize((int) arg0.address());
         transfer.completion().completed(transfer);
+    }
+
+    /**
+     * Callback function called when a message is received on the message port.
+     * <p>
+     * All messages are related to removing event sources. They just contain the run loop source reference.
+     * </p>
+     */
+    @SuppressWarnings({"java:S1144", "unused"})
+    private MemorySegment messagePortCallback(MemorySegment local, int msgid, MemorySegment data, MemorySegment info) {
+        var runloopSourceRefPtr = CoreFoundation.CFDataGetBytePtr(data);
+        var runloopSourceRef = MemorySegment.ofAddress(runloopSourceRefPtr.get(JAVA_LONG_UNALIGNED, 0));
+        CoreFoundation.CFRunLoopRemoveSource(asyncIoRunLoop, runloopSourceRef, IOKit.kCFRunLoopDefaultMode());
+        return NULL;
     }
 
     /**

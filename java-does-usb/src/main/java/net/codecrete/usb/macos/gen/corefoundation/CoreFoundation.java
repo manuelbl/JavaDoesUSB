@@ -163,6 +163,102 @@ public class CoreFoundation {
         }
     }
 
+    private static class CFDataCreate {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_LONG
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFDataCreate"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern CFDataRef CFDataCreate(CFAllocatorRef allocator, const UInt8 *bytes, CFIndex length)
+     * }
+     */
+    public static FunctionDescriptor CFDataCreate$descriptor() {
+        return CFDataCreate.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern CFDataRef CFDataCreate(CFAllocatorRef allocator, const UInt8 *bytes, CFIndex length)
+     * }
+     */
+    public static MethodHandle CFDataCreate$handle() {
+        return CFDataCreate.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern CFDataRef CFDataCreate(CFAllocatorRef allocator, const UInt8 *bytes, CFIndex length)
+     * }
+     */
+    public static MemorySegment CFDataCreate(MemorySegment allocator, MemorySegment bytes, long length) {
+        var mh$ = CFDataCreate.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFDataCreate", allocator, bytes, length);
+            }
+            return (MemorySegment)mh$.invokeExact(allocator, bytes, length);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class CFDataGetBytePtr {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFDataGetBytePtr"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern const UInt8 *CFDataGetBytePtr(CFDataRef theData)
+     * }
+     */
+    public static FunctionDescriptor CFDataGetBytePtr$descriptor() {
+        return CFDataGetBytePtr.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern const UInt8 *CFDataGetBytePtr(CFDataRef theData)
+     * }
+     */
+    public static MethodHandle CFDataGetBytePtr$handle() {
+        return CFDataGetBytePtr.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern const UInt8 *CFDataGetBytePtr(CFDataRef theData)
+     * }
+     */
+    public static MemorySegment CFDataGetBytePtr(MemorySegment theData) {
+        var mh$ = CFDataGetBytePtr.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFDataGetBytePtr", theData);
+            }
+            return (MemorySegment)mh$.invokeExact(theData);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
     private static class CFStringGetTypeID {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             CoreFoundation.C_LONG    );
@@ -730,6 +826,207 @@ public class CoreFoundation {
                 traceDowncall("CFUUIDCreateFromUUIDBytes", alloc, bytes);
             }
             return (MemorySegment)mh$.invokeExact(alloc, bytes);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class CFMessagePortCreateLocal {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFMessagePortCreateLocal"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateLocal(CFAllocatorRef allocator, CFStringRef name, CFMessagePortCallBack callout, CFMessagePortContext *context, Boolean *shouldFreeInfo)
+     * }
+     */
+    public static FunctionDescriptor CFMessagePortCreateLocal$descriptor() {
+        return CFMessagePortCreateLocal.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateLocal(CFAllocatorRef allocator, CFStringRef name, CFMessagePortCallBack callout, CFMessagePortContext *context, Boolean *shouldFreeInfo)
+     * }
+     */
+    public static MethodHandle CFMessagePortCreateLocal$handle() {
+        return CFMessagePortCreateLocal.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateLocal(CFAllocatorRef allocator, CFStringRef name, CFMessagePortCallBack callout, CFMessagePortContext *context, Boolean *shouldFreeInfo)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateLocal(MemorySegment allocator, MemorySegment name, MemorySegment callout, MemorySegment context, MemorySegment shouldFreeInfo) {
+        var mh$ = CFMessagePortCreateLocal.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFMessagePortCreateLocal", allocator, name, callout, context, shouldFreeInfo);
+            }
+            return (MemorySegment)mh$.invokeExact(allocator, name, callout, context, shouldFreeInfo);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class CFMessagePortCreateRemote {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFMessagePortCreateRemote"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateRemote(CFAllocatorRef allocator, CFStringRef name)
+     * }
+     */
+    public static FunctionDescriptor CFMessagePortCreateRemote$descriptor() {
+        return CFMessagePortCreateRemote.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateRemote(CFAllocatorRef allocator, CFStringRef name)
+     * }
+     */
+    public static MethodHandle CFMessagePortCreateRemote$handle() {
+        return CFMessagePortCreateRemote.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateRemote(CFAllocatorRef allocator, CFStringRef name)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateRemote(MemorySegment allocator, MemorySegment name) {
+        var mh$ = CFMessagePortCreateRemote.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFMessagePortCreateRemote", allocator, name);
+            }
+            return (MemorySegment)mh$.invokeExact(allocator, name);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class CFMessagePortSendRequest {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_INT,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_INT,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_DOUBLE,
+            CoreFoundation.C_DOUBLE,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFMessagePortSendRequest"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern SInt32 CFMessagePortSendRequest(CFMessagePortRef remote, SInt32 msgid, CFDataRef data, CFTimeInterval sendTimeout, CFTimeInterval rcvTimeout, CFStringRef replyMode, CFDataRef *returnData)
+     * }
+     */
+    public static FunctionDescriptor CFMessagePortSendRequest$descriptor() {
+        return CFMessagePortSendRequest.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern SInt32 CFMessagePortSendRequest(CFMessagePortRef remote, SInt32 msgid, CFDataRef data, CFTimeInterval sendTimeout, CFTimeInterval rcvTimeout, CFStringRef replyMode, CFDataRef *returnData)
+     * }
+     */
+    public static MethodHandle CFMessagePortSendRequest$handle() {
+        return CFMessagePortSendRequest.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern SInt32 CFMessagePortSendRequest(CFMessagePortRef remote, SInt32 msgid, CFDataRef data, CFTimeInterval sendTimeout, CFTimeInterval rcvTimeout, CFStringRef replyMode, CFDataRef *returnData)
+     * }
+     */
+    public static int CFMessagePortSendRequest(MemorySegment remote, int msgid, MemorySegment data, double sendTimeout, double rcvTimeout, MemorySegment replyMode, MemorySegment returnData) {
+        var mh$ = CFMessagePortSendRequest.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFMessagePortSendRequest", remote, msgid, data, sendTimeout, rcvTimeout, replyMode, returnData);
+            }
+            return (int)mh$.invokeExact(remote, msgid, data, sendTimeout, rcvTimeout, replyMode, returnData);
+        } catch (Throwable ex$) {
+           throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class CFMessagePortCreateRunLoopSource {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_POINTER,
+            CoreFoundation.C_LONG
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    CoreFoundation.findOrThrow("CFMessagePortCreateRunLoopSource"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * extern CFRunLoopSourceRef CFMessagePortCreateRunLoopSource(CFAllocatorRef allocator, CFMessagePortRef local, CFIndex order)
+     * }
+     */
+    public static FunctionDescriptor CFMessagePortCreateRunLoopSource$descriptor() {
+        return CFMessagePortCreateRunLoopSource.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * extern CFRunLoopSourceRef CFMessagePortCreateRunLoopSource(CFAllocatorRef allocator, CFMessagePortRef local, CFIndex order)
+     * }
+     */
+    public static MethodHandle CFMessagePortCreateRunLoopSource$handle() {
+        return CFMessagePortCreateRunLoopSource.HANDLE;
+    }
+    /**
+     * {@snippet lang=c :
+     * extern CFRunLoopSourceRef CFMessagePortCreateRunLoopSource(CFAllocatorRef allocator, CFMessagePortRef local, CFIndex order)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateRunLoopSource(MemorySegment allocator, MemorySegment local, long order) {
+        var mh$ = CFMessagePortCreateRunLoopSource.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("CFMessagePortCreateRunLoopSource", allocator, local, order);
+            }
+            return (MemorySegment)mh$.invokeExact(allocator, local, order);
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
