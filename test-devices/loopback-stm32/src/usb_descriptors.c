@@ -57,7 +57,7 @@ enum {
 
 uint8_t const desc_fs_configuration[] = {
     // Config number, interface count, string index, total length, attribute, power in mA
-    TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 500),
+    TUD_CONFIG_DESCRIPTOR(1, INTF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x80, 500),
     // Loopback interface (alternate 0)
     CUSTOM_VENDOR_INTERFACE(0, 4),
     // Loopback endpoint OUT

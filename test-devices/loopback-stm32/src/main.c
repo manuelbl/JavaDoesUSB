@@ -42,7 +42,6 @@ int num_echos;
 enum  {
     BLINK_NOT_MOUNTED = 250,
     BLINK_MOUNTED = 1000,
-    BLINK_SUSPENDED = 2500,
 };
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
@@ -288,12 +287,7 @@ void tud_umount_cb(void) {
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
     (void) remote_wakeup_en;
-    blink_interval_ms = BLINK_SUSPENDED;
-}
-
-// Invoked when usb bus is resumed
-void tud_resume_cb(void) {
-    blink_interval_ms = BLINK_MOUNTED;
+    board_sleep();
 }
 
 
@@ -305,7 +299,7 @@ void led_blinking_task(void) {
 
     // Blink every interval ms
     if ( board_millis() - start_ms < blink_interval_ms)
-        return; // not enough time
+        return; // interval not elapsed yet
     start_ms += blink_interval_ms;
 
     board_led_write(led_state);

@@ -3,6 +3,9 @@
         "usbd.h": "c",
         "usbd_pvt.h": "c",
         "dwc2_stm32.h": "c",
-        "stm32f7xx.h": "c"
+        "stm32f7xx.h": "c",
+        "stm32f4xx.h": "c",
+        "stm32f401xc.h": "c",
+        "stm32f401xe.h": "c"
     }
 }
