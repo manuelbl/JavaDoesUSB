@@ -51,10 +51,7 @@ public class usbdevfs_urb {
         usbdevice_fs.C_INT.withName("buffer_length"),
         usbdevice_fs.C_INT.withName("actual_length"),
         usbdevice_fs.C_INT.withName("start_frame"),
-        MemoryLayout.unionLayout(
-            usbdevice_fs.C_INT.withName("number_of_packets"),
-            usbdevice_fs.C_INT.withName("stream_id")
-        ).withName("$anon$126:2"),
+        MemoryLayout.paddingLayout(4),
         usbdevice_fs.C_INT.withName("error_count"),
         usbdevice_fs.C_INT.withName("signr"),
         usbdevice_fs.C_POINTER.withName("usercontext"),
