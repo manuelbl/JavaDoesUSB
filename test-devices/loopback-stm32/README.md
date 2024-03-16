@@ -50,9 +50,8 @@ Two alternate interfaces are implemented:
 
 The device can be put into suspend mode by the host. It will go into a low-power mode. This is indicated by the user LED turning off. The power LED will stay on. The device can be woken up by the host.
 
-A MacBook with macOS usually puts the device into suspend mode about 1 minuate after is has gone to sleep if it is not connected to a power supply. The device will wake up when the MacBook is woken up.
+To put the device into suspended mode, put the host computer to sleep or supended mode. To wake it up, wake up the host computer.
 
-On Windows and Linux, the device is put to sleep immediately when the computer is put to sleep or suspended.
 
 
 ## Building the firmware
