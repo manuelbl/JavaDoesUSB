@@ -16,8 +16,6 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
-import java.lang.foreign.MemoryLayout.PathElement;
-import java.lang.foreign.ValueLayout.OfInt;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 
@@ -31,7 +29,7 @@ import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
 import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLL_CTL_ADD;
 import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLL_CTL_DEL;
 
-@SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue", "java:S100"})
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue", "java:S100", "java:S1192"})
 public class EPoll {
     private EPoll() {}
 
@@ -64,16 +62,14 @@ public class EPoll {
     );
 
     // varhandle to access the "fd" field in an epoll_event struct
-    static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
+    private static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
             MemoryLayout.PathElement.groupElement("data"),
             MemoryLayout.PathElement.groupElement("fd")
     );
 
-    private static final OfInt EVENT_EVENTS$LAYOUT = (OfInt)EVENT$LAYOUT.select(PathElement.groupElement("events"));
-
-    private static void event_events(MemorySegment struct, int fieldValue) {
-        struct.set(EVENT_EVENTS$LAYOUT, 0, fieldValue);
-    }
+    private static final VarHandle EVENTS$VH = EVENT$LAYOUT.varHandle(
+            MemoryLayout.PathElement.groupElement("events")
+    );
 
     private static final Linker linker = Linker.nativeLinker();
 
@@ -118,7 +114,7 @@ public class EPoll {
             var errorState = allocateErrorState(arena);
 
             var event = arena.allocate(EVENT$LAYOUT);
-            event_events(event, op);
+            EVENTS$VH.set(event, 0, op);
             EVENT_DATA_FD$VH.set(event, 0, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_ADD(), fd, event, errorState);
             if (ret < 0)
@@ -131,7 +127,7 @@ public class EPoll {
             var errorState = allocateErrorState(arena);
 
             var event = arena.allocate(EVENT$LAYOUT);
-            event_events(event, 0);
+            EVENTS$VH.set(event, 0, 0);
             EVENT_DATA_FD$VH.set(event, 0, fd);
             var ret = epoll_ctl(epfd, EPOLL_CTL_DEL(), fd, event, errorState);
             if (ret < 0) {
