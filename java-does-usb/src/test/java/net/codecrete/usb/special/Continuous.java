@@ -5,6 +5,8 @@ import net.codecrete.usb.UsbDevice;
 import net.codecrete.usb.UsbException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class Continuous {
@@ -30,7 +32,7 @@ public class Continuous {
     @SuppressWarnings({"java:S2925", "BusyWait"})
     private static void sendData(UsbDevice device) {
         var random = new Random();
-        var buffer = new byte[80];
+        var buffer = new byte[40];
 
         while (true) {
             random.nextBytes(buffer);
@@ -46,9 +48,11 @@ public class Continuous {
     }
 
     private static void readData(UsbDevice device) {
+        var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         while (true) {
             try {
-                device.transferIn(2);
+                var packet = device.transferIn(2);
+                System.out.printf("%s packet of %d bytes received\n", LocalDateTime.now().format(formatter), packet.length);
             } catch (UsbException e) {
                 return;
             }

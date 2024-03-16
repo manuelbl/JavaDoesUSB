@@ -52,6 +52,8 @@ The device can be put into suspend mode by the host. It will go into a low-power
 
 A MacBook with macOS usually puts the device into suspend mode about 1 minuate after is has gone to sleep if it is not connected to a power supply. The device will wake up when the MacBook is woken up.
 
+On Windows, the device is put to sleep immediately when the Windows computer is put to sleep.
+
 
 ## Building the firmware
 
