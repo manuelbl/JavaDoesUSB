@@ -10,7 +10,6 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.UsbDevice;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.UsbDeviceRegistry;
-import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.udev.udev;
 
 import java.lang.foreign.Arena;
@@ -111,7 +110,7 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
             EPoll.addFileDescriptor(epfd, EPOLLIN(), monitorFd);
 
             // allocate event (as output for epoll_wait)
-            var event = arena.allocate(epoll_event.layout());
+            var event = arena.allocate(EPoll.EVENT$LAYOUT);
 
             // monitor device changes
             //noinspection InfiniteLoopStatement

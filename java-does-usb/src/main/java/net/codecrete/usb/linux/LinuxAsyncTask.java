@@ -8,7 +8,6 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.UsbTransferType;
-import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
 
@@ -84,7 +83,7 @@ class LinuxAsyncTask {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
-            var events = arena.allocate(epoll_event.layout(), NUM_EVENTS);
+            var events = arena.allocate(EPoll.EVENT$LAYOUT, NUM_EVENTS);
 
             while (true) {
 

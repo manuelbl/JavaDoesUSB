@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/bin/jextract
+JEXTRACT=../../../../jextract/build/jextract/bin/jextract
 
 rm -rf ../../src/main/java/net/codecrete/usb/linux/gen
 
@@ -89,8 +89,6 @@ $JEXTRACT --output ../../src/main/java \
 $JEXTRACT --output ../../src/main/java \
   --header-class-name epoll \
   --target-package net.codecrete.usb.linux.gen.epoll \
-  --include-struct epoll_event \
-  --include-union epoll_data \
   --include-constant EPOLL_CTL_ADD \
   --include-constant EPOLL_CTL_DEL \
   --include-constant EPOLLIN \

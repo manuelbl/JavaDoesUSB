@@ -30,7 +30,7 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  *     int error_count;
  *     unsigned int signr;
  *     void *usercontext;
- *     struct usbdevfs_iso_packet_desc iso_frame_desc[0];
+ *     struct usbdevfs_iso_packet_desc iso_frame_desc[];
  * }
  * }
  */
@@ -554,7 +554,7 @@ public class usbdevfs_urb {
     /**
      * Layout for field:
      * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
+     * struct usbdevfs_iso_packet_desc iso_frame_desc[]
      * }
      */
     public static final SequenceLayout iso_frame_desc$layout() {
@@ -566,7 +566,7 @@ public class usbdevfs_urb {
     /**
      * Offset for field:
      * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
+     * struct usbdevfs_iso_packet_desc iso_frame_desc[]
      * }
      */
     public static final long iso_frame_desc$offset() {
@@ -576,7 +576,7 @@ public class usbdevfs_urb {
     /**
      * Getter for field:
      * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
+     * struct usbdevfs_iso_packet_desc iso_frame_desc[]
      * }
      */
     public static MemorySegment iso_frame_desc(MemorySegment struct) {
@@ -586,48 +586,11 @@ public class usbdevfs_urb {
     /**
      * Setter for field:
      * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
+     * struct usbdevfs_iso_packet_desc iso_frame_desc[]
      * }
      */
     public static void iso_frame_desc(MemorySegment struct, MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, iso_frame_desc$OFFSET, iso_frame_desc$LAYOUT.byteSize());
-    }
-
-    private static long[] iso_frame_desc$DIMS = { 0 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
-     * }
-     */
-    public static long[] iso_frame_desc$dimensions() {
-        return iso_frame_desc$DIMS;
-    }
-    private static final MethodHandle iso_frame_desc$ELEM_HANDLE = iso_frame_desc$LAYOUT.sliceHandle(sequenceElement());
-
-    /**
-     * Indexed getter for field:
-     * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
-     * }
-     */
-    public static MemorySegment iso_frame_desc(MemorySegment struct, long index0) {
-        try {
-            return (MemorySegment)iso_frame_desc$ELEM_HANDLE.invokeExact(struct, 0L, index0);
-        } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
-        }
-    }
-
-    /**
-     * Indexed setter for field:
-     * {@snippet lang=c :
-     * struct usbdevfs_iso_packet_desc iso_frame_desc[0]
-     * }
-     */
-    public static void iso_frame_desc(MemorySegment struct, long index0, MemorySegment fieldValue) {
-        MemorySegment.copy(fieldValue, 0L, iso_frame_desc(struct, index0), 0L, usbdevfs_iso_packet_desc.layout().byteSize());
     }
 
     /**
