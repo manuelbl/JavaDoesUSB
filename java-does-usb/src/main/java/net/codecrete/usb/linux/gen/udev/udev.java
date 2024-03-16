@@ -82,7 +82,7 @@ public class udev {
     /**
      * Function descriptor for:
      * {@snippet lang=c :
-     * struct udev *udev_new()
+     * struct udev *udev_new(void)
      * }
      */
     public static FunctionDescriptor udev_new$descriptor() {
@@ -92,7 +92,7 @@ public class udev {
     /**
      * Downcall method handle for:
      * {@snippet lang=c :
-     * struct udev *udev_new()
+     * struct udev *udev_new(void)
      * }
      */
     public static MethodHandle udev_new$handle() {
@@ -100,7 +100,7 @@ public class udev {
     }
     /**
      * {@snippet lang=c :
-     * struct udev *udev_new()
+     * struct udev *udev_new(void)
      * }
      */
     public static MemorySegment udev_new() {
