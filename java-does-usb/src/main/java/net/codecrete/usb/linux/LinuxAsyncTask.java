@@ -32,7 +32,7 @@ import static net.codecrete.usb.linux.UsbDevFS.SUBMITURB;
 import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLOUT;
 import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLWAKEUP;
 import static net.codecrete.usb.linux.gen.errno.errno.EINTR;
-import static net.codecrete.usb.linux.gen.errno.errno.ENOENT;
+import static net.codecrete.usb.linux.gen.errno.errno.ENODEV;
 import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
 import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_BULK;
 import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_CONTROL;
@@ -174,8 +174,9 @@ class LinuxAsyncTask {
             if (isMatch) {
                 var transfer = e.getValue();
                 transfer.urb = null;
-                transfer.setResultCode(ENOENT());
+                transfer.setResultCode(ENODEV());
                 transfer.setResultSize(0);
+                transfer.completion().completed(transfer);
                 availableURBs.add(urb);
             }
             return isMatch;

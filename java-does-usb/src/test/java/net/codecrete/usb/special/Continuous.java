@@ -24,7 +24,7 @@ public class Continuous {
         new Thread(() -> readData(device)).start();
         new Thread(() -> sendData(device)).start();
 
-        System.out.println("Press Enter to exit");
+        System.out.println("Press RETURN to exit");
         System.in.read();
         device.close();
     }
