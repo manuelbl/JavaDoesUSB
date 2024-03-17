@@ -15,6 +15,8 @@
 #include "stm32f1xx.h"
 #include "device/usbd.h"
 
+#define EXTI_USBWakeUp_Line EXTI_IMR_IM18
+
 
 extern uint32_t SystemCoreClock;
 void SystemCoreClockUpdate(void);
@@ -180,6 +182,12 @@ void board_init(void) {
     gpio_set_mode(GPIOB, 12, GPIO_MODE_OUTPUT_10_MHZ, GPIO_CNF_OUTPUT_PUSH_PULL);
 
 	usb_init_serial_num();
+
+	// Wake up event is only available as interrupt, not as an event.
+	// See product errata sheet
+	set_reg(&EXTI->RTSR, EXTI_USBWakeUp_Line, EXTI_USBWakeUp_Line);
+	set_reg(&EXTI->IMR, EXTI_USBWakeUp_Line, EXTI_USBWakeUp_Line);
+	NVIC_EnableIRQ(USBWakeUp_IRQn);
 }
 
 uint32_t board_millis(void) {
@@ -188,9 +196,38 @@ uint32_t board_millis(void) {
 
 void board_led_write(bool on) {
     if (on)
-        gpio_set(GPIOB, 12);
-    else
         gpio_clear(GPIOB, 12);
+    else
+        gpio_set(GPIOB, 12);
+}
+
+void board_sleep(void) {
+
+	// turn off LED
+	board_led_write(false);
+
+	// pause systick interrupts
+	set_reg(&SysTick->CTRL, 0, SysTick_CTRL_TICKINT_Msk);
+
+	// enter Stop mode when the CPU enters deep sleep
+	set_reg(&PWR->CR, 0, PWR_CR_PDDS_Msk | PWR_CR_LPDS_Msk);
+
+	set_reg(&SCB->SCR, SCB_SCR_SLEEPDEEP_Msk, SCB_SCR_SLEEPDEEP_Msk);
+
+	// sleep until an interrupt occurs
+	__WFI();
+
+	// reset SLEEPDEEP bit
+	set_reg(&SCB->SCR, 0, SCB_SCR_SLEEPDEEP_Msk);
+
+	// after wakeup, re-enable PLL as clock source
+    rcc_clock_setup_in_hse_8mhz_out_72mhz();
+
+	// resume systick interrupts
+	set_reg(&SysTick->CTRL, SysTick_CTRL_TICKINT_Msk, SysTick_CTRL_TICKINT_Msk);
+
+	// turn on LED
+	board_led_write(true);
 }
 
 
@@ -201,7 +238,8 @@ void SysTick_Handler (void) {
 }
 
 void USBWakeUp_IRQHandler(void) {
-    tud_int_handler(0);
+	// clear interrupt
+	EXTI->PR = EXTI_USBWakeUp_Line;
 }
 
 void USB_HP_IRQHandler(void) {

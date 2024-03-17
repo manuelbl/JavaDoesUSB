@@ -7,8 +7,9 @@ For testing the *Java Does USB* library, a dedicated USB test device is needed. 
 - BlackPill with STM32F401CC microcontroller
 - BlackPill with STM32F411CE microcontroller
 - BluePill with STM32F103C8 microcontroller
+- STM32F723 Discovery board
 
-To upload the firmware, the STM32F4x microcontroller have a built-in USB bootloader. The STM32F1x microcontrollers need an ST-Link debug adapter (or a USB-to-serial converter).
+To upload the firmware, the STM32F4x microcontroller have a built-in USB bootloader. The STM32F1x microcontrollers need an ST-Link debug adapter (or a USB-to-serial converter). The STM32F723 Discovery board has a built-in ST-Link programmer.
 
 
 ## Test features
@@ -45,6 +46,18 @@ Two alternate interfaces are implemented:
 - Alternate 1: only the control endpoint and the bulk endpoints (0x01 and 0x82) are available
 
 
+### Suspend / resume
+
+The device can be put into suspend mode by the host. It will go into a low-power mode. This is indicated by the user LED turning off. The power LED will stay on. The device can be woken up by the host.
+
+To put the device into suspended mode, put the host computer to sleep or supended mode. To wake it up, wake up the host computer.
+
+NOTE: *Due to a limitation of TinyUSB, the device will only go into suspended mode if the host has set a USB configuration. Usually it means that an application has communicated with the device after it was plugged in. The LED blinks as long as no USB configuration has been set.*
+
+NOTE: *Suspend/resume has not been implemented for the STM32F723 Discovery board.*
+
+
+
 ## Building the firmware
 
 This project requires [PlatformIO](https://platformio.org/). The easiest way to get up and running is to use Visual Studio Code and then install the [PlatformIO IDE extension](https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide).
@@ -69,6 +82,7 @@ The directory `bin` contains a pre-built firmware:
 - `blackpill-f401cc.bin`: Firmware for BlackPill with STM32F401CC microcontroller
 - `blackpill-f411ce.bin`: Firmware for BlackPill with STM32F411CE microcontroller
 - `bluepill-f103c8.bin`: Firmware for BluePill with STM32F103C8 microcontroller
+- `disco_f723ie.bin`: Firmware for STM32F723 Discovery board
 
 ### Upload using built-in bootloader
 

@@ -1,17 +1,19 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../../jextract/bin/jextract
 # If SDK_DIR is changed, it needs to be changed in compile_flags.txt as well.
 SDK_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
+rm -rf ../../src/main/java/net/codecrete/usb/macos/gen
+
 # CoreFoundation
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
-  -lCoreFoundation.framework \
+  -l :/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation \
   --header-class-name CoreFoundation \
   --target-package net.codecrete.usb.macos.gen.corefoundation \
-  --include-typedef CFRange \
-  --include-typedef CFUUIDBytes \
+  --include-struct CFRange \
+  --include-struct CFUUIDBytes \
   --include-function CFUUIDCreateFromUUIDBytes \
   --include-function CFRelease \
   --include-function CFStringGetLength \
@@ -25,14 +27,20 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function CFRunLoopAddSource \
   --include-function CFRunLoopRemoveSource \
   --include-function CFRunLoopRun \
+  --include-function CFMessagePortCreateLocal \
+  --include-function CFMessagePortCreateRunLoopSource \
+  --include-function CFMessagePortCreateRemote \
+  --include-function CFMessagePortSendRequest \
+  --include-function CFDataCreate \
+  --include-function CFDataGetBytePtr \
   --include-function CFUUIDGetUUIDBytes \
   --include-constant kCFNumberSInt32Type \
   cf_helper.h
 
 # IOKit
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
-  -lIOKit.framework \
+  -l :/System/Library/Frameworks/IOKit.framework/IOKit \
   --header-class-name IOKit \
   --target-package net.codecrete.usb.macos.gen.iokit \
   --include-var kIOMasterPortDefault \
@@ -42,7 +50,6 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-constant kIOReturnExclusiveAccess \
   --include-var kCFRunLoopDefaultMode \
   --include-struct IOCFPlugInInterfaceStruct \
-  --include-typedef IOCFPlugInInterface \
   --include-function IOObjectRelease \
   --include-function IOIteratorNext \
   --include-function IOCreatePlugInInterfaceForService \
@@ -53,21 +60,20 @@ $JEXTRACT --source --output ../../src/main/java \
   --include-function IOServiceAddMatchingNotification \
   --include-function IOServiceMatching \
   --include-struct IOUSBDeviceStruct187 \
-  --include-typedef IOUSBDeviceInterface187 \
   --include-constant kIOUSBFindInterfaceDontCare \
-  --include-typedef IOUSBFindInterfaceRequest \
-  --include-typedef IOUSBDevRequest \
+  --include-struct IOUSBFindInterfaceRequest \
+  --include-struct IOUSBDevRequest \
   --include-struct IOUSBInterfaceStruct190 \
-  --include-typedef IOUSBInterfaceInterface190 \
   --include-constant kIOUSBTransactionTimeout \
   --include-constant kIOReturnAborted \
   --include-constant kIOUSBPipeStalled \
   --include-constant kUSBReEnumerateCaptureDeviceMask \
   --include-constant kUSBReEnumerateReleaseDeviceMask \
+  --include-struct CFUUIDBytes \
   iokit_helper.h
 
 # mach.h
-$JEXTRACT --source --output ../../src/main/java \
+$JEXTRACT --output ../../src/main/java \
   -I $SDK_DIR/usr/include \
   --header-class-name mach \
   --target-package net.codecrete.usb.macos.gen.mach \

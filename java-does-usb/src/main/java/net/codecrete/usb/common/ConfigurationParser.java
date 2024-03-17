@@ -20,7 +20,10 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.util.ArrayList;
 
-import static net.codecrete.usb.usbstandard.Constants.*;
+import static net.codecrete.usb.usbstandard.Constants.CONFIGURATION_DESCRIPTOR_TYPE;
+import static net.codecrete.usb.usbstandard.Constants.ENDPOINT_DESCRIPTOR_TYPE;
+import static net.codecrete.usb.usbstandard.Constants.INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE;
+import static net.codecrete.usb.usbstandard.Constants.INTERFACE_DESCRIPTOR_TYPE;
 
 /**
  * Parser for USB configuration descriptors.

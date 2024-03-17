@@ -10,15 +10,15 @@ package net.codecrete.usb.usbstandard;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_CHAR;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 
 /**
  * USB string descriptor
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class StringDescriptor {
 
     private final MemorySegment descriptor;
@@ -28,11 +28,11 @@ public class StringDescriptor {
     }
 
     public int length() {
-        return 0xff & (byte) bLength$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bLength$OFFSET);
     }
 
     public String string() {
-        var chars = descriptor.asSlice(string$offset, length() - 2L).toArray(JAVA_CHAR);
+        var chars = descriptor.asSlice(string$OFFSET, length() - 2L).toArray(JAVA_CHAR);
         return new String(chars);
     }
 
@@ -47,6 +47,6 @@ public class StringDescriptor {
             JAVA_SHORT.withName("string")
     );
 
-    private static final VarHandle bLength$VH = LAYOUT.varHandle(groupElement("bLength"));
-    private static final long string$offset = LAYOUT.byteOffset(groupElement("string")); // NOSONAR
+    private static final long bLength$OFFSET = 0;
+    private static final long string$OFFSET = 2;
 }

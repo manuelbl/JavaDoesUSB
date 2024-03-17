@@ -4,15 +4,15 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## Prerequisites
 
-- Java 21
+- Java 22
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 21
+### Install Java 22
 
-Check that *Java 21* is installed:
+Check that *Java 22* is installed:
 
 ```shell
 $ java -version
@@ -40,7 +40,7 @@ $ mvn clean package
 ### Run the jar
 
 ```shell
-$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/enumerate-0.7.1-jar-with-dependencies.jar
+$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.0.0-SNAPSHOT-jar-with-dependencies.jar
 Device:
   VID: 0xcafe
   PID: 0xceaf

@@ -4,15 +4,15 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## Prerequisites
 
-- Java 21
+- Java 22
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 21
+### Install Java 22
 
-Check that *Java 21* is installed:
+Check that *Java 22* is installed:
 
 ```shell
 $ java -version
@@ -40,10 +40,10 @@ $ mvn clean package
 ### Run the jar
 
 ```shell
-$ java --enable-preview --enable-native-access=ALL-UNNAMED -jar target/monitor-0.7.1-jar-with-dependencies.jar
-WARNING: "public static final void net.codecrete.usb.examples.MonitorKt.main()" chosen over "public static void net.codecrete.usb.examples.MonitorKt.main(java.lang.String[])"
-Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: 4295265643
-Present:      VID: 0x1a40, PID: 0x0801, manufacturer: null, product: USB 2.0 Hub, serial: null, ID: 4295259660
+$ java --enable-native-access=ALL-UNNAMED -jar target/monitor-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+Present:      VID: 0x1d6b, PID: 0x0002, manufacturer: Linux 6.5.0-18-generic xhci-hcd, product: xHCI Host Controller, serial: 0000:00:14.0, ID: /dev/bus/usb/001/001
+Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/009
 Monitoring... Press ENTER to quit.
-...
+Disconnected: VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/009
+Connected:    VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/010
 ```

@@ -68,10 +68,10 @@ class DevicePropertyKey {
                                                   byte data4_2, byte data4_3, byte data4_4, byte data4_5,
                                                   byte data4_6, byte data4_7, int pid) {
         @SuppressWarnings("resource")
-        var propKey = Arena.global().allocate(_DEVPROPKEY.$LAYOUT());
-        Win.setGUID(_DEVPROPKEY.fmtid$slice(propKey), data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4
+        var propKey = Arena.global().allocate(_DEVPROPKEY.layout());
+        Win.setGUID(_DEVPROPKEY.fmtid(propKey), data1, data2, data3, data4_0, data4_1, data4_2, data4_3, data4_4
                 , data4_5, data4_6, data4_7);
-        _DEVPROPKEY.pid$set(propKey, pid);
+        _DEVPROPKEY.pid(propKey, pid);
         return propKey;
     }
 }

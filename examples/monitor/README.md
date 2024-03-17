@@ -4,15 +4,15 @@ This sample program monitors USB devices as they are connected and disconnected.
 
 ## Prerequisites
 
-- Java 21
+- Java 22
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 21
+### Install Java 22
 
-Check that *Java 21* is installed:
+Check that *Java 22* is installed:
 
 ```shell
 $ java -version
@@ -35,22 +35,30 @@ If it is not present, install it, typically using package manager like *Homebrew
 ```shell
 $ cd JavaDoesUSB/examples/monitor
 $ mvn compile exec:exec
+
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -----------------< net.codecrete.usb.examples:monitor >-----------------
-[INFO] Building monitor 0.7.1
+[INFO] Building monitor 1.0.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ monitor ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /Users/me/Documents/JavaDoesUSB/examples/monitor/src/main/resources
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ monitor ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
 [INFO] 
-[INFO] --- maven-compiler-plugin:3.8.0:compile (default-compile) @ monitor ---
-[INFO] Changes detected - recompiling the module!
-[INFO] Compiling 1 source file to /Users/me/Documents/JavaDoesUSB/examples/monitor/target/classes
+[INFO] --- maven-compiler-plugin:3.12.1:compile (default-compile) @ monitor ---
+[INFO] Nothing to compile - all classes are up to date.
 [INFO] 
-[INFO] --- exec-maven-plugin:3.1.0:exec (default-cli) @ monitor ---
-Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 8D8F515C5456, ID: 4295291950
-Present:      VID: 0x1a40, PID: 0x0801, manufacturer: null, product: USB 2.0 Hub, serial: null, ID: 4295291734
+[INFO] --- exec-maven-plugin:3.1.1:exec (default-cli) @ monitor ---
+Present:      VID: 0x1d6b, PID: 0x0002, manufacturer: Linux 6.5.0-18-generic xhci-hcd, product: xHCI Host Controller, serial: 0000:00:14.0, ID: /dev/bus/usb/001/001
+Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/005
 Monitoring... Press ENTER to quit.
+Disconnected: VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/005
+Connected:    VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/009
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  17.647 s
+[INFO] Finished at: 2024-02-18T16:50:59+01:00
+[INFO] -----------------------------------------------------------------------
 ```

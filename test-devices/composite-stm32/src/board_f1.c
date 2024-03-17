@@ -188,20 +188,16 @@ uint32_t board_millis(void) {
 
 void board_led_write(bool on) {
     if (on)
-        gpio_set(GPIOB, 12);
-    else
         gpio_clear(GPIOB, 12);
+    else
+        gpio_set(GPIOB, 12);
 }
 
 
 // --- Interrupt handlers ---
 
 void SysTick_Handler (void) {
-  millis_count++;
-}
-
-void USBWakeUp_IRQHandler(void) {
-    tud_int_handler(0);
+	millis_count++;
 }
 
 void USB_HP_IRQHandler(void) {

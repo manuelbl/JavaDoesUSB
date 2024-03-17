@@ -1,12 +1,15 @@
-set JEXTRACT=..\..\..\..\jextract\build\jextract\bin\jextract.bat
+set JEXTRACT=..\..\..\..\jextract\bin\jextract.bat
 set SDK_DIR=C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+del /s /q ..\..\src\main\java\net\codecrete\usb\windows\gen
+rmdir /s /q ..\..\src\main\java\net\codecrete\usb\windows\gen
+
+call %JEXTRACT% --output ../../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
   -I "%SDK_DIR%\um" ^
   -I "%SDK_DIR%\shared" ^
   -l Kernel32 ^
-  --header-class-name Kernel32 ^
+ --header-class-name Kernel32 ^
   --target-package net.codecrete.usb.windows.gen.kernel32 ^
   --include-function CloseHandle ^
   --include-function GetModuleHandleW ^
@@ -32,12 +35,10 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant FORMAT_MESSAGE_FROM_HMODULE ^
   --include-constant INFINITE ^
   --include-struct _GUID ^
-  --include-typedef GUID ^
   --include-struct _OVERLAPPED ^
-  --include-typedef OVERLAPPED ^
   windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
   -I "%SDK_DIR%\um" ^
   -I "%SDK_DIR%\shared" ^
@@ -47,13 +48,10 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-function SetupDiDestroyDeviceInfoList ^
   --include-function SetupDiDeleteDeviceInterfaceData ^
   --include-struct _SP_DEVINFO_DATA ^
-  --include-typedef SP_DEVINFO_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DATA ^
-  --include-typedef SP_DEVICE_INTERFACE_DATA ^
   --include-struct _SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
-  --include-typedef SP_DEVICE_INTERFACE_DETAIL_DATA_W ^
   --include-struct _DEVPROPKEY ^
-  --include-typedef DEVPROPKEY ^
+  --include-struct _GUID ^
   --include-constant DIGCF_PRESENT ^
   --include-constant DIGCF_DEVICEINTERFACE ^
   --include-constant DEVPROP_TYPE_UINT32 ^
@@ -63,21 +61,22 @@ call %JEXTRACT% --source --output ../../src/main/java ^
   --include-constant DIREG_DEV ^
   windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
   -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
   -I "%SDK_DIR%\um" ^
   -I "%SDK_DIR%\shared" ^
   --header-class-name USBIoctl ^
   --target-package net.codecrete.usb.windows.gen.usbioctl ^
   --include-struct _USB_NODE_CONNECTION_INFORMATION_EX ^
-  --include-typedef USB_NODE_CONNECTION_INFORMATION_EX ^
   --include-struct _USB_DESCRIPTOR_REQUEST ^
-  --include-typedef USB_DESCRIPTOR_REQUEST ^
+  --include-struct _USB_DEVICE_DESCRIPTOR ^
+  --include-struct _USB_ENDPOINT_DESCRIPTOR ^
+  --include-struct _USB_PIPE_INFO ^
   --include-constant IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX ^
   --include-constant IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION ^
   windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
        -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
        -I "%SDK_DIR%\um" ^
        -I "%SDK_DIR%\shared" ^
@@ -92,16 +91,14 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-constant DBT_DEVICEREMOVECOMPLETE ^
        --include-constant DBT_DEVTYP_DEVICEINTERFACE ^
        --include-struct tagMSG ^
-       --include-typedef MSG ^
+       --include-struct tagPOINT ^
        --include-struct tagWNDCLASSEXW ^
-       --include-typedef WNDCLASSEXW ^
        --include-struct _DEV_BROADCAST_HDR ^
-       --include-typedef DEV_BROADCAST_HDR ^
        --include-struct _DEV_BROADCAST_DEVICEINTERFACE_W ^
-       --include-typedef DEV_BROADCAST_DEVICEINTERFACE_W ^
+       --include-struct _GUID ^
        windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
        -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
        -I "%SDK_DIR%\um" ^
        -I "%SDK_DIR%\shared" ^
@@ -113,7 +110,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-constant RAW_IO ^
        windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
        -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
        -I "%SDK_DIR%\um" ^
        -I "%SDK_DIR%\shared" ^
@@ -125,7 +122,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-constant KEY_READ ^
        windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
        -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
        -I "%SDK_DIR%\um" ^
        -I "%SDK_DIR%\shared" ^
@@ -135,7 +132,7 @@ call %JEXTRACT% --source --output ../../src/main/java ^
        --include-function CLSIDFromString ^
        windows_headers.h
 
-call %JEXTRACT% --source --output ../../src/main/java ^
+call %JEXTRACT% --output ../../src/main/java ^
        -D _AMD64_ -D _M_AMD64=100 -D UNICODE -D _UNICODE ^
        -I "%SDK_DIR%\um" ^
        -I "%SDK_DIR%\shared" ^

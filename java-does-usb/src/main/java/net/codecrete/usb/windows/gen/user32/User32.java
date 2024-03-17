@@ -2,85 +2,177 @@
 
 package net.codecrete.usb.windows.gen.user32;
 
-import java.lang.foreign.AddressLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandle;
+import java.lang.invoke.*;
+import java.lang.foreign.*;
+import java.nio.ByteOrder;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
 import static java.lang.foreign.ValueLayout.*;
-public class User32  {
+import static java.lang.foreign.MemoryLayout.PathElement.*;
 
-    public static final OfByte C_CHAR = JAVA_BYTE;
-    public static final OfShort C_SHORT = JAVA_SHORT;
-    public static final OfInt C_INT = JAVA_INT;
-    public static final OfInt C_LONG = JAVA_INT;
-    public static final OfLong C_LONG_LONG = JAVA_LONG;
-    public static final OfFloat C_FLOAT = JAVA_FLOAT;
-    public static final OfDouble C_DOUBLE = JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = RuntimeHelper.POINTER;
+public class User32 {
+
+    User32() {
+        // Should not be called directly
+    }
+
+    static final Arena LIBRARY_ARENA = Arena.ofAuto();
+    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
+
+    static void traceDowncall(String name, Object... args) {
+         String traceArgs = Arrays.stream(args)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+         System.out.printf("%s(%s)\n", name, traceArgs);
+    }
+
+    static MemorySegment findOrThrow(String symbol) {
+        return SYMBOL_LOOKUP.find(symbol)
+            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+    }
+
+    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
+        try {
+            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
+        } catch (ReflectiveOperationException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    static MemoryLayout align(MemoryLayout layout, long align) {
+        return switch (layout) {
+            case PaddingLayout p -> p;
+            case ValueLayout v -> v.withByteAlignment(align);
+            case GroupLayout g -> {
+                MemoryLayout[] alignedMembers = g.memberLayouts().stream()
+                        .map(m -> align(m, align)).toArray(MemoryLayout[]::new);
+                yield g instanceof StructLayout ?
+                        MemoryLayout.structLayout(alignedMembers) : MemoryLayout.unionLayout(alignedMembers);
+            }
+            case SequenceLayout s -> MemoryLayout.sequenceLayout(s.elementCount(), align(s.elementLayout(), align));
+        };
+    }
+
+    static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup(System.mapLibraryName("User32"), LIBRARY_ARENA)
+            .or(SymbolLookup.loaderLookup())
+            .or(Linker.nativeLinker().defaultLookup());
+
+    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
+    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
+    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
+    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
+    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
+    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
+            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
+    public static final ValueLayout.OfInt C_LONG = ValueLayout.JAVA_INT;
+    public static final ValueLayout.OfDouble C_LONG_DOUBLE = ValueLayout.JAVA_DOUBLE;
+    private static final int WM_DEVICECHANGE = (int)537L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define WM_DEVICECHANGE 537
      * }
      */
     public static int WM_DEVICECHANGE() {
-        return (int)537L;
+        return WM_DEVICECHANGE;
     }
+    private static final int DEVICE_NOTIFY_WINDOW_HANDLE = (int)0L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DEVICE_NOTIFY_WINDOW_HANDLE 0
      * }
      */
     public static int DEVICE_NOTIFY_WINDOW_HANDLE() {
-        return (int)0L;
+        return DEVICE_NOTIFY_WINDOW_HANDLE;
     }
+    private static final int DBT_DEVICEARRIVAL = (int)32768L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DBT_DEVICEARRIVAL 32768
      * }
      */
     public static int DBT_DEVICEARRIVAL() {
-        return (int)32768L;
+        return DBT_DEVICEARRIVAL;
     }
+    private static final int DBT_DEVICEREMOVECOMPLETE = (int)32772L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DBT_DEVICEREMOVECOMPLETE 32772
      * }
      */
     public static int DBT_DEVICEREMOVECOMPLETE() {
-        return (int)32772L;
+        return DBT_DEVICEREMOVECOMPLETE;
     }
+    private static final int DBT_DEVTYP_DEVICEINTERFACE = (int)5L;
     /**
-     * {@snippet :
+     * {@snippet lang=c :
      * #define DBT_DEVTYP_DEVICEINTERFACE 5
      * }
      */
     public static int DBT_DEVTYP_DEVICEINTERFACE() {
-        return (int)5L;
+        return DBT_DEVTYP_DEVICEINTERFACE;
     }
-    public static MethodHandle DefWindowProcW$MH() {
-        return RuntimeHelper.requireNonNull(constants$3.const$2,"DefWindowProcW");
+
+    private static class DefWindowProcW {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+            User32.C_LONG_LONG,
+            User32.C_POINTER,
+            User32.C_INT,
+            User32.C_LONG_LONG,
+            User32.C_LONG_LONG
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                    User32.findOrThrow("DefWindowProcW"),
+                    DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang=c :
+     * LRESULT DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+     * }
+     */
+    public static FunctionDescriptor DefWindowProcW$descriptor() {
+        return DefWindowProcW.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang=c :
+     * LRESULT DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+     * }
+     */
+    public static MethodHandle DefWindowProcW$handle() {
+        return DefWindowProcW.HANDLE;
     }
     /**
-     * {@snippet :
-     * LRESULT DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+     * {@snippet lang=c :
+     * LRESULT DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
      * }
      */
     public static long DefWindowProcW(MemorySegment hWnd, int Msg, long wParam, long lParam) {
-        var mh$ = DefWindowProcW$MH();
+        var mh$ = DefWindowProcW.HANDLE;
         try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("DefWindowProcW", hWnd, Msg, wParam, lParam);
+            }
             return (long)mh$.invokeExact(hWnd, Msg, wParam, lParam);
         } catch (Throwable ex$) {
-            throw new AssertionError("should not reach here", ex$);
+           throw new AssertionError("should not reach here", ex$);
         }
     }
+    private static final MemorySegment HWND_MESSAGE = MemorySegment.ofAddress(-3L);
     /**
-     * {@snippet :
-     * #define HWND_MESSAGE -3
+     * {@snippet lang=c :
+     * #define HWND_MESSAGE (void*) -3
      * }
      */
     public static MemorySegment HWND_MESSAGE() {
-        return constants$4.const$5;
+        return HWND_MESSAGE;
     }
 }
-
 

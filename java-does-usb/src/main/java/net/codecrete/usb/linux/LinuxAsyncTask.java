@@ -8,7 +8,6 @@
 package net.codecrete.usb.linux;
 
 import net.codecrete.usb.UsbTransferType;
-import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
 
@@ -19,18 +18,25 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.ADDRESS;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.linux.EPoll.epoll_create1;
 import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
-import static net.codecrete.usb.linux.UsbDevFS.*;
-import static net.codecrete.usb.linux.gen.epoll.epoll.*;
-import static net.codecrete.usb.linux.gen.errno.errno.*;
+import static net.codecrete.usb.linux.UsbDevFS.DISCARDURB;
+import static net.codecrete.usb.linux.UsbDevFS.REAPURBNDELAY;
+import static net.codecrete.usb.linux.UsbDevFS.SUBMITURB;
+import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLOUT;
+import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLWAKEUP;
+import static net.codecrete.usb.linux.gen.errno.errno.EINTR;
+import static net.codecrete.usb.linux.gen.errno.errno.ENODEV;
 import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
-import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.*;
+import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_BULK;
+import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_CONTROL;
+import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_INTERRUPT;
+import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB_TYPE_ISO;
 
 /**
  * Background task for handling asynchronous transfers.
@@ -77,7 +83,7 @@ class LinuxAsyncTask {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             var urbPointerHolder = arena.allocate(ADDRESS);
-            var events = arena.allocateArray(epoll_event.$LAYOUT(), NUM_EVENTS);
+            var events = arena.allocate(EPoll.EVENT$LAYOUT, NUM_EVENTS);
 
             while (true) {
 
@@ -92,7 +98,7 @@ class LinuxAsyncTask {
 
                 // for all ready file descriptors, reap URBs
                 for (int i = 0; i < res; i++) {
-                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, i);
+                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, 0, i);
                     reapURBs(fd, urbPointerHolder, errorState);
                 }
             }
@@ -163,12 +169,13 @@ class LinuxAsyncTask {
         // reclaim stale URBs
         transfersByURB.entrySet().removeIf(e -> {
             var urb = e.getKey();
-            var isMatch = usbdevfs_urb.usercontext$get(urb).address() == fd;
+            var isMatch = usbdevfs_urb.usercontext(urb).address() == fd;
             if (isMatch) {
                 var transfer = e.getValue();
                 transfer.urb = null;
-                transfer.setResultCode(ENOENT());
+                transfer.setResultCode(ENODEV());
                 transfer.setResultSize(0);
+                transfer.completion().completed(transfer);
                 availableURBs.add(urb);
             }
             return isMatch;
@@ -180,11 +187,11 @@ class LinuxAsyncTask {
         linkToUrb(transfer);
         var urb = transfer.urb;
 
-        usbdevfs_urb.type$set(urb, (byte) urbTransferType(transferType));
-        usbdevfs_urb.endpoint$set(urb, (byte) endpointAddress);
-        usbdevfs_urb.buffer$set(urb, transfer.data());
-        usbdevfs_urb.buffer_length$set(urb, transfer.dataSize());
-        usbdevfs_urb.usercontext$set(urb, MemorySegment.ofAddress(device.fileDescriptor()));
+        usbdevfs_urb.type(urb, (byte) urbTransferType(transferType));
+        usbdevfs_urb.endpoint(urb, (byte) endpointAddress);
+        usbdevfs_urb.buffer(urb, transfer.data());
+        usbdevfs_urb.buffer_length(urb, transfer.dataSize());
+        usbdevfs_urb.usercontext(urb, MemorySegment.ofAddress(device.fileDescriptor()));
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
@@ -241,8 +248,8 @@ class LinuxAsyncTask {
         if (transfer == null)
             throwException("internal error (unknown URB)");
 
-        transfer.setResultCode(-usbdevfs_urb.status$get(transfer.urb));
-        transfer.setResultSize(usbdevfs_urb.actual_length$get(transfer.urb));
+        transfer.setResultCode(-usbdevfs_urb.status(transfer.urb));
+        transfer.setResultSize(usbdevfs_urb.actual_length(transfer.urb));
 
         availableURBs.add(transfer.urb);
         transfer.urb = null;
@@ -260,8 +267,8 @@ class LinuxAsyncTask {
             // iterate all URBs and discard the ones for the specified endpoint
             transfersByURB.keySet().stream()
                     .filter(urb ->
-                            usbdevfs_urb.usercontext$get(urb).address() == fd
-                                    && usbdevfs_urb.endpoint$get(urb) == endpointAddress)
+                            usbdevfs_urb.usercontext(urb).address() == fd
+                                    && usbdevfs_urb.endpoint(urb) == endpointAddress)
                     .forEach(urb -> {
                                 if (IO.ioctl(fd, DISCARDURB, urb, errorState) < 0) {
                                     // ignore EINVAL; it occurs if the URB has completed at the same time

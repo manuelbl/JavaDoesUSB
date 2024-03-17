@@ -3,9 +3,7 @@ package net.codecrete.usb.usbstandard;
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT;
@@ -13,7 +11,7 @@ import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 /**
  * USB setup packet.
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class SetupPacket {
 
     private final MemorySegment descriptor;
@@ -46,43 +44,43 @@ public class SetupPacket {
     }
 
     public int requestType() {
-        return 0xff & (byte) bmRequestType$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bmRequestType$OFFSET);
     }
 
     public void setRequestType(int requestType) {
-        bmRequestType$VH.set(descriptor, (byte) requestType);
+        descriptor.set(JAVA_BYTE, bmRequestType$OFFSET, (byte) requestType);
     }
 
     public int request() {
-        return 0xff & (byte) bRequest$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bRequest$OFFSET);
     }
 
     public void setRequest(int request) {
-        bRequest$VH.set(descriptor, (byte) request);
+        descriptor.set(JAVA_BYTE, bRequest$OFFSET, (byte) request);
     }
 
     public int value() {
-        return 0xffff & (short) wValue$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT, wValue$OFFSET);
     }
 
     public void setValue(int value) {
-        wValue$VH.set(descriptor, (short) value);
+        descriptor.set(JAVA_SHORT, wValue$OFFSET, (short) value);
     }
 
     public int index() {
-        return 0xffff & (short) wIndex$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT, wIndex$OFFSET);
     }
 
     public void setIndex(int index) {
-        wIndex$VH.set(descriptor, (short) index);
+        descriptor.set(JAVA_SHORT, wIndex$OFFSET, (short) index);
     }
 
     public int length() {
-        return 0xffff & (short) wLength$VH.get(descriptor);
+        return 0xffff & descriptor.get(JAVA_SHORT, wLength$OFFSET);
     }
 
     public void setLength(int length) {
-        wLength$VH.set(descriptor, (short) length);
+        descriptor.set(JAVA_SHORT, wLength$OFFSET, (short) length);
     }
 
     // struct USBSetupPacket {
@@ -100,11 +98,11 @@ public class SetupPacket {
             JAVA_SHORT.withName("wLength")
     );
 
-    private static final VarHandle bmRequestType$VH = LAYOUT.varHandle(groupElement("bmRequestType"));
-    private static final VarHandle bRequest$VH = LAYOUT.varHandle(groupElement("bRequest"));
-    private static final VarHandle wValue$VH = LAYOUT.varHandle(groupElement("wValue"));
-    private static final VarHandle wIndex$VH = LAYOUT.varHandle(groupElement("wIndex"));
-    private static final VarHandle wLength$VH = LAYOUT.varHandle(groupElement("wLength"));
+    private static final long bmRequestType$OFFSET = 0;
+    private static final long bRequest$OFFSET = 1;
+    private static final long wValue$OFFSET = 2;
+    private static final long wIndex$OFFSET = 4;
+    private static final long wLength$OFFSET = 6;
 
     static {
         assert LAYOUT.byteSize() == 8;

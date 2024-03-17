@@ -15,6 +15,9 @@
 #include "stm32f4xx.h"
 #include "device/usbd.h"
 
+#define EXTI_USBWakeUp_Line EXTI_IMR_IM18
+
+
 extern uint32_t SystemCoreClock;
 void SystemCoreClockUpdate(void);
 
@@ -83,6 +86,11 @@ const rcc_clock_setup_t clock_setup_hse_value_out_84mhz_3v3 = {
 #define GPIO_OSPEED_MEDIUM 1
 #define GPIO_OSPEED_FAST 2
 #define GPIO_OSPEED_HIGH 3
+
+
+// --- additional USB register
+#define PCGCCTL ((volatile uint32_t *)((uint32_t)USB_OTG_FS + USB_OTG_PCGCCTL_BASE))
+
 
 
 static inline void rcc_wait_for_osc_ready(uint32_t rcc_cr_clk_rdy) {
@@ -254,6 +262,13 @@ void board_init(void) {
 	gpio_mode_setup(GPIOC, 13, GPIO_MODE_OUTPUT, GPIO_PUPD_NO_PULL);
 
 	usb_init_serial_num();
+
+	// enable USB wakeup interrupt
+	EXTI->PR = EXTI_USBWakeUp_Line;
+	EXTI->RTSR |= EXTI_USBWakeUp_Line;
+	EXTI->IMR |= EXTI_USBWakeUp_Line;
+    NVIC_SetPriority(OTG_FS_WKUP_IRQn, 0);
+	NVIC_EnableIRQ(OTG_FS_WKUP_IRQn);
 }
 
 uint32_t board_millis(void) {
@@ -262,9 +277,44 @@ uint32_t board_millis(void) {
 
 void board_led_write(bool on) {
     if (on)
-        gpio_set(GPIOC, 13);
-    else
         gpio_clear(GPIOC, 13);
+    else
+        gpio_set(GPIOC, 13);
+}
+
+void board_sleep(void) {
+
+	// turn off LED
+	board_led_write(false);
+
+	// stop PCLK to USB
+	set_reg(PCGCCTL, USB_OTG_PCGCCTL_STOPCLK, USB_OTG_PCGCCTL_STOPCLK_Msk);
+
+	// pause systick interrupts
+	set_reg(&SysTick->CTRL, 0, SysTick_CTRL_TICKINT_Msk);
+
+	// enter stop mode when the CPU enters deep sleep
+	set_reg(&PWR->CR, 0, PWR_CR_PDDS_Msk | PWR_CR_LPDS_Msk);
+
+	// use deep sleep mode
+	set_reg(&SCB->SCR, SCB_SCR_SLEEPDEEP_Msk, SCB_SCR_SLEEPDEEP_Msk);
+	
+    __WFI();
+
+	// reset to regular sleep mode
+	set_reg(&SCB->SCR, 0, SCB_SCR_SLEEPDEEP_Msk);
+
+	// after wakeup, re-enable PLL as clock source
+	rcc_clock_setup_pll(&clock_setup_hse_value_out_84mhz_3v3);
+
+	// resume systick interrupts
+	set_reg(&SysTick->CTRL, SysTick_CTRL_TICKINT_Msk, SysTick_CTRL_TICKINT_Msk);
+
+	// restart PCLK to USB
+	set_reg(PCGCCTL, 0, USB_OTG_PCGCCTL_STOPCLK_Msk);
+
+	// turn on LED
+	board_led_write(true);
 }
 
 
@@ -276,6 +326,11 @@ void SysTick_Handler (void) {
 
 void OTG_FS_IRQHandler(void) {
     tud_int_handler(0);
+}
+
+void OTG_FS_WKUP_IRQHandler(void) {
+	// clear interrupt
+	EXTI->PR = EXTI_USBWakeUp_Line;
 }
 
 #endif

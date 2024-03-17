@@ -262,16 +262,16 @@ uint32_t board_millis(void) {
 
 void board_led_write(bool on) {
     if (on)
-        gpio_set(GPIOC, 13);
-    else
         gpio_clear(GPIOC, 13);
+    else
+        gpio_set(GPIOC, 13);
 }
 
 
 // --- Interrupt handlers ---
 
 void SysTick_Handler (void) {
-  millis_count++;
+	millis_count++;
 }
 
 void OTG_FS_IRQHandler(void) {

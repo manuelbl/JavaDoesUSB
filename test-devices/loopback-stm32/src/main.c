@@ -38,15 +38,16 @@ int echo_buffer_len;
 int num_echos;
 
 
-// Blink durations
-enum  {
-    BLINK_NOT_MOUNTED = 250,
-    BLINK_MOUNTED = 1000,
-    BLINK_SUSPENDED = 2500,
-};
+static bool is_blinking = true;
+static uint32_t led_on_until = 0;
+static uint32_t blink_toogle_at = 0;
+static bool is_blink_on = true;
 
-static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
+static inline bool has_expired(uint32_t deadline, uint32_t now) {
+    return (int32_t)(now - deadline) >= 0;
+}
 
+static void led_busy(void);
 static void led_blinking_task(void);
 static void loopback_init(void);
 static void loopback_check_rx(void);
@@ -94,6 +95,7 @@ void loopback_check_tx(void) {
             n = max_size;
         
         cust_vendor_start_transmit_fifo(EP_LOOPBACK_TX, &loopback_fifo, n);
+        led_busy();
     }
 }
 
@@ -111,6 +113,7 @@ void loopback_check_rx(void) {
 void echo_update_state(void) {
     if (num_echos > 0) {
         cust_vendor_start_transmit(EP_ECHO_TX, echo_buffer, echo_buffer_len);
+        led_busy();
     } else {
         cust_vendor_prepare_recv(EP_ECHO_RX, echo_buffer, sizeof(echo_buffer));
     }
@@ -130,6 +133,7 @@ void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
         echo_buffer_len = recv_bytes;
         echo_update_state();
     }
+    led_busy();
 }
 
 // Invoked when last tx transfer finished
@@ -140,8 +144,10 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
 
         // check ZLP
         if ((sent_bytes & (bulk_packet_size - 1)) == 0
-                && !cust_vendor_is_transmitting(ep_addr))
+                && !cust_vendor_is_transmitting(ep_addr)) {
             cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
+            led_busy();
+        }
 
     } else if (ep_addr == EP_ECHO_TX) {
         num_echos--;
@@ -154,6 +160,7 @@ void cust_vendor_intf_open_cb(uint8_t intf) {
     bulk_packet_size = cust_vendor_packet_size(EP_LOOPBACK_RX);
     loopback_check_rx();
     echo_update_state();
+    led_busy();
 }
 
 // Invoked when an alternate interface has been selected
@@ -163,6 +170,7 @@ void cust_vendor_alt_intf_selected_cb(uint8_t intf, uint8_t alt) {
     loopback_check_rx();
     if (alt == 0)
         echo_update_state();
+    led_busy();
 }
 
 void cust_vendor_halt_cleared_cb(uint8_t ep_addr) {
@@ -184,6 +192,7 @@ void cust_vendor_halt_cleared_cb(uint8_t ep_addr) {
         default:
             break;
     }
+    led_busy();
 }
 
 
@@ -210,6 +219,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
         if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 0) {
             // save value from wValue
             saved_value = request->wValue;
+            led_busy();
             return tud_control_status(rhport, request);
         }
         break;
@@ -217,6 +227,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     case REQUEST_SAVE_DATA:
         if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 4) {
             // receive into `saved_value`
+            led_busy();
             return tud_control_xfer(rhport, request, &saved_value, 4);
         }
         break;
@@ -224,6 +235,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     case REQUEST_SEND_DATA:
         if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wLength == 4) {
             // transmit from `saved_value`
+            led_busy();
             return tud_control_xfer(rhport, request, &saved_value, 4);
         }
         break;
@@ -231,6 +243,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     case REQUEST_RESET_BUFFERS:
         if (request->bmRequestType_bit.direction == TUSB_DIR_OUT && request->wLength == 0) {
             reset_buffers();
+            led_busy();
             return tud_control_status(rhport, request);
         }
         break;
@@ -239,6 +252,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
         if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wLength == 1) {
             uint8_t intf_num = request->wIndex & 0xff;
             if (intf_num < 4) {
+                led_busy();
                 // return inteface number
                 return tud_control_xfer(rhport, request, &intf_num, 1);
             }
@@ -248,6 +262,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     // Microsoft WCID descriptor (for automatic WinUSB installation)
     case WCID_VENDOR_CODE:
         if (request->bmRequestType_bit.direction == TUSB_DIR_IN && request->wIndex == 0x0004) {
+            led_busy();
             // transmit WCID feature descriptor
             int len = sizeof(wcid_feature_desc);
             if (len >= request->wLength)
@@ -275,12 +290,7 @@ usbd_class_driver_t const* usbd_app_driver_get_cb(uint8_t* driver_count) {
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
-    blink_interval_ms = BLINK_MOUNTED;
-}
-
-// Invoked when device is unmounted
-void tud_umount_cb(void) {
-    blink_interval_ms = BLINK_NOT_MOUNTED;
+    is_blinking = false;
 }
 
 // Invoked when usb bus is suspended
@@ -288,26 +298,27 @@ void tud_umount_cb(void) {
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
     (void) remote_wakeup_en;
-    blink_interval_ms = BLINK_SUSPENDED;
-}
-
-// Invoked when usb bus is resumed
-void tud_resume_cb(void) {
-    blink_interval_ms = BLINK_MOUNTED;
+    board_sleep();
 }
 
 
 // --- LED blinking ---
 
+void led_busy(void) {
+    led_on_until = board_millis() + 100;
+    board_led_write(true);
+}
+
 void led_blinking_task(void) {
-    static uint32_t start_ms = 0;
-    static bool led_state = false;
-
-    // Blink every interval ms
-    if ( board_millis() - start_ms < blink_interval_ms)
-        return; // not enough time
-    start_ms += blink_interval_ms;
-
-    board_led_write(led_state);
-    led_state = 1 - led_state; // toggle
+    uint32_t now = board_millis();
+    if (is_blinking) {
+        if (has_expired(blink_toogle_at, now)) {
+            is_blink_on = !is_blink_on;
+            blink_toogle_at = now + 250;
+        }
+        board_led_write(is_blink_on && (now & 7) == 0);
+        
+    } else if (has_expired(led_on_until, now)) {
+        board_led_write((now & 3) == 0);
+    }
 }

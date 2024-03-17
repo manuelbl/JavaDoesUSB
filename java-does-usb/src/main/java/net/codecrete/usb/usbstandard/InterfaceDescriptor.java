@@ -9,16 +9,14 @@ package net.codecrete.usb.usbstandard;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 /**
  * USB interface descriptor
  */
-@SuppressWarnings("java:S125")
+@SuppressWarnings({"java:S115", "java:S125"})
 public class InterfaceDescriptor {
 
     private final MemorySegment descriptor;
@@ -32,31 +30,31 @@ public class InterfaceDescriptor {
     }
 
     public int interfaceNumber() {
-        return 0xff & (byte) bInterfaceNumber$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterfaceNumber$OFFSET);
     }
 
     public int alternateSetting() {
-        return 0xff & (byte) bAlternateSetting$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bAlternateSetting$OFFSET);
     }
 
     public int numEndpoints() {
-        return 0xff & (byte) bNumEndpoints$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bNumEndpoints$OFFSET);
     }
 
     public int interfaceClass() {
-        return 0xff & (byte) bInterfaceClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterfaceClass$OFFSET);
     }
 
     public int interfaceSubClass() {
-        return 0xff & (byte) bInterfaceSubClass$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterfaceSubClass$OFFSET);
     }
 
     public int interfaceProtocol() {
-        return 0xff & (byte) bInterfaceProtocol$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, bInterfaceProtocol$OFFSET);
     }
 
     public int iInterface() {
-        return 0xff & (byte) iInterface$VH.get(descriptor);
+        return 0xff & descriptor.get(JAVA_BYTE, iInterface$OFFSET);
     }
 
     // struct USBInterfaceDescriptor {
@@ -82,13 +80,13 @@ public class InterfaceDescriptor {
             JAVA_BYTE.withName("iInterface")
     );
 
-    private static final VarHandle bInterfaceNumber$VH = LAYOUT.varHandle(groupElement("bInterfaceNumber"));
-    private static final VarHandle bAlternateSetting$VH = LAYOUT.varHandle(groupElement("bAlternateSetting"));
-    private static final VarHandle bNumEndpoints$VH = LAYOUT.varHandle(groupElement("bNumEndpoints"));
-    private static final VarHandle bInterfaceClass$VH = LAYOUT.varHandle(groupElement("bInterfaceClass"));
-    private static final VarHandle bInterfaceSubClass$VH = LAYOUT.varHandle(groupElement("bInterfaceSubClass"));
-    private static final VarHandle bInterfaceProtocol$VH = LAYOUT.varHandle(groupElement("bInterfaceProtocol"));
-    private static final VarHandle iInterface$VH = LAYOUT.varHandle(groupElement("iInterface"));
+    private static final long bInterfaceNumber$OFFSET = 2;
+    private static final long bAlternateSetting$OFFSET = 3;
+    private static final long bNumEndpoints$OFFSET = 4;
+    private static final long bInterfaceClass$OFFSET = 5;
+    private static final long bInterfaceSubClass$OFFSET = 6;
+    private static final long bInterfaceProtocol$OFFSET = 7;
+    private static final long iInterface$OFFSET = 8;
 
 
     static {

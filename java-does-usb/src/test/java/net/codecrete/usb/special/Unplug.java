@@ -15,7 +15,7 @@ import net.codecrete.usb.UsbException;
 import java.io.IOException;
 import java.util.HashMap;
 
-import static java.time.Duration.*;
+import static java.time.Duration.ofSeconds;
 
 /**
  * Test for robustness when USB devices is unplugged during operation.

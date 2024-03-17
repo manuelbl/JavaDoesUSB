@@ -26,11 +26,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: oracle-actions/setup-java@v1
         with:
-          distribution: 'zulu'
-          java-version: '21'
-          cache: 'maven'
+          website: jdk.java.net
+          release: 22
+          version: latest
       - name: Configure GPG key
         run: |
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import

@@ -106,6 +106,15 @@ public class Usb {
 
     /**
      * Sets the handler to be called when a USB device is connected.
+     * <p>
+     * The handler is called from a background thread. 
+     * </p>
+     * <p>
+     * The handler should not execute any time-consuming operations but rather return quickly.
+     * While the handler is being executed, maintaining the list of connected devices is paused,
+     * methods of this class (such as {@link #getDevices()}) will possibly work with an outdated list
+     * of connected devices and handlers for connect and disconnect events will not be called.
+     * </p>
      *
      * @param handler handler function, or {@code null} to remove a previous handler
      */
@@ -116,9 +125,23 @@ public class Usb {
     /**
      * Sets the handler to be called when a USB device is disconnected.
      * <p>
+     * The handler is called from a background thread. 
+     * </p>
+     * <p>
      * When the handler is called, the {@link UsbDevice} instance has already been closed.
      * Descriptive information (such as vendor and product ID, serial number, interfaces, endpoints)
      * can still be accessed.
+     * </p>
+     * <p>
+     * If the application was communicating with the device when it was disconnected, it will also receive
+     * an error for those operations. Due to the concurrency of the USB stack, there is no particular order
+     * for the disconnect event and the transmission errors.
+     * </p>
+     * <p>
+     * The handler should not execute any time-consuming operations but rather return quickly.
+     * While the handler is being executed, maintaining the list of connected devices is paused,
+     * methods of this class (such as {@link #getDevices()}) will possibly work with an outdated list
+     * of connected devices and handlers for connect and disconnect events will not be called.
      * </p>
      *
      * @param handler handler function, or {@code null} to remove a previous handler

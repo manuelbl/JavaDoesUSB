@@ -284,6 +284,10 @@ void board_init(void) {
 	usb_init_serial_num();
 }
 
+void board_sleep(void) {
+	// not implemented yet
+}
+
 uint32_t board_millis(void) {
     return millis_count;
 }

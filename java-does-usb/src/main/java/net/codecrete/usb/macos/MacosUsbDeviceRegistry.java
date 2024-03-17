@@ -13,7 +13,11 @@ import net.codecrete.usb.common.UsbDeviceRegistry;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
-import java.lang.foreign.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -22,7 +26,9 @@ import java.util.function.Consumer;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.macos.CoreFoundationHelper.createCFStringRef;
 import static net.codecrete.usb.macos.MacosUsbException.throwException;
 
@@ -74,10 +80,10 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
             try {
 
                 // setup run loop, run loop source and notification port
-                var notifyPort = IOKit.IONotificationPortCreate(IOKit.kIOMasterPortDefault$get());
+                var notifyPort = IOKit.IONotificationPortCreate(IOKit.kIOMasterPortDefault());
                 var runLoopSource = IOKit.IONotificationPortGetRunLoopSource(notifyPort);
                 var runLoop = CoreFoundation.CFRunLoopGetCurrent();
-                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode$get());
+                CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode());
 
                 // setup notification for connected devices
                 var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUsbDeviceRegistry.class,
@@ -261,7 +267,7 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
     private void onDevicesDisconnected(MemorySegment ignoredRefCon, int iterator) {
 
         // process device iterator for disconnected devices
-        iterateDevices(iterator, (entryId, service, deviceIntf) -> {
+        iterateDevices(iterator, (entryId, _, _) -> {
             var device = findDevice(entryId);
             if (device == null)
                 return;

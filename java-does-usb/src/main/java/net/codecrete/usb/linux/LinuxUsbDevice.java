@@ -41,8 +41,7 @@ import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
 @SuppressWarnings("java:S2160")
 public class LinuxUsbDevice extends UsbDeviceImpl {
 
-    @SuppressWarnings("resource")
-    private static final MemorySegment DRIVER_NAME_USBFS = Arena.global().allocateUtf8String("usbfs");
+    private static final MemorySegment DRIVER_NAME_USBFS = Arena.global().allocateFrom("usbfs");
 
     private int fd = -1;
 
@@ -96,7 +95,7 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
             throwException("device is already open");
 
         try (var arena = Arena.ofConfined()) {
-            var pathUtf8 = arena.allocateUtf8String(uniqueDeviceId.toString());
+            var pathUtf8 = arena.allocateFrom(uniqueDeviceId.toString());
             var errorState = allocateErrorState(arena);
             fd = IO.open(pathUtf8, fcntl.O_RDWR() | fcntl.O_CLOEXEC(), errorState);
             if (fd == -1)
@@ -135,14 +134,15 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
             if (detachDrivers) {
                 // claim interface (detaching kernel driver)
                 var disconnectClaim = usbdevfs_disconnect_claim.allocate(arena);
-                usbdevfs_disconnect_claim.interface_$set(disconnectClaim, interfaceNumber);
-                usbdevfs_disconnect_claim.flags$set(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
-                usbdevfs_disconnect_claim.driver$slice(disconnectClaim).copyFrom(DRIVER_NAME_USBFS);
+                usbdevfs_disconnect_claim.interface_(disconnectClaim, interfaceNumber);
+                usbdevfs_disconnect_claim.flags(disconnectClaim, usbdevice_fs.USBDEVFS_DISCONNECT_CLAIM_EXCEPT_DRIVER());
+                usbdevfs_disconnect_claim.driver(disconnectClaim).copyFrom(DRIVER_NAME_USBFS);
                 ret = IO.ioctl(fd, UsbDevFS.DISCONNECT_CLAIM, disconnectClaim, errorState);
 
             } else {
                 // claim interface (without detaching kernel driver)
-                var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
+                var intfNumSegment = arena.allocate(JAVA_INT);
+                intfNumSegment.setAtIndex(JAVA_INT, 0, interfaceNumber);
                 ret = IO.ioctl(fd, UsbDevFS.CLAIMINTERFACE, intfNumSegment, errorState);
             }
 
@@ -164,8 +164,8 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var setIntfSegment = usbdevfs_setinterface.allocate(arena);
-            usbdevfs_setinterface.interface_$set(setIntfSegment, interfaceNumber);
-            usbdevfs_setinterface.altsetting$set(setIntfSegment, alternateNumber);
+            usbdevfs_setinterface.interface_(setIntfSegment, interfaceNumber);
+            usbdevfs_setinterface.altsetting(setIntfSegment, alternateNumber);
             var errorState = allocateErrorState(arena);
             var ret = IO.ioctl(fd, UsbDevFS.SETINTERFACE, setIntfSegment, errorState);
             if (ret != 0)
@@ -181,7 +181,8 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
         getInterfaceWithCheck(interfaceNumber, true);
 
         try (var arena = Arena.ofConfined()) {
-            var intfNumSegment = arena.allocate(JAVA_INT, interfaceNumber);
+            var intfNumSegment = arena.allocate(JAVA_INT);
+            intfNumSegment.setAtIndex(JAVA_INT, 0, interfaceNumber);
             var errorState = allocateErrorState(arena);
             var ret = IO.ioctl(fd, UsbDevFS.RELEASEINTERFACE, intfNumSegment, errorState);
             if (ret != 0)
@@ -192,9 +193,9 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
             if (detachDrivers) {
                 // reattach kernel driver
                 var request = usbdevfs_ioctl.allocate(arena);
-                usbdevfs_ioctl.ifno$set(request, interfaceNumber);
-                usbdevfs_ioctl.ioctl_code$set(request, UsbDevFS.CONNECT);
-                usbdevfs_ioctl.data$set(request, MemorySegment.NULL);
+                usbdevfs_ioctl.ifno(request, interfaceNumber);
+                usbdevfs_ioctl.ioctl_code(request, UsbDevFS.CONNECT);
+                usbdevfs_ioctl.data(request, MemorySegment.NULL);
                 IO.ioctl(fd, UsbDevFS.IOCTL, request, errorState);
             }
         }
@@ -323,7 +324,8 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
         var endpoint = getEndpoint(direction, endpointNumber, UsbTransferType.BULK, UsbTransferType.INTERRUPT);
 
         try (var arena = Arena.ofConfined()) {
-            var endpointAddrSegment = arena.allocate(JAVA_INT, endpoint.endpointAddress() & 0xff);
+            var endpointAddrSegment = arena.allocate(JAVA_INT);
+            endpointAddrSegment.setAtIndex(JAVA_INT, 0, endpoint.endpointAddress() & 0xff);
             var errorState = allocateErrorState(arena);
             var res = IO.ioctl(fd, UsbDevFS.CLEAR_HALT, endpointAddrSegment, errorState);
             if (res < 0)

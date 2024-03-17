@@ -35,10 +35,10 @@ class CoreFoundationHelper {
     static String stringFromCFStringRef(MemorySegment string, Arena arena) {
 
         var strLen = CoreFoundation.CFStringGetLength(string);
-        var buffer = arena.allocateArray(JAVA_CHAR, strLen);
+        var buffer = arena.allocate(JAVA_CHAR, strLen);
         var range = CFRange.allocate(arena);
-        CFRange.location$set(range, 0);
-        CFRange.length$set(range, strLen);
+        CFRange.location(range, 0);
+        CFRange.length(range, strLen);
         CoreFoundation.CFStringGetCharacters(string, range, buffer);
         return new String(buffer.toArray(JAVA_CHAR));
     }
@@ -56,7 +56,7 @@ class CoreFoundationHelper {
      */
     static MemorySegment createCFStringRef(String string, SegmentAllocator allocator) {
         var charArray = string.toCharArray();
-        var chars = allocator.allocateArray(JAVA_CHAR, charArray.length);
+        var chars = allocator.allocate(JAVA_CHAR, charArray.length);
         chars.copyFrom(MemorySegment.ofArray(charArray));
         return CoreFoundation.CFStringCreateWithCharacters(NULL, chars, string.length());
     }

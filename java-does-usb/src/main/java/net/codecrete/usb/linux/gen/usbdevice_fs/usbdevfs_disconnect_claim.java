@@ -2,88 +2,251 @@
 
 package net.codecrete.usb.linux.gen.usbdevice_fs;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
+import java.lang.foreign.*;
+import java.nio.ByteOrder;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+import static java.lang.foreign.ValueLayout.*;
+import static java.lang.foreign.MemoryLayout.PathElement.*;
+
 /**
- * {@snippet :
+ * {@snippet lang=c :
  * struct usbdevfs_disconnect_claim {
  *     unsigned int interface;
  *     unsigned int flags;
  *     char driver[256];
- * };
+ * }
  * }
  */
 public class usbdevfs_disconnect_claim {
 
-    public static MemoryLayout $LAYOUT() {
-        return constants$5.const$4;
+    usbdevfs_disconnect_claim() {
+        // Should not be called directly
     }
-    public static VarHandle interface_$VH() {
-        return constants$5.const$5;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * unsigned int interface;
-     * }
-     */
-    public static int interface_$get(MemorySegment seg) {
-        return (int)constants$5.const$5.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * unsigned int interface;
-     * }
-     */
-    public static void interface_$set(MemorySegment seg, int x) {
-        constants$5.const$5.set(seg, x);
-    }
-    public static int interface_$get(MemorySegment seg, long index) {
-        return (int)constants$5.const$5.get(seg.asSlice(index*sizeof()));
-    }
-    public static void interface_$set(MemorySegment seg, long index, int x) {
-        constants$5.const$5.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static VarHandle flags$VH() {
-        return constants$6.const$0;
-    }
-    /**
-     * Getter for field:
-     * {@snippet :
-     * unsigned int flags;
-     * }
-     */
-    public static int flags$get(MemorySegment seg) {
-        return (int)constants$6.const$0.get(seg);
-    }
-    /**
-     * Setter for field:
-     * {@snippet :
-     * unsigned int flags;
-     * }
-     */
-    public static void flags$set(MemorySegment seg, int x) {
-        constants$6.const$0.set(seg, x);
-    }
-    public static int flags$get(MemorySegment seg, long index) {
-        return (int)constants$6.const$0.get(seg.asSlice(index*sizeof()));
-    }
-    public static void flags$set(MemorySegment seg, long index, int x) {
-        constants$6.const$0.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static MemorySegment driver$slice(MemorySegment seg) {
-        return seg.asSlice(8, 256);
-    }
-    public static long sizeof() { return $LAYOUT().byteSize(); }
-    public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(long len, SegmentAllocator allocator) {
-        return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
-    }
-    public static MemorySegment ofAddress(MemorySegment addr, Arena scope) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, scope); }
-}
 
+    private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
+        usbdevice_fs.C_INT.withName("interface"),
+        usbdevice_fs.C_INT.withName("flags"),
+        MemoryLayout.sequenceLayout(256, usbdevice_fs.C_CHAR).withName("driver")
+    ).withName("usbdevfs_disconnect_claim");
+
+    /**
+     * The layout of this struct
+     */
+    public static final GroupLayout layout() {
+        return $LAYOUT;
+    }
+
+    private static final OfInt interface_$LAYOUT = (OfInt)$LAYOUT.select(groupElement("interface"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * unsigned int interface
+     * }
+     */
+    public static final OfInt interface_$layout() {
+        return interface_$LAYOUT;
+    }
+
+    private static final long interface_$OFFSET = 0;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * unsigned int interface
+     * }
+     */
+    public static final long interface_$offset() {
+        return interface_$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * unsigned int interface
+     * }
+     */
+    public static int interface_(MemorySegment struct) {
+        return struct.get(interface_$LAYOUT, interface_$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * unsigned int interface
+     * }
+     */
+    public static void interface_(MemorySegment struct, int fieldValue) {
+        struct.set(interface_$LAYOUT, interface_$OFFSET, fieldValue);
+    }
+
+    private static final OfInt flags$LAYOUT = (OfInt)$LAYOUT.select(groupElement("flags"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * unsigned int flags
+     * }
+     */
+    public static final OfInt flags$layout() {
+        return flags$LAYOUT;
+    }
+
+    private static final long flags$OFFSET = 4;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * unsigned int flags
+     * }
+     */
+    public static final long flags$offset() {
+        return flags$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * unsigned int flags
+     * }
+     */
+    public static int flags(MemorySegment struct) {
+        return struct.get(flags$LAYOUT, flags$OFFSET);
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * unsigned int flags
+     * }
+     */
+    public static void flags(MemorySegment struct, int fieldValue) {
+        struct.set(flags$LAYOUT, flags$OFFSET, fieldValue);
+    }
+
+    private static final SequenceLayout driver$LAYOUT = (SequenceLayout)$LAYOUT.select(groupElement("driver"));
+
+    /**
+     * Layout for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static final SequenceLayout driver$layout() {
+        return driver$LAYOUT;
+    }
+
+    private static final long driver$OFFSET = 8;
+
+    /**
+     * Offset for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static final long driver$offset() {
+        return driver$OFFSET;
+    }
+
+    /**
+     * Getter for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static MemorySegment driver(MemorySegment struct) {
+        return struct.asSlice(driver$OFFSET, driver$LAYOUT.byteSize());
+    }
+
+    /**
+     * Setter for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static void driver(MemorySegment struct, MemorySegment fieldValue) {
+        MemorySegment.copy(fieldValue, 0L, struct, driver$OFFSET, driver$LAYOUT.byteSize());
+    }
+
+    private static long[] driver$DIMS = { 256 };
+
+    /**
+     * Dimensions for array field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static long[] driver$dimensions() {
+        return driver$DIMS;
+    }
+    private static final VarHandle driver$ELEM_HANDLE = driver$LAYOUT.varHandle(sequenceElement());
+
+    /**
+     * Indexed getter for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static byte driver(MemorySegment struct, long index0) {
+        return (byte)driver$ELEM_HANDLE.get(struct, 0L, index0);
+    }
+
+    /**
+     * Indexed setter for field:
+     * {@snippet lang=c :
+     * char driver[256]
+     * }
+     */
+    public static void driver(MemorySegment struct, long index0, byte fieldValue) {
+        driver$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
+    }
+
+    /**
+     * Obtains a slice of {@code arrayParam} which selects the array element at {@code index}.
+     * The returned segment has address {@code arrayParam.address() + index * layout().byteSize()}
+     */
+    public static MemorySegment asSlice(MemorySegment array, long index) {
+        return array.asSlice(layout().byteSize() * index);
+    }
+
+    /**
+     * The size (in bytes) of this struct
+     */
+    public static long sizeof() { return layout().byteSize(); }
+
+    /**
+     * Allocate a segment of size {@code layout().byteSize()} using {@code allocator}
+     */
+    public static MemorySegment allocate(SegmentAllocator allocator) {
+        return allocator.allocate(layout());
+    }
+
+    /**
+     * Allocate an array of size {@code elementCount} using {@code allocator}.
+     * The returned segment has size {@code elementCount * layout().byteSize()}.
+     */
+    public static MemorySegment allocateArray(long elementCount, SegmentAllocator allocator) {
+        return allocator.allocate(MemoryLayout.sequenceLayout(elementCount, layout()));
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
+        return reinterpret(addr, 1, arena, cleanup);
+    }
+
+    /**
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * The returned segment has size {@code elementCount * layout().byteSize()}
+     */
+    public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {
+        return addr.reinterpret(layout().byteSize() * elementCount, arena, cleanup);
+    }
+}
 

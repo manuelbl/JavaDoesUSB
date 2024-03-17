@@ -28,6 +28,9 @@ void board_led_write(bool on);
 // Return the number of milliseconds since a time in the past
 uint32_t board_millis(void);
 
+// Enter sleep or stop mode and wake up on USB resume
+void board_sleep(void);
+
 // USB serial number
 extern char board_serial_num[13];
 

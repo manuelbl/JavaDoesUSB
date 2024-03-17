@@ -10,7 +10,6 @@ package net.codecrete.usb.linux;
 import net.codecrete.usb.UsbDevice;
 import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.UsbDeviceRegistry;
-import net.codecrete.usb.linux.gen.epoll.epoll_event;
 import net.codecrete.usb.linux.gen.udev.udev;
 
 import java.lang.foreign.Arena;
@@ -19,12 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.Logger.Level.INFO;
+import static java.lang.foreign.MemorySegment.NULL;
 import static net.codecrete.usb.linux.EPoll.epoll_create1;
 import static net.codecrete.usb.linux.EPoll.epoll_wait;
 import static net.codecrete.usb.linux.Linux.allocateErrorState;
 import static net.codecrete.usb.linux.LinuxUsbException.throwException;
 import static net.codecrete.usb.linux.LinuxUsbException.throwLastError;
-import static net.codecrete.usb.linux.gen.epoll.epoll.*;
+import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLLIN;
+import static net.codecrete.usb.linux.gen.errno.errno.EINTR;
 import static net.codecrete.usb.linux.gen.fcntl.fcntl.FD_CLOEXEC;
 
 /**
@@ -44,28 +45,25 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
     private static final MemorySegment ATTR_PRODUCT;
     private static final MemorySegment ATTR_SERIAL;
 
+    private MemorySegment monitor;
+    private int monitorFd;
+
     static {
-        @SuppressWarnings("resource")
         var global = Arena.global();
 
-        SUBSYSTEM_USB = global.allocateUtf8String("usb");
-        MONITOR_NAME = global.allocateUtf8String("udev");
-        DEVTYPE_USB_DEVICE = global.allocateUtf8String("usb_device");
+        SUBSYSTEM_USB = global.allocateFrom("usb");
+        MONITOR_NAME = global.allocateFrom("udev");
+        DEVTYPE_USB_DEVICE = global.allocateFrom("usb_device");
 
-        ATTR_ID_VENDOR = global.allocateUtf8String("idVendor");
-        ATTR_ID_PRODUCT = global.allocateUtf8String("idProduct");
-        ATTR_MANUFACTURER = global.allocateUtf8String("manufacturer");
-        ATTR_PRODUCT = global.allocateUtf8String("product");
-        ATTR_SERIAL = global.allocateUtf8String("serial");
+        ATTR_ID_VENDOR = global.allocateFrom("idVendor");
+        ATTR_ID_PRODUCT = global.allocateFrom("idProduct");
+        ATTR_MANUFACTURER = global.allocateFrom("manufacturer");
+        ATTR_PRODUCT = global.allocateFrom("product");
+        ATTR_SERIAL = global.allocateFrom("serial");
     }
 
-    @SuppressWarnings({"java:S1181", "java:S2189"})
-    @Override
-    protected void monitorDevices() {
-
-        int fd;
-        MemorySegment monitor;
-
+    @SuppressWarnings("java:S1181")
+    private boolean setupMonitor() {
         try {
             // setup udev monitor
             var udevInstance = udev.udev_new();
@@ -82,18 +80,26 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
             if (udev.udev_monitor_enable_receiving(monitor) < 0)
                 throwException("internal error (udev_monitor_enable_receiving)");
 
-            fd = udev.udev_monitor_get_fd(monitor);
-            if (fd < 0)
+            monitorFd = udev.udev_monitor_get_fd(monitor);
+            if (monitorFd < 0)
                 throwException("internal error (udev_monitor_get_fd)");
 
             // create initial list of devices
             var deviceList = enumeratePresentDevices(udevInstance);
             setInitialDeviceList(deviceList);
+            return true;
 
         } catch (Throwable e) {
             enumerationFailed(e);
-            return;
+            return false;
         }
+    }
+
+    @SuppressWarnings("java:S2189")
+    @Override
+    protected void monitorDevices() {
+        if (!setupMonitor())
+            return;
 
         try (var arena = Arena.ofConfined()) {
             // create epoll
@@ -101,10 +107,10 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
             var epfd = epoll_create1(FD_CLOEXEC(), errorState);
             if (epfd < 0)
                 throwLastError(errorState, "internal error (epoll_create)");
-            EPoll.addFileDescriptor(epfd, EPOLLIN(), fd);
+            EPoll.addFileDescriptor(epfd, EPOLLIN(), monitorFd);
 
             // allocate event (as output for epoll_wait)
-            var event = arena.allocate(epoll_event.$LAYOUT());
+            var event = arena.allocate(EPoll.EVENT$LAYOUT);
 
             // monitor device changes
             //noinspection InfiniteLoopStatement
@@ -112,22 +118,27 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
                 try (var cleanup = new ScopeCleanup()) {
 
                     // wait for next change
-                    epoll_wait(epfd, event, 1, -1, errorState);
+                    int res = epoll_wait(epfd, event, 1, -1, errorState);
+                    if (res < 0) {
+                        var err = Linux.getErrno(errorState);
+                        if (err == EINTR())
+                            continue; // continue on interrupt
+                        throwException(err, "internal error (epoll_wait)");
+                    }
 
                     // retrieve change
                     var udevDevice = udev.udev_monitor_receive_device(monitor);
-                    if (udevDevice == null)
-                        continue; // shouldn't happen
+                    if (udevDevice != NULL) {
+                        cleanup.add(() -> udev.udev_device_unref(udevDevice));
 
-                    cleanup.add(() -> udev.udev_device_unref(udevDevice));
+                        // get details
+                        var action = getDeviceAction(udevDevice);
 
-                    // get details
-                    var action = getDeviceAction(udevDevice);
-
-                    if ("add".equals(action)) {
-                        onDeviceConnected(udevDevice);
-                    } else if ("remove".equals(action)) {
-                        onDeviceDisconnected(udevDevice);
+                        if ("add".equals(action)) {
+                            onDeviceConnected(udevDevice);
+                        } else if ("remove".equals(action)) {
+                            onDeviceDisconnected(udevDevice);
+                        }
                     }
                 }
             }
@@ -250,14 +261,14 @@ public class LinuxUsbDeviceRegistry extends UsbDeviceRegistry {
         if (value.address() == 0)
             return null;
 
-        return value.getUtf8String(0);
+        return value.getString(0);
     }
 
     private static String getDeviceName(MemorySegment udevDevice) {
-        return udev.udev_device_get_devnode(udevDevice).getUtf8String(0);
+        return udev.udev_device_get_devnode(udevDevice).getString(0);
     }
 
     private static String getDeviceAction(MemorySegment udevDevice) {
-        return udev.udev_device_get_action(udevDevice).getUtf8String(0);
+        return udev.udev_device_get_action(udevDevice).getString(0);
     }
 }

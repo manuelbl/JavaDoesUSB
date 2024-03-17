@@ -43,7 +43,7 @@ class Linux {
      * @return error message
      */
     static String getErrorMessage(int err) {
-        return string.strerror(err).getUtf8String(0);
+        return string.strerror(err).getString(0);
     }
 
     /**
@@ -56,6 +56,6 @@ class Linux {
      * @return error code
      */
     static int getErrno(MemorySegment errorState) {
-        return (int) callState_errno$VH.get(errorState);
+        return (int) callState_errno$VH.get(errorState, 0);
     }
 }
