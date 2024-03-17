@@ -52,6 +52,10 @@ The device can be put into suspend mode by the host. It will go into a low-power
 
 To put the device into suspended mode, put the host computer to sleep or supended mode. To wake it up, wake up the host computer.
 
+NOTE: *Due to a limitation of TinyUSB, the device will only go into suspended mode if the host has set a USB configuration. Usually it means that an application has communicated with the device after it was plugged in. The LED blinks as long as no USB configuration has been set.*
+
+NOTE: *Suspend/resume has not been implemented for the STM32F723 Discovery board.*
+
 
 
 ## Building the firmware

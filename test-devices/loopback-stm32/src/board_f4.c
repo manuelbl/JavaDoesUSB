@@ -62,7 +62,7 @@ const rcc_clock_setup_t clock_setup_hse_value_out_84mhz_3v3 = {
 	.hpre = RCC_CFGR_HPRE_DIV1,
 	.ppre1 = RCC_CFGR_PPRE1_DIV2,
 	.ppre2 = RCC_CFGR_PPRE2_DIV1,
-	.voltage_scale = PWR_CR_VOS_SCALE2,
+	.voltage_scale = PWR_CR_VOS_SCALE1,
 	.flash_config = FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_LATENCY_2WS
 };
 

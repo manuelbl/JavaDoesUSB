@@ -75,7 +75,7 @@ To upload using the BlackPill's built-in bootloader:
 2. Press the *Boot* button while connecting the board via USB to your computer. By pressing the *Boot* button, the device enters bootloader mode.
 3. Verify with `dfu-util --list` that the bootloader is available via USB. If not unplug the device and repeat step 2.
 4. Run the below command from the project directory.
-5. Unplug and reconnect the board from your computer. The LED should now blink about twice a second.
+5. Unplug and reconnect the board from your computer. Both the power and user LED should be lit and the device should appear as a serial device (aka as COM port on Windows).
 
 ```
 dfu-util --device 0483:df11 --alt 0 --dfuse-address 0x08000000 --reset --download bin/blackpill-fxxx.bin
