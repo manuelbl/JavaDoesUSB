@@ -40,7 +40,7 @@ $ mvn clean package
 ### Run the jar
 
 ```shell
-$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.0.0-jar-with-dependencies.jar
 Device:
   VID: 0xcafe
   PID: 0xceaf

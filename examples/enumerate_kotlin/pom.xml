@@ -4,7 +4,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>enumerate</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>enumerate</name>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.tinylog</groupId>

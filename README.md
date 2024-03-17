@@ -31,14 +31,14 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
 </dependency>
 ```
 
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.0.0-SNAPSHOT'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.0.0'
 ```
 
 ```java
