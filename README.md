@@ -60,8 +60,8 @@ public class EnumerateDevices {
 
 ## Documentation
 
-- [Javadoc](https://javadoc.io/doc/net.codecrete.usb/java-does-usb) 
-
+- [Code Examples](https://github.com/manuelbl/JavaDoesUSB/wiki/Java-Does-USB-By-Examples)
+- [Javadoc](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
 
 
