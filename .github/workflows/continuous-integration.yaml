@@ -24,7 +24,7 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Java
         uses: oracle-actions/setup-java@v1
         with:
@@ -33,6 +33,8 @@ jobs:
           version: latest
       - name: Configure GPG key
         run: |
+          gpg --version
+          echo "Encoded key length: ${#GPG_SIGNING_KEY}"
           echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
