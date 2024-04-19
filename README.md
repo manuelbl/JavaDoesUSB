@@ -44,12 +44,12 @@ compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.0.0'
 ```java
 package net.codecrete.usb.sample;
 
-import net.codecrete.usb.USB;
+import net.codecrete.usb.Usb;
 
 public class EnumerateDevices {
 
     public static void main(String[] args) {
-        for (var device : USB.getAllDevices()) {
+        for (var device : Usb.getDevices()) {
             System.out.println(device);
         }
     }
