@@ -78,18 +78,16 @@ public class MacosUsbDevice extends UsbDeviceImpl {
     }
 
     @Override
-    public void detachStandardDrivers() {
-        if (isOpened())
-            throwException("detachStandardDrivers() must not be called while the device is open");
+    public synchronized void detachStandardDrivers() {
+        checkIsClosed("detachStandardDrivers() must not be called while the device is open");
         var ret = IoKitUsb.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateCaptureDeviceMask());
         if (ret != 0)
             throwException(ret, "detaching standard drivers failed");
     }
 
     @Override
-    public void attachStandardDrivers() {
-        if (isOpened())
-            throwException("attachStandardDrivers() must not be called while the device is open");
+    public synchronized void attachStandardDrivers() {
+        checkIsClosed("attachStandardDrivers() must not be called while the device is open");
         var ret = IoKitUsb.USBDeviceReEnumerate(device, IOKit.kUSBReEnumerateReleaseDeviceMask());
         if (ret != 0)
             throwException(ret, "attaching standard drivers failed");
@@ -100,11 +98,17 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         return claimedInterfaces != null;
     }
 
+    private void checkIsClosed(String message) {
+        if (!connected)
+            throwException("device has been disconnected");
+        if (isOpened())
+            throwException(message);
+    }
+
     @SuppressWarnings("java:S2276")
     @Override
     public synchronized void open() {
-        if (isOpened())
-            throwException("device is already open");
+        checkIsClosed("device is already open");
 
         // open device (several retries if device has just been connected/discovered)
         var duration = System.currentTimeMillis() - discoveryTime;
@@ -161,6 +165,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
     }
 
     synchronized void closeFully() {
+        connected = false;
         close();
         IoKitUsb.Release(device);
         device = null;
@@ -580,7 +585,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
     }
 
     @Override
-    public void abortTransfers(UsbDirection direction, int endpointNumber) {
+    public synchronized void abortTransfers(UsbDirection direction, int endpointNumber) {
         var epInfo = getEndpointInfo(endpointNumber, direction, UsbTransferType.BULK,
                 UsbTransferType.INTERRUPT);
 
@@ -590,7 +595,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
     }
 
     @Override
-    public void clearHalt(UsbDirection direction, int endpointNumber) {
+    public synchronized void clearHalt(UsbDirection direction, int endpointNumber) {
         var epInfo = getEndpointInfo(endpointNumber, direction, UsbTransferType.BULK,
                 UsbTransferType.INTERRUPT);
 

@@ -55,6 +55,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
     protected int deviceProtocol;
     protected Version versionUsb;
     protected Version versionDevice;
+    protected boolean connected;
 
     /**
      * Creates a new instance.
@@ -70,6 +71,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
         uniqueDeviceId = id;
         vid = vendorId;
         pid = productId;
+        connected = true;
     }
 
     @Override
@@ -155,6 +157,11 @@ public abstract class UsbDeviceImpl implements UsbDevice {
 
     public Object getUniqueId() {
         return uniqueDeviceId;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
 
     /**

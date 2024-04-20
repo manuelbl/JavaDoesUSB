@@ -153,6 +153,18 @@ public interface UsbDevice {
     void attachStandardDrivers();
 
     /**
+     * Indicates if the device is connected.
+     * <p>
+     * When a {@link UsbDevice} instance is initially returned by {@link Usb#getDevices()} and related methods,
+     * it is connected. When the user unplugs the device, the application can still hold on to instance of
+     * {@link UsbDevice} even though the actual USB device is gone. This method can be used to check if the
+     * device is still connected.
+     * </p>
+     * @return {@code true} if the device is connected, {@code false} if it is no longer connected
+     */
+    boolean isConnected();
+
+    /**
      * Opens the device for communication.
      */
     void open();

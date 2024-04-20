@@ -57,6 +57,27 @@ public class Unplug {
         var worker = activeDevices.remove(device);
         worker.setDisconnectTime(System.currentTimeMillis());
         worker.join();
+
+        // test handling of disconnected devices
+        new Thread(() -> {
+            sleep(2000);
+            try {
+                device.open();
+                System.err.println("Device should not be openable after disconnect");
+            } catch (UsbException e) {
+                // expected
+            }
+        }).start();
+    }
+
+    @SuppressWarnings({"SameParameterValue", "java:S2925"})
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     static class DeviceWorker {
@@ -239,16 +260,6 @@ public class Unplug {
             while (true) {
                 device.transferIn(config.endpointEchoIn());
                 logWork(1);
-            }
-        }
-
-        @SuppressWarnings({"SameParameterValue", "java:S2925"})
-        private static void sleep(long millis) {
-            try {
-                Thread.sleep(millis);
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             }
         }
     }
