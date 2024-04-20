@@ -66,7 +66,7 @@ public class Unplug {
                 System.err.println("Device should not be openable after disconnect");
             } catch (UsbException e) {
                 if (!e.getMessage().contains("disconnected"))
-                    System.err.println(STR."Unexpected error: \{e.getMessage()}");
+                    System.err.println("Unexpected error: " + e.getMessage());
             }
         }).start();
     }

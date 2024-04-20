@@ -97,9 +97,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
 
     @Override
     public synchronized void open() {
-        if (isOpened())
-            throwException("device is already open");
-
+        checkIsClosed("device is already open");
         showAsOpen = true;
     }
 
