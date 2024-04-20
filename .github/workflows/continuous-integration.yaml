@@ -35,7 +35,7 @@ jobs:
         run: |
           echo -n "$UNIT_TEST_SIGNING_KEY" | base64 --decode | gpg --import
         env:
-          UNIT_TEST_SIGNING_KEY: ${{ env.UNIT_TEST_SIGNING_KEY }}
+          UNIT_TEST_SIGNING_KEY: ${{ vars.UNIT_TEST_SIGNING_KEY }}
         shell: bash
       - name: Build java-does-usb
         run: ./mvnw $MAVEN_ARGS -DskipTests clean install javadoc:javadoc
