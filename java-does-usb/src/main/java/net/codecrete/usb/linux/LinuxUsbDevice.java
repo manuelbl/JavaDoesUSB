@@ -71,16 +71,14 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
     }
 
     @Override
-    public void detachStandardDrivers() {
-        if (isOpened())
-            throwException("detachStandardDrivers() must not be called while the device is open");
+    public synchronized void detachStandardDrivers() {
+        checkIsClosed("detachStandardDrivers() must not be called while the device is open");
         detachDrivers = true;
     }
 
     @Override
-    public void attachStandardDrivers() {
-        if (isOpened())
-            throwException("attachStandardDrivers() must not be called while the device is open");
+    public synchronized void attachStandardDrivers() {
+        checkIsClosed("attachStandardDrivers() must not be called while the device is open");
         detachDrivers = false;
     }
 
@@ -91,8 +89,7 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
 
     @Override
     public synchronized void open() {
-        if (isOpened())
-            throwException("device is already open");
+        checkIsClosed("device is already open");
 
         try (var arena = Arena.ofConfined()) {
             var pathUtf8 = arena.allocateFrom(uniqueDeviceId.toString());

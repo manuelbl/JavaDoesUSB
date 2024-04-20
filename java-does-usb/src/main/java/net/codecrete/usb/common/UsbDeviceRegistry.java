@@ -204,9 +204,9 @@ public abstract class UsbDeviceRegistry {
             return;
 
         try {
-            device.close();
+            ((UsbDeviceImpl)device).disconnect();
         } catch (Exception e) {
-            LOG.log(INFO, "failed to close USB device - ignoring exception", e);
+            LOG.log(INFO, "failed to close disconnected USB device - ignoring exception", e);
         }
 
         removeDevice(deviceId);

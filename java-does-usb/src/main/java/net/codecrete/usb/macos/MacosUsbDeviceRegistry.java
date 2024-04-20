@@ -267,19 +267,7 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
     private void onDevicesDisconnected(MemorySegment ignoredRefCon, int iterator) {
 
         // process device iterator for disconnected devices
-        iterateDevices(iterator, (entryId, _, _) -> {
-            var device = findDevice(entryId);
-            if (device == null)
-                return;
-
-            try {
-                ((MacosUsbDevice) device).closeFully();
-            } catch (Exception e) {
-                LOG.log(INFO, "failed to close USB device - ignoring exception", e);
-            }
-
-            removeDevice(entryId);
-        });
+        iterateDevices(iterator, (entryId, _, _) -> closeAndRemoveDevice(entryId));
     }
 
     @FunctionalInterface

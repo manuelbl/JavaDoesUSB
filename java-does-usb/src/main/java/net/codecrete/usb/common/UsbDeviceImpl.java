@@ -95,6 +95,18 @@ public abstract class UsbDeviceImpl implements UsbDevice {
             throw new UsbException("device needs to be opened first for this operation");
     }
 
+    protected void checkIsClosed(String message) {
+        if (!connected)
+            throw new UsbException("device has been disconnected");
+        if (isOpened())
+            throw new UsbException(message);
+    }
+
+    protected synchronized void disconnect() {
+        connected = false;
+        close();
+    }
+
     @Override
     public int getProductId() {
         return pid;

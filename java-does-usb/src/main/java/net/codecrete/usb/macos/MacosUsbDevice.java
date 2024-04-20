@@ -98,13 +98,6 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         return claimedInterfaces != null;
     }
 
-    private void checkIsClosed(String message) {
-        if (!connected)
-            throwException("device has been disconnected");
-        if (isOpened())
-            throwException(message);
-    }
-
     @SuppressWarnings("java:S2276")
     @Override
     public synchronized void open() {
@@ -164,9 +157,9 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             asyncTask.removeEventSource(source);
     }
 
-    synchronized void closeFully() {
-        connected = false;
-        close();
+    @Override
+    protected synchronized void disconnect() {
+        super.disconnect();
         IoKitUsb.Release(device);
         device = null;
     }
