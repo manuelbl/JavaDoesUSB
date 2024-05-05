@@ -6,6 +6,7 @@
         "stm32f7xx.h": "c",
         "stm32f4xx.h": "c",
         "stm32f401xc.h": "c",
-        "stm32f401xe.h": "c"
+        "stm32f401xe.h": "c",
+        "tusb_option.h": "c"
     }
 }

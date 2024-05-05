@@ -19,6 +19,8 @@
 #include "device/usbd.h"
 #include "vendor_custom.h"
 
+void dcd_edpt_close_all(uint8_t rhport);
+
 
 static void cv_init(void);
 static void cv_reset(uint8_t rhport);
@@ -136,6 +138,8 @@ void close_endpoints() {
         cv_num_eps_open -= 1;
         usbd_edpt_close(rhport, cv_eps_open[cv_num_eps_open]);
     }
+
+    dcd_edpt_close_all(rhport);
 }
 
 bool cv_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request) {
