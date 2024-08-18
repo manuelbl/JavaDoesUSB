@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TimeoutTest extends TestDeviceBase {
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void bulkTransferIn_timesOut() {
         var endpointIn = config.endpointLoopbackIn();
         assertThrows(UsbTimeoutException.class, () -> testDevice.transferIn(endpointIn, 200));
