@@ -68,24 +68,11 @@ public class TestDeviceBase {
         resetBuffers();
 
         // drain loopback data
-        while (true) {
-            try {
-                testDevice.transferIn(config.endpointLoopbackIn(), 1);
-            } catch (UsbTimeoutException e) {
-                break;
-            }
-        }
+        drainData(config.endpointLoopbackIn());
 
         // drain interrupt data
-        if (isLoopbackDevice()) {
-            while (true) {
-                try {
-                    testDevice.transferIn(config.endpointEchoIn(), 1);
-                } catch (UsbTimeoutException e) {
-                    break;
-                }
-            }
-        }
+        if (isLoopbackDevice())
+            drainData(config.endpointEchoIn());
 
         // reset buffers again
         resetBuffers();
@@ -94,6 +81,16 @@ public class TestDeviceBase {
     static void resetBuffers() {
         testDevice.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.INTERFACE,
                 (byte) 0x04, (short) 0, (short) config.interfaceNumber()), null);
+    }
+
+    static void drainData(int endpointNumber) {
+        while (true) {
+            try {
+                testDevice.transferIn(endpointNumber, 1);
+            } catch (UsbTimeoutException e) {
+                break;
+            }
+        }
     }
 
     static byte[] generateRandomBytes(int numBytes, long seed) {

@@ -34,16 +34,14 @@ class TimeoutTest extends TestDeviceBase {
         var data = generateRandomBytes(20, 7280277392L);
         testDevice.transferOut(config.endpointLoopbackOut(), data);
 
-       var received = testDevice.transferIn(config.endpointLoopbackIn(), 200);
+        var received = testDevice.transferIn(config.endpointLoopbackIn(), 200);
         assertArrayEquals(data, received);
-
     }
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
         var endpointOut = config.endpointLoopbackOut();
-        var endpointIn = config.endpointLoopbackIn();
 
         // The test device has an internal buffer of about 2KB for full-speed
         // and 16KB for high-speed. The first transfer should not time out.
@@ -59,14 +57,7 @@ class TimeoutTest extends TestDeviceBase {
             }
         });
 
-        // drain data in loopback loop
-        while (true) {
-            try {
-                testDevice.transferIn(endpointIn, 200);
-            } catch (UsbTimeoutException e) {
-                break;
-            }
-        }
+        drainData(config.endpointLoopbackIn());
     }
 
     @Test

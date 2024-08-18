@@ -21,6 +21,7 @@
 // FIFO buffer for loopback data
 tu_fifo_t loopback_fifo;
 uint8_t loopback_buffer[512];
+bool delay_loopback_reset = false;
 
 // RX buffer for loopback
 uint8_t loopback_rx_buffer[64];
@@ -62,7 +63,11 @@ int main(void) {
 
 // reset device in predictable state
 void reset_buffers(void) {
-    tu_fifo_clear(&loopback_fifo);
+    if (cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
+        delay_loopback_reset = true;
+    } else {
+        tu_fifo_clear(&loopback_fifo);
+    }
 }
 
 // --- Loopback
@@ -73,6 +78,11 @@ void loopback_init(void) {
 
 // Check if the next transmission should be started
 void loopback_check_tx(void) {
+
+    if (delay_loopback_reset) {
+        tu_fifo_clear(&loopback_fifo);
+        delay_loopback_reset = false;
+    }
 
     tu_fifo_buffer_info_t info;
     tu_fifo_get_read_info(&loopback_fifo, &info);
@@ -123,11 +133,6 @@ void cust_vendor_rx_cb(uint8_t ep_addr, uint32_t recv_bytes) {
 
 // Invoked when last tx transfer finished
 void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
-    // If buffer has been reset in the mean time,
-    // we might not be able to advance it fully or at all.
-    int max_advance = tu_fifo_count(&loopback_fifo);
-    if (sent_bytes > max_advance)
-        sent_bytes = max_advance;
     if (sent_bytes > 0)
         tu_fifo_advance_read_pointer(&loopback_fifo, sent_bytes);
 
@@ -135,7 +140,8 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
     loopback_check_rx();
 
     // check ZLP
-    if ((sent_bytes & (BULK_MAX_PACKET_SIZE - 1)) == 0
+    if (sent_bytes > 0
+            && (sent_bytes & (BULK_MAX_PACKET_SIZE - 1)) == 0
             && !cust_vendor_is_transmitting(ep_addr))
         cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
 

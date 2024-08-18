@@ -27,6 +27,7 @@
 // FIFO buffer for loopback data
 tu_fifo_t loopback_fifo;
 uint8_t loopback_buffer[BUFFER_SIZE] __attribute__ ((aligned(4)));
+bool delay_loopback_reset = false;
 
 uint16_t bulk_packet_size = 64;
 const int num_rx_packets = 2;
@@ -74,7 +75,12 @@ int main(void) {
 
 // reset device in predictable state
 void reset_buffers(void) {
-    tu_fifo_clear(&loopback_fifo);
+    if (cust_vendor_is_transmitting(EP_LOOPBACK_TX)) {
+        delay_loopback_reset = true;
+    } else {
+        tu_fifo_clear(&loopback_fifo);
+    }
+
     num_echos = 0;
 }
 
@@ -86,6 +92,11 @@ void loopback_init(void) {
 
 // Check if the next transmission should be started
 void loopback_check_tx(void) {
+
+    if (delay_loopback_reset) {
+        tu_fifo_clear(&loopback_fifo);
+        delay_loopback_reset = false;
+    }
 
     uint16_t n = tu_fifo_count(&loopback_fifo);
 
@@ -143,7 +154,8 @@ void cust_vendor_tx_cb(uint8_t ep_addr, uint32_t sent_bytes) {
         loopback_check_rx();
 
         // check ZLP
-        if ((sent_bytes & (bulk_packet_size - 1)) == 0
+        if (sent_bytes > 0
+                && (sent_bytes & (bulk_packet_size - 1)) == 0
                 && !cust_vendor_is_transmitting(ep_addr)) {
             cust_vendor_start_transmit(EP_LOOPBACK_TX, NULL, 0);
             led_busy();
