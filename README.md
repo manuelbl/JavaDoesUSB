@@ -2,9 +2,9 @@
 
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
-*Java Does USB* is a Java library for working with USB devices. It allows to query the conntected USB devices and to communicate with them using custom / vendor specific protocols. (It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.)
+*Java Does USB* is a Java library for working with USB devices. It allows to query the conntected USB devices and to communicate with them using custom / vendor specific protocols. It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.
 
-The library uses the [Foreign Function and Memory API](https://docs.oracle.com/en/java/javase/21/core/foreign-function-and-memory-api.html#GUID-FBE990DA-C356-46E8-9109-C75567849BA8) to access native APIs of the underlying operating system. It is written entirely in Java and does not use JNI or any native third-party library. The *Foreign Function and Memory API* has been introduced with Java 22. Preview versions were available in several earlier releases.
+The library uses the [Foreign Function and Memory API](https://docs.oracle.com/en/java/javase/22/core/foreign-function-and-memory-api.html) to access native APIs of the underlying operating system. It is written entirely in Java and does not use JNI or any native third-party library. The *Foreign Function and Memory API* has been introduced with Java 22.
 
 
 
@@ -31,14 +31,14 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
 </dependency>
 ```
 
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.0.0'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.1.0'
 ```
 
 ```java
@@ -69,7 +69,7 @@ public class EnumerateDevices {
 
 - [Bulk Transfer](examples/bulk_transfer/) demonstrates how to find a USB device, open it and communicate using bulk transfer.
 - Enumeration ([Java](examples/enumerate/) / [Kotlin](examples/enumerate_kotlin/)) lists all connected USB devices and displays information about interfaces and endpoints.
-- Monitor ([Java](examples/monitor/) / [Kotlin](examples/monitor_kotlin/)) lists the connected USB devices and then monitors for devices being connected and disconnnected.
+- Monitor ([Java](examples/monitor/) / [Kotlin](examples/monitor_kotlin/)) lists the connected USB devices and then monitors for devices being connected and disconnected.
 - [Device Firmware Upload (DFU) for STM32](examples/stm_dfu) uploads firmware to STM32 microcontrollers supporting the built-in DFU mode.
 - [ePaper Display](examples/epaper_display) communicates with an IT8951 controller for e-Paper displays and shows an image on the display.
 
@@ -77,8 +77,8 @@ public class EnumerateDevices {
 
 ## Prerequisite
 
-- Java 22 available at [jdk.java.net](https://jdk.java.net/21/), [Azul](https://www.azul.com/downloads/?package=jdk), [Adoptium](https://adoptium.net/temurin/releases/) or with your favorite package manager.
-- Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
+- Java 22 or higher, available at [jdk.java.net](https://jdk.java.net/), [Azul](https://www.azul.com/downloads/?package=jdk), [Adoptium](https://adoptium.net/temurin/releases/) or with your favorite package manager.
+- Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit).
 
 
 
@@ -87,14 +87,14 @@ public class EnumerateDevices {
 
 ### macOS
 
-No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded if the application is run with root privileges. It runs both on Macs with Apple Silicon and Intel processors.
+No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded if the application is run with *root* privileges. It runs both on Macs with Apple Silicon and Intel processors.
 
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library only runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel and ARM64 processors.
+*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel and ARM64 processors.
 
-Similar to macOS, a Java application can connect to any USB device and claim any interfaces that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
+Similar to macOS, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
 
 Most Linux distributions set up user accounts without permissions to access USB devices. The *udev* system daemon is responsible for assigning permissions to USB devices. It can be configured to assign specific permissions or ownership:
 
@@ -111,13 +111,13 @@ Without the *udev* rule, it is still possible to enumerate and query all USB dev
 
 ### Windows
 
-The Windows driver model is rather rigid. It's not possible to open any USB device unless it uses the *WinUSB* driver. This even applies to devices with no installed driver. Enumerating and querying USB devices is possible independent of the driver.
+The Windows driver model is rather rigid. It's not possible to open a USB device unless it uses the *WinUSB* driver. This even applies to devices with no installed driver. Enumerating and querying USB devices is possible independent of the driver.
 
 USB devices can implement special control requests to instruct Windows to automatically install the WinUSB driver (search for *WCID* or *Microsoft OS Compatibility Descriptors*). The WinUSB driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
-Windows for ARM64 is not yet supported. A port is probably easy, provided you have hardware to test it.
+Windows for ARM64 is not yet supported. It will once an official Java build for version 22 or higher is available.
 
 
 
@@ -135,7 +135,7 @@ The *Foreign Function And Memory API* has been available as a preview feature in
 
 | Version | Main New Features | Compatibility |
 | - | - | - |
-| 1.0.x | Release for final Java API | JDK 22 |
+| 1.x.x | Release for final Java API | JDK 22 and higher |
 | 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
 | 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
 | 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |

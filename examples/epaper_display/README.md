@@ -17,9 +17,9 @@ be temporarily detached.)
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -45,7 +45,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------< net.codecrete.usb.examples:epaper-display >--------------
-[INFO] Building epaper-display 1.0.0
+[INFO] Building epaper-display 1.1.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ epaper-display ---
@@ -60,7 +60,7 @@ Display size: 1200 x 825
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 [INFO] Total time:  2.247 s
-[INFO] Finished at: 2024-02-18T16:48:43+01:00
+[INFO] Finished at: 2024-10-13T16:48:43+01:00
 [INFO] ------------------------------------------------------------------------
 ```
 
@@ -79,6 +79,6 @@ $ sudo -i
 Password:
 $ cd /Users/me/Documents/JavaDoesUSB/examples/epaper_display
 $ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-20.jdk/Contents/Home
-$ $JAVA_HOME/bin/java --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/1.0.0/java-does-usb-1.0.0.jar net.codecrete.usb.examples.EPaperDisplay
+$ $JAVA_HOME/bin/java --enable-native-access=ALL-UNNAMED -cp target/classes:/Users/me/.m2/repository/net/codecrete/usb/java-does-usb/1.1.0/java-does-usb-1.1.0.jar net.codecrete.usb.examples.EPaperDisplay
 Display size: 1200 x 825
 ```

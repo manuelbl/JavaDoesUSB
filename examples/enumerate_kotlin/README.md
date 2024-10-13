@@ -10,9 +10,9 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -40,7 +40,7 @@ $ mvn clean package
 ### Run the jar
 
 ```shell
-$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.0.0-jar-with-dependencies.jar
+$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.1.0-jar-with-dependencies.jar
 Device:
   VID: 0xcafe
   PID: 0xceaf

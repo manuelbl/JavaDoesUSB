@@ -10,9 +10,9 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -38,7 +38,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ----------------< net.codecrete.usb.examples:enumerate >----------------
-[INFO] Building enumerate 1.0.0
+[INFO] Building enumerate 1.1.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ enumerate ---

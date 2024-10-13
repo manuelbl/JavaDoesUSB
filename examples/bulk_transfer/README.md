@@ -11,9 +11,9 @@ This sample shows how to find a device, open it and transfer data from and to bu
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -39,7 +39,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------< net.codecrete.usb.examples:bulk-transfer >--------------
-[INFO] Building bulk-transfer 1.0.0
+[INFO] Building bulk-transfer 1.1.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ bulk-transfer ---
@@ -55,6 +55,6 @@ $ mvn compile exec:exec
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 [INFO] Total time:  1.228 s
-[INFO] Finished at: 2024-02-18T16:23:29+01:00
+[INFO] Finished at: 2024-10-13T16:23:29+01:00
 [INFO] ------------------------------------------------------------------------
 ```

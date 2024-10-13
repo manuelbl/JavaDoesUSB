@@ -10,9 +10,9 @@ This sample program monitors USB devices as they are connected and disconnected.
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -39,7 +39,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -----------------< net.codecrete.usb.examples:monitor >-----------------
-[INFO] Building monitor 1.0.0
+[INFO] Building monitor 1.1.0
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ monitor ---
@@ -59,6 +59,6 @@ Connected:    VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loop
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 [INFO] Total time:  17.647 s
-[INFO] Finished at: 2024-02-18T16:50:59+01:00
+[INFO] Finished at: 2024-10-13T16:50:59+01:00
 [INFO] -----------------------------------------------------------------------
 ```

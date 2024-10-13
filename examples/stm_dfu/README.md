@@ -12,9 +12,9 @@ Even though the DFU
 
 ## How to run
 
-### Install Java 22
+### Install Java 22 or higher
 
-Check that *Java 22* is installed:
+Check that Java 22 or higher is installed:
 
 ```shell
 $ java -version
@@ -58,7 +58,7 @@ Run the command below (adapting the file path depending on your specific board):
 
 ```shell
 $ mvn package
-$ java --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-1.0.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
+$ java --enable-native-access=ALL-UNNAMED -jar target/stm_dfu-1.1.0.jar ../../test-devices/loopback-stm32/bin/blackpill-f401cc.bin
 DFU device found with serial 35A737883336.
 Target memory segment: Internal Flash
 Erasing page at 0x8000000 (size 0x4000)
