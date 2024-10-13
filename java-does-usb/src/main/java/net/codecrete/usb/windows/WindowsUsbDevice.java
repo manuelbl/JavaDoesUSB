@@ -42,6 +42,7 @@ import static net.codecrete.usb.windows.DevicePropertyKey.HardwareIds;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwException;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
+import static net.codecrete.usb.windows.gen.kernel32.Kernel32.ERROR_INVALID_PARAMETER;
 
 /**
  * Windows implementation for USB device.
@@ -121,7 +122,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         // retries might be needed until the device path is available.
         var numRetries = 30; // 30 x 100ms
         while (true) {
-            if (claimInteraceSynchronized(interfaceNumber))
+            if (claimInterfaceSynchronized(interfaceNumber))
                 return; // success
 
             numRetries -= 1;
@@ -139,7 +140,8 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         }
     }
 
-    private synchronized boolean claimInteraceSynchronized(int interfaceNumber) {
+    @SuppressWarnings("java:S3776")
+    private synchronized boolean claimInterfaceSynchronized(int interfaceNumber) {
         checkIsOpen();
 
         getInterfaceWithCheck(interfaceNumber, false);
@@ -172,8 +174,14 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 try {
                     // open first interface
                     var interfaceHandleHolder = arena.allocate(ADDRESS);
-                    if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0)
+                    if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0) {
+                        if (Win.getLastError(errorState) == ERROR_INVALID_PARAMETER())
+                            throw new UsbException(
+                                    "claiming interface failed (required WinUSB driver is probably not installed for the device)",
+                                    ERROR_INVALID_PARAMETER()
+                            );
                         throwLastError(errorState, "claiming interface failed");
+                    }
                     var interfaceHandle = dereference(interfaceHandleHolder);
 
                     firstIntfHandle.deviceHandle = deviceHandle;
@@ -571,7 +579,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             var devicePath = deviceInfoSet.getDevicePathByGUID(instanceId);
             if (devicePath == null) {
                 LOG.log(INFO, "Child device {0} has no device path / interface GUID", instanceId);
-                throw new UsbException("claiming interface failed (function has no device path / interface GUID, might be missing WinUSB driver)");
+                throw new UsbException("claiming interface failed (composite function has no device path / interface GUID; the required WinUSB driver is probably not installed)");
             }
 
             if (devicePaths == null)

@@ -19,6 +19,7 @@ call %JEXTRACT% --output ../../src/main/java ^
   --include-constant ERROR_MORE_DATA ^
   --include-constant ERROR_INSUFFICIENT_BUFFER ^
   --include-constant ERROR_FILE_NOT_FOUND ^
+  --include-constant ERROR_INVALID_PARAMETER ^
   --include-constant ERROR_GEN_FAILURE ^
   --include-constant ERROR_NOT_FOUND ^
   --include-constant ERROR_IO_PENDING ^

@@ -390,6 +390,15 @@ public class Kernel32 {
     public static int ERROR_GEN_FAILURE() {
         return ERROR_GEN_FAILURE;
     }
+    private static final int ERROR_INVALID_PARAMETER = (int)87L;
+    /**
+     * {@snippet lang=c :
+     * #define ERROR_INVALID_PARAMETER 87
+     * }
+     */
+    public static int ERROR_INVALID_PARAMETER() {
+        return ERROR_INVALID_PARAMETER;
+    }
     private static final int ERROR_INSUFFICIENT_BUFFER = (int)122L;
     /**
      * {@snippet lang=c :
