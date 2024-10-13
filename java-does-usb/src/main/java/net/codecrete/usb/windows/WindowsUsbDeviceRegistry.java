@@ -44,6 +44,7 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 import static java.lang.foreign.ValueLayout.PathElement;
 import static net.codecrete.usb.usbstandard.Constants.CONFIGURATION_DESCRIPTOR_TYPE;
 import static net.codecrete.usb.usbstandard.Constants.DEFAULT_LANGUAGE;
@@ -225,8 +226,9 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
             // create new device
             var device = new WindowsUsbDevice(devicePath, vendorId, productId, configDesc, isComposite);
             device.setFromDeviceDescriptor(descriptorSegment);
-            device.setProductString(descriptorSegment, index -> getStringDescriptor(hubHandle, usbPortNum, index));
 
+            var languages = getLanguages(hubHandle, usbPortNum, arena);
+            device.setProductString(descriptorSegment, index -> getStringDescriptor(hubHandle, usbPortNum, index, languages));
             return device;
         }
     }
@@ -282,17 +284,37 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
     }
 
     @SuppressWarnings("java:S106")
-    private String getStringDescriptor(MemorySegment hubHandle, int usbPortNumber, int index) {
+    private String getStringDescriptor(MemorySegment hubHandle, int usbPortNumber, int index, short[] languages) {
         if (index == 0)
             return null;
 
         try (var arena = Arena.ofConfined()) {
-            var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE,
-                    index, DEFAULT_LANGUAGE, arena));
-            return stringDesc.string();
+            for (var language : languages) {
+                try {
+                    var stringDesc = new StringDescriptor(getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE,
+                            index, language, arena));
+                    return stringDesc.string();
 
+                } catch (UsbException e) {
+                    // ignore and try next language
+                }
+            }
+        }
+
+        // Even though this function is only called for string descriptors referenced in the
+        // configuration descriptor, some device might not provide them; so ignore it.
+        return null;
+    }
+
+    private short[] getLanguages(MemorySegment hubHandle, int usbPortNumber, Arena arena) {
+        try {
+            var languages = getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE, 0, (short) 0, arena);
+            var n = (languages.byteSize() - 2) / 2;
+            if (n == 0)
+                return new short[] { DEFAULT_LANGUAGE };
+            return languages.asSlice(2, n * 2).toArray(JAVA_SHORT);
         } catch (UsbException e) {
-            return null;
+            return new short[] { DEFAULT_LANGUAGE };
         }
     }
 
