@@ -26,11 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Java
-        uses: oracle-actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          website: jdk.java.net
-          release: 22
-          version: latest
+          distribution: 'zulu'
+          java-version: '23'
       - name: Configure unit test GPG key
         run: |
           echo -n "$UNIT_TEST_SIGNING_KEY" | base64 --decode | gpg --import
