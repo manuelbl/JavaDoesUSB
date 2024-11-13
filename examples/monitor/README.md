@@ -39,7 +39,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -----------------< net.codecrete.usb.examples:monitor >-----------------
-[INFO] Building monitor 1.1.0
+[INFO] Building monitor 1.1.1
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ monitor ---
