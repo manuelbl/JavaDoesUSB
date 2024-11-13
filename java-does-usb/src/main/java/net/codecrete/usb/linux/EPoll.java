@@ -15,7 +15,6 @@ import java.lang.foreign.GroupLayout;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 
@@ -51,18 +50,8 @@ public class EPoll {
                     JAVA_INT_UNALIGNED.withName("events"),
                     DATA$LAYOUT.withName("data")).withName("epoll_event");
 
-    // Memory layout for an array of epoll_event structs
-    private static final SequenceLayout EVENT_ARRAY$LAYOUT = MemoryLayout.sequenceLayout(1, EVENT$LAYOUT);
-
-    // varhandle to access the "fd" field in an array of epoll_event structs
-    static final VarHandle EVENT_ARRAY_DATA_FD$VH = EVENT_ARRAY$LAYOUT.varHandle(
-            MemoryLayout.PathElement.sequenceElement(),
-            MemoryLayout.PathElement.groupElement("data"),
-            MemoryLayout.PathElement.groupElement("fd")
-    );
-
     // varhandle to access the "fd" field in an epoll_event struct
-    private static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
+    static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
             MemoryLayout.PathElement.groupElement("data"),
             MemoryLayout.PathElement.groupElement("fd")
     );
