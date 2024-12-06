@@ -7,12 +7,14 @@
 
 package net.codecrete.usb.usbstandard;
 
+import net.codecrete.usb.UsbException;
+
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.nio.charset.StandardCharsets;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 
 /**
@@ -27,13 +29,46 @@ public class StringDescriptor {
         this.descriptor = descriptor;
     }
 
+    /**
+     * Indicates if this string descriptor is valid.
+     * <p>
+     * Invalid string descriptors might be missing the header,
+     * have a descriptor type that is not a string descriptor,
+     * indicate an incorrect length or have incomplete UTF-16 code units.
+     * </p>
+     * @return if this descriptor is valid
+     */
+    public boolean isValid() {
+        return descriptor.byteSize() >= 2
+                && descriptor.get(JAVA_BYTE, bDescriptorType$OFFSET) == 3
+                && length() == descriptor.byteSize()
+                && (descriptor.byteSize() & 1) == 0;
+    }
+
     public int length() {
         return 0xff & descriptor.get(JAVA_BYTE, bLength$OFFSET);
     }
 
+    /**
+     * Returns the string of this string descriptor.
+     * <p>
+     * Invalid UTF-16 code units are replaced with the Unicode replacement character.
+     * Trailing 0s (UTF-16 code unit with value 0) are truncated.
+     * </p>
+     * @throws UsbException if the string descriptor is invalid
+     * @return the string value
+     */
     public String string() {
-        var chars = descriptor.asSlice(string$OFFSET, length() - 2L).toArray(JAVA_CHAR);
-        return new String(chars);
+        if (!isValid())
+            throw new UsbException("String descriptor is invalid");
+        var len = (int)(length() - 2L);
+        var bytes = descriptor.asSlice(string$OFFSET, len).toArray(JAVA_BYTE);
+
+        // truncate trailing 0s
+        while (len > 0 && bytes[len-2] == 0 && bytes[len-1] == 0)
+            len--;
+
+        return new String(bytes, 0, len, StandardCharsets.UTF_16LE);
     }
 
     // struct USBStringDescriptor {
@@ -48,5 +83,6 @@ public class StringDescriptor {
     );
 
     private static final long bLength$OFFSET = 0;
+    private static final long bDescriptorType$OFFSET = 1;
     private static final long string$OFFSET = 2;
 }
