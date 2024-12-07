@@ -98,8 +98,7 @@ class LinuxAsyncTask {
 
                 // for all ready file descriptors, reap URBs
                 for (int i = 0; i < res; i++) {
-                    var event = events.asSlice(i * EPoll.EVENT$LAYOUT.byteSize(), EPoll.EVENT$LAYOUT);
-                    var fd = (int) EPoll.EVENT_DATA_FD$VH.get(event, 0L);
+                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, 0L, i);
                     reapURBs(fd, urbPointerHolder, errorState);
                 }
             }

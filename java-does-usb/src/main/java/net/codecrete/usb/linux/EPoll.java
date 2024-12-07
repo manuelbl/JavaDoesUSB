@@ -50,8 +50,14 @@ public class EPoll {
                     JAVA_INT_UNALIGNED.withName("events"),
                     DATA$LAYOUT.withName("data")).withName("epoll_event");
 
+    // varhandle to access the "fd" field in an epoll_event array
+    static final VarHandle EVENT_ARRAY_DATA_FD$VH = EVENT$LAYOUT.arrayElementVarHandle(
+            MemoryLayout.PathElement.groupElement("data"),
+            MemoryLayout.PathElement.groupElement("fd")
+    );
+
     // varhandle to access the "fd" field in an epoll_event struct
-    static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
+    private static final VarHandle EVENT_DATA_FD$VH = EVENT$LAYOUT.varHandle(
             MemoryLayout.PathElement.groupElement("data"),
             MemoryLayout.PathElement.groupElement("fd")
     );
