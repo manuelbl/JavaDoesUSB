@@ -38,7 +38,7 @@ $ mvn compile exec:exec
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ----------------< net.codecrete.usb.examples:enumerate >----------------
-[INFO] Building enumerate 1.1.1
+[INFO] Building enumerate 1.1.2
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
 [INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ enumerate ---

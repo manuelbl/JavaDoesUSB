@@ -4,7 +4,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>monitor</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <packaging>jar</packaging>
 
   <name>monitor</name>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.1.1</version>
+      <version>1.1.2</version>
     </dependency>
     <dependency>
       <groupId>org.tinylog</groupId>

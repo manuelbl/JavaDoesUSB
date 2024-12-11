@@ -40,7 +40,7 @@ $ mvn clean package
 ### Run the jar
 
 ```shell
-$ java --enable-native-access=ALL-UNNAMED -jar target/monitor-1.1.1-jar-with-dependencies.jar
+$ java --enable-native-access=ALL-UNNAMED -jar target/monitor-1.1.2-jar-with-dependencies.jar
 Present:      VID: 0x1d6b, PID: 0x0002, manufacturer: Linux 6.5.0-18-generic xhci-hcd, product: xHCI Host Controller, serial: 0000:00:14.0, ID: /dev/bus/usb/001/001
 Present:      VID: 0xcafe, PID: 0xceaf, manufacturer: JavaDoesUSB, product: Loopback, serial: 35A737883336, ID: /dev/bus/usb/001/009
 Monitoring... Press ENTER to quit.
