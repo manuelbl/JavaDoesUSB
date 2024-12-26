@@ -64,6 +64,7 @@ public class DFU {
             System.out.println("Firmware successfully downloaded and verified");
 
             device.startApplication();
+            device.waitForDisconnect();
             System.out.println("DFU mode ended and firmware started");
 
             device.close();

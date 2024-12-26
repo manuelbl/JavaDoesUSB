@@ -134,6 +134,27 @@ public class DFUDevice {
     }
 
     /**
+     * Waits until the device disconnects.
+     * <p>
+     * Disconnection is a side effect of leaving DFU mode.
+     * </p>
+     * <p>
+     * If the device does not disconnect after 5 seconds,
+     * an exception will be thrown.
+     * </p>
+     */
+    public void waitForDisconnect() {
+        var waitingTime = 5000;
+        while (waitingTime > 0 && usbDevice.isConnected()) {
+            sleep(100);
+            waitingTime -= 100;
+        }
+
+        if (usbDevice.isConnected())
+            throw new DFUException("Device did not restart (try disconnecting and reconnecting it)");
+    }
+
+    /**
      * Clears an error status.
      */
     public void clearStatus() {
@@ -170,7 +191,7 @@ public class DFUDevice {
     public byte[] read(int address, int length) {
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_DNLOAD_IDLE);
         setAddress(address);
-        exitDownloadMode();
+        exitMode();
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_UPLOAD_IDLE);
 
         var result = new byte[length];
@@ -187,20 +208,7 @@ public class DFUDevice {
             blockNum += 1;
         }
 
-        // request zero length chunk to exit out of upload mode
-        var transfer = createDfuControlTransfer(DFURequest.UPLOAD, blockNum);
-        usbDevice.controlTransferIn(transfer, 0);
-
-        DFUStatus status;
-        try {
-            status = getStatus();
-        } catch (DFUException e) {
-            // Device might respond with an empty response; try again
-            status = getStatus();
-        }
-
-        if (status.state() != DeviceState.DFU_IDLE)
-            throw new DFUException("Unexpected state after exiting from upload mode");
+        exitMode();
 
         return result;
     }
@@ -247,7 +255,7 @@ public class DFUDevice {
             transaction += 1;
         }
 
-        exitDownloadMode();
+        exitMode();
     }
 
     /**
@@ -327,7 +335,7 @@ public class DFUDevice {
         return Segment.findPage(segments, address);
     }
 
-    private void exitDownloadMode() {
+    private void exitMode() {
         abort();
 
         var status = getStatus();
@@ -340,6 +348,8 @@ public class DFUDevice {
     public void startApplication() {
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_DNLOAD_IDLE);
 
+        // By sending a zero-length download packet and querying the status,
+        // the device will leave DFU mode and restart.
         var transfer = createDfuControlTransfer(DFURequest.DOWNLOAD, 0);
         usbDevice.controlTransferOut(transfer, null);
 
