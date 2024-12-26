@@ -13,6 +13,7 @@ import net.codecrete.usb.UsbDevice;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static net.codecrete.usb.UsbRecipient.DEVICE;
 import static net.codecrete.usb.UsbRequestType.STANDARD;
@@ -22,8 +23,11 @@ import static net.codecrete.usb.UsbRequestType.STANDARD;
  */
 public class Segment {
 
+    private static final Pattern SEGMENT_PATTERN = Pattern.compile("@([^/]+)/0x([0-9A-Fa-f]+)/");
+    private static final Pattern SECTOR_PATTERN = Pattern.compile(",?(\\d+)\\*(\\d+) ?([BKM]?)(.)");
+
     /**
-     * Derives the segments from the USB interface description.
+     * Decodes the segment information from the USB interface description.
      * @param device the USB device
      * @param interfaceNumber the number of the DFU USB interface
      * @return list of segments
@@ -32,7 +36,7 @@ public class Segment {
         var result = new ArrayList<Segment>();
 
         // STM uses multiple alternate interface settings to represent segments.
-        // The alternate interface settings name describes the sectors within the segment.
+        // The alternate interface setting name describes the sectors within the segment.
         var configDesc = device.getConfigurationDescriptor();
         int offset = 0;
         while (offset < configDesc.length) {
@@ -69,8 +73,8 @@ public class Segment {
      */
     public static Page findPage(List<Segment> segments, int address) {
         for (var seg : segments) {
-            for (var sec : seg.sectors()) {
-                if (address >= sec.startAddress() && address < sec.endAddress()) {
+            for (var sec : seg.getSectors()) {
+                if (address >= sec.startAddress() && address < sec.getEndAddress()) {
                     int offset = address - sec.startAddress();
                     int pageNum = offset / sec.pageSize();
                     return new Page(seg, sec.startAddress() + pageNum * sec.pageSize(), 1, sec.pageSize(), sec.attributes());
@@ -81,10 +85,10 @@ public class Segment {
         return null;
     }
 
-    private final int altSetting_;
-    private final String name_;
+    private final int altSetting;
+    private final String name;
 
-    private final List<Page> sectors_;
+    private final List<Page> sectors;
 
 
     /**
@@ -97,58 +101,29 @@ public class Segment {
      */
     private Segment(int altSetting, String segmentDesc) {
         // The format is described in "UM0424 STM32 USB-FS-Device development kit", ch. 10.3.2
-        altSetting_ = altSetting;
-        sectors_ = new ArrayList<>();
-        int offset = segmentDesc.indexOf('/', 1);
-        name_ = segmentDesc.substring(1, offset).trim();
+        this.altSetting = altSetting;
+        sectors = new ArrayList<>();
 
-        int startAddress = 0;
-        while (offset < segmentDesc.length()) {
-            // parse start address
-            if (segmentDesc.charAt(offset) == '/') {
-                int addressEnd = segmentDesc.indexOf('/', offset + 1);
-                startAddress = (int) Long.parseLong(segmentDesc.substring(offset + 3, addressEnd), 16);
-                offset = addressEnd + 1;
-                continue;
-            }
+        var match = SEGMENT_PATTERN.matcher(segmentDesc);
+        if (!match.find())
+            throw new DFUException("Invalid segment description: " + segmentDesc);
+        this.name = match.group(1).trim();
+        var startAddress = (int) Long.parseLong(match.group(2), 16);
 
-            // skip comma
-            if (segmentDesc.charAt(offset) == ',')
-                offset += 1;
+        match = SECTOR_PATTERN.matcher(segmentDesc.substring(match.end()));
+        while (match.find()) {
+            var count = Integer.parseInt(match.group(1));
+            var size = Integer.parseInt(match.group(2));
+            var multiplier = match.group(3);
+            var attributes = match.group(4).charAt(0) - 0x60;
 
-            // parse count
-            int countEnd = segmentDesc.indexOf('*', offset);
-            int count = Integer.parseInt(segmentDesc.substring(offset, countEnd));
-            offset = countEnd + 1;
-
-            // parse sector size
-            int sizeEnd = offset;
-            while (Character.isDigit(segmentDesc.charAt(sizeEnd)))
-                sizeEnd += 1;
-            int size = Integer.parseInt(segmentDesc.substring(offset, sizeEnd));
-            offset = sizeEnd;
-
-            // skip whitespace
-            while (segmentDesc.charAt(offset) == ' ')
-                offset += 1;
-
-            // parse unit
-            char unitChar = segmentDesc.charAt(offset);
-            if (unitChar == 'B') {
-                offset += 1;
-            } else if (unitChar == 'K') {
+            if (multiplier.equals("K")) {
                 size *= 1024;
-                offset += 1;
-            } else if (unitChar == 'M') {
+            } else if (multiplier.equals("M")) {
                 size *= 1024 * 1024;
-                offset += 1;
             }
 
-            // parse sector attributes
-            int sectorAttrs = segmentDesc.charAt(offset) - 0x40;
-            offset += 1;
-
-            sectors_.add(new Page(this, startAddress, count, size, sectorAttrs));
+            sectors.add(new Page(this, startAddress, count, size, attributes));
             startAddress += size;
         }
     }
@@ -157,23 +132,23 @@ public class Segment {
      * Gets the alternative interface setting number
      * @return the setting number
      */
-    public int altSetting() {
-        return altSetting_;
+    public int getAltSetting() {
+        return altSetting;
     }
 
     /**
      * Gets the segment name.
      * @return the name
      */
-    public String name() {
-        return name_;
+    public String getName() {
+        return name;
     }
 
     /**
      * Gets the sectors withing the segment
      * @return list of sectors
      */
-    public List<Page> sectors() {
-        return sectors_;
+    public List<Page> getSectors() {
+        return sectors;
     }
 }

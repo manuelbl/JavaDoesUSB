@@ -15,30 +15,72 @@ package net.codecrete.usb.dfu;
  */
 public enum DeviceStatus {
 
-    OK, // No error condition is present
-    ERR_TARGET, // File is not targeted for use by this device.
-    ERR_FILE, // File is for this device but fails some vendor-specific verification test.
-    ERR_WRITE, // Device is unable to write memory.
-    ERR_ERASE, // Memory erase function failed.
-    ERR_CHECK_ERASED, // Memory erase check failed.
-    ERR_PROG, // Program memory function failed.
-    ERR_VERIFY, // Programmed memory failed verification.
-    ERR_ADDRESS, // Cannot program memory due to received address that is out of range.
-    ERR_NOTDONE, // Received DFU_DNLOAD with wLength = 0, but device does not think it has all of the data yet.
-    ERR_FIRMWARE, // Device’s firmware is corrupt. It cannot return to run-time (non-DFU) operations.
-    ERR_VENDOR, // iString indicates a vendor-specific error.
-    ERR_USBR, // Device detected unexpected USB reset signaling.
-    ERR_POR, // Device detected unexpected power on reset.
-    ERR_UNKNOWN, // Something went wrong, but the device does not know what it was.
-    ERR_STALLEDPKT; // Device stalled an unexpected request.
+    /**
+     * No error condition is present
+     */
+    OK,
+    /**
+     * File is not targeted for use by this device.
+     */
+    ERR_TARGET,
+    /**
+     * File is for this device but fails some vendor-specific verification test.
+     */
+    ERR_FILE,
+    /**
+     * Device is unable to write memory.
+     */
+    ERR_WRITE,
+    /**
+     * Memory erase function failed.
+     */
+    ERR_ERASE,
+    /**
+     * Memory erase check failed.
+     */
+    ERR_CHECK_ERASED,
+    /**
+     * Program memory function failed.
+     */
+    ERR_PROG,
+    /**
+     * Programmed memory failed verification.
+     */
+    ERR_VERIFY,
+    /**
+     * Cannot program memory due to received address that is out of range.
+     */
+    ERR_ADDRESS,
+    /**
+     * Received DFU_DNLOAD with wLength = 0, but device does not think it has all of the data yet.
+     */
+    ERR_NOTDONE,
+    /**
+     * Device’s firmware is corrupt. It cannot return to run-time (non-DFU) operations.
+     */
+    ERR_FIRMWARE,
+    /**
+     * iString indicates a vendor-specific error.
+     */
+    ERR_VENDOR,
+    /**
+     * Device detected unexpected USB reset signaling.
+     */
+    ERR_USBR,
+    /**
+     * Device detected unexpected power on reset.
+     */
+    ERR_POR,
+    /**
+     * Something went wrong, but the device does not know what it was.
+     */
+    ERR_UNKNOWN,
+    /**
+     * Device stalled an unexpected request.
+     */
+    ERR_STALLEDPKT;
 
-    public byte value() {
-        return (byte) ordinal();
-    }
-
-    private static final DeviceStatus[] values = values();
-    
     public static DeviceStatus fromValue(byte value) {
-        return values[value];
+        return values()[value];
     }
 }

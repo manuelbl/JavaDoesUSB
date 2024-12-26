@@ -24,7 +24,7 @@ public record Page(Segment segment, int startAddress, int count, int pageSize, i
      * Gets the end address of the page or sector.
      * @return the end address
      */
-    public int endAddress() {
+    public int getEndAddress() {
         return startAddress + count * pageSize;
     }
 

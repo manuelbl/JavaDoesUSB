@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Command line application for upload firmware to STM32.
+ * Command line application for uploading firmware to STM32 microcontrollers.
  * <p>
  * Only the STM32 variant of the DFU protocol is supported.
  * Only binary firmware format is supported (no .hex or .dfu files).
@@ -53,8 +53,8 @@ public class DFU {
             System.exit(4);
             return;
         }
-        var device = devices.get(0);
-        System.out.printf("DFU device found with serial %s.%n", device.serialNumber());
+        var device = devices.getFirst();
+        System.out.printf("DFU device found with serial %s.%n", device.getSerialNumber());
 
         // download and verify firmware
         try {
@@ -64,7 +64,7 @@ public class DFU {
             System.out.println("Firmware successfully downloaded and verified");
 
             device.startApplication();
-            System.out.println("DFU mode exited and firmware started");
+            System.out.println("DFU mode ended and firmware started");
 
             device.close();
 

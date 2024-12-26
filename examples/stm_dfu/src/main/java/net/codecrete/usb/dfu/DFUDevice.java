@@ -23,12 +23,12 @@ import static net.codecrete.usb.UsbRequestType.CLASS;
  */
 public class DFUDevice {
 
-    private final UsbDevice usbDevice_;
-    private final int interfaceNumber_;
-    private final int transferSize_;
-    private final Version dfuVersion_;
+    private final UsbDevice usbDevice;
+    private final int interfaceNumber;
+    private final int transferSize;
+    private final Version dfuVersion;
 
-    private List<Segment> segments_;
+    private List<Segment> segments;
 
     /**
      * Gets all connected DFU devices
@@ -89,40 +89,40 @@ public class DFUDevice {
      * @param usbDevice the USB device
      */
     public DFUDevice(UsbDevice usbDevice) {
-        usbDevice_ = usbDevice;
-        interfaceNumber_ = getDFUInterfaceNumber(usbDevice);
+        this.usbDevice = usbDevice;
+        interfaceNumber = getDFUInterfaceNumber(usbDevice);
 
         var configDesc = usbDevice.getConfigurationDescriptor();
         int offset = getDFUDescriptorOffset(configDesc);
         assert offset > 0;
 
-        transferSize_ = getInt16(configDesc, offset + 5);
-        dfuVersion_ = new Version(getInt16(configDesc, offset + 7));
+        transferSize = getInt16(configDesc, offset + 5);
+        dfuVersion = new Version(getInt16(configDesc, offset + 7));
     }
 
     /**
      * Gets the DFU protocol version.
      * @return the protocol version
      */
-    public Version dfuVersion() {
-        return dfuVersion_;
+    public Version getDfuVersion() {
+        return dfuVersion;
     }
 
     /**
      * Gets the device serial number.
      * @return the serial number
      */
-    public String serialNumber() {
-        return usbDevice_.getSerialNumber();
+    public String getSerialNumber() {
+        return usbDevice.getSerialNumber();
     }
 
     /**
      * Opens the DFU device for communication.
      */
     public void open() {
-        usbDevice_.open();
-        usbDevice_.claimInterface(interfaceNumber_);
-        segments_ = Segment.getSegments(usbDevice_, interfaceNumber_);
+        usbDevice.open();
+        usbDevice.claimInterface(interfaceNumber);
+        segments = Segment.getSegments(usbDevice, interfaceNumber);
         clearErrorIfNeeded();
     }
 
@@ -130,23 +130,23 @@ public class DFUDevice {
      * Closes the DFU device.
      */
     public void close() {
-        usbDevice_.close();
+        usbDevice.close();
     }
 
     /**
      * Clears an error status.
      */
     public void clearStatus() {
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.CLEAR_STATUS.value(), 0, interfaceNumber_);
-        usbDevice_.controlTransferOut(setup, null);
+        var transfer = createDfuControlTransfer(DFURequest.CLEAR_STATUS, 0);
+        usbDevice.controlTransferOut(transfer, null);
     }
 
     /**
      * Aborts the download mode.
      */
     public void abort() {
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.ABORT.value(), 0, interfaceNumber_);
-        usbDevice_.controlTransferOut(setup, null);
+        var transfer = createDfuControlTransfer(DFURequest.ABORT, 0);
+        usbDevice.controlTransferOut(transfer, null);
     }
 
     /**
@@ -154,8 +154,11 @@ public class DFUDevice {
      * @return the status
      */
     public DFUStatus getStatus() {
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.GET_STATUS.value(), 0, interfaceNumber_);
-        return DFUStatus.fromBytes(usbDevice_.controlTransferIn(setup, 6));
+        var transfer = createDfuControlTransfer(DFURequest.GET_STATUS, 0);
+        var response = usbDevice.controlTransferIn(transfer, 6);
+        if (response.length != 6)
+            throw new DFUException("Invalid response from GET_STATUS request");
+        return DFUStatus.fromBytes(response);
     }
 
     /**
@@ -168,7 +171,6 @@ public class DFUDevice {
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_DNLOAD_IDLE);
         setAddress(address);
         exitDownloadMode();
-
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_UPLOAD_IDLE);
 
         var result = new byte[length];
@@ -177,17 +179,28 @@ public class DFUDevice {
         int offset = 0;
         int blockNum = 2;
         while (offset < length) {
-            int chunkSize = Math.min(transferSize_, length - offset);
-            var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
-            var chunk = usbDevice_.controlTransferIn(setup, chunkSize);
+            int chunkSize = Math.min(transferSize, length - offset);
+            var transfer = createDfuControlTransfer(DFURequest.UPLOAD, blockNum);
+            var chunk = usbDevice.controlTransferIn(transfer, chunkSize);
             System.arraycopy(chunk, 0, result, offset, chunkSize);
             offset += chunkSize;
             blockNum += 1;
         }
 
-        // request zero lenght chunk to exit out of upload mode
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.UPLOAD.value(), blockNum, interfaceNumber_);
-        usbDevice_.controlTransferIn(setup, 0);
+        // request zero length chunk to exit out of upload mode
+        var transfer = createDfuControlTransfer(DFURequest.UPLOAD, blockNum);
+        usbDevice.controlTransferIn(transfer, 0);
+
+        DFUStatus status;
+        try {
+            status = getStatus();
+        } catch (DFUException e) {
+            // Device might respond with an empty response; try again
+            status = getStatus();
+        }
+
+        if (status.state() != DeviceState.DFU_IDLE)
+            throw new DFUException("Unexpected state after exiting from upload mode");
 
         return result;
     }
@@ -201,13 +214,13 @@ public class DFUDevice {
     public void download(byte[] firmware) {
         int length = firmware.length;
 
-        // validate start and end address exist and are writable
+        // validate that start and end address exist and are writable
         int startAddress = STM32.FLASH_BASE_ADDRESS;
         var firstPage = getWritablePage(startAddress);
         getWritablePage(startAddress + length);
 
-        usbDevice_.selectAlternateSetting(interfaceNumber_, firstPage.segment().altSetting());
-        System.out.printf("Target memory segment: %s%n", firstPage.segment().name());
+        usbDevice.selectAlternateSetting(interfaceNumber, firstPage.segment().getAltSetting());
+        System.out.printf("Target memory segment: %s%n", firstPage.segment().getName());
 
         // erase if needed
         if (firstPage.isErasable())
@@ -219,14 +232,14 @@ public class DFUDevice {
         int offset = 0;
         int transaction = 2;
         while (offset < length) {
-            int chunkSize = Math.min(length - offset, transferSize_);
+            int chunkSize = Math.min(length - offset, transferSize);
 
             byte[] chunk = new byte[chunkSize];
             System.arraycopy(firmware, offset, chunk, 0, chunkSize);
 
             System.out.printf("Writing data at 0x%x (size 0x%x)%n", startAddress + offset, chunkSize);
-            var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), transaction, interfaceNumber_);
-            usbDevice_.controlTransferOut(setup, chunk);
+            var transfer = createDfuControlTransfer(DFURequest.DOWNLOAD, transaction);
+            usbDevice.controlTransferOut(transfer, chunk);
 
             finishDownloadCommand("writing data");
 
@@ -243,7 +256,7 @@ public class DFUDevice {
      * Only applicable to erasable sector, i.e. flash memory.
      * </p>
      * <p>
-     * Only entire pages can be erase. If start and end address to not fall onto
+     * Only entire pages can be erased. If start and end address to not fall onto
      * page boundaries, this method will extend the range to be erased.
      * </p>
      * @param startAddress the start address of the range
@@ -261,20 +274,20 @@ public class DFUDevice {
 
             System.out.printf("Erasing page at 0x%x (size 0x%x)%n", page.startAddress(), page.pageSize());
             erasePage(page.startAddress());
-            startAddress = page.endAddress();
+            startAddress = page.getEndAddress();
         }
     }
 
     public void erasePage(int address) {
-        execDownloadCommandWithAddress((byte) 0x41, "erasing page", address);
+        executeSpecialCommand((byte) 0x41, "erasing page", address);
     }
 
     public void setAddress(int address) {
-        execDownloadCommandWithAddress((byte) 0x21, "setting address", address);
+        executeSpecialCommand((byte) 0x21, "setting address", address);
     }
 
-    private void execDownloadCommandWithAddress(byte command, String action, int address) {
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), 0, interfaceNumber_);
+    private void executeSpecialCommand(byte command, String action, int address) {
+        var transfer = createDfuControlTransfer(DFURequest.DOWNLOAD, 0);
         var data = new byte[] {
                 command,
                 (byte) address,
@@ -282,7 +295,7 @@ public class DFUDevice {
                 (byte) (address >> 16),
                 (byte) (address >> 24)
         };
-        usbDevice_.controlTransferOut(setup, data);
+        usbDevice.controlTransferOut(transfer, data);
 
         finishDownloadCommand(action);
     }
@@ -311,7 +324,7 @@ public class DFUDevice {
     }
 
     private Page findPage(int address) {
-        return Segment.findPage(segments_, address);
+        return Segment.findPage(segments, address);
     }
 
     private void exitDownloadMode() {
@@ -327,8 +340,8 @@ public class DFUDevice {
     public void startApplication() {
         expectState(DeviceState.DFU_IDLE, DeviceState.DFU_DNLOAD_IDLE);
 
-        var setup = new UsbControlTransfer(CLASS, INTERFACE, DFURequest.DOWNLOAD.value(), 2, interfaceNumber_);
-        usbDevice_.controlTransferOut(setup, null);
+        var transfer = createDfuControlTransfer(DFURequest.DOWNLOAD, 0);
+        usbDevice.controlTransferOut(transfer, null);
 
         var status = getStatus();
         if (status.state() != DeviceState.DFU_MANIFEST)
@@ -365,4 +378,9 @@ public class DFUDevice {
             throw new DFUException("Sleep failed", e);
         }
     }
+
+    private UsbControlTransfer createDfuControlTransfer(DFURequest request, int value) {
+        return new UsbControlTransfer(CLASS, INTERFACE, request.ordinal(), value, interfaceNumber);
+    }
+
 }

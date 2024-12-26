@@ -20,9 +20,5 @@ public enum DFURequest {
     GET_STATUS,
     CLEAR_STATUS,
     GET_STATE,
-    ABORT;
-
-    public int value() {
-        return ordinal();
-    }
+    ABORT
 }
