@@ -33,13 +33,13 @@ public class Usb {
         UsbDeviceRegistry impl;
         if (osName.equals("Mac OS X") && (osArch.equals("x86_64") || osArch.equals("aarch64"))) {
             impl = new MacosUsbDeviceRegistry();
-        } else if (osName.startsWith("Windows") && osArch.equals("amd64")) {
+        } else if (osName.startsWith("Windows") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new WindowsUsbDeviceRegistry();
         } else if (osName.equals("Linux") && (osArch.equals("amd64") || osArch.equals("aarch64"))) {
             impl = new LinuxUsbDeviceRegistry();
         } else {
             throw new UnsupportedOperationException(String.format(
-                    "Java Does USB has no implementation for architecture %s/%s",
+                    "The \"Java Does USB\" library has no implementation for JRE/JDK %s/%s",
                     osName, osArch));
         }
         return impl;
