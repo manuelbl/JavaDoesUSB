@@ -31,14 +31,14 @@ If you are using Maven, add the below dependency to your pom.xml:
 <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.1.2</version>
+      <version>1.2.0</version>
 </dependency>
 ```
 
 If you are using Gradle, add the below dependency to your build.gradle file:
 
 ```groovy
-compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.1.2'
+compile group: 'net.codecrete.usb', name: 'java-does-usb', version: '1.2.0'
 ```
 
 ```java
@@ -78,7 +78,7 @@ public class EnumerateDevices {
 ## Prerequisite
 
 - Java 22 or higher, available at [jdk.java.net](https://jdk.java.net/), [Azul](https://www.azul.com/downloads/?package=jdk), [Adoptium](https://adoptium.net/temurin/releases/) or with your favorite package manager.
-- Windows (x86 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit).
+- Windows (x86 64-bit, ARM 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit).
 
 
 
@@ -92,7 +92,7 @@ No special considerations apply. Using this library, a Java application can conn
 
 ### Linux
 
-*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel and ARM64 processors.
+*libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel/AMD and ARM processors.
 
 Similar to macOS, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
 
@@ -117,7 +117,7 @@ USB devices can implement special control requests to instruct Windows to automa
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
-Windows for ARM64 is not yet supported. It will once an official Java build for version 22 or higher is available.
+The implementation runs on both Windows for Intel/AMD and ARM processors. Few OpenJDK distributions support Windows on ARM, and they do not support all recent versions of Java. [Eclipse Temurin](https://adoptium.net/temurin/releases/?os=windows&arch=aarch64&version=23) has released a version for Java 23.
 
 
 
