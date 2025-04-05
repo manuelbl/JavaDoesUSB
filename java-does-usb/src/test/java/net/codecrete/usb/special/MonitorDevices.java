@@ -16,7 +16,7 @@ import net.codecrete.usb.UsbRequestType;
 import java.io.IOException;
 
 /**
- * Test program that communicates with the device as soon as it has been pugged in.
+ * Test program that communicates with the device as soon as it has been plugged in.
  * <p>
  * Quit with Ctrl-C or whatever stops a program on your platform.
  * </p>
@@ -24,11 +24,11 @@ import java.io.IOException;
 public class MonitorDevices {
 
     public static void main(String[] args) throws IOException {
-        Usb.setOnDeviceConnected((device) -> {
+        Usb.setOnDeviceConnected(device -> {
             System.out.println("Connected:    " + device.toString());
             talkToTestDevice(device);
         });
-        Usb.setOnDeviceDisconnected((device) -> System.out.println("Disconnected: " + device.toString()));
+        Usb.setOnDeviceDisconnected(device -> System.out.println("Disconnected: " + device.toString()));
 
         for (var device : Usb.getDevices()) {
             System.out.println("Present:      " + device.toString());

@@ -53,14 +53,14 @@ public class USBSerial {
         device.claimInterface(dataInterfaceNum);
 
         // set line coding (9600bps, 8 bit)
-        byte[] coding = { (byte)0x80, 0x25, 0, 0, 0, 0, 8 };
+        byte[] coding = {(byte) 0x80, 0x25, 0, 0, 0, 0, 8};
         device.controlTransferOut(
                 new UsbControlTransfer(UsbRequestType.CLASS, UsbRecipient.INTERFACE, 0x20, 0, commInterfaceNum),
                 coding);
 
         // send some data
         int dataOutEp = getDataOutEndpointNum(device, dataInterfaceNum);
-        byte[] data = { 'H', 'e', 'l', 'l', 'o', '\r', '\n' };
+        byte[] data = {'H', 'e', 'l', 'l', 'o', '\r', '\n'};
         device.transferOut(dataOutEp, data);
 
         // close device and interfaces

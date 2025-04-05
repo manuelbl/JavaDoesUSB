@@ -15,10 +15,6 @@ import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.common.Transfer;
 import net.codecrete.usb.common.UsbDeviceImpl;
 import net.codecrete.usb.usbstandard.SetupPacket;
-import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.winusb.WinUSB;
-import net.codecrete.usb.windows.winsdk.Kernel32B;
-import net.codecrete.usb.windows.winsdk.WinUSB2;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -36,13 +32,36 @@ import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
-import static net.codecrete.usb.windows.DevicePropertyKey.Children;
-import static net.codecrete.usb.windows.DevicePropertyKey.HardwareIds;
+import static net.codecrete.usb.windows.CustomApis.CloseHandle;
+import static net.codecrete.usb.windows.CustomApis.WinUsb_ControlTransfer;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwException;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
-import static net.codecrete.usb.windows.gen.kernel32.Kernel32.ERROR_INVALID_PARAMETER;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_Children;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_HardwareIds;
+import static windows.win32.devices.usb.Apis.WinUsb_AbortPipe;
+import static windows.win32.devices.usb.Apis.WinUsb_Free;
+import static windows.win32.devices.usb.Apis.WinUsb_GetAssociatedInterface;
+import static windows.win32.devices.usb.Apis.WinUsb_Initialize;
+import static windows.win32.devices.usb.Apis.WinUsb_ReadPipe;
+import static windows.win32.devices.usb.Apis.WinUsb_ResetPipe;
+import static windows.win32.devices.usb.Apis.WinUsb_SetCurrentAlternateSetting;
+import static windows.win32.devices.usb.Apis.WinUsb_SetPipePolicy;
+import static windows.win32.devices.usb.Apis.WinUsb_WritePipe;
+import static windows.win32.devices.usb.WINUSB_PIPE_POLICY.PIPE_TRANSFER_TIMEOUT;
+import static windows.win32.devices.usb.WINUSB_PIPE_POLICY.RAW_IO;
+import static windows.win32.foundation.GENERIC_ACCESS_RIGHTS.GENERIC_READ;
+import static windows.win32.foundation.GENERIC_ACCESS_RIGHTS.GENERIC_WRITE;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_INVALID_PARAMETER;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_IO_PENDING;
+import static windows.win32.storage.filesystem.Apis.CreateFileW;
+import static windows.win32.storage.filesystem.FILE_CREATION_DISPOSITION.OPEN_EXISTING;
+import static windows.win32.storage.filesystem.FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL;
+import static windows.win32.storage.filesystem.FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_OVERLAPPED;
+import static windows.win32.storage.filesystem.FILE_SHARE_MODE.FILE_SHARE_READ;
+import static windows.win32.storage.filesystem.FILE_SHARE_MODE.FILE_SHARE_WRITE;
 
 /**
  * Windows implementation for USB device.
@@ -134,7 +153,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 LOG.log(DEBUG, "Sleeping for 100ms...");
                 //noinspection BusyWait
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -163,10 +182,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 LOG.log(DEBUG, "opening device {0}", devicePath);
 
                 // open Windows device if needed
-                var pathSegment = Win.createSegmentFromString(devicePath, arena);
-                var deviceHandle = Kernel32B.CreateFileW(pathSegment, Kernel32.GENERIC_WRITE() | Kernel32.GENERIC_READ(),
-                        Kernel32.FILE_SHARE_WRITE() | Kernel32.FILE_SHARE_READ(), NULL, Kernel32.OPEN_EXISTING(),
-                        Kernel32.FILE_ATTRIBUTE_NORMAL() | Kernel32.FILE_FLAG_OVERLAPPED(), NULL, errorState);
+                var pathSegment = arena.allocateFrom(devicePath, UTF_16LE);
+                var deviceHandle = CreateFileW(errorState, pathSegment, GENERIC_WRITE | GENERIC_READ,
+                        FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
                 if (Win.isInvalidHandle(deviceHandle))
                     throwLastError(errorState, "claiming interface failed (opening USB device %s failed)", devicePath);
@@ -174,11 +193,11 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 try {
                     // open first interface
                     var interfaceHandleHolder = arena.allocate(ADDRESS);
-                    if (WinUSB2.WinUsb_Initialize(deviceHandle, interfaceHandleHolder, errorState) == 0) {
-                        if (Win.getLastError(errorState) == ERROR_INVALID_PARAMETER())
+                    if (WinUsb_Initialize(errorState, deviceHandle, interfaceHandleHolder) == 0) {
+                        if (Win.getLastError(errorState) == ERROR_INVALID_PARAMETER)
                             throw new UsbException(
                                     "claiming interface failed (required WinUSB driver is probably not installed for the device)",
-                                    ERROR_INVALID_PARAMETER()
+                                    ERROR_INVALID_PARAMETER
                             );
                         throwLastError(errorState, "claiming interface failed");
                     }
@@ -189,7 +208,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                     asyncTask.addDevice(deviceHandle);
 
                 } catch (Exception e) {
-                    Kernel32.CloseHandle(deviceHandle);
+                    CloseHandle(deviceHandle);
                     throw e;
                 }
             }
@@ -197,9 +216,9 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             if (intfHandle != firstIntfHandle) {
                 // open associated interface
                 var interfaceHandleHolder = arena.allocate(ADDRESS);
-                if (WinUSB2.WinUsb_GetAssociatedInterface(firstIntfHandle.winusbHandle,
-                        (byte)(intfHandle.interfaceNumber - firstIntfHandle.interfaceNumber - 1),
-                        interfaceHandleHolder, errorState) == 0)
+                if (WinUsb_GetAssociatedInterface(errorState, firstIntfHandle.winusbHandle,
+                        (byte) (intfHandle.interfaceNumber - firstIntfHandle.interfaceNumber - 1),
+                        interfaceHandleHolder) == 0)
                     throwLastError(errorState, "claiming (associated) interface failed");
                 intfHandle.winusbHandle = dereference(interfaceHandleHolder);
             }
@@ -222,8 +241,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_SetCurrentAlternateSetting(intfHandle.winusbHandle, (byte) alternateNumber,
-                    errorState) == 0)
+            if (WinUsb_SetCurrentAlternateSetting(errorState, intfHandle.winusbHandle, (byte) alternateNumber) == 0)
                 throwLastError(errorState, "setting alternate interface failed");
         }
         intf.setAlternate(altSetting);
@@ -243,19 +261,19 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
 
         if (intfHandle != firstIntfHandle) {
             // close associated interface
-            WinUSB.WinUsb_Free(intfHandle.winusbHandle);
+            WinUsb_Free(intfHandle.winusbHandle);
             intfHandle.winusbHandle = null;
         }
 
         // close device if needed
         firstIntfHandle.deviceOpenCount -= 1;
         if (firstIntfHandle.deviceOpenCount == 0) {
-            WinUSB.WinUsb_Free(firstIntfHandle.winusbHandle);
+            WinUsb_Free(firstIntfHandle.winusbHandle);
             firstIntfHandle.winusbHandle = null;
 
             LOG.log(DEBUG, "closing device {0}", getCachedInterfaceDevicePath(interfaceNumber));
 
-            Kernel32.CloseHandle(firstIntfHandle.deviceHandle);
+            CloseHandle(firstIntfHandle.deviceHandle);
             firstIntfHandle.deviceHandle = null;
         }
     }
@@ -372,10 +390,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ControlTransfer(intfHandle.winusbHandle, setupPacket.segment(), transfer.data(),
-                    transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
+            if (WinUsb_ControlTransfer(errorState, intfHandle.winusbHandle, setupPacket.segment(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != Kernel32.ERROR_IO_PENDING())
+                if (err != ERROR_IO_PENDING)
                     throwException(err, "submitting control transfer failed");
             }
         }
@@ -390,10 +408,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_WritePipe(intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
-                    transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
+            if (WinUsb_WritePipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != Kernel32.ERROR_IO_PENDING())
+                if (err != ERROR_IO_PENDING)
                     throwException(err, "submitting transfer OUT failed");
             }
         }
@@ -408,10 +426,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             asyncTask.prepareForSubmission(transfer);
 
             // submit transfer
-            if (WinUSB2.WinUsb_ReadPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
-                    transfer.dataSize(), NULL, transfer.overlapped(), errorState) == 0) {
+            if (WinUsb_ReadPipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
+                    transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != Kernel32.ERROR_IO_PENDING())
+                if (err != ERROR_IO_PENDING)
                     throwException(err, "submitting transfer IN failed");
             }
         }
@@ -425,14 +443,14 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             var errorState = allocateErrorState(arena);
 
             var timeoutHolder = arena.allocate(JAVA_INT);
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(),
-                    WinUSB.PIPE_TRANSFER_TIMEOUT(), (int) timeoutHolder.byteSize(), timeoutHolder, errorState) == 0)
+            if (WinUsb_SetPipePolicy(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(),
+                    PIPE_TRANSFER_TIMEOUT, (int) timeoutHolder.byteSize(), timeoutHolder) == 0)
                 throwLastError(errorState, "setting timeout failed");
 
             var rawIoHolder = arena.allocate(JAVA_BYTE);
             rawIoHolder.setAtIndex(JAVA_BYTE, 0, (byte) 1);
-            if (WinUSB2.WinUsb_SetPipePolicy(intfHandle.winusbHandle, endpoint.endpointAddress(), WinUSB.RAW_IO(),
-                    (int) rawIoHolder.byteSize(), rawIoHolder, errorState) == 0)
+            if (WinUsb_SetPipePolicy(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(), RAW_IO,
+                    (int) rawIoHolder.byteSize(), rawIoHolder) == 0)
                 throwLastError(errorState, "setting raw IO failed");
         }
     }
@@ -444,7 +462,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_ResetPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), errorState) == 0)
+            if (WinUsb_ResetPipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress()) == 0)
                 throwLastError(errorState, "clearing halt failed");
         }
     }
@@ -456,7 +474,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
 
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
-            if (WinUSB2.WinUsb_AbortPipe(intfHandle.winusbHandle, endpoint.endpointAddress(), errorState) == 0)
+            if (WinUsb_AbortPipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress()) == 0)
                 throwLastError(errorState, "aborting transfers on endpoint failed");
         }
     }
@@ -532,7 +550,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         var parentDevicePath = (String) getUniqueId();
 
         try (var deviceInfoSet = DeviceInfoSet.ofPath(parentDevicePath)) {
-            var childrenInstanceIDs = deviceInfoSet.getStringListProperty(Children);
+            var childrenInstanceIDs = deviceInfoSet.getStringListProperty(DEVPKEY_Device_Children());
             if (childrenInstanceIDs == null) {
                 LOG.log(DEBUG, "missing children instance IDs for device {0}", parentDevicePath);
                 return null;
@@ -561,7 +579,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         try (var deviceInfoSet = DeviceInfoSet.ofInstance(instanceId)) {
 
             // get hardware IDs (to extract interface number)
-            var hardwareIds = deviceInfoSet.getStringListProperty(HardwareIds);
+            var hardwareIds = deviceInfoSet.getStringListProperty(DEVPKEY_Device_HardwareIds());
             if (hardwareIds == null) {
                 LOG.log(DEBUG, "child device {0} has no hardware IDs", instanceId);
                 return null;
@@ -601,7 +619,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 var intfHexNumber = matcher.group(1);
                 try {
                     return Integer.parseInt(intfHexNumber, 16);
-                } catch (NumberFormatException e) {
+                } catch (NumberFormatException _) {
                     // ignore and try next one
                 }
             }

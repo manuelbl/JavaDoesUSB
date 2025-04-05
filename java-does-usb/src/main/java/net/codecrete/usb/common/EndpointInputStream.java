@@ -68,7 +68,7 @@ public abstract class EndpointInputStream extends InputStream {
 
         // use between 4 and 32 packets per transfer (256B to 2KB for FS, 2KB to 16KB for HS)
         var numPacketsPerTransfer = (int) Math.round(Math.sqrt((double) bufferSize / packetSize));
-        numPacketsPerTransfer = Math.min(Math.max(numPacketsPerTransfer, 4), 32);
+        numPacketsPerTransfer = Math.clamp(numPacketsPerTransfer, 4, 32);
         transferSize = numPacketsPerTransfer * packetSize;
 
         // use at least 2 outstanding transfers (3 in total)
@@ -112,7 +112,7 @@ public abstract class EndpointInputStream extends InputStream {
         try {
             device.abortTransfers(UsbDirection.IN, endpointNumber);
 
-        } catch (UsbException e) {
+        } catch (UsbException _) {
             // If aborting the transfer is not possible, the device has
             // likely been closed or unplugged. So all outstanding
             // transfers will terminate anyway.
@@ -196,7 +196,7 @@ public abstract class EndpointInputStream extends InputStream {
                 var transfer = completedTransferQueue.take();
                 numOutstandingTransfers -= 1;
                 return transfer;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }

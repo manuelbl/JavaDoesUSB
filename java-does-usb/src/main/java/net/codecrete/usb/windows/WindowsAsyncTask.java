@@ -7,9 +7,7 @@
 
 package net.codecrete.usb.windows;
 
-import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.kernel32._OVERLAPPED;
-import net.codecrete.usb.windows.winsdk.Kernel32B;
+import windows.win32.system.io.OVERLAPPED;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -24,6 +22,9 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
+import static windows.win32.system.io.Apis.CreateIoCompletionPort;
+import static windows.win32.system.io.Apis.GetQueuedCompletionStatus;
+import static windows.win32.system.threading.Constants.INFINITE;
 
 /**
  * Background task for handling asynchronous transfers.
@@ -77,8 +78,8 @@ class WindowsAsyncTask {
                 overlappedHolder.set(ADDRESS, 0, NULL);
                 completionKeyHolder.set(JAVA_LONG, 0, 0);
 
-                var res = Kernel32B.GetQueuedCompletionStatus(asyncIoCompletionPort, numBytesHolder,
-                        completionKeyHolder, overlappedHolder, Kernel32.INFINITE(), errorState);
+                var res = GetQueuedCompletionStatus(errorState, asyncIoCompletionPort, numBytesHolder,
+                        completionKeyHolder, overlappedHolder, INFINITE);
                 var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
                 if (res == 0 && overlappedAddr == 0)
@@ -106,8 +107,8 @@ class WindowsAsyncTask {
             var errorState = allocateErrorState(arena);
 
             // Creates a new port if it doesn't exist; adds handle to existing port if it exists
-            var portHandle = Kernel32B.CreateIoCompletionPort(handle, asyncIoCompletionPort,
-                    handle.address(), 0, errorState);
+            var portHandle = CreateIoCompletionPort(errorState, handle, asyncIoCompletionPort,
+                    handle.address(), 0);
             if (portHandle == MemorySegment.NULL)
                 throwLastError(errorState, "internal error (CreateIoCompletionPort)");
 
@@ -138,7 +139,7 @@ class WindowsAsyncTask {
         MemorySegment overlapped;
         var size = availableOverlappedStructs.size();
         if (size == 0) {
-            overlapped = _OVERLAPPED.allocate(overlappedArena);
+            overlapped = OVERLAPPED.allocate(overlappedArena);
         } else {
             overlapped = availableOverlappedStructs.remove(size - 1);
         }
@@ -158,8 +159,8 @@ class WindowsAsyncTask {
         if (transfer == null)
             return;
 
-        transfer.setResultCode((int) _OVERLAPPED.Internal(transfer.overlapped()));
-        transfer.setResultSize((int) _OVERLAPPED.InternalHigh(transfer.overlapped()));
+        transfer.setResultCode((int) OVERLAPPED.Internal(transfer.overlapped()));
+        transfer.setResultSize((int) OVERLAPPED.InternalHigh(transfer.overlapped()));
 
         availableOverlappedStructs.add(transfer.overlapped());
         transfer.setOverlapped(null);

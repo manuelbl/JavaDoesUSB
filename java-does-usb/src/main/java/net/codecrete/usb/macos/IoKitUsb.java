@@ -117,8 +117,8 @@ class IoKitUsb {
     // IOReturn (*GetPipeProperties)(void *self, UInt8 pipeRef, UInt8 *direction, UInt8 *number, UInt8 *transferType,
     // UInt16 *maxPacketSize, UInt8 *interval)
     static int GetPipeProperties(MemorySegment self, byte pipeRef, MemorySegment directionHolder,
-                                        MemorySegment numberHolder, MemorySegment transferTypeHolder,
-                                        MemorySegment maxPacketSizeHolder, MemorySegment intervalHolder) {
+                                 MemorySegment numberHolder, MemorySegment transferTypeHolder,
+                                 MemorySegment maxPacketSizeHolder, MemorySegment intervalHolder) {
         return IOUSBInterfaceStruct190.GetPipeProperties.invoke(IOUSBInterfaceStruct190.GetPipeProperties(getVtable(self)), self, pipeRef,
                 directionHolder, numberHolder, transferTypeHolder, maxPacketSizeHolder, intervalHolder);
     }
@@ -126,7 +126,7 @@ class IoKitUsb {
     // IOReturn (*ReadPipeAsync)(void *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback, void
     // *refcon)
     static int ReadPipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
-                                    MemorySegment callback, MemorySegment refcon) {
+                             MemorySegment callback, MemorySegment refcon) {
         return IOUSBInterfaceStruct190.ReadPipeAsync.invoke(IOUSBInterfaceStruct190.ReadPipeAsync(getVtable(self)), self, pipeRef, buf,
                 size, callback, refcon);
     }
@@ -134,8 +134,8 @@ class IoKitUsb {
     // IOReturn (*ReadPipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32
     // completionTimeout, IOAsyncCallback1 callback, void *refcon)
     static int ReadPipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
-                                      int noDataTimeout, int completionTimeout, MemorySegment callback,
-                                      MemorySegment refcon) {
+                               int noDataTimeout, int completionTimeout, MemorySegment callback,
+                               MemorySegment refcon) {
         return IOUSBInterfaceStruct190.ReadPipeAsyncTO.invoke(IOUSBInterfaceStruct190.ReadPipeAsyncTO(getVtable(self)), self, pipeRef, buf,
                 size, noDataTimeout, completionTimeout, callback, refcon);
     }
@@ -143,7 +143,7 @@ class IoKitUsb {
     // IOReturn (*WritePipeAsync)(vovoid *self, UInt8 pipeRef, void *buf, UInt32 size, IOAsyncCallback1 callback,
     // void *refcon)
     static int WritePipeAsync(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
-                                     MemorySegment callback, MemorySegment refcon) {
+                              MemorySegment callback, MemorySegment refcon) {
         return IOUSBInterfaceStruct190.WritePipeAsync.invoke(IOUSBInterfaceStruct190.WritePipeAsync(getVtable(self)), self, pipeRef, buf,
                 size, callback, refcon);
     }
@@ -151,8 +151,8 @@ class IoKitUsb {
     // IOReturn (*WritePipeAsyncTO)(void *self, UInt8 pipeRef, void *buf, UInt32 size, UInt32 noDataTimeout, UInt32
     // completionTimeout, IOAsyncCallback1 callback, void *refcon)
     static int WritePipeAsyncTO(MemorySegment self, byte pipeRef, MemorySegment buf, int size,
-                                       int noDataTimeout, int completionTimeout, MemorySegment callback,
-                                       MemorySegment refcon) {
+                                int noDataTimeout, int completionTimeout, MemorySegment callback,
+                                MemorySegment refcon) {
         return IOUSBInterfaceStruct190.WritePipeAsyncTO.invoke(IOUSBInterfaceStruct190.WritePipeAsyncTO(getVtable(self)), self, pipeRef, buf,
                 size, noDataTimeout, completionTimeout, callback, refcon);
     }

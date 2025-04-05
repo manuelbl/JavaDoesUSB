@@ -50,9 +50,10 @@ class SpeedTest extends TestDeviceBase {
             throw new RuntimeException(e);
         }
     }
+
     static byte[] readBytes(int numBytes) {
         try (var is = testDevice.openInputStream(config.endpointLoopbackIn())) {
-           var buffer = new byte[numBytes];
+            var buffer = new byte[numBytes];
             var bytesRead = 0;
             while (bytesRead < numBytes) {
                 var n = is.read(buffer, bytesRead, numBytes - bytesRead);

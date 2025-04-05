@@ -52,12 +52,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LogicAnalyzer implements Closeable {
 
     /// USB vendor ID
-    final static int VID = 0x0925;
+    static final int VID = 0x0925;
     /// USB product ID
-    final static int PID = 0x3881;
+    static final int PID = 0x3881;
 
     // bulk endpoint number
-    final static int EP = 2;
+    static final int EP = 2;
 
     /// Effective sample rate (in Hz)
     private int effSampleRate;
@@ -172,12 +172,12 @@ public class LogicAnalyzer implements Closeable {
         // Byte 1-2: clock ticks (-1) between two samples (16 bit, big endian)
 
         int ticks = period - 1;
-        byte flags = use48Mhz ? (byte)(1 << 6) : 0;
+        byte flags = use48Mhz ? (byte) (1 << 6) : 0;
 
         var cmd = new byte[3];
         cmd[0] = flags;
-        cmd[1] = (byte)(ticks >> 8);
-        cmd[2] = (byte)(ticks & 0xff);
+        cmd[1] = (byte) (ticks >> 8);
+        cmd[2] = (byte) (ticks & 0xff);
 
         // send the start command
         final int commandCodeStart = 0xb1;
@@ -187,7 +187,7 @@ public class LogicAnalyzer implements Closeable {
     void saveSamples() {
 
         // retrieve the sample data from the bulk endpoint
-        int expectedSize = (int)(((long)duration * effSampleRate + 500) / 1000);
+        int expectedSize = (int) (((long) duration * effSampleRate + 500) / 1000);
 
         byte[] sampleData = new byte[expectedSize];
 
@@ -279,7 +279,7 @@ public class LogicAnalyzer implements Closeable {
         device.open();
         device.claimInterface(0);
 
-        byte[] cmd = new byte[] { 1 };
+        byte[] cmd = new byte[]{1};
         device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
 
         final int len = firmware.length;
@@ -291,7 +291,7 @@ public class LogicAnalyzer implements Closeable {
             offset += n;
         }
 
-        cmd = new byte[] { 0 };
+        cmd = new byte[]{0};
         device.controlTransferOut(new UsbControlTransfer(UsbRequestType.VENDOR, UsbRecipient.DEVICE, 0xa0, 0xe600, 0x0000), cmd);
 
         device.close();
@@ -318,7 +318,7 @@ public class LogicAnalyzer implements Closeable {
                 //noinspection BusyWait
                 Thread.sleep(milliseconds); // NOSONAR
                 return;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 // ignore and try again
             }
         }
@@ -341,16 +341,17 @@ public class LogicAnalyzer implements Closeable {
             return singleInstance;
         }
 
-        private DeviceMonitor() { }
+        private DeviceMonitor() {
+        }
 
         private void start() {
-            Usb.setOnDeviceConnected((device) -> onDeviceConnected(device, true));
-            Usb.setOnDeviceDisconnected((device) -> onDeviceConnected(device, false));
+            Usb.setOnDeviceConnected(dev -> onDeviceConnected(dev, true));
+            Usb.setOnDeviceDisconnected(dev -> onDeviceConnected(dev, false));
             isDeviceConnected = Usb.findDevice(VID, PID).isPresent();
         }
 
         private void onDeviceConnected(UsbDevice device, boolean connected) {
-            if (device.getVendorId() == VID && device.getProductId() == device.getProductId()) {
+            if (device.getVendorId() == VID && device.getProductId() == PID) {
                 try {
                     deviceLock.lock();
                     isDeviceConnected = connected;

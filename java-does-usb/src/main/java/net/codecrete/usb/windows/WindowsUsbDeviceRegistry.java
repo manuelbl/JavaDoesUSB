@@ -16,47 +16,60 @@ import net.codecrete.usb.usbstandard.ConfigurationDescriptor;
 import net.codecrete.usb.usbstandard.DeviceDescriptor;
 import net.codecrete.usb.usbstandard.SetupPacket;
 import net.codecrete.usb.usbstandard.StringDescriptor;
-import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.usbioctl.USBIoctl;
-import net.codecrete.usb.windows.gen.usbioctl._USB_DESCRIPTOR_REQUEST;
-import net.codecrete.usb.windows.gen.usbioctl._USB_NODE_CONNECTION_INFORMATION_EX;
-import net.codecrete.usb.windows.gen.user32.User32;
-import net.codecrete.usb.windows.gen.user32._DEV_BROADCAST_DEVICEINTERFACE_W;
-import net.codecrete.usb.windows.gen.user32._DEV_BROADCAST_HDR;
-import net.codecrete.usb.windows.gen.user32.tagMSG;
-import net.codecrete.usb.windows.gen.user32.tagWNDCLASSEXW;
-import net.codecrete.usb.windows.winsdk.Kernel32B;
-import net.codecrete.usb.windows.winsdk.User32B;
+import windows.win32.devices.usb.USB_DESCRIPTOR_REQUEST;
+import windows.win32.devices.usb.USB_NODE_CONNECTION_INFORMATION_EX;
+import windows.win32.ui.windowsandmessaging.DEV_BROADCAST_DEVICEINTERFACE_W;
+import windows.win32.ui.windowsandmessaging.DEV_BROADCAST_HDR;
+import windows.win32.ui.windowsandmessaging.MSG;
+import windows.win32.ui.windowsandmessaging.WNDCLASSEXW;
+import windows.win32.ui.windowsandmessaging.WNDPROC;
 
 import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static java.lang.foreign.ValueLayout.JAVA_SHORT;
 import static java.lang.foreign.ValueLayout.PathElement;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static net.codecrete.usb.usbstandard.Constants.CONFIGURATION_DESCRIPTOR_TYPE;
 import static net.codecrete.usb.usbstandard.Constants.DEFAULT_LANGUAGE;
 import static net.codecrete.usb.usbstandard.Constants.STRING_DESCRIPTOR_TYPE;
-import static net.codecrete.usb.windows.DevicePropertyKey.Address;
-import static net.codecrete.usb.windows.DevicePropertyKey.InstanceId;
-import static net.codecrete.usb.windows.DevicePropertyKey.Parent;
-import static net.codecrete.usb.windows.UsbConstants.GUID_DEVINTERFACE_USB_DEVICE;
-import static net.codecrete.usb.windows.UsbConstants.GUID_DEVINTERFACE_USB_HUB;
+import static net.codecrete.usb.windows.CustomApis.CloseHandle;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwException;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_Address;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_InstanceId;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_Parent;
+import static windows.win32.devices.usb.Constants.GUID_DEVINTERFACE_USB_DEVICE;
+import static windows.win32.devices.usb.Constants.GUID_DEVINTERFACE_USB_HUB;
+import static windows.win32.devices.usb.Constants.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION;
+import static windows.win32.devices.usb.Constants.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX;
+import static windows.win32.devices.usb.Constants.USB_REQUEST_GET_DESCRIPTOR;
+import static windows.win32.foundation.GENERIC_ACCESS_RIGHTS.GENERIC_WRITE;
+import static windows.win32.storage.filesystem.Apis.CreateFileW;
+import static windows.win32.storage.filesystem.FILE_CREATION_DISPOSITION.OPEN_EXISTING;
+import static windows.win32.storage.filesystem.FILE_SHARE_MODE.FILE_SHARE_WRITE;
+import static windows.win32.system.io.Apis.DeviceIoControl;
+import static windows.win32.system.libraryloader.Apis.GetModuleHandleW;
+import static windows.win32.ui.windowsandmessaging.Apis.CreateWindowExW;
+import static windows.win32.ui.windowsandmessaging.Apis.DefWindowProcW;
+import static windows.win32.ui.windowsandmessaging.Apis.GetMessageW;
+import static windows.win32.ui.windowsandmessaging.Apis.RegisterClassExW;
+import static windows.win32.ui.windowsandmessaging.Apis.RegisterDeviceNotificationW;
+import static windows.win32.ui.windowsandmessaging.Constants.DBT_DEVICEARRIVAL;
+import static windows.win32.ui.windowsandmessaging.Constants.DBT_DEVICEREMOVECOMPLETE;
+import static windows.win32.ui.windowsandmessaging.Constants.HWND_MESSAGE;
+import static windows.win32.ui.windowsandmessaging.Constants.WM_DEVICECHANGE;
+import static windows.win32.ui.windowsandmessaging.DEV_BROADCAST_HDR_DEVICE_TYPE.DBT_DEVTYP_DEVICEINTERFACE;
+import static windows.win32.ui.windowsandmessaging.REGISTER_NOTIFICATION_FLAGS.DEVICE_NOTIFY_WINDOW_HANDLE;
 
 /**
  * Windows implementation of USB device registry.
@@ -71,7 +84,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
     private static final System.Logger LOG = System.getLogger(WindowsUsbDeviceRegistry.class.getName());
 
     private static final long REQUEST_DATA_OFFSET
-            = _USB_DESCRIPTOR_REQUEST.layout().byteOffset(PathElement.groupElement("Data"));
+            = USB_DESCRIPTOR_REQUEST.layout().byteOffset(PathElement.groupElement("Data"));
 
     @Override
     protected void monitorDevices() {
@@ -81,42 +94,33 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
             var errorState = allocateErrorState(arena);
 
             try {
-                final var className = Win.createSegmentFromString("USB_MONITOR", arena);
-                final var windowName = Win.createSegmentFromString("USB device monitor", arena);
-                final var instance = Kernel32.GetModuleHandleW(NULL);
-
-                // create upcall for handling window messages
-                var handleWindowMessageMH = MethodHandles.lookup().findVirtual(WindowsUsbDeviceRegistry.class,
-                        "handleWindowMessage", MethodType.methodType(long.class, MemorySegment.class, int.class,
-                                long.class, long.class)).bindTo(this);
-                var handleWindowMessageStub = Linker.nativeLinker().upcallStub(handleWindowMessageMH,
-                        FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT, JAVA_LONG, JAVA_LONG), arena);
+                final var className = arena.allocateFrom("USB_MONITOR", UTF_16LE);
+                final var windowName = arena.allocateFrom("USB device monitor", UTF_16LE);
+                final var instance = GetModuleHandleW(errorState, NULL);
 
                 // register window class
-                var wx = tagWNDCLASSEXW.allocate(arena);
-                tagWNDCLASSEXW.cbSize(wx, (int) wx.byteSize());
-                tagWNDCLASSEXW.lpfnWndProc(wx, handleWindowMessageStub);
-                tagWNDCLASSEXW.hInstance(wx, instance);
-                tagWNDCLASSEXW.lpszClassName(wx, className);
-                var atom = User32B.RegisterClassExW(wx, errorState);
+                var wx = WNDCLASSEXW.allocate(arena);
+                WNDCLASSEXW.lpfnWndProc(wx, WNDPROC.allocate(arena, this::handleWindowMessage));
+                WNDCLASSEXW.hInstance(wx, instance);
+                WNDCLASSEXW.lpszClassName(wx, className);
+                var atom = RegisterClassExW(errorState, wx);
                 if (atom == 0)
                     throwLastError(errorState, "internal error (RegisterClassExW)");
 
                 // create message-only window
-                hwnd = User32B.CreateWindowExW(0, className, windowName, 0, 0, 0, 0, 0, User32.HWND_MESSAGE(), NULL,
-                        instance, NULL, errorState);
+                hwnd = CreateWindowExW(errorState, 0, className, windowName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL,
+                        instance, NULL);
                 if (hwnd.address() == 0)
                     throwLastError(errorState, "internal error (CreateWindowExW)");
 
                 // configure notifications
-                var notificationFilter = _DEV_BROADCAST_DEVICEINTERFACE_W.allocate(arena);
-                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size(notificationFilter, (int) notificationFilter.byteSize());
-                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype(notificationFilter,
-                        User32.DBT_DEVTYP_DEVICEINTERFACE());
-                _DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid(notificationFilter).copyFrom(GUID_DEVINTERFACE_USB_DEVICE);
+                var notificationFilter = DEV_BROADCAST_DEVICEINTERFACE_W.allocate(arena, 260);
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_size(notificationFilter, (int) notificationFilter.byteSize());
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_devicetype(notificationFilter, DBT_DEVTYP_DEVICEINTERFACE);
+                DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_classguid(notificationFilter).copyFrom(GUID_DEVINTERFACE_USB_DEVICE());
 
-                var notifyHandle = User32B.RegisterDeviceNotificationW(hwnd, notificationFilter,
-                        User32.DEVICE_NOTIFY_WINDOW_HANDLE(), errorState);
+                var notifyHandle = RegisterDeviceNotificationW(errorState, hwnd, notificationFilter,
+                        DEVICE_NOTIFY_WINDOW_HANDLE);
                 if (notifyHandle.address() == 0)
                     throwLastError(errorState, "internal error (RegisterDeviceNotificationW)");
 
@@ -129,10 +133,10 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
             }
 
             // process messages
-            var msg = tagMSG.allocate(arena);
+            var msg = MSG.allocate(arena);
             int err;
             //noinspection StatementWithEmptyBody
-            while ((err = User32B.GetMessageW(msg, hwnd, 0, 0, errorState)) > 0)
+            while ((err = GetMessageW(errorState, msg, hwnd, 0, 0)) > 0)
                 ; // do nothing
 
             if (err == -1)
@@ -145,17 +149,17 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
 
         List<UsbDevice> deviceList = new ArrayList<>();
         try (var cleanup = new ScopeCleanup();
-             var deviceInfoSet = DeviceInfoSet.ofPresentDevices(GUID_DEVINTERFACE_USB_DEVICE, null)) {
+             var deviceInfoSet = DeviceInfoSet.ofPresentDevices(GUID_DEVINTERFACE_USB_DEVICE(), null)) {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
-            cleanup.add(() -> hubHandles.forEach((_, handle) -> Kernel32.CloseHandle(handle)));
+            cleanup.add(() -> hubHandles.forEach((_, handle) -> CloseHandle(handle)));
 
             // iterate all devices
             while (deviceInfoSet.next()) {
 
-                var instanceId = deviceInfoSet.getStringProperty(InstanceId);
-                var devicePath = DeviceInfoSet.getDevicePath(instanceId, GUID_DEVINTERFACE_USB_DEVICE);
+                var instanceId = deviceInfoSet.getStringProperty(DEVPKEY_Device_InstanceId());
+                var devicePath = DeviceInfoSet.getDevicePath(instanceId, GUID_DEVINTERFACE_USB_DEVICE());
 
                 try {
                     deviceList.add(createDeviceFromDeviceInfo(deviceInfoSet, devicePath, hubHandles));
@@ -170,20 +174,20 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
     }
 
     private UsbDevice createDeviceFromDeviceInfo(DeviceInfoSet deviceInfoSet, String devicePath,
-                                                 HashMap<String, MemorySegment> hubHandles) {
+                                                 Map<String, MemorySegment> hubHandles) {
         try (var arena = Arena.ofConfined()) {
 
-            var usbPortNum = deviceInfoSet.getIntProperty(Address);
-            var parentInstanceId = deviceInfoSet.getStringProperty(Parent);
-            var hubPath = DeviceInfoSet.getDevicePath(parentInstanceId, GUID_DEVINTERFACE_USB_HUB);
+            var usbPortNum = deviceInfoSet.getIntProperty(DEVPKEY_Device_Address());
+            var parentInstanceId = deviceInfoSet.getStringProperty(DEVPKEY_Device_Parent());
+            var hubPath = DeviceInfoSet.getDevicePath(parentInstanceId, GUID_DEVINTERFACE_USB_HUB());
 
             // open hub if not open yet
             var hubHandle = hubHandles.get(hubPath);
             if (hubHandle == null) {
-                var hubPathSeg = Win.createSegmentFromString(hubPath, arena);
+                var hubPathSeg = arena.allocateFrom(hubPath, UTF_16LE);
                 var errorState = allocateErrorState(arena);
-                hubHandle = Kernel32B.CreateFileW(hubPathSeg, Kernel32.GENERIC_WRITE(), Kernel32.FILE_SHARE_WRITE(),
-                        NULL, Kernel32.OPEN_EXISTING(), 0, NULL, errorState);
+                hubHandle = CreateFileW(errorState, hubPathSeg, GENERIC_WRITE, FILE_SHARE_WRITE,
+                        NULL, OPEN_EXISTING, 0, NULL);
                 if (Win.isInvalidHandle(hubHandle))
                     throwLastError(errorState, "internal error (opening hub device)");
                 hubHandles.put(hubPath, hubHandle);
@@ -206,16 +210,15 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
         try (var arena = Arena.ofConfined()) {
 
             // get device descriptor
-            var connInfo = _USB_NODE_CONNECTION_INFORMATION_EX.allocate(arena);
-            _USB_NODE_CONNECTION_INFORMATION_EX.ConnectionIndex(connInfo, usbPortNum);
+            var connInfo = USB_NODE_CONNECTION_INFORMATION_EX.allocate(arena, 0);
+            USB_NODE_CONNECTION_INFORMATION_EX.ConnectionIndex(connInfo, usbPortNum);
             var sizeHolder = arena.allocate(JAVA_INT);
             var errorState = allocateErrorState(arena);
-            if (Kernel32B.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX(),
-                    connInfo, (int) connInfo.byteSize(), connInfo, (int) connInfo.byteSize(), sizeHolder, NULL,
-                    errorState) == 0)
+            if (DeviceIoControl(errorState, hubHandle, IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX,
+                    connInfo, (int) connInfo.byteSize(), connInfo, (int) connInfo.byteSize(), sizeHolder, NULL) == 0)
                 throwLastError(errorState, "internal error (getting device descriptor failed)");
 
-            var descriptorSegment = _USB_NODE_CONNECTION_INFORMATION_EX.DeviceDescriptor(connInfo);
+            var descriptorSegment = USB_NODE_CONNECTION_INFORMATION_EX.DeviceDescriptor(connInfo);
             var deviceDescriptor = new DeviceDescriptor(descriptorSegment);
 
             var vendorId = deviceDescriptor.vendorID();
@@ -245,10 +248,11 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
 
         // create descriptor requests
         var descriptorRequest = arena.allocate(size);
-        _USB_DESCRIPTOR_REQUEST.ConnectionIndex(descriptorRequest, usbPortNumber);
-        var setupPacket = new SetupPacket(_USB_DESCRIPTOR_REQUEST.SetupPacket(descriptorRequest));
+        USB_DESCRIPTOR_REQUEST.ConnectionIndex(descriptorRequest, usbPortNumber);
+        var setupPacket = new SetupPacket(descriptorRequest.asSlice(
+                USB_DESCRIPTOR_REQUEST.SetupPacket_bmRequest$offset(), SetupPacket.LAYOUT.byteSize()));
         setupPacket.setRequestType(0x80); // device-to-host / type standard / recipient device
-        setupPacket.setRequest(UsbConstants.USB_REQUEST_GET_DESCRIPTOR);
+        setupPacket.setRequest(USB_REQUEST_GET_DESCRIPTOR);
         setupPacket.setValue((descriptorType << 8) | index);
         setupPacket.setIndex(languageID);
         setupPacket.setLength(size - (int) REQUEST_DATA_OFFSET);
@@ -256,8 +260,8 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
         // execute request
         var effectiveSizeHolder = arena.allocate(JAVA_INT);
         var errorState = allocateErrorState(arena);
-        if (Kernel32B.DeviceIoControl(hubHandle, USBIoctl.IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION(),
-                descriptorRequest, size, descriptorRequest, size, effectiveSizeHolder, NULL, errorState) == 0)
+        if (DeviceIoControl(errorState, hubHandle, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
+                descriptorRequest, size, descriptorRequest, size, effectiveSizeHolder, NULL) == 0)
             throwLastError(errorState, "internal error (retrieving descriptor %d failed)", index);
 
         // determine size of descriptor
@@ -295,7 +299,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
                             index, language, arena));
                     return stringDesc.string();
 
-                } catch (UsbException e) {
+                } catch (UsbException _) {
                     // ignore and try next language
                 }
             }
@@ -311,10 +315,10 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
             var languages = getDescriptor(hubHandle, usbPortNumber, STRING_DESCRIPTOR_TYPE, 0, (short) 0, arena);
             var n = (languages.byteSize() - 2) / 2;
             if (n == 0)
-                return new short[] { DEFAULT_LANGUAGE };
+                return new short[]{DEFAULT_LANGUAGE};
             return languages.asSlice(2, n * 2).toArray(JAVA_SHORT);
-        } catch (UsbException e) {
-            return new short[] { DEFAULT_LANGUAGE };
+        } catch (UsbException _) {
+            return new short[]{DEFAULT_LANGUAGE};
         }
     }
 
@@ -322,15 +326,15 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
     private long handleWindowMessage(MemorySegment hWnd, int uMsg, long wParam, long lParam) {
 
         // check for message related to connecting/disconnecting devices
-        if (uMsg == User32.WM_DEVICECHANGE() && (wParam == User32.DBT_DEVICEARRIVAL() || wParam == User32.DBT_DEVICEREMOVECOMPLETE())) {
-            var data = MemorySegment.ofAddress(lParam).reinterpret(_DEV_BROADCAST_DEVICEINTERFACE_W.sizeof());
-            if (_DEV_BROADCAST_HDR.dbch_devicetype(data) == User32.DBT_DEVTYP_DEVICEINTERFACE()) {
+        if (uMsg == WM_DEVICECHANGE && (wParam == DBT_DEVICEARRIVAL || wParam == DBT_DEVICEREMOVECOMPLETE)) {
+            var data = MemorySegment.ofAddress(lParam).reinterpret(DEV_BROADCAST_DEVICEINTERFACE_W.sizeof());
+            if (DEV_BROADCAST_HDR.dbch_devicetype(data) == DBT_DEVTYP_DEVICEINTERFACE) {
 
                 // get device path
                 var nameSlice =
-                        MemorySegment.ofAddress(_DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name(data).address()).reinterpret(500);
-                var devicePath = Win.createStringFromSegment(nameSlice);
-                if (wParam == User32.DBT_DEVICEARRIVAL())
+                        MemorySegment.ofAddress(DEV_BROADCAST_DEVICEINTERFACE_W.dbcc_name(data).address()).reinterpret(500);
+                var devicePath = nameSlice.getString(0, UTF_16LE);
+                if (wParam == DBT_DEVICEARRIVAL)
                     onDeviceConnected(devicePath);
                 else
                     onDeviceDisconnected(devicePath);
@@ -339,7 +343,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
         }
 
         // default message handling
-        return User32.DefWindowProcW(hWnd, uMsg, wParam, lParam);
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
 
     @SuppressWarnings("java:S106")
@@ -349,7 +353,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
 
             // ensure all hubs are closed later
             final var hubHandles = new HashMap<String, MemorySegment>();
-            cleanup.add(() -> hubHandles.forEach((_, handle) -> Kernel32.CloseHandle(handle)));
+            cleanup.add(() -> hubHandles.forEach((_, handle) -> CloseHandle(handle)));
 
             try {
                 // create device instance
@@ -359,7 +363,7 @@ public class WindowsUsbDeviceRegistry extends UsbDeviceRegistry {
                 addDevice(device);
 
             } catch (Exception e) {
-                    LOG.log(INFO, String.format("failed to retrieve information about device %s - ignoring device", devicePath), e);
+                LOG.log(INFO, String.format("failed to retrieve information about device %s - ignoring device", devicePath), e);
             }
         }
     }

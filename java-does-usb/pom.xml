@@ -9,8 +9,8 @@
     <version>1.2.0</version>
 
     <properties>
-        <maven.compiler.source>22</maven.compiler.source>
-        <maven.compiler.target>22</maven.compiler.target>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.exclusions>src/main/java/net/codecrete/usb/**/gen/**/*</sonar.exclusions>
     </properties>
@@ -53,13 +53,96 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>net.codecrete.windows-api</groupId>
+                <artifactId>windowsapi-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>windows-api</goal>
+                        </goals>
+                        <configuration>
+                            <functions>
+                                <function>CLSIDFromString</function>
+                                <function>CreateFileW</function>
+                                <function>CreateIoCompletionPort</function>
+                                <function>CreateWindowExW</function>
+                                <function>DefWindowProcW</function>
+                                <function>DeviceIoControl</function>
+                                <function>FormatMessageW</function>
+                                <function>GetMessageW</function>
+                                <function>GetModuleHandleW</function>
+                                <function>GetQueuedCompletionStatus</function>
+                                <function>LocalFree</function>
+                                <function>RegCloseKey</function>
+                                <function>RegQueryValueExW</function>
+                                <function>RegisterClassExW</function>
+                                <function>RegisterDeviceNotificationW</function>
+                                <function>SetupDiCreateDeviceInfoList</function>
+                                <function>SetupDiDeleteDeviceInterfaceData</function>
+                                <function>SetupDiDestroyDeviceInfoList</function>
+                                <function>SetupDiEnumDeviceInfo</function>
+                                <function>SetupDiEnumDeviceInterfaces</function>
+                                <function>SetupDiGetClassDevsW</function>
+                                <function>SetupDiGetDeviceInterfaceDetailW</function>
+                                <function>SetupDiGetDevicePropertyW</function>
+                                <function>SetupDiOpenDevRegKey</function>
+                                <function>SetupDiOpenDeviceInfoW</function>
+                                <function>SetupDiOpenDeviceInterfaceW</function>
+                                <function>WinUsb_AbortPipe</function>
+                                <function>WinUsb_Free</function>
+                                <function>WinUsb_GetAssociatedInterface</function>
+                                <function>WinUsb_Initialize</function>
+                                <function>WinUsb_ReadPipe</function>
+                                <function>WinUsb_ResetPipe</function>
+                                <function>WinUsb_SetCurrentAlternateSetting</function>
+                                <function>WinUsb_SetPipePolicy</function>
+                                <function>WinUsb_WritePipe</function>
+                            </functions>
+                            <structs>
+                                <struct>DEV_BROADCAST_DEVICEINTERFACE_W</struct>
+                                <struct>DEV_BROADCAST_HDR</struct>
+                                <struct>USB_DESCRIPTOR_REQUEST</struct>
+                                <struct>USB_NODE_CONNECTION_INFORMATION_EX</struct>
+                            </structs>
+                            <enumerations>
+                                <enumeration>DEV_BROADCAST_HDR_DEVICE_TYPE</enumeration>
+                                <enumeration>FORMAT_MESSAGE_OPTIONS</enumeration>
+                                <enumeration>GENERIC_ACCESS_RIGHTS</enumeration>
+                                <enumeration>REG_SAM_FLAGS</enumeration>
+                                <enumeration>SETUP_DI_PROPERTY_CHANGE_SCOPE</enumeration>
+                            </enumerations>
+                            <constants>
+                                <constant>DBT_DEVICEARRIVAL</constant>
+                                <constant>DBT_DEVICEREMOVECOMPLETE</constant>
+                                <constant>DEVPKEY_Device_Address</constant>
+                                <constant>DEVPKEY_Device_Children</constant>
+                                <constant>DEVPKEY_Device_HardwareIds</constant>
+                                <constant>DEVPKEY_Device_InstanceId</constant>
+                                <constant>DEVPKEY_Device_Parent</constant>
+                                <constant>DEVPKEY_Device_Service</constant>
+                                <constant>DIREG_DEV</constant>
+                                <constant>GUID_DEVINTERFACE_USB_DEVICE</constant>
+                                <constant>GUID_DEVINTERFACE_USB_HUB</constant>
+                                <constant>HWND_MESSAGE</constant>
+                                <constant>INFINITE</constant>
+                                <constant>IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION</constant>
+                                <constant>IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX</constant>
+                                <constant>STATUS_UNSUCCESSFUL</constant>
+                                <constant>USB_REQUEST_GET_DESCRIPTOR</constant>
+                                <constant>WM_DEVICECHANGE</constant>
+                            </constants>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.12.1</version>
                 <configuration>
-                    <release>22</release>
-                    <source>22</source>
-                    <target>22</target>
+                    <release>23</release>
+                    <source>23</source>
+                    <target>23</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -128,6 +211,12 @@
                         <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>net.codecrete.windows-api</groupId>
+                    <artifactId>windowsapi-maven-plugin</artifactId>
+                    <version>0.8.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

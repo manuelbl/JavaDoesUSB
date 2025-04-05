@@ -1,6 +1,6 @@
-package net.codecrete.usb;
+package net.codecrete.usb.usbstandard;
 
-import net.codecrete.usb.usbstandard.StringDescriptor;
+import net.codecrete.usb.UsbException;
 import org.junit.jupiter.api.Test;
 
 import java.lang.foreign.Arena;
@@ -76,7 +76,7 @@ class StringDescriptorTest {
         // In theory, USB is stuck with an old Unicode standard and the below is invalid.
         // In practice, it will work anyway.
         testDescriptor(
-                new byte[]{0x06, 0x03, 0x3D, (byte)0xD8, 0x1B, (byte)0xDE},
+                new byte[]{0x06, 0x03, 0x3D, (byte) 0xD8, 0x1B, (byte) 0xDE},
                 stringDescriptor -> {
                     assertThat(stringDescriptor.isValid()).isTrue();
                     assertThat(stringDescriptor.string()).isEqualTo("\uD83D\uDE1B");
@@ -87,7 +87,7 @@ class StringDescriptorTest {
     @Test
     void invalidUnicodeCharactersAreReplaced() {
         testDescriptor(
-                new byte[]{0x06, 0x03, 'H', 0, 0x1B, (byte)0xDE},
+                new byte[]{0x06, 0x03, 'H', 0, 0x1B, (byte) 0xDE},
                 stringDescriptor -> {
                     assertThat(stringDescriptor.isValid()).isTrue();
                     assertThat(stringDescriptor.string()).isEqualTo("H�");

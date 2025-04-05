@@ -221,7 +221,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
     /**
      * Sets the product strings from the device descriptor.
      * <p>
-     * To lookup the string, a lookup function is provided. It takes the
+     * To look up the string, a lookup function is provided. It takes the
      * string ID and returns the string from the string descriptor.
      * </p>
      *
@@ -393,7 +393,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
         while (transfer.resultSize() == -1) {
             try {
                 transfer.wait();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -409,7 +409,7 @@ public abstract class UsbDeviceImpl implements UsbDevice {
                 transfer.wait(remainingTimeout);
                 remainingTimeout = expiration - System.currentTimeMillis();
 
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }

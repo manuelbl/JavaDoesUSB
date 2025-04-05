@@ -71,7 +71,9 @@ public interface UsbAlternateInterface {
      *
      * @return a list of endpoints.
      */
-    @NotNull @Unmodifiable List<UsbEndpoint> getEndpoints();
+    @NotNull
+    @Unmodifiable
+    List<UsbEndpoint> getEndpoints();
 
     /**
      * Gets the endpoint with the specified number and direction.

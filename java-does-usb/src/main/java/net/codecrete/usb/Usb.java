@@ -26,6 +26,7 @@ import java.util.function.Consumer;
  */
 public class Usb {
 
+    @SuppressWarnings("java:S1192")
     private static UsbDeviceRegistry createInstance() {
         var osName = System.getProperty("os.name");
         var osArch = System.getProperty("os.arch");

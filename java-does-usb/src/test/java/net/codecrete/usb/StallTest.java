@@ -22,7 +22,7 @@ class StallTest extends TestDeviceBase {
         var endpointOut = config.endpointLoopbackOut();
         haltEndpoint(UsbDirection.OUT, endpointOut);
 
-        var data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        var data = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         assertThrows(UsbStallException.class, () -> testDevice.transferOut(endpointOut, data));
 
         testDevice.clearHalt(UsbDirection.OUT, endpointOut);
@@ -42,7 +42,7 @@ class StallTest extends TestDeviceBase {
 
         testDevice.clearHalt(UsbDirection.IN, endpointIn);
 
-        var data = new byte[] { 9, 8, 7, 6, 5, 4, 3, 2 };
+        var data = new byte[]{9, 8, 7, 6, 5, 4, 3, 2};
         testDevice.transferOut(endpointOut, data);
         var receivedData = testDevice.transferIn(endpointIn);
         assertArrayEquals(data, receivedData);

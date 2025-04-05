@@ -8,6 +8,7 @@
 package net.codecrete.usb.common;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Auto closeable object for clean up actions.
@@ -31,7 +32,7 @@ import java.util.ArrayList;
  */
 public class ScopeCleanup implements AutoCloseable {
 
-    private final ArrayList<Runnable> cleanupActions = new ArrayList<>();
+    private final List<Runnable> cleanupActions = new ArrayList<>();
 
     /**
      * Registers a cleanup action to be run later.

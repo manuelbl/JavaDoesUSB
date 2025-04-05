@@ -189,7 +189,9 @@ public interface UsbDevice {
      *
      * @return a list of USB interfaces
      */
-    @NotNull @Unmodifiable List<UsbInterface> getInterfaces();
+    @NotNull
+    @Unmodifiable
+    List<UsbInterface> getInterfaces();
 
     /**
      * Gets the interface with the specified number.
@@ -260,7 +262,7 @@ public interface UsbDevice {
     /**
      * Executes a control transfer request and optionally sends data.
      * <p>
-     * This method blocks until the device has acknowledge the request or an error has occurred.
+     * This method blocks until the device has acknowledged the request or an error has occurred.
      * </p>
      * <p>
      * The control transfer request is sent to endpoint 0. The transfer is expected to either have
@@ -390,7 +392,7 @@ public interface UsbDevice {
      * and the last packet size was equal to maximum packet size of the endpoint.
      * </p>
      * <p>
-     * If {@link #transferOut(int, byte[])} and a output stream or multiple output streams
+     * If {@link #transferOut(int, byte[])} and an output stream or multiple output streams
      * are used concurrently for the same endpoint, the behavior is unpredictable.
      * </p>
      *

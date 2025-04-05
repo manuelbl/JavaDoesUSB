@@ -22,7 +22,7 @@ class StreamTest extends TestDeviceBase {
 
     @Test
     void smallTransfer_succeeds() {
-       var sampleData = generateRandomBytes(12, 293872394);
+        var sampleData = generateRandomBytes(12, 293872394);
         writeBytes(sampleData, 100);
         var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
@@ -34,7 +34,7 @@ class StreamTest extends TestDeviceBase {
         // has an internal buffer of about 500 bytes.
         var sampleData = generateRandomBytes(140, 97333894);
         writeBytes(sampleData, 30);
-       var data = readBytes(sampleData.length);
+        var data = readBytes(sampleData.length);
         assertArrayEquals(sampleData, data);
     }
 
@@ -89,6 +89,7 @@ class StreamTest extends TestDeviceBase {
             throw new RuntimeException(e);
         }
     }
+
     static byte[] readBytes(int numBytes) {
         var buffer = new byte[numBytes];
         try (var is = testDevice.openInputStream(config.endpointLoopbackIn())) {
@@ -109,7 +110,7 @@ class StreamTest extends TestDeviceBase {
     private static void sleep(int millis) {
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
         }
     }

@@ -45,12 +45,29 @@ public class CompositeFunction {
         functionProtocol = protocolCode;
     }
 
+    /**
+     * Gets the number of the first interface contained in this function.
+     * @return the interface number
+     */
     public int firstInterfaceNumber() {
         return firstIntfNumber;
     }
 
+    /**
+     * Gets the number of interfaces contained in this function.
+     * @return the number of interfaces
+     */
     public int numInterfaces() {
         return interfaceCount;
+    }
+
+    /**
+     * Indicates if this function contains the specified interface.
+     * @param interfaceNumber the interface number
+     * @return {@code true} if it is contained, {@code false} otherwise
+     */
+    public boolean containsInterface(int interfaceNumber) {
+        return interfaceNumber >= firstIntfNumber && interfaceNumber < firstIntfNumber + interfaceCount;
     }
 
     public int classCode() {

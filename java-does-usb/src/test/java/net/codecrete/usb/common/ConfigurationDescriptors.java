@@ -1,4 +1,4 @@
-package net.codecrete.usb;
+package net.codecrete.usb.common;
 
 class ConfigurationDescriptors {
 
@@ -119,7 +119,7 @@ class ConfigurationDescriptors {
             0x0E,        // bInterfaceClass = 0x0E (Video)
             0x02,        // bInterfaceSubClass = 0x02 (Video Streaming)
             0x00,        // bInterfaceProtocol = 0x00 (Undefined)
-            0x00,        // iInterface (sstring index)
+            0x00,        // iInterface (string index)
 
             0x10,        // bLength = 16
             0x24,        // bDescriptorType = 0x24 (CS_INTERFACE)

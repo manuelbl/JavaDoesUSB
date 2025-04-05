@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SuppressWarnings("DefaultAnnotationParam")
 class TimeoutTest extends TestDeviceBase {
 
     @Test
@@ -41,6 +40,7 @@ class TimeoutTest extends TestDeviceBase {
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void bulkTransferOut_timesOut() {
+        drainData(config.endpointLoopbackIn());
         var endpointOut = config.endpointLoopbackOut();
 
         // The test device has an internal buffer of about 2KB for full-speed

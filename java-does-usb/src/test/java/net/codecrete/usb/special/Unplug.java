@@ -14,6 +14,7 @@ import net.codecrete.usb.UsbException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static java.time.Duration.ofSeconds;
 
@@ -25,7 +26,7 @@ import static java.time.Duration.ofSeconds;
  * </p>
  */
 public class Unplug {
-    private static final HashMap<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
+    private static final Map<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
         System.out.println("Plug and unplug test device multiple times.");
@@ -76,7 +77,7 @@ public class Unplug {
         try {
             Thread.sleep(millis);
 
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
         }
     }
@@ -90,7 +91,7 @@ public class Unplug {
 
         private long disconnectTime;
 
-        private final HashMap<Thread, Work> workTracking = new HashMap<>();
+        private final Map<Thread, Work> workTracking = new HashMap<>();
 
         DeviceWorker(UsbDevice device, TestDeviceConfig config) {
             this.device = device;
@@ -180,7 +181,7 @@ public class Unplug {
         private void runAction(Runnable action) {
             try {
                 action.run();
-            } catch (UsbException e) {
+            } catch (UsbException _) {
                 logFinish();
             }
         }
@@ -246,7 +247,7 @@ public class Unplug {
 
         private void sendEcho() {
             logStart("sending echo", 7);
-            var data = new byte[] { 0x03, 0x45, 0x73, (byte)0xb3, (byte)0x9f, 0x3f, 0x00, 0x6a };
+            var data = new byte[]{0x03, 0x45, 0x73, (byte) 0xb3, (byte) 0x9f, 0x3f, 0x00, 0x6a};
             //noinspection InfiniteLoopStatement
             while (true) {
                 device.transferOut(config.endpointEchoOut(), data);

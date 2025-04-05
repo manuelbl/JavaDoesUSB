@@ -86,8 +86,8 @@ public class TestDeviceBase {
     static void drainData(int endpointNumber) {
         while (true) {
             try {
-                testDevice.transferIn(endpointNumber, 2);
-            } catch (UsbTimeoutException e) {
+                testDevice.transferIn(endpointNumber, 5);
+            } catch (UsbTimeoutException _) {
                 break;
             }
         }

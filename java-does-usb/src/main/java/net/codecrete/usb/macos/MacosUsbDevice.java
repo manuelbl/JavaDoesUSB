@@ -116,7 +116,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             // sleep and retry
             try {
                 Thread.sleep(90);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }

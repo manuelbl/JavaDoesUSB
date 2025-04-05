@@ -33,7 +33,7 @@ class InvalidOperationTest extends TestDeviceBase {
 
     @Test
     void invalidEndpoint_throws() {
-        var data = new byte[] { 34, 23, 99, 0, 17 };
+        var data = new byte[]{34, 23, 99, 0, 17};
 
         Assertions.assertThrows(UsbException.class, () -> testDevice.transferOut(2, data));
 

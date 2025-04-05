@@ -61,11 +61,11 @@ public class StringDescriptor {
     public String string() {
         if (!isValid())
             throw new UsbException("String descriptor is invalid");
-        var len = (int)(length() - 2L);
+        var len = (int) (length() - 2L);
         var bytes = descriptor.asSlice(string$OFFSET, len).toArray(JAVA_BYTE);
 
         // truncate trailing 0s
-        while (len > 0 && bytes[len-2] == 0 && bytes[len-1] == 0)
+        while (len > 0 && bytes[len - 2] == 0 && bytes[len - 1] == 0)
             len--;
 
         return new String(bytes, 0, len, StandardCharsets.UTF_16LE);

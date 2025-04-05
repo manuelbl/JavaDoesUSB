@@ -55,7 +55,8 @@ public class Configuration {
     }
 
     public UsbInterfaceImpl findInterfaceByNumber(int number) {
-        return (UsbInterfaceImpl) interfaceList.stream().filter(intf -> intf.getNumber() == number).findFirst().orElse(null);
+        return (UsbInterfaceImpl) interfaceList.stream().filter(intf -> intf.getNumber() == number)
+                .findFirst().orElse(null);
     }
 
     public void addFunction(CompositeFunction function) {
@@ -63,6 +64,7 @@ public class Configuration {
     }
 
     public CompositeFunction findFunction(int interfaceNumber) {
-        return functionList.stream().filter(f -> interfaceNumber >= f.firstInterfaceNumber() && interfaceNumber < f.firstInterfaceNumber() + f.numInterfaces()).findFirst().orElse(null);
+        return functionList.stream().filter(f -> f.containsInterface(interfaceNumber))
+                .findFirst().orElse(null);
     }
 }

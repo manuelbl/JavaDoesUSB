@@ -30,25 +30,27 @@ import static net.codecrete.usb.linux.gen.epoll.epoll.EPOLL_CTL_DEL;
 
 @SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue", "java:S100", "java:S1192"})
 public class EPoll {
-    private EPoll() {}
+    private EPoll() { }
 
     private static final boolean IS_AARCH64 = System.getProperty("os.arch").equals("aarch64");
 
     private static final GroupLayout DATA$LAYOUT = MemoryLayout.unionLayout(
-        ADDRESS_UNALIGNED.withName("ptr"),
-        JAVA_INT_UNALIGNED.withName("fd"),
-        JAVA_INT_UNALIGNED.withName("u32"),
-        JAVA_LONG_UNALIGNED.withName("u64")
+            ADDRESS_UNALIGNED.withName("ptr"),
+            JAVA_INT_UNALIGNED.withName("fd"),
+            JAVA_INT_UNALIGNED.withName("u32"),
+            JAVA_LONG_UNALIGNED.withName("u64")
     ).withName("epoll_data");
 
-    static final GroupLayout EVENT$LAYOUT = IS_AARCH64
-            ? MemoryLayout.structLayout(
+    static final GroupLayout EVENT$LAYOUT = IS_AARCH64 ?
+            MemoryLayout.structLayout(
                     JAVA_INT.withName("events"),
                     MemoryLayout.paddingLayout(4),
-                    DATA$LAYOUT.withName("data")).withName("epoll_event")
-            : MemoryLayout.structLayout(
+                    DATA$LAYOUT.withName("data")
+            ).withName("epoll_event") :
+            MemoryLayout.structLayout(
                     JAVA_INT_UNALIGNED.withName("events"),
-                    DATA$LAYOUT.withName("data")).withName("epoll_event");
+                    DATA$LAYOUT.withName("data")
+            ).withName("epoll_event");
 
     // varhandle to access the "fd" field in an epoll_event array
     static final VarHandle EVENT_ARRAY_DATA_FD$VH = EVENT$LAYOUT.arrayElementVarHandle(

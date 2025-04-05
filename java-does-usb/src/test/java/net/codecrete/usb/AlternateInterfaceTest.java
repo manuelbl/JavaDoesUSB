@@ -43,8 +43,8 @@ class AlternateInterfaceTest extends TestDeviceBase {
     void selectInvalidAlternateIntf_fails() {
         assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(1, 0));
 
-        var interface_number = config.interfaceNumber();
-        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(interface_number, 2));
+        var interfaceNumber = config.interfaceNumber();
+        assertThrows(UsbException.class, () -> testDevice.selectAlternateSetting(interfaceNumber, 2));
     }
 
     @Test
@@ -62,7 +62,7 @@ class AlternateInterfaceTest extends TestDeviceBase {
         testDevice.selectAlternateSetting(config.interfaceNumber(), 1);
 
         var endpointOut = config.endpointEchoOut();
-        assertThrows(UsbException.class, () -> testDevice.transferOut(endpointOut, new byte[] { 1, 2, 3 }));
+        assertThrows(UsbException.class, () -> testDevice.transferOut(endpointOut, new byte[]{1, 2, 3}));
 
         var endpointIn = config.endpointEchoIn();
         assertThrows(UsbException.class, () -> testDevice.transferIn(endpointIn));

@@ -15,7 +15,7 @@ The resulting code is then committed to the source code repository.
 
 - According to the jextract mailing list, it would be required to create separate code for Intel x64 and ARM64 architecture. And jextract would need to be run on each architecture separately (no cross-compilation). Fortunately, this doesn't seem to be the case. Linux code generated on Intel x64 also runs on ARM64 without change. The same holds for macOS. However, jextract needs to be run on each operating system separately.
 
-- The *Foreign Function And Memory* API has the abilitiy to save the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). This is required as the JVM calls operation system functions as well, which overwrite the result values. To save the values, an additional parameter must be added to function calls. Unfortunately, this is not supported by jextract. So a good number of function bindings have to be written manually.
+- The *Foreign Function And Memory* API has the abilitiy to save the thread-specific error values (`GetLastError()` on Windows, `errno` on Linux). This is required as the JVM calls operating system functions as well, which overwrite the result values. To save the values, an additional parameter must be added to function calls. Unfortunately, this is not supported by jextract. So a good number of function bindings have to be written manually.
 
 - *jextract* is not really transparent about what it does. It often skips elements without providing any information. In particular, it will silently skip a requested element in these cases:
 
@@ -53,22 +53,11 @@ Most of the required native functions on macOS are part of a framework. Framewor
 
 ## Windows
 
-Most Windows SDK header files are not independent. They require `Windows.h` to be included first. So instead of specifying the target header files directly, a helper header file (`windows_headers.h` in this directory) is specified.
+The Windows code is not generated with _jextract_ but with [Windows API Generator](https://github.com/manuelbl/WindowsApiGenerator)
+instead. It is run as a Maven plugin. The generated code is not committed to GitHub.
 
-Compared to Linux and macOS, the code generation on Windows is very slow (about 1 min vs 3 seconds). And jextract crashes sometimes.
-
-The known limitations are:
-
-- Variable size `struct`: Several Windows struct are of variable size. The last member is an array. The `struct` definition specifies array length 1. But you are expected to allocate more space depending on the actual array size you need. *jextract* generates code for array length 1 and checks the length when the members are accessed. So the generated code is difficult to use. Variable size `struct`s are a pain - in any language.
-
-- GUID constants like `GUID_DEVINTERFACE_USB_DEVICE` do not work. While code is generated, the code fails at run-time as it is unable to locate the symbol. This is due to the fact that `GUID_DEVINTERFACE_USB_DEVICE` actually resolve to a variable definition and not to a variable declaration. The GUID constant is not contained in any library; instead the header files use linkage options to generate the constant in the callers code, which does not work with FFM. Such constants should be skipped by *jextract*.
-
-- *jextract* is a batch script and turns off *echo mode*. If a single batch scripts has multiple calls of *jextract*, two things need to be considered:
-
-    - If the regular command interpreter `cmd.exe` is used, *jextract* must be called using `call`, i.e. `call jextract header.h`.
-    - If *PowerShell* is used instead, `call` is not needed but *PowerShell* must be configured to allow the execution of scripts.
-    - *jextract* turns off *echo mode*. So the first call will behave differently than the following calls.
-
+Windows API Generator supports call state capturing (`GetLastError()`), structs with a
+variable size, GUID and device property key (`DEVPKEY`) constants etc.
 
 
 ## Code Size

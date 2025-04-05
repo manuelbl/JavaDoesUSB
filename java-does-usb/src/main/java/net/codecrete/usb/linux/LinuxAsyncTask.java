@@ -215,7 +215,7 @@ class LinuxAsyncTask {
     /**
      * Links the specified transfer instance to a URB.
      * <p>
-     * The transfer is assigned an URB instance, and a list
+     * The transfer is assigned a URB instance, and a list
      * of associations from URB to transfer is maintained.
      * </p>
      * @param transfer the transfer to assign a URB.

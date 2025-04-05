@@ -73,6 +73,7 @@ class BulkTransferTest extends TestDeviceBase {
             numBytes += size;
         }
     }
+
     static byte[] readBytes(int numBytes) {
         var buffer = new ByteArrayOutputStream();
         var bytesRead = 0;

@@ -8,15 +8,23 @@ package net.codecrete.usb.windows;
 
 import net.codecrete.usb.UsbException;
 import net.codecrete.usb.UsbStallException;
-import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.ntdll.NtDll;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
+import static windows.win32.foundation.Apis.LocalFree;
+import static windows.win32.foundation.Constants.STATUS_UNSUCCESSFUL;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_GEN_FAILURE;
+import static windows.win32.system.diagnostics.debug.Apis.FormatMessageW;
+import static windows.win32.system.diagnostics.debug.FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_ALLOCATE_BUFFER;
+import static windows.win32.system.diagnostics.debug.FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_FROM_HMODULE;
+import static windows.win32.system.diagnostics.debug.FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_FROM_SYSTEM;
+import static windows.win32.system.diagnostics.debug.FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_IGNORE_INSERTS;
+import static windows.win32.system.libraryloader.Apis.GetModuleHandleW;
 
 /**
  * Exception thrown if a Windows specific error occurs.
@@ -48,7 +56,7 @@ public class WindowsUsbException extends UsbException {
      */
     static void throwException(int errorCode, String message, Object... args) {
         var formattedMessage = String.format(message, args);
-        if (errorCode == Kernel32.ERROR_GEN_FAILURE() || errorCode == NtDll.STATUS_UNSUCCESSFUL()) {
+        if (errorCode == ERROR_GEN_FAILURE || errorCode == STATUS_UNSUCCESSFUL) {
             throw new UsbStallException(formattedMessage);
         } else {
             throw new WindowsUsbException(formattedMessage, errorCode);
@@ -85,8 +93,9 @@ public class WindowsUsbException extends UsbException {
     private static MemorySegment getNtModule() {
         if (ntModule == null) {
             try (var arena = Arena.ofConfined()) {
-                var moduleName = Win.createSegmentFromString("NTDLL.DLL", arena);
-                ntModule = Kernel32.GetModuleHandleW(moduleName);
+                var errorState = Win.allocateErrorState(arena);
+                var moduleName = arena.allocateFrom("NTDLL.DLL", UTF_16LE);
+                ntModule = GetModuleHandleW(errorState, moduleName);
             }
         }
 
@@ -95,17 +104,18 @@ public class WindowsUsbException extends UsbException {
 
     static String getErrorMessage(int errorCode) {
         try (var arena = Arena.ofConfined()) {
+            var errorState = Win.allocateErrorState(arena);
             var messagePointerHolder = arena.allocate(ADDRESS);
 
             // First try: Win32 error code
-            var res = Kernel32.FormatMessageW(
-                    Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_SYSTEM() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+            var res = FormatMessageW(
+                    errorState, FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                     NULL, errorCode, 0, messagePointerHolder, 0, NULL);
 
             // Second try: NTSTATUS error code
             if (res == 0) {
-                res = Kernel32.FormatMessageW(
-                        Kernel32.FORMAT_MESSAGE_ALLOCATE_BUFFER() | Kernel32.FORMAT_MESSAGE_FROM_HMODULE() | Kernel32.FORMAT_MESSAGE_IGNORE_INSERTS(),
+                res = FormatMessageW(
+                        errorState, FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
                         getNtModule(), errorCode, 0, messagePointerHolder, 0, NULL);
             }
 
@@ -114,8 +124,8 @@ public class WindowsUsbException extends UsbException {
                 return "unspecified error";
 
             var messagePointer = dereference(messagePointerHolder).reinterpret(128 * 1024); // NOSONAR
-            var message = Win.createStringFromSegment(messagePointer);
-            Kernel32.LocalFree(messagePointer);
+            var message = messagePointer.getString(0, UTF_16LE);
+            LocalFree(errorState, messagePointer);
             return message.trim();
         }
     }

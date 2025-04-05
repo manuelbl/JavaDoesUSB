@@ -1,15 +1,10 @@
 package net.codecrete.usb.windows;
 
 import net.codecrete.usb.common.ScopeCleanup;
-import net.codecrete.usb.windows.gen.advapi32.Advapi32;
-import net.codecrete.usb.windows.gen.kernel32.Kernel32;
-import net.codecrete.usb.windows.gen.kernel32._GUID;
-import net.codecrete.usb.windows.gen.ole32.Ole32;
-import net.codecrete.usb.windows.gen.setupapi.SetupAPI;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVICE_INTERFACE_DATA;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVICE_INTERFACE_DETAIL_DATA_W;
-import net.codecrete.usb.windows.gen.setupapi._SP_DEVINFO_DATA;
-import net.codecrete.usb.windows.winsdk.SetupAPI2;
+import system.Guid;
+import windows.win32.devices.deviceanddriverinstallation.SP_DEVICE_INTERFACE_DATA;
+import windows.win32.devices.deviceanddriverinstallation.SP_DEVICE_INTERFACE_DETAIL_DATA_W;
+import windows.win32.devices.deviceanddriverinstallation.SP_DEVINFO_DATA;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -18,10 +13,38 @@ import java.util.List;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_CHAR;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static net.codecrete.usb.windows.DevicePropertyKey.Service;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwException;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiDeleteDeviceInterfaceData;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiDestroyDeviceInfoList;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiEnumDeviceInfo;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiEnumDeviceInterfaces;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiGetClassDevsW;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiCreateDeviceInfoList;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiGetDeviceInterfaceDetailW;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiGetDevicePropertyW;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiOpenDevRegKey;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiOpenDeviceInfoW;
+import static windows.win32.devices.deviceanddriverinstallation.Apis.SetupDiOpenDeviceInterfaceW;
+import static windows.win32.devices.deviceanddriverinstallation.Constants.DIREG_DEV;
+import static windows.win32.devices.deviceanddriverinstallation.SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_DEVICEINTERFACE;
+import static windows.win32.devices.deviceanddriverinstallation.SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT;
+import static windows.win32.devices.deviceanddriverinstallation.SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL;
+import static windows.win32.devices.properties.Constants.DEVPKEY_Device_Service;
+import static windows.win32.devices.properties.DEVPROPTYPE.DEVPROP_TYPEMOD_LIST;
+import static windows.win32.devices.properties.DEVPROPTYPE.DEVPROP_TYPE_STRING;
+import static windows.win32.devices.properties.DEVPROPTYPE.DEVPROP_TYPE_UINT32;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_FILE_NOT_FOUND;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_MORE_DATA;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_NOT_FOUND;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_NO_MORE_ITEMS;
+import static windows.win32.system.com.Apis.CLSIDFromString;
+import static windows.win32.system.registry.Apis.RegCloseKey;
+import static windows.win32.system.registry.Apis.RegQueryValueExW;
+import static windows.win32.system.registry.REG_SAM_FLAGS.KEY_READ;
 
 /**
  * Device information set (of Windows Setup API).
@@ -35,12 +58,12 @@ public class DeviceInfoSet implements AutoCloseable {
 
     @FunctionalInterface
     interface InfoSetCreator {
-        MemorySegment create(Arena arena, MemorySegment errorState);
+        long create(Arena arena, MemorySegment errorState);
     }
 
     private final Arena arena;
     private final MemorySegment errorState;
-    private final MemorySegment devInfoSet;
+    private final long devInfoSet;
     private final MemorySegment devInfoData;
     private MemorySegment devIntfData;
     private int iterationIndex = -1;
@@ -60,9 +83,9 @@ public class DeviceInfoSet implements AutoCloseable {
      */
     static DeviceInfoSet ofPresentDevices(MemorySegment interfaceGuid, String instanceId) {
         return new DeviceInfoSet((arena, errorState) -> {
-            var instanceIdSegment = instanceId != null ? Win.createSegmentFromString(instanceId, arena) : NULL;
-            return SetupAPI2.SetupDiGetClassDevsW(interfaceGuid, instanceIdSegment, NULL,
-                    SetupAPI.DIGCF_PRESENT() | SetupAPI.DIGCF_DEVICEINTERFACE(), errorState);
+            var instanceIdSegment = instanceId != null ? arena.allocateFrom(instanceId, UTF_16LE) : NULL;
+            return SetupDiGetClassDevsW(errorState, interfaceGuid, instanceIdSegment, NULL,
+                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
         });
     }
 
@@ -79,7 +102,7 @@ public class DeviceInfoSet implements AutoCloseable {
         var devInfoSet = ofEmpty();
         try {
             devInfoSet.addInstanceId(instanceId);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             devInfoSet.close();
             throw t;
         }
@@ -99,7 +122,7 @@ public class DeviceInfoSet implements AutoCloseable {
         var devInfoSet = ofEmpty();
         try {
             devInfoSet.addDevicePath(devicePath);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             devInfoSet.close();
             throw t;
         }
@@ -112,7 +135,7 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return device info set
      */
     private static DeviceInfoSet ofEmpty() {
-        return new DeviceInfoSet((_, errorState) -> SetupAPI2.SetupDiCreateDeviceInfoList(NULL, NULL, errorState));
+        return new DeviceInfoSet((_, errorState) -> SetupDiCreateDeviceInfoList(errorState, NULL, NULL));
     }
 
     private DeviceInfoSet(InfoSetCreator creator) {
@@ -125,8 +148,7 @@ public class DeviceInfoSet implements AutoCloseable {
                 throwLastError(errorState, "internal error (creating device info set)");
 
             // allocate SP_DEVINFO_DATA (will receive device details)
-            devInfoData = _SP_DEVINFO_DATA.allocate(arena);
-            _SP_DEVINFO_DATA.cbSize(devInfoData, (int) _SP_DEVINFO_DATA.layout().byteSize());
+            devInfoData = SP_DEVINFO_DATA.allocate(arena);
 
         } catch (Exception e) {
             arena.close();
@@ -137,14 +159,14 @@ public class DeviceInfoSet implements AutoCloseable {
     @Override
     public void close() {
         if (devIntfData != null)
-            SetupAPI.SetupDiDeleteDeviceInterfaceData(devInfoSet, devIntfData);
-        SetupAPI.SetupDiDestroyDeviceInfoList(devInfoSet);
+            SetupDiDeleteDeviceInterfaceData(errorState, devInfoSet, devIntfData);
+        SetupDiDestroyDeviceInfoList(errorState, devInfoSet);
         arena.close();
     }
 
     private void addInstanceId(String instanceId) {
-        var instanceIdSegment = Win.createSegmentFromString(instanceId, arena);
-        if (SetupAPI2.SetupDiOpenDeviceInfoW(devInfoSet, instanceIdSegment, NULL, 0, devInfoData, errorState) == 0)
+        var instanceIdSegment = arena.allocateFrom(instanceId, UTF_16LE);
+        if (SetupDiOpenDeviceInfoW(errorState, devInfoSet, instanceIdSegment, NULL, 0, devInfoData) == 0)
             throwLastError(errorState, "internal error (SetupDiOpenDeviceInfoW)");
     }
 
@@ -153,18 +175,16 @@ public class DeviceInfoSet implements AutoCloseable {
             throw new AssertionError("calling addDevice() multiple times is not implemented");
 
         // load device information into dev info set
-        var intfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
-        _SP_DEVICE_INTERFACE_DATA.cbSize(intfData, (int) intfData.byteSize());
-        var devicePathSegment = Win.createSegmentFromString(devicePath, arena);
-        if (SetupAPI2.SetupDiOpenDeviceInterfaceW(devInfoSet, devicePathSegment, 0, intfData, errorState) == 0)
+        var intfData = SP_DEVICE_INTERFACE_DATA.allocate(arena);
+        var devicePathSegment = arena.allocateFrom(devicePath, UTF_16LE);
+        if (SetupDiOpenDeviceInterfaceW(errorState, devInfoSet, devicePathSegment, 0, intfData) == 0)
             throwLastError(errorState, "internal error (SetupDiOpenDeviceInterfaceW)");
 
         devIntfData = intfData; // for later cleanup
 
-        if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, intfData, NULL, 0, NULL,
-                devInfoData, errorState) == 0) {
+        if (SetupDiGetDeviceInterfaceDetailW(errorState, devInfoSet, intfData, NULL, 0, NULL, devInfoData) == 0) {
             var err = Win.getLastError(errorState);
-            if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
+            if (err != ERROR_INSUFFICIENT_BUFFER)
                 throwException(err, "internal error (SetupDiGetDeviceInterfaceDetailW)");
         }
     }
@@ -176,9 +196,9 @@ public class DeviceInfoSet implements AutoCloseable {
      */
     boolean next() {
         iterationIndex += 1;
-        if (SetupAPI2.SetupDiEnumDeviceInfo(devInfoSet, iterationIndex, devInfoData, errorState) == 0) {
+        if (SetupDiEnumDeviceInfo(errorState, devInfoSet, iterationIndex, devInfoData) == 0) {
             var err = Win.getLastError(errorState);
-            if (err == Kernel32.ERROR_NO_MORE_ITEMS())
+            if (err == ERROR_NO_MORE_ITEMS)
                 return false;
             throwLastError(errorState, "internal error (SetupDiEnumDeviceInfo)");
         }
@@ -192,7 +212,7 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return {@code true} if it is a composite device
      */
     boolean isCompositeDevice() {
-        var deviceService = getStringProperty(Service);
+        var deviceService = getStringProperty(DEVPKEY_Device_Service());
 
         // usbccgp is the USB Generic Parent Driver used for composite devices
         return "usbccgp".equalsIgnoreCase(deviceService);
@@ -212,14 +232,14 @@ public class DeviceInfoSet implements AutoCloseable {
 
         for (var guid : guids) {
             // check for class GUID
-            var guidSegment = Win.createSegmentFromString(guid, arena);
-            var clsid = _GUID.allocate(arena);
-            if (Ole32.CLSIDFromString(guidSegment, clsid) != 0)
+            var guidSegment = arena.allocateFrom(guid, UTF_16LE);
+            var clsid = Guid.allocate(arena);
+            if (CLSIDFromString(guidSegment, clsid) != 0)
                 continue;
 
             try {
                 return getDevicePath(instanceId, clsid);
-            } catch (Exception e) {
+            } catch (Exception _) {
                 // ignore and try next one
             }
         }
@@ -238,26 +258,26 @@ public class DeviceInfoSet implements AutoCloseable {
 
         try (var cleanup = new ScopeCleanup()) {
             // open device registry key
-            var regKey = SetupAPI2.SetupDiOpenDevRegKey(devInfoSet, devInfoData, SetupAPI.DICS_FLAG_GLOBAL(), 0,
-                    SetupAPI.DIREG_DEV(), Advapi32.KEY_READ(), errorState);
+            var regKey = SetupDiOpenDevRegKey(errorState, devInfoSet, devInfoData, DICS_FLAG_GLOBAL, 0,
+                    DIREG_DEV, KEY_READ);
             if (Win.isInvalidHandle(regKey))
                 throwLastError(errorState, "internal error (SetupDiOpenDevRegKey)");
-            cleanup.add(() -> Advapi32.RegCloseKey(regKey));
+            cleanup.add(() -> RegCloseKey(regKey));
 
             // read registry value (without buffer, to query length)
-            var keyNameSegment = Win.createSegmentFromString("DeviceInterfaceGUIDs", arena);
+            var keyNameSegment = arena.allocateFrom("DeviceInterfaceGUIDs", UTF_16LE);
             var valueTypeHolder = arena.allocate(JAVA_INT);
             var valueSizeHolder = arena.allocate(JAVA_INT);
-            var res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, NULL, valueSizeHolder);
-            if (res == Kernel32.ERROR_FILE_NOT_FOUND())
+            var res = RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, NULL, valueSizeHolder);
+            if (res == ERROR_FILE_NOT_FOUND)
                 return List.of(); // no device interface GUIDs
-            if (res != 0 && res != Kernel32.ERROR_MORE_DATA())
+            if (res != 0 && res != ERROR_MORE_DATA)
                 throwException(res, "internal error (RegQueryValueExW)");
 
             // read registry value (with buffer)
             var valueSize = valueSizeHolder.get(JAVA_INT, 0);
             var value = arena.allocate(valueSize);
-            res = Advapi32.RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
+            res = RegQueryValueExW(regKey, keyNameSegment, NULL, valueTypeHolder, value, valueSizeHolder);
             if (res != 0)
                 throwException(res, "internal error (RegQueryValueExW)");
 
@@ -275,11 +295,11 @@ public class DeviceInfoSet implements AutoCloseable {
     int getIntProperty(MemorySegment propertyKey) {
         var propertyTypeHolder = arena.allocate(JAVA_INT);
         var propertyValueHolder = arena.allocate(JAVA_INT);
-        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
-                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
+        if (SetupDiGetDevicePropertyW(errorState, devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
+                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
             throwLastError(errorState, "internal error (SetupDiGetDevicePropertyW - A)");
 
-        if (propertyTypeHolder.get(JAVA_INT, 0) != SetupAPI.DEVPROP_TYPE_UINT32())
+        if (propertyTypeHolder.get(JAVA_INT, 0) != DEVPROP_TYPE_UINT32)
             throwException("internal error (expected property type UINT32)");
 
         return propertyValueHolder.get(JAVA_INT, 0);
@@ -292,10 +312,10 @@ public class DeviceInfoSet implements AutoCloseable {
      * @return property value
      */
     String getStringProperty(MemorySegment propertyKey) {
-        var propertyValue = getVariableLengthProperty(propertyKey, SetupAPI.DEVPROP_TYPE_STRING(), arena);
+        var propertyValue = getVariableLengthProperty(propertyKey, DEVPROP_TYPE_STRING, arena);
         if (propertyValue == null)
             return null;
-        return Win.createStringFromSegment(propertyValue);
+        return propertyValue.getString(0, UTF_16LE);
     }
 
     /**
@@ -307,7 +327,7 @@ public class DeviceInfoSet implements AutoCloseable {
     @SuppressWarnings("java:S1168")
     List<String> getStringListProperty(MemorySegment propertyKey) {
         var propertyValue = getVariableLengthProperty(propertyKey,
-                SetupAPI.DEVPROP_TYPE_STRING() | SetupAPI.DEVPROP_TYPEMOD_LIST(), arena);
+                DEVPROP_TYPE_STRING | DEVPROP_TYPEMOD_LIST, arena);
         if (propertyValue == null)
             return null;
 
@@ -319,12 +339,12 @@ public class DeviceInfoSet implements AutoCloseable {
         // query length (thus no buffer)
         var propertyTypeHolder = arena.allocate(JAVA_INT);
         var requiredSizeHolder = arena.allocate(JAVA_INT);
-        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
-                requiredSizeHolder, 0, errorState) == 0) {
+        if (SetupDiGetDevicePropertyW(errorState, devInfoSet, devInfoData, propertyKey, propertyTypeHolder, NULL, 0,
+                requiredSizeHolder, 0) == 0) {
             var err = Win.getLastError(errorState);
-            if (err == Kernel32.ERROR_NOT_FOUND())
+            if (err == ERROR_NOT_FOUND)
                 return null;
-            if (err != Kernel32.ERROR_INSUFFICIENT_BUFFER())
+            if (err != ERROR_INSUFFICIENT_BUFFER)
                 throwException(err, "internal error (SetupDiGetDevicePropertyW - B)");
         }
 
@@ -337,8 +357,8 @@ public class DeviceInfoSet implements AutoCloseable {
         var propertyValueHolder = arena.allocate(JAVA_CHAR, stringLen);
 
         // get property value
-        if (SetupAPI2.SetupDiGetDevicePropertyW(devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
-                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0, errorState) == 0)
+        if (SetupDiGetDevicePropertyW(errorState, devInfoSet, devInfoData, propertyKey, propertyTypeHolder,
+                propertyValueHolder, (int) propertyValueHolder.byteSize(), NULL, 0) == 0)
             throwLastError(errorState, "internal error (SetupDiGetDevicePropertyW - C)");
 
         return propertyValueHolder;
@@ -359,23 +379,17 @@ public class DeviceInfoSet implements AutoCloseable {
 
     private String getDevicePathForGuid(MemorySegment interfaceGuid) {
         // retrieve first element of enumeration
-        devIntfData = _SP_DEVICE_INTERFACE_DATA.allocate(arena);
-        _SP_DEVICE_INTERFACE_DATA.cbSize(devIntfData, (int) devIntfData.byteSize());
-        if (SetupAPI2.SetupDiEnumDeviceInterfaces(devInfoSet, NULL, interfaceGuid, 0, devIntfData,
-                errorState) == 0)
+        devIntfData = SP_DEVICE_INTERFACE_DATA.allocate(arena);
+        if (SetupDiEnumDeviceInterfaces(errorState, devInfoSet, NULL, interfaceGuid, 0, devIntfData) == 0)
             throwLastError(errorState, "internal error (SetupDiEnumDeviceInterfaces)");
 
         // get device path
-        // (SP_DEVICE_INTERFACE_DETAIL_DATA_W is of variable length and requires a bigger allocation so
-        // the device path fits)
-        final var devicePathOffset = 4;
-        var intfDetailData = arena.allocate(4L + 260 * 2);
-        _SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize(intfDetailData,
-                (int) _SP_DEVICE_INTERFACE_DETAIL_DATA_W.sizeof());
-        if (SetupAPI2.SetupDiGetDeviceInterfaceDetailW(devInfoSet, devIntfData, intfDetailData,
-                (int) intfDetailData.byteSize(), NULL, NULL, errorState) == 0)
+        var intfDetailData = SP_DEVICE_INTERFACE_DETAIL_DATA_W.allocate(arena, 260);
+        if (SetupDiGetDeviceInterfaceDetailW(errorState, devInfoSet, devIntfData, intfDetailData,
+                (int) intfDetailData.byteSize(), NULL, NULL) == 0)
             throwLastError(errorState, "Internal error (SetupDiGetDeviceInterfaceDetailW)");
 
-        return Win.createStringFromSegment(intfDetailData.asSlice(devicePathOffset));
+        var devicePath = SP_DEVICE_INTERFACE_DETAIL_DATA_W.DevicePath(intfDetailData);
+        return devicePath.getString(0, UTF_16LE);
     }
 }

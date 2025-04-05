@@ -64,5 +64,7 @@ public interface UsbInterface {
      *
      * @return a list of the alternate settings
      */
-    @NotNull @Unmodifiable List<UsbAlternateInterface> getAlternates();
+    @NotNull
+    @Unmodifiable
+    List<UsbAlternateInterface> getAlternates();
 }

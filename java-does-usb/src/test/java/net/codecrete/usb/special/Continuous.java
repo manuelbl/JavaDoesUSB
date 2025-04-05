@@ -39,9 +39,9 @@ public class Continuous {
             try {
                 device.transferOut(1, buffer);
                 Thread.sleep(3000);
-            } catch (UsbException e) {
+            } catch (UsbException _) {
                 return;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -52,8 +52,8 @@ public class Continuous {
         while (true) {
             try {
                 var packet = device.transferIn(2);
-                System.out.printf("%s packet of %d bytes received\n", LocalDateTime.now().format(formatter), packet.length);
-            } catch (UsbException e) {
+                System.out.printf("%s packet of %d bytes received%n", LocalDateTime.now().format(formatter), packet.length);
+            } catch (UsbException _) {
                 return;
             }
         }

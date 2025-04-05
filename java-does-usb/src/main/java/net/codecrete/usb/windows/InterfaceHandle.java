@@ -17,6 +17,7 @@ class InterfaceHandle {
         this.interfaceNumber = interfaceNumber;
         this.firstInterfaceNumber = firstInterfaceNumber;
     }
+
     /**
      * The number of this interface.
      */
