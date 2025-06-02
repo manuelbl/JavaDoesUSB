@@ -168,7 +168,7 @@
                 <configuration>
                     <release>23</release>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-                    <excludePackageNames>windows.*</excludePackageNames>
+                    <excludePackageNames>net.codecrete.usb.linux.gen.*:net.codecrete.usb.macos.gen.*:windows.*:system</excludePackageNames>
                 </configuration>
             </plugin>
             <plugin>
