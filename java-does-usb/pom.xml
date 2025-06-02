@@ -166,8 +166,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <release>22</release>
+                    <release>23</release>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    <excludePackageNames>windows.*</excludePackageNames>
                 </configuration>
             </plugin>
             <plugin>
