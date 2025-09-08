@@ -12,63 +12,18 @@ import java.util.stream.*;
 import static java.lang.foreign.ValueLayout.*;
 import static java.lang.foreign.MemoryLayout.PathElement.*;
 
-public class CoreFoundation {
+public class CoreFoundation extends CoreFoundation$shared {
 
     CoreFoundation() {
         // Should not be called directly
     }
 
     static final Arena LIBRARY_ARENA = Arena.ofAuto();
-    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
-
-    static void traceDowncall(String name, Object... args) {
-         String traceArgs = Arrays.stream(args)
-                       .map(Object::toString)
-                       .collect(Collectors.joining(", "));
-         System.out.printf("%s(%s)\n", name, traceArgs);
-    }
-
-    static MemorySegment findOrThrow(String symbol) {
-        return SYMBOL_LOOKUP.find(symbol)
-            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
-    }
-
-    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
-        try {
-            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
-        } catch (ReflectiveOperationException ex) {
-            throw new AssertionError(ex);
-        }
-    }
-
-    static MemoryLayout align(MemoryLayout layout, long align) {
-        return switch (layout) {
-            case PaddingLayout p -> p;
-            case ValueLayout v -> v.withByteAlignment(align);
-            case GroupLayout g -> {
-                MemoryLayout[] alignedMembers = g.memberLayouts().stream()
-                        .map(m -> align(m, align)).toArray(MemoryLayout[]::new);
-                yield g instanceof StructLayout ?
-                        MemoryLayout.structLayout(alignedMembers) : MemoryLayout.unionLayout(alignedMembers);
-            }
-            case SequenceLayout s -> MemoryLayout.sequenceLayout(s.elementCount(), align(s.elementLayout(), align));
-        };
-    }
 
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());
 
-    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
-    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
-    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
-    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
-    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
-    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
-    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
-            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
-    public static final ValueLayout.OfLong C_LONG = ValueLayout.JAVA_LONG;
 
     private static class CFGetTypeID {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
@@ -76,9 +31,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFGetTypeID"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFGetTypeID");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -100,6 +55,17 @@ public class CoreFoundation {
     public static MethodHandle CFGetTypeID$handle() {
         return CFGetTypeID.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFTypeID CFGetTypeID(CFTypeRef cf)
+     * }
+     */
+    public static MemorySegment CFGetTypeID$address() {
+        return CFGetTypeID.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFTypeID CFGetTypeID(CFTypeRef cf)
@@ -112,6 +78,8 @@ public class CoreFoundation {
                 traceDowncall("CFGetTypeID", cf);
             }
             return (long)mh$.invokeExact(cf);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -122,9 +90,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFRelease"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFRelease");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -146,6 +114,17 @@ public class CoreFoundation {
     public static MethodHandle CFRelease$handle() {
         return CFRelease.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void CFRelease(CFTypeRef cf)
+     * }
+     */
+    public static MemorySegment CFRelease$address() {
+        return CFRelease.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern void CFRelease(CFTypeRef cf)
@@ -158,6 +137,8 @@ public class CoreFoundation {
                 traceDowncall("CFRelease", cf);
             }
             mh$.invokeExact(cf);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -171,9 +152,9 @@ public class CoreFoundation {
             CoreFoundation.C_LONG
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFDataCreate"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFDataCreate");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -195,6 +176,17 @@ public class CoreFoundation {
     public static MethodHandle CFDataCreate$handle() {
         return CFDataCreate.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFDataRef CFDataCreate(CFAllocatorRef allocator, const UInt8 *bytes, CFIndex length)
+     * }
+     */
+    public static MemorySegment CFDataCreate$address() {
+        return CFDataCreate.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFDataRef CFDataCreate(CFAllocatorRef allocator, const UInt8 *bytes, CFIndex length)
@@ -207,6 +199,8 @@ public class CoreFoundation {
                 traceDowncall("CFDataCreate", allocator, bytes, length);
             }
             return (MemorySegment)mh$.invokeExact(allocator, bytes, length);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -218,9 +212,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFDataGetBytePtr"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFDataGetBytePtr");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -242,6 +236,17 @@ public class CoreFoundation {
     public static MethodHandle CFDataGetBytePtr$handle() {
         return CFDataGetBytePtr.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern const UInt8 *CFDataGetBytePtr(CFDataRef theData)
+     * }
+     */
+    public static MemorySegment CFDataGetBytePtr$address() {
+        return CFDataGetBytePtr.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern const UInt8 *CFDataGetBytePtr(CFDataRef theData)
@@ -254,6 +259,8 @@ public class CoreFoundation {
                 traceDowncall("CFDataGetBytePtr", theData);
             }
             return (MemorySegment)mh$.invokeExact(theData);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -263,9 +270,9 @@ public class CoreFoundation {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             CoreFoundation.C_LONG    );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFStringGetTypeID"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFStringGetTypeID");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -287,6 +294,17 @@ public class CoreFoundation {
     public static MethodHandle CFStringGetTypeID$handle() {
         return CFStringGetTypeID.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFTypeID CFStringGetTypeID(void)
+     * }
+     */
+    public static MemorySegment CFStringGetTypeID$address() {
+        return CFStringGetTypeID.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFTypeID CFStringGetTypeID(void)
@@ -299,6 +317,8 @@ public class CoreFoundation {
                 traceDowncall("CFStringGetTypeID");
             }
             return (long)mh$.invokeExact();
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -312,9 +332,9 @@ public class CoreFoundation {
             CoreFoundation.C_LONG
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFStringCreateWithCharacters"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFStringCreateWithCharacters");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -336,6 +356,17 @@ public class CoreFoundation {
     public static MethodHandle CFStringCreateWithCharacters$handle() {
         return CFStringCreateWithCharacters.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFStringRef CFStringCreateWithCharacters(CFAllocatorRef alloc, const UniChar *chars, CFIndex numChars)
+     * }
+     */
+    public static MemorySegment CFStringCreateWithCharacters$address() {
+        return CFStringCreateWithCharacters.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFStringRef CFStringCreateWithCharacters(CFAllocatorRef alloc, const UniChar *chars, CFIndex numChars)
@@ -348,6 +379,8 @@ public class CoreFoundation {
                 traceDowncall("CFStringCreateWithCharacters", alloc, chars, numChars);
             }
             return (MemorySegment)mh$.invokeExact(alloc, chars, numChars);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -359,9 +392,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFStringGetLength"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFStringGetLength");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -383,6 +416,17 @@ public class CoreFoundation {
     public static MethodHandle CFStringGetLength$handle() {
         return CFStringGetLength.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFIndex CFStringGetLength(CFStringRef theString)
+     * }
+     */
+    public static MemorySegment CFStringGetLength$address() {
+        return CFStringGetLength.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFIndex CFStringGetLength(CFStringRef theString)
@@ -395,6 +439,8 @@ public class CoreFoundation {
                 traceDowncall("CFStringGetLength", theString);
             }
             return (long)mh$.invokeExact(theString);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -407,9 +453,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFStringGetCharacters"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFStringGetCharacters");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -431,6 +477,17 @@ public class CoreFoundation {
     public static MethodHandle CFStringGetCharacters$handle() {
         return CFStringGetCharacters.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void CFStringGetCharacters(CFStringRef theString, CFRange range, UniChar *buffer)
+     * }
+     */
+    public static MemorySegment CFStringGetCharacters$address() {
+        return CFStringGetCharacters.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern void CFStringGetCharacters(CFStringRef theString, CFRange range, UniChar *buffer)
@@ -443,6 +500,8 @@ public class CoreFoundation {
                 traceDowncall("CFStringGetCharacters", theString, range, buffer);
             }
             mh$.invokeExact(theString, range, buffer);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -461,9 +520,9 @@ public class CoreFoundation {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             CoreFoundation.C_LONG    );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFNumberGetTypeID"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFNumberGetTypeID");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -485,6 +544,17 @@ public class CoreFoundation {
     public static MethodHandle CFNumberGetTypeID$handle() {
         return CFNumberGetTypeID.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFTypeID CFNumberGetTypeID(void)
+     * }
+     */
+    public static MemorySegment CFNumberGetTypeID$address() {
+        return CFNumberGetTypeID.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFTypeID CFNumberGetTypeID(void)
@@ -497,6 +567,8 @@ public class CoreFoundation {
                 traceDowncall("CFNumberGetTypeID");
             }
             return (long)mh$.invokeExact();
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -510,9 +582,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFNumberGetValue"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFNumberGetValue");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -534,6 +606,17 @@ public class CoreFoundation {
     public static MethodHandle CFNumberGetValue$handle() {
         return CFNumberGetValue.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern Boolean CFNumberGetValue(CFNumberRef number, CFNumberType theType, void *valuePtr)
+     * }
+     */
+    public static MemorySegment CFNumberGetValue$address() {
+        return CFNumberGetValue.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern Boolean CFNumberGetValue(CFNumberRef number, CFNumberType theType, void *valuePtr)
@@ -546,6 +629,8 @@ public class CoreFoundation {
                 traceDowncall("CFNumberGetValue", number, theType, valuePtr);
             }
             return (byte)mh$.invokeExact(number, theType, valuePtr);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -555,9 +640,9 @@ public class CoreFoundation {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             CoreFoundation.C_POINTER    );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFRunLoopGetCurrent"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFRunLoopGetCurrent");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -579,6 +664,17 @@ public class CoreFoundation {
     public static MethodHandle CFRunLoopGetCurrent$handle() {
         return CFRunLoopGetCurrent.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFRunLoopRef CFRunLoopGetCurrent(void)
+     * }
+     */
+    public static MemorySegment CFRunLoopGetCurrent$address() {
+        return CFRunLoopGetCurrent.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFRunLoopRef CFRunLoopGetCurrent(void)
@@ -591,6 +687,8 @@ public class CoreFoundation {
                 traceDowncall("CFRunLoopGetCurrent");
             }
             return (MemorySegment)mh$.invokeExact();
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -599,9 +697,9 @@ public class CoreFoundation {
     private static class CFRunLoopRun {
         public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(    );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFRunLoopRun"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFRunLoopRun");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -623,6 +721,17 @@ public class CoreFoundation {
     public static MethodHandle CFRunLoopRun$handle() {
         return CFRunLoopRun.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void CFRunLoopRun(void)
+     * }
+     */
+    public static MemorySegment CFRunLoopRun$address() {
+        return CFRunLoopRun.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern void CFRunLoopRun(void)
@@ -635,6 +744,8 @@ public class CoreFoundation {
                 traceDowncall("CFRunLoopRun");
             }
             mh$.invokeExact();
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -647,9 +758,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFRunLoopAddSource"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFRunLoopAddSource");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -671,6 +782,17 @@ public class CoreFoundation {
     public static MethodHandle CFRunLoopAddSource$handle() {
         return CFRunLoopAddSource.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode)
+     * }
+     */
+    public static MemorySegment CFRunLoopAddSource$address() {
+        return CFRunLoopAddSource.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern void CFRunLoopAddSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode)
@@ -683,6 +805,8 @@ public class CoreFoundation {
                 traceDowncall("CFRunLoopAddSource", rl, source, mode);
             }
             mh$.invokeExact(rl, source, mode);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -695,9 +819,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFRunLoopRemoveSource"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFRunLoopRemoveSource");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -719,6 +843,17 @@ public class CoreFoundation {
     public static MethodHandle CFRunLoopRemoveSource$handle() {
         return CFRunLoopRemoveSource.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode)
+     * }
+     */
+    public static MemorySegment CFRunLoopRemoveSource$address() {
+        return CFRunLoopRemoveSource.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern void CFRunLoopRemoveSource(CFRunLoopRef rl, CFRunLoopSourceRef source, CFRunLoopMode mode)
@@ -731,6 +866,8 @@ public class CoreFoundation {
                 traceDowncall("CFRunLoopRemoveSource", rl, source, mode);
             }
             mh$.invokeExact(rl, source, mode);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -742,9 +879,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFUUIDGetUUIDBytes"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFUUIDGetUUIDBytes");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -766,6 +903,17 @@ public class CoreFoundation {
     public static MethodHandle CFUUIDGetUUIDBytes$handle() {
         return CFUUIDGetUUIDBytes.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFUUIDBytes CFUUIDGetUUIDBytes(CFUUIDRef uuid)
+     * }
+     */
+    public static MemorySegment CFUUIDGetUUIDBytes$address() {
+        return CFUUIDGetUUIDBytes.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFUUIDBytes CFUUIDGetUUIDBytes(CFUUIDRef uuid)
@@ -778,6 +926,8 @@ public class CoreFoundation {
                 traceDowncall("CFUUIDGetUUIDBytes", allocator, uuid);
             }
             return (MemorySegment)mh$.invokeExact(allocator, uuid);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -790,9 +940,9 @@ public class CoreFoundation {
             CFUUIDBytes.layout()
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFUUIDCreateFromUUIDBytes"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFUUIDCreateFromUUIDBytes");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -814,6 +964,17 @@ public class CoreFoundation {
     public static MethodHandle CFUUIDCreateFromUUIDBytes$handle() {
         return CFUUIDCreateFromUUIDBytes.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFUUIDRef CFUUIDCreateFromUUIDBytes(CFAllocatorRef alloc, CFUUIDBytes bytes)
+     * }
+     */
+    public static MemorySegment CFUUIDCreateFromUUIDBytes$address() {
+        return CFUUIDCreateFromUUIDBytes.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFUUIDRef CFUUIDCreateFromUUIDBytes(CFAllocatorRef alloc, CFUUIDBytes bytes)
@@ -826,6 +987,8 @@ public class CoreFoundation {
                 traceDowncall("CFUUIDCreateFromUUIDBytes", alloc, bytes);
             }
             return (MemorySegment)mh$.invokeExact(alloc, bytes);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -841,9 +1004,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFMessagePortCreateLocal"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFMessagePortCreateLocal");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -865,6 +1028,17 @@ public class CoreFoundation {
     public static MethodHandle CFMessagePortCreateLocal$handle() {
         return CFMessagePortCreateLocal.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateLocal(CFAllocatorRef allocator, CFStringRef name, CFMessagePortCallBack callout, CFMessagePortContext *context, Boolean *shouldFreeInfo)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateLocal$address() {
+        return CFMessagePortCreateLocal.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFMessagePortRef CFMessagePortCreateLocal(CFAllocatorRef allocator, CFStringRef name, CFMessagePortCallBack callout, CFMessagePortContext *context, Boolean *shouldFreeInfo)
@@ -877,6 +1051,8 @@ public class CoreFoundation {
                 traceDowncall("CFMessagePortCreateLocal", allocator, name, callout, context, shouldFreeInfo);
             }
             return (MemorySegment)mh$.invokeExact(allocator, name, callout, context, shouldFreeInfo);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -889,9 +1065,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFMessagePortCreateRemote"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFMessagePortCreateRemote");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -913,6 +1089,17 @@ public class CoreFoundation {
     public static MethodHandle CFMessagePortCreateRemote$handle() {
         return CFMessagePortCreateRemote.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFMessagePortRef CFMessagePortCreateRemote(CFAllocatorRef allocator, CFStringRef name)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateRemote$address() {
+        return CFMessagePortCreateRemote.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFMessagePortRef CFMessagePortCreateRemote(CFAllocatorRef allocator, CFStringRef name)
@@ -925,6 +1112,8 @@ public class CoreFoundation {
                 traceDowncall("CFMessagePortCreateRemote", allocator, name);
             }
             return (MemorySegment)mh$.invokeExact(allocator, name);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -942,9 +1131,9 @@ public class CoreFoundation {
             CoreFoundation.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFMessagePortSendRequest"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFMessagePortSendRequest");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -966,6 +1155,17 @@ public class CoreFoundation {
     public static MethodHandle CFMessagePortSendRequest$handle() {
         return CFMessagePortSendRequest.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern SInt32 CFMessagePortSendRequest(CFMessagePortRef remote, SInt32 msgid, CFDataRef data, CFTimeInterval sendTimeout, CFTimeInterval rcvTimeout, CFStringRef replyMode, CFDataRef *returnData)
+     * }
+     */
+    public static MemorySegment CFMessagePortSendRequest$address() {
+        return CFMessagePortSendRequest.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern SInt32 CFMessagePortSendRequest(CFMessagePortRef remote, SInt32 msgid, CFDataRef data, CFTimeInterval sendTimeout, CFTimeInterval rcvTimeout, CFStringRef replyMode, CFDataRef *returnData)
@@ -978,6 +1178,8 @@ public class CoreFoundation {
                 traceDowncall("CFMessagePortSendRequest", remote, msgid, data, sendTimeout, rcvTimeout, replyMode, returnData);
             }
             return (int)mh$.invokeExact(remote, msgid, data, sendTimeout, rcvTimeout, replyMode, returnData);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -991,9 +1193,9 @@ public class CoreFoundation {
             CoreFoundation.C_LONG
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    CoreFoundation.findOrThrow("CFMessagePortCreateRunLoopSource"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("CFMessagePortCreateRunLoopSource");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -1015,6 +1217,17 @@ public class CoreFoundation {
     public static MethodHandle CFMessagePortCreateRunLoopSource$handle() {
         return CFMessagePortCreateRunLoopSource.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * extern CFRunLoopSourceRef CFMessagePortCreateRunLoopSource(CFAllocatorRef allocator, CFMessagePortRef local, CFIndex order)
+     * }
+     */
+    public static MemorySegment CFMessagePortCreateRunLoopSource$address() {
+        return CFMessagePortCreateRunLoopSource.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * extern CFRunLoopSourceRef CFMessagePortCreateRunLoopSource(CFAllocatorRef allocator, CFMessagePortRef local, CFIndex order)
@@ -1027,6 +1240,8 @@ public class CoreFoundation {
                 traceDowncall("CFMessagePortCreateRunLoopSource", allocator, local, order);
             }
             return (MemorySegment)mh$.invokeExact(allocator, local, order);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

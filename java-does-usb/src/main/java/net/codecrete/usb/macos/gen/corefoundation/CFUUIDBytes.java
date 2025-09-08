@@ -78,7 +78,7 @@ public class CFUUIDBytes {
         return byte0$LAYOUT;
     }
 
-    private static final long byte0$OFFSET = 0;
+    private static final long byte0$OFFSET = $LAYOUT.byteOffset(groupElement("byte0"));
 
     /**
      * Offset for field:
@@ -122,7 +122,7 @@ public class CFUUIDBytes {
         return byte1$LAYOUT;
     }
 
-    private static final long byte1$OFFSET = 1;
+    private static final long byte1$OFFSET = $LAYOUT.byteOffset(groupElement("byte1"));
 
     /**
      * Offset for field:
@@ -166,7 +166,7 @@ public class CFUUIDBytes {
         return byte2$LAYOUT;
     }
 
-    private static final long byte2$OFFSET = 2;
+    private static final long byte2$OFFSET = $LAYOUT.byteOffset(groupElement("byte2"));
 
     /**
      * Offset for field:
@@ -210,7 +210,7 @@ public class CFUUIDBytes {
         return byte3$LAYOUT;
     }
 
-    private static final long byte3$OFFSET = 3;
+    private static final long byte3$OFFSET = $LAYOUT.byteOffset(groupElement("byte3"));
 
     /**
      * Offset for field:
@@ -254,7 +254,7 @@ public class CFUUIDBytes {
         return byte4$LAYOUT;
     }
 
-    private static final long byte4$OFFSET = 4;
+    private static final long byte4$OFFSET = $LAYOUT.byteOffset(groupElement("byte4"));
 
     /**
      * Offset for field:
@@ -298,7 +298,7 @@ public class CFUUIDBytes {
         return byte5$LAYOUT;
     }
 
-    private static final long byte5$OFFSET = 5;
+    private static final long byte5$OFFSET = $LAYOUT.byteOffset(groupElement("byte5"));
 
     /**
      * Offset for field:
@@ -342,7 +342,7 @@ public class CFUUIDBytes {
         return byte6$LAYOUT;
     }
 
-    private static final long byte6$OFFSET = 6;
+    private static final long byte6$OFFSET = $LAYOUT.byteOffset(groupElement("byte6"));
 
     /**
      * Offset for field:
@@ -386,7 +386,7 @@ public class CFUUIDBytes {
         return byte7$LAYOUT;
     }
 
-    private static final long byte7$OFFSET = 7;
+    private static final long byte7$OFFSET = $LAYOUT.byteOffset(groupElement("byte7"));
 
     /**
      * Offset for field:
@@ -430,7 +430,7 @@ public class CFUUIDBytes {
         return byte8$LAYOUT;
     }
 
-    private static final long byte8$OFFSET = 8;
+    private static final long byte8$OFFSET = $LAYOUT.byteOffset(groupElement("byte8"));
 
     /**
      * Offset for field:
@@ -474,7 +474,7 @@ public class CFUUIDBytes {
         return byte9$LAYOUT;
     }
 
-    private static final long byte9$OFFSET = 9;
+    private static final long byte9$OFFSET = $LAYOUT.byteOffset(groupElement("byte9"));
 
     /**
      * Offset for field:
@@ -518,7 +518,7 @@ public class CFUUIDBytes {
         return byte10$LAYOUT;
     }
 
-    private static final long byte10$OFFSET = 10;
+    private static final long byte10$OFFSET = $LAYOUT.byteOffset(groupElement("byte10"));
 
     /**
      * Offset for field:
@@ -562,7 +562,7 @@ public class CFUUIDBytes {
         return byte11$LAYOUT;
     }
 
-    private static final long byte11$OFFSET = 11;
+    private static final long byte11$OFFSET = $LAYOUT.byteOffset(groupElement("byte11"));
 
     /**
      * Offset for field:
@@ -606,7 +606,7 @@ public class CFUUIDBytes {
         return byte12$LAYOUT;
     }
 
-    private static final long byte12$OFFSET = 12;
+    private static final long byte12$OFFSET = $LAYOUT.byteOffset(groupElement("byte12"));
 
     /**
      * Offset for field:
@@ -650,7 +650,7 @@ public class CFUUIDBytes {
         return byte13$LAYOUT;
     }
 
-    private static final long byte13$OFFSET = 13;
+    private static final long byte13$OFFSET = $LAYOUT.byteOffset(groupElement("byte13"));
 
     /**
      * Offset for field:
@@ -694,7 +694,7 @@ public class CFUUIDBytes {
         return byte14$LAYOUT;
     }
 
-    private static final long byte14$OFFSET = 14;
+    private static final long byte14$OFFSET = $LAYOUT.byteOffset(groupElement("byte14"));
 
     /**
      * Offset for field:
@@ -738,7 +738,7 @@ public class CFUUIDBytes {
         return byte15$LAYOUT;
     }
 
-    private static final long byte15$OFFSET = 15;
+    private static final long byte15$OFFSET = $LAYOUT.byteOffset(groupElement("byte15"));
 
     /**
      * Offset for field:
@@ -799,7 +799,7 @@ public class CFUUIDBytes {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -807,7 +807,7 @@ public class CFUUIDBytes {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

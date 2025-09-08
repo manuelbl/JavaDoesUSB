@@ -61,7 +61,7 @@ public class IOUSBDevRequest {
         return bmRequestType$LAYOUT;
     }
 
-    private static final long bmRequestType$OFFSET = 0;
+    private static final long bmRequestType$OFFSET = $LAYOUT.byteOffset(groupElement("bmRequestType"));
 
     /**
      * Offset for field:
@@ -105,7 +105,7 @@ public class IOUSBDevRequest {
         return bRequest$LAYOUT;
     }
 
-    private static final long bRequest$OFFSET = 1;
+    private static final long bRequest$OFFSET = $LAYOUT.byteOffset(groupElement("bRequest"));
 
     /**
      * Offset for field:
@@ -149,7 +149,7 @@ public class IOUSBDevRequest {
         return wValue$LAYOUT;
     }
 
-    private static final long wValue$OFFSET = 2;
+    private static final long wValue$OFFSET = $LAYOUT.byteOffset(groupElement("wValue"));
 
     /**
      * Offset for field:
@@ -193,7 +193,7 @@ public class IOUSBDevRequest {
         return wIndex$LAYOUT;
     }
 
-    private static final long wIndex$OFFSET = 4;
+    private static final long wIndex$OFFSET = $LAYOUT.byteOffset(groupElement("wIndex"));
 
     /**
      * Offset for field:
@@ -237,7 +237,7 @@ public class IOUSBDevRequest {
         return wLength$LAYOUT;
     }
 
-    private static final long wLength$OFFSET = 6;
+    private static final long wLength$OFFSET = $LAYOUT.byteOffset(groupElement("wLength"));
 
     /**
      * Offset for field:
@@ -281,7 +281,7 @@ public class IOUSBDevRequest {
         return pData$LAYOUT;
     }
 
-    private static final long pData$OFFSET = 8;
+    private static final long pData$OFFSET = $LAYOUT.byteOffset(groupElement("pData"));
 
     /**
      * Offset for field:
@@ -325,7 +325,7 @@ public class IOUSBDevRequest {
         return wLenDone$LAYOUT;
     }
 
-    private static final long wLenDone$OFFSET = 16;
+    private static final long wLenDone$OFFSET = $LAYOUT.byteOffset(groupElement("wLenDone"));
 
     /**
      * Offset for field:
@@ -386,7 +386,7 @@ public class IOUSBDevRequest {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -394,7 +394,7 @@ public class IOUSBDevRequest {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

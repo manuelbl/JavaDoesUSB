@@ -54,7 +54,7 @@ public class IOUSBFindInterfaceRequest {
         return bInterfaceClass$LAYOUT;
     }
 
-    private static final long bInterfaceClass$OFFSET = 0;
+    private static final long bInterfaceClass$OFFSET = $LAYOUT.byteOffset(groupElement("bInterfaceClass"));
 
     /**
      * Offset for field:
@@ -98,7 +98,7 @@ public class IOUSBFindInterfaceRequest {
         return bInterfaceSubClass$LAYOUT;
     }
 
-    private static final long bInterfaceSubClass$OFFSET = 2;
+    private static final long bInterfaceSubClass$OFFSET = $LAYOUT.byteOffset(groupElement("bInterfaceSubClass"));
 
     /**
      * Offset for field:
@@ -142,7 +142,7 @@ public class IOUSBFindInterfaceRequest {
         return bInterfaceProtocol$LAYOUT;
     }
 
-    private static final long bInterfaceProtocol$OFFSET = 4;
+    private static final long bInterfaceProtocol$OFFSET = $LAYOUT.byteOffset(groupElement("bInterfaceProtocol"));
 
     /**
      * Offset for field:
@@ -186,7 +186,7 @@ public class IOUSBFindInterfaceRequest {
         return bAlternateSetting$LAYOUT;
     }
 
-    private static final long bAlternateSetting$OFFSET = 6;
+    private static final long bAlternateSetting$OFFSET = $LAYOUT.byteOffset(groupElement("bAlternateSetting"));
 
     /**
      * Offset for field:
@@ -247,7 +247,7 @@ public class IOUSBFindInterfaceRequest {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -255,7 +255,7 @@ public class IOUSBFindInterfaceRequest {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

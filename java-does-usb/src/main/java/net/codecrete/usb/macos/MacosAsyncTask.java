@@ -8,6 +8,7 @@
 package net.codecrete.usb.macos;
 
 import net.codecrete.usb.UsbException;
+import net.codecrete.usb.macos.gen.corefoundation.CFMessagePortCreateLocal$callout;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
 
@@ -122,21 +123,14 @@ class MacosAsyncTask {
             var completionHandlerFuncDesc = FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS);
             var asyncIOCompletedMH = MethodHandles.lookup().findVirtual(MacosAsyncTask.class, "asyncIOCompleted",
                     MethodType.methodType(void.class, MemorySegment.class, int.class, MemorySegment.class));
-
             var methodHandle = asyncIOCompletedMH.bindTo(this);
             completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, Arena.global());
-
-            // create descriptor for message port callback function
-            var messagePortCallbackFuncDec = FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS);
-            var messagePortCallbackMH = MethodHandles.lookup().findVirtual(MacosAsyncTask.class, "messagePortCallback",
-                    MethodType.methodType(MemorySegment.class, MemorySegment.class, int.class, MemorySegment.class, MemorySegment.class));
-            var messagePortCallbackHandle = messagePortCallbackMH.bindTo(this);
-            var messagePortCallbackStub = Linker.nativeLinker().upcallStub(messagePortCallbackHandle, messagePortCallbackFuncDec, Arena.global());
 
             // create local and remote message ports
             var pid = ProcessHandle.current().pid();
             var portName = CoreFoundationHelper.createCFStringRef("net.codecrete.usb.macos.eventsource." + pid, Arena.global());
-            var localPort = CoreFoundation.CFMessagePortCreateLocal(NULL, portName, messagePortCallbackStub, NULL, NULL);
+            var messagePortCallback = CFMessagePortCreateLocal$callout.allocate(this::messagePortCallback, Arena.global());
+            var localPort = CoreFoundation.CFMessagePortCreateLocal(NULL, portName, messagePortCallback, NULL, NULL);
             messagePortSource = CoreFoundation.CFMessagePortCreateRunLoopSource(NULL, localPort, 0);
             messagePort = CoreFoundation.CFMessagePortCreateRemote(NULL, portName);
 

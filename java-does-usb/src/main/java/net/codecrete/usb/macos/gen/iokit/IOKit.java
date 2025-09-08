@@ -12,63 +12,18 @@ import java.util.stream.*;
 import static java.lang.foreign.ValueLayout.*;
 import static java.lang.foreign.MemoryLayout.PathElement.*;
 
-public class IOKit {
+public class IOKit extends IOKit$shared {
 
     IOKit() {
         // Should not be called directly
     }
 
     static final Arena LIBRARY_ARENA = Arena.ofAuto();
-    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
-
-    static void traceDowncall(String name, Object... args) {
-         String traceArgs = Arrays.stream(args)
-                       .map(Object::toString)
-                       .collect(Collectors.joining(", "));
-         System.out.printf("%s(%s)\n", name, traceArgs);
-    }
-
-    static MemorySegment findOrThrow(String symbol) {
-        return SYMBOL_LOOKUP.find(symbol)
-            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
-    }
-
-    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
-        try {
-            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
-        } catch (ReflectiveOperationException ex) {
-            throw new AssertionError(ex);
-        }
-    }
-
-    static MemoryLayout align(MemoryLayout layout, long align) {
-        return switch (layout) {
-            case PaddingLayout p -> p;
-            case ValueLayout v -> v.withByteAlignment(align);
-            case GroupLayout g -> {
-                MemoryLayout[] alignedMembers = g.memberLayouts().stream()
-                        .map(m -> align(m, align)).toArray(MemoryLayout[]::new);
-                yield g instanceof StructLayout ?
-                        MemoryLayout.structLayout(alignedMembers) : MemoryLayout.unionLayout(alignedMembers);
-            }
-            case SequenceLayout s -> MemoryLayout.sequenceLayout(s.elementCount(), align(s.elementLayout(), align));
-        };
-    }
 
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("/System/Library/Frameworks/IOKit.framework/IOKit", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());
 
-    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
-    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
-    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
-    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
-    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
-    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
-    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
-            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
-    public static final ValueLayout.OfLong C_LONG = ValueLayout.JAVA_LONG;
     private static final int kIOUSBFindInterfaceDontCare = (int)65535L;
     /**
      * {@snippet lang=c :
@@ -99,7 +54,7 @@ public class IOKit {
 
     private static class kCFRunLoopDefaultMode$constants {
         public static final AddressLayout LAYOUT = IOKit.C_POINTER;
-        public static final MemorySegment SEGMENT = IOKit.findOrThrow("kCFRunLoopDefaultMode").reinterpret(LAYOUT.byteSize());
+        public static final MemorySegment SEGMENT = SYMBOL_LOOKUP.findOrThrow("kCFRunLoopDefaultMode").reinterpret(LAYOUT.byteSize());
     }
 
     /**
@@ -144,7 +99,7 @@ public class IOKit {
 
     private static class kIOMasterPortDefault$constants {
         public static final OfInt LAYOUT = IOKit.C_INT;
-        public static final MemorySegment SEGMENT = IOKit.findOrThrow("kIOMasterPortDefault").reinterpret(LAYOUT.byteSize());
+        public static final MemorySegment SEGMENT = SYMBOL_LOOKUP.findOrThrow("kIOMasterPortDefault").reinterpret(LAYOUT.byteSize());
     }
 
     /**
@@ -193,9 +148,9 @@ public class IOKit {
             IOKit.C_INT
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IONotificationPortCreate"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IONotificationPortCreate");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -217,6 +172,17 @@ public class IOKit {
     public static MethodHandle IONotificationPortCreate$handle() {
         return IONotificationPortCreate.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort)
+     * }
+     */
+    public static MemorySegment IONotificationPortCreate$address() {
+        return IONotificationPortCreate.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * IONotificationPortRef IONotificationPortCreate(mach_port_t mainPort)
@@ -229,6 +195,8 @@ public class IOKit {
                 traceDowncall("IONotificationPortCreate", mainPort);
             }
             return (MemorySegment)mh$.invokeExact(mainPort);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -240,9 +208,9 @@ public class IOKit {
             IOKit.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IONotificationPortGetRunLoopSource"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IONotificationPortGetRunLoopSource");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -264,6 +232,17 @@ public class IOKit {
     public static MethodHandle IONotificationPortGetRunLoopSource$handle() {
         return IONotificationPortGetRunLoopSource.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify)
+     * }
+     */
+    public static MemorySegment IONotificationPortGetRunLoopSource$address() {
+        return IONotificationPortGetRunLoopSource.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * CFRunLoopSourceRef IONotificationPortGetRunLoopSource(IONotificationPortRef notify)
@@ -276,6 +255,8 @@ public class IOKit {
                 traceDowncall("IONotificationPortGetRunLoopSource", notify);
             }
             return (MemorySegment)mh$.invokeExact(notify);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -287,9 +268,9 @@ public class IOKit {
             IOKit.C_INT
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IOObjectRelease"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IOObjectRelease");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -311,6 +292,17 @@ public class IOKit {
     public static MethodHandle IOObjectRelease$handle() {
         return IOObjectRelease.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * kern_return_t IOObjectRelease(io_object_t object)
+     * }
+     */
+    public static MemorySegment IOObjectRelease$address() {
+        return IOObjectRelease.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * kern_return_t IOObjectRelease(io_object_t object)
@@ -323,6 +315,8 @@ public class IOKit {
                 traceDowncall("IOObjectRelease", object);
             }
             return (int)mh$.invokeExact(object);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -334,9 +328,9 @@ public class IOKit {
             IOKit.C_INT
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IOIteratorNext"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IOIteratorNext");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -358,6 +352,17 @@ public class IOKit {
     public static MethodHandle IOIteratorNext$handle() {
         return IOIteratorNext.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * io_object_t IOIteratorNext(io_iterator_t iterator)
+     * }
+     */
+    public static MemorySegment IOIteratorNext$address() {
+        return IOIteratorNext.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * io_object_t IOIteratorNext(io_iterator_t iterator)
@@ -370,6 +375,8 @@ public class IOKit {
                 traceDowncall("IOIteratorNext", iterator);
             }
             return (int)mh$.invokeExact(iterator);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -386,9 +393,9 @@ public class IOKit {
             IOKit.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IOServiceAddMatchingNotification"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IOServiceAddMatchingNotification");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -410,6 +417,17 @@ public class IOKit {
     public static MethodHandle IOServiceAddMatchingNotification$handle() {
         return IOServiceAddMatchingNotification.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification)
+     * }
+     */
+    public static MemorySegment IOServiceAddMatchingNotification$address() {
+        return IOServiceAddMatchingNotification.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * kern_return_t IOServiceAddMatchingNotification(IONotificationPortRef notifyPort, const io_name_t notificationType, CFDictionaryRef matching, IOServiceMatchingCallback callback, void *refCon, io_iterator_t *notification)
@@ -422,6 +440,8 @@ public class IOKit {
                 traceDowncall("IOServiceAddMatchingNotification", notifyPort, notificationType, matching, callback, refCon, notification);
             }
             return (int)mh$.invokeExact(notifyPort, notificationType, matching, callback, refCon, notification);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -434,9 +454,9 @@ public class IOKit {
             IOKit.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IORegistryEntryGetRegistryEntryID"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IORegistryEntryGetRegistryEntryID");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -458,6 +478,17 @@ public class IOKit {
     public static MethodHandle IORegistryEntryGetRegistryEntryID$handle() {
         return IORegistryEntryGetRegistryEntryID.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID)
+     * }
+     */
+    public static MemorySegment IORegistryEntryGetRegistryEntryID$address() {
+        return IORegistryEntryGetRegistryEntryID.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * kern_return_t IORegistryEntryGetRegistryEntryID(io_registry_entry_t entry, uint64_t *entryID)
@@ -470,6 +501,8 @@ public class IOKit {
                 traceDowncall("IORegistryEntryGetRegistryEntryID", entry, entryID);
             }
             return (int)mh$.invokeExact(entry, entryID);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -484,9 +517,9 @@ public class IOKit {
             IOKit.C_INT
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IORegistryEntryCreateCFProperty"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IORegistryEntryCreateCFProperty");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -508,6 +541,17 @@ public class IOKit {
     public static MethodHandle IORegistryEntryCreateCFProperty$handle() {
         return IORegistryEntryCreateCFProperty.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options)
+     * }
+     */
+    public static MemorySegment IORegistryEntryCreateCFProperty$address() {
+        return IORegistryEntryCreateCFProperty.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, CFStringRef key, CFAllocatorRef allocator, IOOptionBits options)
@@ -520,6 +564,8 @@ public class IOKit {
                 traceDowncall("IORegistryEntryCreateCFProperty", entry, key, allocator, options);
             }
             return (MemorySegment)mh$.invokeExact(entry, key, allocator, options);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -531,9 +577,9 @@ public class IOKit {
             IOKit.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IOServiceMatching"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IOServiceMatching");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -555,6 +601,17 @@ public class IOKit {
     public static MethodHandle IOServiceMatching$handle() {
         return IOServiceMatching.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * CFMutableDictionaryRef IOServiceMatching(const char *name)
+     * }
+     */
+    public static MemorySegment IOServiceMatching$address() {
+        return IOServiceMatching.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * CFMutableDictionaryRef IOServiceMatching(const char *name)
@@ -567,6 +624,8 @@ public class IOKit {
                 traceDowncall("IOServiceMatching", name);
             }
             return (MemorySegment)mh$.invokeExact(name);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -582,9 +641,9 @@ public class IOKit {
             IOKit.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    IOKit.findOrThrow("IOCreatePlugInInterfaceForService"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("IOCreatePlugInInterfaceForService");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -606,6 +665,17 @@ public class IOKit {
     public static MethodHandle IOCreatePlugInInterfaceForService$handle() {
         return IOCreatePlugInInterfaceForService.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore)
+     * }
+     */
+    public static MemorySegment IOCreatePlugInInterfaceForService$address() {
+        return IOCreatePlugInInterfaceForService.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * kern_return_t IOCreatePlugInInterfaceForService(io_service_t service, CFUUIDRef pluginType, CFUUIDRef interfaceType, IOCFPlugInInterface ***theInterface, SInt32 *theScore)
@@ -618,6 +688,8 @@ public class IOKit {
                 traceDowncall("IOCreatePlugInInterfaceForService", service, pluginType, interfaceType, theInterface, theScore);
             }
             return (int)mh$.invokeExact(service, pluginType, interfaceType, theInterface, theScore);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

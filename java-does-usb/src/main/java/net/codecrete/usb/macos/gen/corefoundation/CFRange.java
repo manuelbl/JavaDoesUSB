@@ -50,7 +50,7 @@ public class CFRange {
         return location$LAYOUT;
     }
 
-    private static final long location$OFFSET = 0;
+    private static final long location$OFFSET = $LAYOUT.byteOffset(groupElement("location"));
 
     /**
      * Offset for field:
@@ -94,7 +94,7 @@ public class CFRange {
         return length$LAYOUT;
     }
 
-    private static final long length$OFFSET = 8;
+    private static final long length$OFFSET = $LAYOUT.byteOffset(groupElement("length"));
 
     /**
      * Offset for field:
@@ -155,7 +155,7 @@ public class CFRange {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -163,7 +163,7 @@ public class CFRange {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

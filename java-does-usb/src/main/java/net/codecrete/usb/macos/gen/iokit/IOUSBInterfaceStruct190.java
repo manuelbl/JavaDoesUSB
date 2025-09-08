@@ -144,7 +144,7 @@ public class IOUSBInterfaceStruct190 {
         return _reserved$LAYOUT;
     }
 
-    private static final long _reserved$OFFSET = 0;
+    private static final long _reserved$OFFSET = $LAYOUT.byteOffset(groupElement("_reserved"));
 
     /**
      * Offset for field:
@@ -181,9 +181,9 @@ public class IOUSBInterfaceStruct190 {
      * HRESULT (*QueryInterface)(void *, REFIID, LPVOID *)
      * }
      */
-    public static class QueryInterface {
+    public final static class QueryInterface {
 
-        QueryInterface() {
+        private QueryInterface() {
             // Should not be called directly
         }
 
@@ -223,9 +223,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -244,7 +246,7 @@ public class IOUSBInterfaceStruct190 {
         return QueryInterface$LAYOUT;
     }
 
-    private static final long QueryInterface$OFFSET = 8;
+    private static final long QueryInterface$OFFSET = $LAYOUT.byteOffset(groupElement("QueryInterface"));
 
     /**
      * Offset for field:
@@ -281,9 +283,9 @@ public class IOUSBInterfaceStruct190 {
      * ULONG (*AddRef)(void *)
      * }
      */
-    public static class AddRef {
+    public final static class AddRef {
 
-        AddRef() {
+        private AddRef() {
             // Should not be called directly
         }
 
@@ -321,9 +323,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -342,7 +346,7 @@ public class IOUSBInterfaceStruct190 {
         return AddRef$LAYOUT;
     }
 
-    private static final long AddRef$OFFSET = 16;
+    private static final long AddRef$OFFSET = $LAYOUT.byteOffset(groupElement("AddRef"));
 
     /**
      * Offset for field:
@@ -379,9 +383,9 @@ public class IOUSBInterfaceStruct190 {
      * ULONG (*Release)(void *)
      * }
      */
-    public static class Release {
+    public final static class Release {
 
-        Release() {
+        private Release() {
             // Should not be called directly
         }
 
@@ -419,9 +423,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -440,7 +446,7 @@ public class IOUSBInterfaceStruct190 {
         return Release$LAYOUT;
     }
 
-    private static final long Release$OFFSET = 24;
+    private static final long Release$OFFSET = $LAYOUT.byteOffset(groupElement("Release"));
 
     /**
      * Offset for field:
@@ -477,9 +483,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*CreateInterfaceAsyncEventSource)(void *, CFRunLoopSourceRef *)
      * }
      */
-    public static class CreateInterfaceAsyncEventSource {
+    public final static class CreateInterfaceAsyncEventSource {
 
-        CreateInterfaceAsyncEventSource() {
+        private CreateInterfaceAsyncEventSource() {
             // Should not be called directly
         }
 
@@ -518,9 +524,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -539,7 +547,7 @@ public class IOUSBInterfaceStruct190 {
         return CreateInterfaceAsyncEventSource$LAYOUT;
     }
 
-    private static final long CreateInterfaceAsyncEventSource$OFFSET = 32;
+    private static final long CreateInterfaceAsyncEventSource$OFFSET = $LAYOUT.byteOffset(groupElement("CreateInterfaceAsyncEventSource"));
 
     /**
      * Offset for field:
@@ -576,9 +584,9 @@ public class IOUSBInterfaceStruct190 {
      * CFRunLoopSourceRef (*GetInterfaceAsyncEventSource)(void *)
      * }
      */
-    public static class GetInterfaceAsyncEventSource {
+    public final static class GetInterfaceAsyncEventSource {
 
-        GetInterfaceAsyncEventSource() {
+        private GetInterfaceAsyncEventSource() {
             // Should not be called directly
         }
 
@@ -616,9 +624,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static MemorySegment invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static MemorySegment invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (MemorySegment) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -637,7 +647,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceAsyncEventSource$LAYOUT;
     }
 
-    private static final long GetInterfaceAsyncEventSource$OFFSET = 40;
+    private static final long GetInterfaceAsyncEventSource$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceAsyncEventSource"));
 
     /**
      * Offset for field:
@@ -674,9 +684,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*CreateInterfaceAsyncPort)(void *, mach_port_t *)
      * }
      */
-    public static class CreateInterfaceAsyncPort {
+    public final static class CreateInterfaceAsyncPort {
 
-        CreateInterfaceAsyncPort() {
+        private CreateInterfaceAsyncPort() {
             // Should not be called directly
         }
 
@@ -715,9 +725,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -736,7 +748,7 @@ public class IOUSBInterfaceStruct190 {
         return CreateInterfaceAsyncPort$LAYOUT;
     }
 
-    private static final long CreateInterfaceAsyncPort$OFFSET = 48;
+    private static final long CreateInterfaceAsyncPort$OFFSET = $LAYOUT.byteOffset(groupElement("CreateInterfaceAsyncPort"));
 
     /**
      * Offset for field:
@@ -773,9 +785,9 @@ public class IOUSBInterfaceStruct190 {
      * mach_port_t (*GetInterfaceAsyncPort)(void *)
      * }
      */
-    public static class GetInterfaceAsyncPort {
+    public final static class GetInterfaceAsyncPort {
 
-        GetInterfaceAsyncPort() {
+        private GetInterfaceAsyncPort() {
             // Should not be called directly
         }
 
@@ -813,9 +825,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -834,7 +848,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceAsyncPort$LAYOUT;
     }
 
-    private static final long GetInterfaceAsyncPort$OFFSET = 56;
+    private static final long GetInterfaceAsyncPort$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceAsyncPort"));
 
     /**
      * Offset for field:
@@ -871,9 +885,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*USBInterfaceOpen)(void *)
      * }
      */
-    public static class USBInterfaceOpen {
+    public final static class USBInterfaceOpen {
 
-        USBInterfaceOpen() {
+        private USBInterfaceOpen() {
             // Should not be called directly
         }
 
@@ -911,9 +925,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -932,7 +948,7 @@ public class IOUSBInterfaceStruct190 {
         return USBInterfaceOpen$LAYOUT;
     }
 
-    private static final long USBInterfaceOpen$OFFSET = 64;
+    private static final long USBInterfaceOpen$OFFSET = $LAYOUT.byteOffset(groupElement("USBInterfaceOpen"));
 
     /**
      * Offset for field:
@@ -969,9 +985,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*USBInterfaceClose)(void *)
      * }
      */
-    public static class USBInterfaceClose {
+    public final static class USBInterfaceClose {
 
-        USBInterfaceClose() {
+        private USBInterfaceClose() {
             // Should not be called directly
         }
 
@@ -1009,9 +1025,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1030,7 +1048,7 @@ public class IOUSBInterfaceStruct190 {
         return USBInterfaceClose$LAYOUT;
     }
 
-    private static final long USBInterfaceClose$OFFSET = 72;
+    private static final long USBInterfaceClose$OFFSET = $LAYOUT.byteOffset(groupElement("USBInterfaceClose"));
 
     /**
      * Offset for field:
@@ -1067,9 +1085,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetInterfaceClass)(void *, UInt8 *)
      * }
      */
-    public static class GetInterfaceClass {
+    public final static class GetInterfaceClass {
 
-        GetInterfaceClass() {
+        private GetInterfaceClass() {
             // Should not be called directly
         }
 
@@ -1108,9 +1126,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1129,7 +1149,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceClass$LAYOUT;
     }
 
-    private static final long GetInterfaceClass$OFFSET = 80;
+    private static final long GetInterfaceClass$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceClass"));
 
     /**
      * Offset for field:
@@ -1166,9 +1186,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetInterfaceSubClass)(void *, UInt8 *)
      * }
      */
-    public static class GetInterfaceSubClass {
+    public final static class GetInterfaceSubClass {
 
-        GetInterfaceSubClass() {
+        private GetInterfaceSubClass() {
             // Should not be called directly
         }
 
@@ -1207,9 +1227,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1228,7 +1250,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceSubClass$LAYOUT;
     }
 
-    private static final long GetInterfaceSubClass$OFFSET = 88;
+    private static final long GetInterfaceSubClass$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceSubClass"));
 
     /**
      * Offset for field:
@@ -1265,9 +1287,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetInterfaceProtocol)(void *, UInt8 *)
      * }
      */
-    public static class GetInterfaceProtocol {
+    public final static class GetInterfaceProtocol {
 
-        GetInterfaceProtocol() {
+        private GetInterfaceProtocol() {
             // Should not be called directly
         }
 
@@ -1306,9 +1328,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1327,7 +1351,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceProtocol$LAYOUT;
     }
 
-    private static final long GetInterfaceProtocol$OFFSET = 96;
+    private static final long GetInterfaceProtocol$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceProtocol"));
 
     /**
      * Offset for field:
@@ -1364,9 +1388,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetDeviceVendor)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceVendor {
+    public final static class GetDeviceVendor {
 
-        GetDeviceVendor() {
+        private GetDeviceVendor() {
             // Should not be called directly
         }
 
@@ -1405,9 +1429,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1426,7 +1452,7 @@ public class IOUSBInterfaceStruct190 {
         return GetDeviceVendor$LAYOUT;
     }
 
-    private static final long GetDeviceVendor$OFFSET = 104;
+    private static final long GetDeviceVendor$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceVendor"));
 
     /**
      * Offset for field:
@@ -1463,9 +1489,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetDeviceProduct)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceProduct {
+    public final static class GetDeviceProduct {
 
-        GetDeviceProduct() {
+        private GetDeviceProduct() {
             // Should not be called directly
         }
 
@@ -1504,9 +1530,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1525,7 +1553,7 @@ public class IOUSBInterfaceStruct190 {
         return GetDeviceProduct$LAYOUT;
     }
 
-    private static final long GetDeviceProduct$OFFSET = 112;
+    private static final long GetDeviceProduct$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceProduct"));
 
     /**
      * Offset for field:
@@ -1562,9 +1590,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetDeviceReleaseNumber)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceReleaseNumber {
+    public final static class GetDeviceReleaseNumber {
 
-        GetDeviceReleaseNumber() {
+        private GetDeviceReleaseNumber() {
             // Should not be called directly
         }
 
@@ -1603,9 +1631,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1624,7 +1654,7 @@ public class IOUSBInterfaceStruct190 {
         return GetDeviceReleaseNumber$LAYOUT;
     }
 
-    private static final long GetDeviceReleaseNumber$OFFSET = 120;
+    private static final long GetDeviceReleaseNumber$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceReleaseNumber"));
 
     /**
      * Offset for field:
@@ -1661,9 +1691,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetConfigurationValue)(void *, UInt8 *)
      * }
      */
-    public static class GetConfigurationValue {
+    public final static class GetConfigurationValue {
 
-        GetConfigurationValue() {
+        private GetConfigurationValue() {
             // Should not be called directly
         }
 
@@ -1702,9 +1732,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1723,7 +1755,7 @@ public class IOUSBInterfaceStruct190 {
         return GetConfigurationValue$LAYOUT;
     }
 
-    private static final long GetConfigurationValue$OFFSET = 128;
+    private static final long GetConfigurationValue$OFFSET = $LAYOUT.byteOffset(groupElement("GetConfigurationValue"));
 
     /**
      * Offset for field:
@@ -1760,9 +1792,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetInterfaceNumber)(void *, UInt8 *)
      * }
      */
-    public static class GetInterfaceNumber {
+    public final static class GetInterfaceNumber {
 
-        GetInterfaceNumber() {
+        private GetInterfaceNumber() {
             // Should not be called directly
         }
 
@@ -1801,9 +1833,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1822,7 +1856,7 @@ public class IOUSBInterfaceStruct190 {
         return GetInterfaceNumber$LAYOUT;
     }
 
-    private static final long GetInterfaceNumber$OFFSET = 136;
+    private static final long GetInterfaceNumber$OFFSET = $LAYOUT.byteOffset(groupElement("GetInterfaceNumber"));
 
     /**
      * Offset for field:
@@ -1859,9 +1893,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetAlternateSetting)(void *, UInt8 *)
      * }
      */
-    public static class GetAlternateSetting {
+    public final static class GetAlternateSetting {
 
-        GetAlternateSetting() {
+        private GetAlternateSetting() {
             // Should not be called directly
         }
 
@@ -1900,9 +1934,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1921,7 +1957,7 @@ public class IOUSBInterfaceStruct190 {
         return GetAlternateSetting$LAYOUT;
     }
 
-    private static final long GetAlternateSetting$OFFSET = 144;
+    private static final long GetAlternateSetting$OFFSET = $LAYOUT.byteOffset(groupElement("GetAlternateSetting"));
 
     /**
      * Offset for field:
@@ -1958,9 +1994,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetNumEndpoints)(void *, UInt8 *)
      * }
      */
-    public static class GetNumEndpoints {
+    public final static class GetNumEndpoints {
 
-        GetNumEndpoints() {
+        private GetNumEndpoints() {
             // Should not be called directly
         }
 
@@ -1999,9 +2035,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2020,7 +2058,7 @@ public class IOUSBInterfaceStruct190 {
         return GetNumEndpoints$LAYOUT;
     }
 
-    private static final long GetNumEndpoints$OFFSET = 152;
+    private static final long GetNumEndpoints$OFFSET = $LAYOUT.byteOffset(groupElement("GetNumEndpoints"));
 
     /**
      * Offset for field:
@@ -2057,9 +2095,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetLocationID)(void *, UInt32 *)
      * }
      */
-    public static class GetLocationID {
+    public final static class GetLocationID {
 
-        GetLocationID() {
+        private GetLocationID() {
             // Should not be called directly
         }
 
@@ -2098,9 +2136,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2119,7 +2159,7 @@ public class IOUSBInterfaceStruct190 {
         return GetLocationID$LAYOUT;
     }
 
-    private static final long GetLocationID$OFFSET = 160;
+    private static final long GetLocationID$OFFSET = $LAYOUT.byteOffset(groupElement("GetLocationID"));
 
     /**
      * Offset for field:
@@ -2156,9 +2196,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetDevice)(void *, io_service_t *)
      * }
      */
-    public static class GetDevice {
+    public final static class GetDevice {
 
-        GetDevice() {
+        private GetDevice() {
             // Should not be called directly
         }
 
@@ -2197,9 +2237,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2218,7 +2260,7 @@ public class IOUSBInterfaceStruct190 {
         return GetDevice$LAYOUT;
     }
 
-    private static final long GetDevice$OFFSET = 168;
+    private static final long GetDevice$OFFSET = $LAYOUT.byteOffset(groupElement("GetDevice"));
 
     /**
      * Offset for field:
@@ -2255,9 +2297,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*SetAlternateInterface)(void *, UInt8)
      * }
      */
-    public static class SetAlternateInterface {
+    public final static class SetAlternateInterface {
 
-        SetAlternateInterface() {
+        private SetAlternateInterface() {
             // Should not be called directly
         }
 
@@ -2296,9 +2338,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2317,7 +2361,7 @@ public class IOUSBInterfaceStruct190 {
         return SetAlternateInterface$LAYOUT;
     }
 
-    private static final long SetAlternateInterface$OFFSET = 176;
+    private static final long SetAlternateInterface$OFFSET = $LAYOUT.byteOffset(groupElement("SetAlternateInterface"));
 
     /**
      * Offset for field:
@@ -2354,9 +2398,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetBusFrameNumber)(void *, UInt64 *, AbsoluteTime *)
      * }
      */
-    public static class GetBusFrameNumber {
+    public final static class GetBusFrameNumber {
 
-        GetBusFrameNumber() {
+        private GetBusFrameNumber() {
             // Should not be called directly
         }
 
@@ -2396,9 +2440,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2417,7 +2463,7 @@ public class IOUSBInterfaceStruct190 {
         return GetBusFrameNumber$LAYOUT;
     }
 
-    private static final long GetBusFrameNumber$OFFSET = 184;
+    private static final long GetBusFrameNumber$OFFSET = $LAYOUT.byteOffset(groupElement("GetBusFrameNumber"));
 
     /**
      * Offset for field:
@@ -2454,9 +2500,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ControlRequest)(void *, UInt8, IOUSBDevRequest *)
      * }
      */
-    public static class ControlRequest {
+    public final static class ControlRequest {
 
-        ControlRequest() {
+        private ControlRequest() {
             // Should not be called directly
         }
 
@@ -2496,9 +2542,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2517,7 +2565,7 @@ public class IOUSBInterfaceStruct190 {
         return ControlRequest$LAYOUT;
     }
 
-    private static final long ControlRequest$OFFSET = 192;
+    private static final long ControlRequest$OFFSET = $LAYOUT.byteOffset(groupElement("ControlRequest"));
 
     /**
      * Offset for field:
@@ -2554,9 +2602,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ControlRequestAsync)(void *, UInt8, IOUSBDevRequest *, IOAsyncCallback1, void *)
      * }
      */
-    public static class ControlRequestAsync {
+    public final static class ControlRequestAsync {
 
-        ControlRequestAsync() {
+        private ControlRequestAsync() {
             // Should not be called directly
         }
 
@@ -2598,9 +2646,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2619,7 +2669,7 @@ public class IOUSBInterfaceStruct190 {
         return ControlRequestAsync$LAYOUT;
     }
 
-    private static final long ControlRequestAsync$OFFSET = 200;
+    private static final long ControlRequestAsync$OFFSET = $LAYOUT.byteOffset(groupElement("ControlRequestAsync"));
 
     /**
      * Offset for field:
@@ -2656,9 +2706,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetPipeProperties)(void *, UInt8, UInt8 *, UInt8 *, UInt8 *, UInt16 *, UInt8 *)
      * }
      */
-    public static class GetPipeProperties {
+    public final static class GetPipeProperties {
 
-        GetPipeProperties() {
+        private GetPipeProperties() {
             // Should not be called directly
         }
 
@@ -2702,9 +2752,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4, MemorySegment _x5, MemorySegment _x6) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4, MemorySegment _x5, MemorySegment _x6) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2723,7 +2775,7 @@ public class IOUSBInterfaceStruct190 {
         return GetPipeProperties$LAYOUT;
     }
 
-    private static final long GetPipeProperties$OFFSET = 208;
+    private static final long GetPipeProperties$OFFSET = $LAYOUT.byteOffset(groupElement("GetPipeProperties"));
 
     /**
      * Offset for field:
@@ -2760,9 +2812,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetPipeStatus)(void *, UInt8)
      * }
      */
-    public static class GetPipeStatus {
+    public final static class GetPipeStatus {
 
-        GetPipeStatus() {
+        private GetPipeStatus() {
             // Should not be called directly
         }
 
@@ -2801,9 +2853,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2822,7 +2876,7 @@ public class IOUSBInterfaceStruct190 {
         return GetPipeStatus$LAYOUT;
     }
 
-    private static final long GetPipeStatus$OFFSET = 216;
+    private static final long GetPipeStatus$OFFSET = $LAYOUT.byteOffset(groupElement("GetPipeStatus"));
 
     /**
      * Offset for field:
@@ -2859,9 +2913,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*AbortPipe)(void *, UInt8)
      * }
      */
-    public static class AbortPipe {
+    public final static class AbortPipe {
 
-        AbortPipe() {
+        private AbortPipe() {
             // Should not be called directly
         }
 
@@ -2900,9 +2954,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2921,7 +2977,7 @@ public class IOUSBInterfaceStruct190 {
         return AbortPipe$LAYOUT;
     }
 
-    private static final long AbortPipe$OFFSET = 224;
+    private static final long AbortPipe$OFFSET = $LAYOUT.byteOffset(groupElement("AbortPipe"));
 
     /**
      * Offset for field:
@@ -2958,9 +3014,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ResetPipe)(void *, UInt8)
      * }
      */
-    public static class ResetPipe {
+    public final static class ResetPipe {
 
-        ResetPipe() {
+        private ResetPipe() {
             // Should not be called directly
         }
 
@@ -2999,9 +3055,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3020,7 +3078,7 @@ public class IOUSBInterfaceStruct190 {
         return ResetPipe$LAYOUT;
     }
 
-    private static final long ResetPipe$OFFSET = 232;
+    private static final long ResetPipe$OFFSET = $LAYOUT.byteOffset(groupElement("ResetPipe"));
 
     /**
      * Offset for field:
@@ -3057,9 +3115,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ClearPipeStall)(void *, UInt8)
      * }
      */
-    public static class ClearPipeStall {
+    public final static class ClearPipeStall {
 
-        ClearPipeStall() {
+        private ClearPipeStall() {
             // Should not be called directly
         }
 
@@ -3098,9 +3156,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3119,7 +3179,7 @@ public class IOUSBInterfaceStruct190 {
         return ClearPipeStall$LAYOUT;
     }
 
-    private static final long ClearPipeStall$OFFSET = 240;
+    private static final long ClearPipeStall$OFFSET = $LAYOUT.byteOffset(groupElement("ClearPipeStall"));
 
     /**
      * Offset for field:
@@ -3156,9 +3216,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ReadPipe)(void *, UInt8, void *, UInt32 *)
      * }
      */
-    public static class ReadPipe {
+    public final static class ReadPipe {
 
-        ReadPipe() {
+        private ReadPipe() {
             // Should not be called directly
         }
 
@@ -3199,9 +3259,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3220,7 +3282,7 @@ public class IOUSBInterfaceStruct190 {
         return ReadPipe$LAYOUT;
     }
 
-    private static final long ReadPipe$OFFSET = 248;
+    private static final long ReadPipe$OFFSET = $LAYOUT.byteOffset(groupElement("ReadPipe"));
 
     /**
      * Offset for field:
@@ -3257,9 +3319,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*WritePipe)(void *, UInt8, void *, UInt32)
      * }
      */
-    public static class WritePipe {
+    public final static class WritePipe {
 
-        WritePipe() {
+        private WritePipe() {
             // Should not be called directly
         }
 
@@ -3300,9 +3362,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3321,7 +3385,7 @@ public class IOUSBInterfaceStruct190 {
         return WritePipe$LAYOUT;
     }
 
-    private static final long WritePipe$OFFSET = 256;
+    private static final long WritePipe$OFFSET = $LAYOUT.byteOffset(groupElement("WritePipe"));
 
     /**
      * Offset for field:
@@ -3358,9 +3422,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ReadPipeAsync)(void *, UInt8, void *, UInt32, IOAsyncCallback1, void *)
      * }
      */
-    public static class ReadPipeAsync {
+    public final static class ReadPipeAsync {
 
-        ReadPipeAsync() {
+        private ReadPipeAsync() {
             // Should not be called directly
         }
 
@@ -3403,9 +3467,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, MemorySegment _x4, MemorySegment _x5) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, MemorySegment _x4, MemorySegment _x5) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3424,7 +3490,7 @@ public class IOUSBInterfaceStruct190 {
         return ReadPipeAsync$LAYOUT;
     }
 
-    private static final long ReadPipeAsync$OFFSET = 264;
+    private static final long ReadPipeAsync$OFFSET = $LAYOUT.byteOffset(groupElement("ReadPipeAsync"));
 
     /**
      * Offset for field:
@@ -3461,9 +3527,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*WritePipeAsync)(void *, UInt8, void *, UInt32, IOAsyncCallback1, void *)
      * }
      */
-    public static class WritePipeAsync {
+    public final static class WritePipeAsync {
 
-        WritePipeAsync() {
+        private WritePipeAsync() {
             // Should not be called directly
         }
 
@@ -3506,9 +3572,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, MemorySegment _x4, MemorySegment _x5) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, MemorySegment _x4, MemorySegment _x5) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3527,7 +3595,7 @@ public class IOUSBInterfaceStruct190 {
         return WritePipeAsync$LAYOUT;
     }
 
-    private static final long WritePipeAsync$OFFSET = 272;
+    private static final long WritePipeAsync$OFFSET = $LAYOUT.byteOffset(groupElement("WritePipeAsync"));
 
     /**
      * Offset for field:
@@ -3564,9 +3632,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ReadIsochPipeAsync)(void *, UInt8, void *, UInt64, UInt32, IOUSBIsocFrame *, IOAsyncCallback1, void *)
      * }
      */
-    public static class ReadIsochPipeAsync {
+    public final static class ReadIsochPipeAsync {
 
-        ReadIsochPipeAsync() {
+        private ReadIsochPipeAsync() {
             // Should not be called directly
         }
 
@@ -3611,9 +3679,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, long _x3, int _x4, MemorySegment _x5, MemorySegment _x6, MemorySegment _x7) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, long _x3, int _x4, MemorySegment _x5, MemorySegment _x6, MemorySegment _x7) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3632,7 +3702,7 @@ public class IOUSBInterfaceStruct190 {
         return ReadIsochPipeAsync$LAYOUT;
     }
 
-    private static final long ReadIsochPipeAsync$OFFSET = 280;
+    private static final long ReadIsochPipeAsync$OFFSET = $LAYOUT.byteOffset(groupElement("ReadIsochPipeAsync"));
 
     /**
      * Offset for field:
@@ -3669,9 +3739,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*WriteIsochPipeAsync)(void *, UInt8, void *, UInt64, UInt32, IOUSBIsocFrame *, IOAsyncCallback1, void *)
      * }
      */
-    public static class WriteIsochPipeAsync {
+    public final static class WriteIsochPipeAsync {
 
-        WriteIsochPipeAsync() {
+        private WriteIsochPipeAsync() {
             // Should not be called directly
         }
 
@@ -3716,9 +3786,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, long _x3, int _x4, MemorySegment _x5, MemorySegment _x6, MemorySegment _x7) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, long _x3, int _x4, MemorySegment _x5, MemorySegment _x6, MemorySegment _x7) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3737,7 +3809,7 @@ public class IOUSBInterfaceStruct190 {
         return WriteIsochPipeAsync$LAYOUT;
     }
 
-    private static final long WriteIsochPipeAsync$OFFSET = 288;
+    private static final long WriteIsochPipeAsync$OFFSET = $LAYOUT.byteOffset(groupElement("WriteIsochPipeAsync"));
 
     /**
      * Offset for field:
@@ -3774,9 +3846,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ControlRequestTO)(void *, UInt8, IOUSBDevRequestTO *)
      * }
      */
-    public static class ControlRequestTO {
+    public final static class ControlRequestTO {
 
-        ControlRequestTO() {
+        private ControlRequestTO() {
             // Should not be called directly
         }
 
@@ -3816,9 +3888,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3837,7 +3911,7 @@ public class IOUSBInterfaceStruct190 {
         return ControlRequestTO$LAYOUT;
     }
 
-    private static final long ControlRequestTO$OFFSET = 296;
+    private static final long ControlRequestTO$OFFSET = $LAYOUT.byteOffset(groupElement("ControlRequestTO"));
 
     /**
      * Offset for field:
@@ -3874,9 +3948,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ControlRequestAsyncTO)(void *, UInt8, IOUSBDevRequestTO *, IOAsyncCallback1, void *)
      * }
      */
-    public static class ControlRequestAsyncTO {
+    public final static class ControlRequestAsyncTO {
 
-        ControlRequestAsyncTO() {
+        private ControlRequestAsyncTO() {
             // Should not be called directly
         }
 
@@ -3918,9 +3992,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, MemorySegment _x4) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3939,7 +4015,7 @@ public class IOUSBInterfaceStruct190 {
         return ControlRequestAsyncTO$LAYOUT;
     }
 
-    private static final long ControlRequestAsyncTO$OFFSET = 304;
+    private static final long ControlRequestAsyncTO$OFFSET = $LAYOUT.byteOffset(groupElement("ControlRequestAsyncTO"));
 
     /**
      * Offset for field:
@@ -3976,9 +4052,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ReadPipeTO)(void *, UInt8, void *, UInt32 *, UInt32, UInt32)
      * }
      */
-    public static class ReadPipeTO {
+    public final static class ReadPipeTO {
 
-        ReadPipeTO() {
+        private ReadPipeTO() {
             // Should not be called directly
         }
 
@@ -4021,9 +4097,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, int _x4, int _x5) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, MemorySegment _x3, int _x4, int _x5) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4042,7 +4120,7 @@ public class IOUSBInterfaceStruct190 {
         return ReadPipeTO$LAYOUT;
     }
 
-    private static final long ReadPipeTO$OFFSET = 312;
+    private static final long ReadPipeTO$OFFSET = $LAYOUT.byteOffset(groupElement("ReadPipeTO"));
 
     /**
      * Offset for field:
@@ -4079,9 +4157,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*WritePipeTO)(void *, UInt8, void *, UInt32, UInt32, UInt32)
      * }
      */
-    public static class WritePipeTO {
+    public final static class WritePipeTO {
 
-        WritePipeTO() {
+        private WritePipeTO() {
             // Should not be called directly
         }
 
@@ -4124,9 +4202,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4145,7 +4225,7 @@ public class IOUSBInterfaceStruct190 {
         return WritePipeTO$LAYOUT;
     }
 
-    private static final long WritePipeTO$OFFSET = 320;
+    private static final long WritePipeTO$OFFSET = $LAYOUT.byteOffset(groupElement("WritePipeTO"));
 
     /**
      * Offset for field:
@@ -4182,9 +4262,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ReadPipeAsyncTO)(void *, UInt8, void *, UInt32, UInt32, UInt32, IOAsyncCallback1, void *)
      * }
      */
-    public static class ReadPipeAsyncTO {
+    public final static class ReadPipeAsyncTO {
 
-        ReadPipeAsyncTO() {
+        private ReadPipeAsyncTO() {
             // Should not be called directly
         }
 
@@ -4229,9 +4309,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5, MemorySegment _x6, MemorySegment _x7) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5, MemorySegment _x6, MemorySegment _x7) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4250,7 +4332,7 @@ public class IOUSBInterfaceStruct190 {
         return ReadPipeAsyncTO$LAYOUT;
     }
 
-    private static final long ReadPipeAsyncTO$OFFSET = 328;
+    private static final long ReadPipeAsyncTO$OFFSET = $LAYOUT.byteOffset(groupElement("ReadPipeAsyncTO"));
 
     /**
      * Offset for field:
@@ -4287,9 +4369,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*WritePipeAsyncTO)(void *, UInt8, void *, UInt32, UInt32, UInt32, IOAsyncCallback1, void *)
      * }
      */
-    public static class WritePipeAsyncTO {
+    public final static class WritePipeAsyncTO {
 
-        WritePipeAsyncTO() {
+        private WritePipeAsyncTO() {
             // Should not be called directly
         }
 
@@ -4334,9 +4416,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5, MemorySegment _x6, MemorySegment _x7) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2, int _x3, int _x4, int _x5, MemorySegment _x6, MemorySegment _x7) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6, _x7);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4355,7 +4439,7 @@ public class IOUSBInterfaceStruct190 {
         return WritePipeAsyncTO$LAYOUT;
     }
 
-    private static final long WritePipeAsyncTO$OFFSET = 336;
+    private static final long WritePipeAsyncTO$OFFSET = $LAYOUT.byteOffset(groupElement("WritePipeAsyncTO"));
 
     /**
      * Offset for field:
@@ -4392,9 +4476,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*USBInterfaceGetStringIndex)(void *, UInt8 *)
      * }
      */
-    public static class USBInterfaceGetStringIndex {
+    public final static class USBInterfaceGetStringIndex {
 
-        USBInterfaceGetStringIndex() {
+        private USBInterfaceGetStringIndex() {
             // Should not be called directly
         }
 
@@ -4433,9 +4517,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4454,7 +4540,7 @@ public class IOUSBInterfaceStruct190 {
         return USBInterfaceGetStringIndex$LAYOUT;
     }
 
-    private static final long USBInterfaceGetStringIndex$OFFSET = 344;
+    private static final long USBInterfaceGetStringIndex$OFFSET = $LAYOUT.byteOffset(groupElement("USBInterfaceGetStringIndex"));
 
     /**
      * Offset for field:
@@ -4491,9 +4577,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*USBInterfaceOpenSeize)(void *)
      * }
      */
-    public static class USBInterfaceOpenSeize {
+    public final static class USBInterfaceOpenSeize {
 
-        USBInterfaceOpenSeize() {
+        private USBInterfaceOpenSeize() {
             // Should not be called directly
         }
 
@@ -4531,9 +4617,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4552,7 +4640,7 @@ public class IOUSBInterfaceStruct190 {
         return USBInterfaceOpenSeize$LAYOUT;
     }
 
-    private static final long USBInterfaceOpenSeize$OFFSET = 352;
+    private static final long USBInterfaceOpenSeize$OFFSET = $LAYOUT.byteOffset(groupElement("USBInterfaceOpenSeize"));
 
     /**
      * Offset for field:
@@ -4589,9 +4677,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*ClearPipeStallBothEnds)(void *, UInt8)
      * }
      */
-    public static class ClearPipeStallBothEnds {
+    public final static class ClearPipeStallBothEnds {
 
-        ClearPipeStallBothEnds() {
+        private ClearPipeStallBothEnds() {
             // Should not be called directly
         }
 
@@ -4630,9 +4718,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4651,7 +4741,7 @@ public class IOUSBInterfaceStruct190 {
         return ClearPipeStallBothEnds$LAYOUT;
     }
 
-    private static final long ClearPipeStallBothEnds$OFFSET = 360;
+    private static final long ClearPipeStallBothEnds$OFFSET = $LAYOUT.byteOffset(groupElement("ClearPipeStallBothEnds"));
 
     /**
      * Offset for field:
@@ -4688,9 +4778,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*SetPipePolicy)(void *, UInt8, UInt16, UInt8)
      * }
      */
-    public static class SetPipePolicy {
+    public final static class SetPipePolicy {
 
-        SetPipePolicy() {
+        private SetPipePolicy() {
             // Should not be called directly
         }
 
@@ -4731,9 +4821,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, short _x2, byte _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, short _x2, byte _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4752,7 +4844,7 @@ public class IOUSBInterfaceStruct190 {
         return SetPipePolicy$LAYOUT;
     }
 
-    private static final long SetPipePolicy$OFFSET = 368;
+    private static final long SetPipePolicy$OFFSET = $LAYOUT.byteOffset(groupElement("SetPipePolicy"));
 
     /**
      * Offset for field:
@@ -4789,9 +4881,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetBandwidthAvailable)(void *, UInt32 *)
      * }
      */
-    public static class GetBandwidthAvailable {
+    public final static class GetBandwidthAvailable {
 
-        GetBandwidthAvailable() {
+        private GetBandwidthAvailable() {
             // Should not be called directly
         }
 
@@ -4830,9 +4922,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4851,7 +4945,7 @@ public class IOUSBInterfaceStruct190 {
         return GetBandwidthAvailable$LAYOUT;
     }
 
-    private static final long GetBandwidthAvailable$OFFSET = 376;
+    private static final long GetBandwidthAvailable$OFFSET = $LAYOUT.byteOffset(groupElement("GetBandwidthAvailable"));
 
     /**
      * Offset for field:
@@ -4888,9 +4982,9 @@ public class IOUSBInterfaceStruct190 {
      * IOReturn (*GetEndpointProperties)(void *, UInt8, UInt8, UInt8, UInt8 *, UInt16 *, UInt8 *)
      * }
      */
-    public static class GetEndpointProperties {
+    public final static class GetEndpointProperties {
 
-        GetEndpointProperties() {
+        private GetEndpointProperties() {
             // Should not be called directly
         }
 
@@ -4934,9 +5028,11 @@ public class IOUSBInterfaceStruct190 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, byte _x2, byte _x3, MemorySegment _x4, MemorySegment _x5, MemorySegment _x6) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, byte _x2, byte _x3, MemorySegment _x4, MemorySegment _x5, MemorySegment _x6) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3, _x4, _x5, _x6);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -4955,7 +5051,7 @@ public class IOUSBInterfaceStruct190 {
         return GetEndpointProperties$LAYOUT;
     }
 
-    private static final long GetEndpointProperties$OFFSET = 384;
+    private static final long GetEndpointProperties$OFFSET = $LAYOUT.byteOffset(groupElement("GetEndpointProperties"));
 
     /**
      * Offset for field:
@@ -5016,7 +5112,7 @@ public class IOUSBInterfaceStruct190 {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -5024,7 +5120,7 @@ public class IOUSBInterfaceStruct190 {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

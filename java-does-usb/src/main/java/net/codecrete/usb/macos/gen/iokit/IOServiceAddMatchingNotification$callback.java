@@ -17,9 +17,9 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  * IOServiceMatchingCallback callback
  * }
  */
-public class IOServiceAddMatchingNotification$callback {
+public final class IOServiceAddMatchingNotification$callback {
 
-    IOServiceAddMatchingNotification$callback() {
+    private IOServiceAddMatchingNotification$callback() {
         // Should not be called directly
     }
 
@@ -57,9 +57,11 @@ public class IOServiceAddMatchingNotification$callback {
     /**
      * Invoke the upcall stub {@code funcPtr}, with given parameters
      */
-    public static void invoke(MemorySegment funcPtr,MemorySegment _x0, int _x1) {
+    public static void invoke(MemorySegment funcPtr, MemorySegment _x0, int _x1) {
         try {
              DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+        } catch (Error | RuntimeException ex) {
+            throw ex;
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }

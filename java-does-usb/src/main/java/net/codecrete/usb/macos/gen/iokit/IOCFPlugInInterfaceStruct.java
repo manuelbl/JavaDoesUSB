@@ -65,7 +65,7 @@ public class IOCFPlugInInterfaceStruct {
         return _reserved$LAYOUT;
     }
 
-    private static final long _reserved$OFFSET = 0;
+    private static final long _reserved$OFFSET = $LAYOUT.byteOffset(groupElement("_reserved"));
 
     /**
      * Offset for field:
@@ -102,9 +102,9 @@ public class IOCFPlugInInterfaceStruct {
      * HRESULT (*QueryInterface)(void *, REFIID, LPVOID *)
      * }
      */
-    public static class QueryInterface {
+    public final static class QueryInterface {
 
-        QueryInterface() {
+        private QueryInterface() {
             // Should not be called directly
         }
 
@@ -144,9 +144,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -165,7 +167,7 @@ public class IOCFPlugInInterfaceStruct {
         return QueryInterface$LAYOUT;
     }
 
-    private static final long QueryInterface$OFFSET = 8;
+    private static final long QueryInterface$OFFSET = $LAYOUT.byteOffset(groupElement("QueryInterface"));
 
     /**
      * Offset for field:
@@ -202,9 +204,9 @@ public class IOCFPlugInInterfaceStruct {
      * ULONG (*AddRef)(void *)
      * }
      */
-    public static class AddRef {
+    public final static class AddRef {
 
-        AddRef() {
+        private AddRef() {
             // Should not be called directly
         }
 
@@ -242,9 +244,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -263,7 +267,7 @@ public class IOCFPlugInInterfaceStruct {
         return AddRef$LAYOUT;
     }
 
-    private static final long AddRef$OFFSET = 16;
+    private static final long AddRef$OFFSET = $LAYOUT.byteOffset(groupElement("AddRef"));
 
     /**
      * Offset for field:
@@ -300,9 +304,9 @@ public class IOCFPlugInInterfaceStruct {
      * ULONG (*Release)(void *)
      * }
      */
-    public static class Release {
+    public final static class Release {
 
-        Release() {
+        private Release() {
             // Should not be called directly
         }
 
@@ -340,9 +344,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -361,7 +367,7 @@ public class IOCFPlugInInterfaceStruct {
         return Release$LAYOUT;
     }
 
-    private static final long Release$OFFSET = 24;
+    private static final long Release$OFFSET = $LAYOUT.byteOffset(groupElement("Release"));
 
     /**
      * Offset for field:
@@ -405,7 +411,7 @@ public class IOCFPlugInInterfaceStruct {
         return version$LAYOUT;
     }
 
-    private static final long version$OFFSET = 32;
+    private static final long version$OFFSET = $LAYOUT.byteOffset(groupElement("version"));
 
     /**
      * Offset for field:
@@ -449,7 +455,7 @@ public class IOCFPlugInInterfaceStruct {
         return revision$LAYOUT;
     }
 
-    private static final long revision$OFFSET = 34;
+    private static final long revision$OFFSET = $LAYOUT.byteOffset(groupElement("revision"));
 
     /**
      * Offset for field:
@@ -486,9 +492,9 @@ public class IOCFPlugInInterfaceStruct {
      * IOReturn (*Probe)(void *, CFDictionaryRef, io_service_t, SInt32 *)
      * }
      */
-    public static class Probe {
+    public final static class Probe {
 
-        Probe() {
+        private Probe() {
             // Should not be called directly
         }
 
@@ -529,9 +535,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, int _x2, MemorySegment _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, int _x2, MemorySegment _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -550,7 +558,7 @@ public class IOCFPlugInInterfaceStruct {
         return Probe$LAYOUT;
     }
 
-    private static final long Probe$OFFSET = 40;
+    private static final long Probe$OFFSET = $LAYOUT.byteOffset(groupElement("Probe"));
 
     /**
      * Offset for field:
@@ -587,9 +595,9 @@ public class IOCFPlugInInterfaceStruct {
      * IOReturn (*Start)(void *, CFDictionaryRef, io_service_t)
      * }
      */
-    public static class Start {
+    public final static class Start {
 
-        Start() {
+        private Start() {
             // Should not be called directly
         }
 
@@ -629,9 +637,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, int _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, int _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -650,7 +660,7 @@ public class IOCFPlugInInterfaceStruct {
         return Start$LAYOUT;
     }
 
-    private static final long Start$OFFSET = 48;
+    private static final long Start$OFFSET = $LAYOUT.byteOffset(groupElement("Start"));
 
     /**
      * Offset for field:
@@ -687,9 +697,9 @@ public class IOCFPlugInInterfaceStruct {
      * IOReturn (*Stop)(void *)
      * }
      */
-    public static class Stop {
+    public final static class Stop {
 
-        Stop() {
+        private Stop() {
             // Should not be called directly
         }
 
@@ -727,9 +737,11 @@ public class IOCFPlugInInterfaceStruct {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -748,7 +760,7 @@ public class IOCFPlugInInterfaceStruct {
         return Stop$LAYOUT;
     }
 
-    private static final long Stop$OFFSET = 56;
+    private static final long Stop$OFFSET = $LAYOUT.byteOffset(groupElement("Stop"));
 
     /**
      * Offset for field:
@@ -809,7 +821,7 @@ public class IOCFPlugInInterfaceStruct {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -817,7 +829,7 @@ public class IOCFPlugInInterfaceStruct {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

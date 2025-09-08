@@ -122,7 +122,7 @@ public class IOUSBDeviceStruct187 {
         return _reserved$LAYOUT;
     }
 
-    private static final long _reserved$OFFSET = 0;
+    private static final long _reserved$OFFSET = $LAYOUT.byteOffset(groupElement("_reserved"));
 
     /**
      * Offset for field:
@@ -159,9 +159,9 @@ public class IOUSBDeviceStruct187 {
      * HRESULT (*QueryInterface)(void *, REFIID, LPVOID *)
      * }
      */
-    public static class QueryInterface {
+    public final static class QueryInterface {
 
-        QueryInterface() {
+        private QueryInterface() {
             // Should not be called directly
         }
 
@@ -201,9 +201,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -222,7 +224,7 @@ public class IOUSBDeviceStruct187 {
         return QueryInterface$LAYOUT;
     }
 
-    private static final long QueryInterface$OFFSET = 8;
+    private static final long QueryInterface$OFFSET = $LAYOUT.byteOffset(groupElement("QueryInterface"));
 
     /**
      * Offset for field:
@@ -259,9 +261,9 @@ public class IOUSBDeviceStruct187 {
      * ULONG (*AddRef)(void *)
      * }
      */
-    public static class AddRef {
+    public final static class AddRef {
 
-        AddRef() {
+        private AddRef() {
             // Should not be called directly
         }
 
@@ -299,9 +301,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -320,7 +324,7 @@ public class IOUSBDeviceStruct187 {
         return AddRef$LAYOUT;
     }
 
-    private static final long AddRef$OFFSET = 16;
+    private static final long AddRef$OFFSET = $LAYOUT.byteOffset(groupElement("AddRef"));
 
     /**
      * Offset for field:
@@ -357,9 +361,9 @@ public class IOUSBDeviceStruct187 {
      * ULONG (*Release)(void *)
      * }
      */
-    public static class Release {
+    public final static class Release {
 
-        Release() {
+        private Release() {
             // Should not be called directly
         }
 
@@ -397,9 +401,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -418,7 +424,7 @@ public class IOUSBDeviceStruct187 {
         return Release$LAYOUT;
     }
 
-    private static final long Release$OFFSET = 24;
+    private static final long Release$OFFSET = $LAYOUT.byteOffset(groupElement("Release"));
 
     /**
      * Offset for field:
@@ -455,9 +461,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*CreateDeviceAsyncEventSource)(void *, CFRunLoopSourceRef *)
      * }
      */
-    public static class CreateDeviceAsyncEventSource {
+    public final static class CreateDeviceAsyncEventSource {
 
-        CreateDeviceAsyncEventSource() {
+        private CreateDeviceAsyncEventSource() {
             // Should not be called directly
         }
 
@@ -496,9 +502,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -517,7 +525,7 @@ public class IOUSBDeviceStruct187 {
         return CreateDeviceAsyncEventSource$LAYOUT;
     }
 
-    private static final long CreateDeviceAsyncEventSource$OFFSET = 32;
+    private static final long CreateDeviceAsyncEventSource$OFFSET = $LAYOUT.byteOffset(groupElement("CreateDeviceAsyncEventSource"));
 
     /**
      * Offset for field:
@@ -554,9 +562,9 @@ public class IOUSBDeviceStruct187 {
      * CFRunLoopSourceRef (*GetDeviceAsyncEventSource)(void *)
      * }
      */
-    public static class GetDeviceAsyncEventSource {
+    public final static class GetDeviceAsyncEventSource {
 
-        GetDeviceAsyncEventSource() {
+        private GetDeviceAsyncEventSource() {
             // Should not be called directly
         }
 
@@ -594,9 +602,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static MemorySegment invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static MemorySegment invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (MemorySegment) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -615,7 +625,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceAsyncEventSource$LAYOUT;
     }
 
-    private static final long GetDeviceAsyncEventSource$OFFSET = 40;
+    private static final long GetDeviceAsyncEventSource$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceAsyncEventSource"));
 
     /**
      * Offset for field:
@@ -652,9 +662,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*CreateDeviceAsyncPort)(void *, mach_port_t *)
      * }
      */
-    public static class CreateDeviceAsyncPort {
+    public final static class CreateDeviceAsyncPort {
 
-        CreateDeviceAsyncPort() {
+        private CreateDeviceAsyncPort() {
             // Should not be called directly
         }
 
@@ -693,9 +703,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -714,7 +726,7 @@ public class IOUSBDeviceStruct187 {
         return CreateDeviceAsyncPort$LAYOUT;
     }
 
-    private static final long CreateDeviceAsyncPort$OFFSET = 48;
+    private static final long CreateDeviceAsyncPort$OFFSET = $LAYOUT.byteOffset(groupElement("CreateDeviceAsyncPort"));
 
     /**
      * Offset for field:
@@ -751,9 +763,9 @@ public class IOUSBDeviceStruct187 {
      * mach_port_t (*GetDeviceAsyncPort)(void *)
      * }
      */
-    public static class GetDeviceAsyncPort {
+    public final static class GetDeviceAsyncPort {
 
-        GetDeviceAsyncPort() {
+        private GetDeviceAsyncPort() {
             // Should not be called directly
         }
 
@@ -791,9 +803,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -812,7 +826,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceAsyncPort$LAYOUT;
     }
 
-    private static final long GetDeviceAsyncPort$OFFSET = 56;
+    private static final long GetDeviceAsyncPort$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceAsyncPort"));
 
     /**
      * Offset for field:
@@ -849,9 +863,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceOpen)(void *)
      * }
      */
-    public static class USBDeviceOpen {
+    public final static class USBDeviceOpen {
 
-        USBDeviceOpen() {
+        private USBDeviceOpen() {
             // Should not be called directly
         }
 
@@ -889,9 +903,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -910,7 +926,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceOpen$LAYOUT;
     }
 
-    private static final long USBDeviceOpen$OFFSET = 64;
+    private static final long USBDeviceOpen$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceOpen"));
 
     /**
      * Offset for field:
@@ -947,9 +963,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceClose)(void *)
      * }
      */
-    public static class USBDeviceClose {
+    public final static class USBDeviceClose {
 
-        USBDeviceClose() {
+        private USBDeviceClose() {
             // Should not be called directly
         }
 
@@ -987,9 +1003,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1008,7 +1026,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceClose$LAYOUT;
     }
 
-    private static final long USBDeviceClose$OFFSET = 72;
+    private static final long USBDeviceClose$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceClose"));
 
     /**
      * Offset for field:
@@ -1045,9 +1063,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceClass)(void *, UInt8 *)
      * }
      */
-    public static class GetDeviceClass {
+    public final static class GetDeviceClass {
 
-        GetDeviceClass() {
+        private GetDeviceClass() {
             // Should not be called directly
         }
 
@@ -1086,9 +1104,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1107,7 +1127,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceClass$LAYOUT;
     }
 
-    private static final long GetDeviceClass$OFFSET = 80;
+    private static final long GetDeviceClass$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceClass"));
 
     /**
      * Offset for field:
@@ -1144,9 +1164,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceSubClass)(void *, UInt8 *)
      * }
      */
-    public static class GetDeviceSubClass {
+    public final static class GetDeviceSubClass {
 
-        GetDeviceSubClass() {
+        private GetDeviceSubClass() {
             // Should not be called directly
         }
 
@@ -1185,9 +1205,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1206,7 +1228,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceSubClass$LAYOUT;
     }
 
-    private static final long GetDeviceSubClass$OFFSET = 88;
+    private static final long GetDeviceSubClass$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceSubClass"));
 
     /**
      * Offset for field:
@@ -1243,9 +1265,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceProtocol)(void *, UInt8 *)
      * }
      */
-    public static class GetDeviceProtocol {
+    public final static class GetDeviceProtocol {
 
-        GetDeviceProtocol() {
+        private GetDeviceProtocol() {
             // Should not be called directly
         }
 
@@ -1284,9 +1306,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1305,7 +1329,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceProtocol$LAYOUT;
     }
 
-    private static final long GetDeviceProtocol$OFFSET = 96;
+    private static final long GetDeviceProtocol$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceProtocol"));
 
     /**
      * Offset for field:
@@ -1342,9 +1366,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceVendor)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceVendor {
+    public final static class GetDeviceVendor {
 
-        GetDeviceVendor() {
+        private GetDeviceVendor() {
             // Should not be called directly
         }
 
@@ -1383,9 +1407,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1404,7 +1430,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceVendor$LAYOUT;
     }
 
-    private static final long GetDeviceVendor$OFFSET = 104;
+    private static final long GetDeviceVendor$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceVendor"));
 
     /**
      * Offset for field:
@@ -1441,9 +1467,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceProduct)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceProduct {
+    public final static class GetDeviceProduct {
 
-        GetDeviceProduct() {
+        private GetDeviceProduct() {
             // Should not be called directly
         }
 
@@ -1482,9 +1508,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1503,7 +1531,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceProduct$LAYOUT;
     }
 
-    private static final long GetDeviceProduct$OFFSET = 112;
+    private static final long GetDeviceProduct$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceProduct"));
 
     /**
      * Offset for field:
@@ -1540,9 +1568,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceReleaseNumber)(void *, UInt16 *)
      * }
      */
-    public static class GetDeviceReleaseNumber {
+    public final static class GetDeviceReleaseNumber {
 
-        GetDeviceReleaseNumber() {
+        private GetDeviceReleaseNumber() {
             // Should not be called directly
         }
 
@@ -1581,9 +1609,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1602,7 +1632,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceReleaseNumber$LAYOUT;
     }
 
-    private static final long GetDeviceReleaseNumber$OFFSET = 120;
+    private static final long GetDeviceReleaseNumber$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceReleaseNumber"));
 
     /**
      * Offset for field:
@@ -1639,9 +1669,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceAddress)(void *, USBDeviceAddress *)
      * }
      */
-    public static class GetDeviceAddress {
+    public final static class GetDeviceAddress {
 
-        GetDeviceAddress() {
+        private GetDeviceAddress() {
             // Should not be called directly
         }
 
@@ -1680,9 +1710,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1701,7 +1733,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceAddress$LAYOUT;
     }
 
-    private static final long GetDeviceAddress$OFFSET = 128;
+    private static final long GetDeviceAddress$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceAddress"));
 
     /**
      * Offset for field:
@@ -1738,9 +1770,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceBusPowerAvailable)(void *, UInt32 *)
      * }
      */
-    public static class GetDeviceBusPowerAvailable {
+    public final static class GetDeviceBusPowerAvailable {
 
-        GetDeviceBusPowerAvailable() {
+        private GetDeviceBusPowerAvailable() {
             // Should not be called directly
         }
 
@@ -1779,9 +1811,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1800,7 +1834,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceBusPowerAvailable$LAYOUT;
     }
 
-    private static final long GetDeviceBusPowerAvailable$OFFSET = 136;
+    private static final long GetDeviceBusPowerAvailable$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceBusPowerAvailable"));
 
     /**
      * Offset for field:
@@ -1837,9 +1871,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetDeviceSpeed)(void *, UInt8 *)
      * }
      */
-    public static class GetDeviceSpeed {
+    public final static class GetDeviceSpeed {
 
-        GetDeviceSpeed() {
+        private GetDeviceSpeed() {
             // Should not be called directly
         }
 
@@ -1878,9 +1912,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1899,7 +1935,7 @@ public class IOUSBDeviceStruct187 {
         return GetDeviceSpeed$LAYOUT;
     }
 
-    private static final long GetDeviceSpeed$OFFSET = 144;
+    private static final long GetDeviceSpeed$OFFSET = $LAYOUT.byteOffset(groupElement("GetDeviceSpeed"));
 
     /**
      * Offset for field:
@@ -1936,9 +1972,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetNumberOfConfigurations)(void *, UInt8 *)
      * }
      */
-    public static class GetNumberOfConfigurations {
+    public final static class GetNumberOfConfigurations {
 
-        GetNumberOfConfigurations() {
+        private GetNumberOfConfigurations() {
             // Should not be called directly
         }
 
@@ -1977,9 +2013,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -1998,7 +2036,7 @@ public class IOUSBDeviceStruct187 {
         return GetNumberOfConfigurations$LAYOUT;
     }
 
-    private static final long GetNumberOfConfigurations$OFFSET = 152;
+    private static final long GetNumberOfConfigurations$OFFSET = $LAYOUT.byteOffset(groupElement("GetNumberOfConfigurations"));
 
     /**
      * Offset for field:
@@ -2035,9 +2073,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetLocationID)(void *, UInt32 *)
      * }
      */
-    public static class GetLocationID {
+    public final static class GetLocationID {
 
-        GetLocationID() {
+        private GetLocationID() {
             // Should not be called directly
         }
 
@@ -2076,9 +2114,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2097,7 +2137,7 @@ public class IOUSBDeviceStruct187 {
         return GetLocationID$LAYOUT;
     }
 
-    private static final long GetLocationID$OFFSET = 160;
+    private static final long GetLocationID$OFFSET = $LAYOUT.byteOffset(groupElement("GetLocationID"));
 
     /**
      * Offset for field:
@@ -2134,9 +2174,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetConfigurationDescriptorPtr)(void *, UInt8, IOUSBConfigurationDescriptorPtr *)
      * }
      */
-    public static class GetConfigurationDescriptorPtr {
+    public final static class GetConfigurationDescriptorPtr {
 
-        GetConfigurationDescriptorPtr() {
+        private GetConfigurationDescriptorPtr() {
             // Should not be called directly
         }
 
@@ -2176,9 +2216,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2197,7 +2239,7 @@ public class IOUSBDeviceStruct187 {
         return GetConfigurationDescriptorPtr$LAYOUT;
     }
 
-    private static final long GetConfigurationDescriptorPtr$OFFSET = 168;
+    private static final long GetConfigurationDescriptorPtr$OFFSET = $LAYOUT.byteOffset(groupElement("GetConfigurationDescriptorPtr"));
 
     /**
      * Offset for field:
@@ -2234,9 +2276,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetConfiguration)(void *, UInt8 *)
      * }
      */
-    public static class GetConfiguration {
+    public final static class GetConfiguration {
 
-        GetConfiguration() {
+        private GetConfiguration() {
             // Should not be called directly
         }
 
@@ -2275,9 +2317,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2296,7 +2340,7 @@ public class IOUSBDeviceStruct187 {
         return GetConfiguration$LAYOUT;
     }
 
-    private static final long GetConfiguration$OFFSET = 176;
+    private static final long GetConfiguration$OFFSET = $LAYOUT.byteOffset(groupElement("GetConfiguration"));
 
     /**
      * Offset for field:
@@ -2333,9 +2377,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*SetConfiguration)(void *, UInt8)
      * }
      */
-    public static class SetConfiguration {
+    public final static class SetConfiguration {
 
-        SetConfiguration() {
+        private SetConfiguration() {
             // Should not be called directly
         }
 
@@ -2374,9 +2418,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2395,7 +2441,7 @@ public class IOUSBDeviceStruct187 {
         return SetConfiguration$LAYOUT;
     }
 
-    private static final long SetConfiguration$OFFSET = 184;
+    private static final long SetConfiguration$OFFSET = $LAYOUT.byteOffset(groupElement("SetConfiguration"));
 
     /**
      * Offset for field:
@@ -2432,9 +2478,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*GetBusFrameNumber)(void *, UInt64 *, AbsoluteTime *)
      * }
      */
-    public static class GetBusFrameNumber {
+    public final static class GetBusFrameNumber {
 
-        GetBusFrameNumber() {
+        private GetBusFrameNumber() {
             // Should not be called directly
         }
 
@@ -2474,9 +2520,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2495,7 +2543,7 @@ public class IOUSBDeviceStruct187 {
         return GetBusFrameNumber$LAYOUT;
     }
 
-    private static final long GetBusFrameNumber$OFFSET = 192;
+    private static final long GetBusFrameNumber$OFFSET = $LAYOUT.byteOffset(groupElement("GetBusFrameNumber"));
 
     /**
      * Offset for field:
@@ -2532,9 +2580,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*ResetDevice)(void *)
      * }
      */
-    public static class ResetDevice {
+    public final static class ResetDevice {
 
-        ResetDevice() {
+        private ResetDevice() {
             // Should not be called directly
         }
 
@@ -2572,9 +2620,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2593,7 +2643,7 @@ public class IOUSBDeviceStruct187 {
         return ResetDevice$LAYOUT;
     }
 
-    private static final long ResetDevice$OFFSET = 200;
+    private static final long ResetDevice$OFFSET = $LAYOUT.byteOffset(groupElement("ResetDevice"));
 
     /**
      * Offset for field:
@@ -2630,9 +2680,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*DeviceRequest)(void *, IOUSBDevRequest *)
      * }
      */
-    public static class DeviceRequest {
+    public final static class DeviceRequest {
 
-        DeviceRequest() {
+        private DeviceRequest() {
             // Should not be called directly
         }
 
@@ -2671,9 +2721,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2692,7 +2744,7 @@ public class IOUSBDeviceStruct187 {
         return DeviceRequest$LAYOUT;
     }
 
-    private static final long DeviceRequest$OFFSET = 208;
+    private static final long DeviceRequest$OFFSET = $LAYOUT.byteOffset(groupElement("DeviceRequest"));
 
     /**
      * Offset for field:
@@ -2729,9 +2781,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*DeviceRequestAsync)(void *, IOUSBDevRequest *, IOAsyncCallback1, void *)
      * }
      */
-    public static class DeviceRequestAsync {
+    public final static class DeviceRequestAsync {
 
-        DeviceRequestAsync() {
+        private DeviceRequestAsync() {
             // Should not be called directly
         }
 
@@ -2772,9 +2824,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2793,7 +2847,7 @@ public class IOUSBDeviceStruct187 {
         return DeviceRequestAsync$LAYOUT;
     }
 
-    private static final long DeviceRequestAsync$OFFSET = 216;
+    private static final long DeviceRequestAsync$OFFSET = $LAYOUT.byteOffset(groupElement("DeviceRequestAsync"));
 
     /**
      * Offset for field:
@@ -2830,9 +2884,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*CreateInterfaceIterator)(void *, IOUSBFindInterfaceRequest *, io_iterator_t *)
      * }
      */
-    public static class CreateInterfaceIterator {
+    public final static class CreateInterfaceIterator {
 
-        CreateInterfaceIterator() {
+        private CreateInterfaceIterator() {
             // Should not be called directly
         }
 
@@ -2872,9 +2926,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2893,7 +2949,7 @@ public class IOUSBDeviceStruct187 {
         return CreateInterfaceIterator$LAYOUT;
     }
 
-    private static final long CreateInterfaceIterator$OFFSET = 224;
+    private static final long CreateInterfaceIterator$OFFSET = $LAYOUT.byteOffset(groupElement("CreateInterfaceIterator"));
 
     /**
      * Offset for field:
@@ -2930,9 +2986,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceOpenSeize)(void *)
      * }
      */
-    public static class USBDeviceOpenSeize {
+    public final static class USBDeviceOpenSeize {
 
-        USBDeviceOpenSeize() {
+        private USBDeviceOpenSeize() {
             // Should not be called directly
         }
 
@@ -2970,9 +3026,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -2991,7 +3049,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceOpenSeize$LAYOUT;
     }
 
-    private static final long USBDeviceOpenSeize$OFFSET = 232;
+    private static final long USBDeviceOpenSeize$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceOpenSeize"));
 
     /**
      * Offset for field:
@@ -3028,9 +3086,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*DeviceRequestTO)(void *, IOUSBDevRequestTO *)
      * }
      */
-    public static class DeviceRequestTO {
+    public final static class DeviceRequestTO {
 
-        DeviceRequestTO() {
+        private DeviceRequestTO() {
             // Should not be called directly
         }
 
@@ -3069,9 +3127,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3090,7 +3150,7 @@ public class IOUSBDeviceStruct187 {
         return DeviceRequestTO$LAYOUT;
     }
 
-    private static final long DeviceRequestTO$OFFSET = 240;
+    private static final long DeviceRequestTO$OFFSET = $LAYOUT.byteOffset(groupElement("DeviceRequestTO"));
 
     /**
      * Offset for field:
@@ -3127,9 +3187,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*DeviceRequestAsyncTO)(void *, IOUSBDevRequestTO *, IOAsyncCallback1, void *)
      * }
      */
-    public static class DeviceRequestAsyncTO {
+    public final static class DeviceRequestAsyncTO {
 
-        DeviceRequestAsyncTO() {
+        private DeviceRequestAsyncTO() {
             // Should not be called directly
         }
 
@@ -3170,9 +3230,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3191,7 +3253,7 @@ public class IOUSBDeviceStruct187 {
         return DeviceRequestAsyncTO$LAYOUT;
     }
 
-    private static final long DeviceRequestAsyncTO$OFFSET = 248;
+    private static final long DeviceRequestAsyncTO$OFFSET = $LAYOUT.byteOffset(groupElement("DeviceRequestAsyncTO"));
 
     /**
      * Offset for field:
@@ -3228,9 +3290,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceSuspend)(void *, Boolean)
      * }
      */
-    public static class USBDeviceSuspend {
+    public final static class USBDeviceSuspend {
 
-        USBDeviceSuspend() {
+        private USBDeviceSuspend() {
             // Should not be called directly
         }
 
@@ -3269,9 +3331,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, byte _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, byte _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3290,7 +3354,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceSuspend$LAYOUT;
     }
 
-    private static final long USBDeviceSuspend$OFFSET = 256;
+    private static final long USBDeviceSuspend$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceSuspend"));
 
     /**
      * Offset for field:
@@ -3327,9 +3391,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceAbortPipeZero)(void *)
      * }
      */
-    public static class USBDeviceAbortPipeZero {
+    public final static class USBDeviceAbortPipeZero {
 
-        USBDeviceAbortPipeZero() {
+        private USBDeviceAbortPipeZero() {
             // Should not be called directly
         }
 
@@ -3367,9 +3431,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3388,7 +3454,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceAbortPipeZero$LAYOUT;
     }
 
-    private static final long USBDeviceAbortPipeZero$OFFSET = 264;
+    private static final long USBDeviceAbortPipeZero$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceAbortPipeZero"));
 
     /**
      * Offset for field:
@@ -3425,9 +3491,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBGetManufacturerStringIndex)(void *, UInt8 *)
      * }
      */
-    public static class USBGetManufacturerStringIndex {
+    public final static class USBGetManufacturerStringIndex {
 
-        USBGetManufacturerStringIndex() {
+        private USBGetManufacturerStringIndex() {
             // Should not be called directly
         }
 
@@ -3466,9 +3532,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3487,7 +3555,7 @@ public class IOUSBDeviceStruct187 {
         return USBGetManufacturerStringIndex$LAYOUT;
     }
 
-    private static final long USBGetManufacturerStringIndex$OFFSET = 272;
+    private static final long USBGetManufacturerStringIndex$OFFSET = $LAYOUT.byteOffset(groupElement("USBGetManufacturerStringIndex"));
 
     /**
      * Offset for field:
@@ -3524,9 +3592,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBGetProductStringIndex)(void *, UInt8 *)
      * }
      */
-    public static class USBGetProductStringIndex {
+    public final static class USBGetProductStringIndex {
 
-        USBGetProductStringIndex() {
+        private USBGetProductStringIndex() {
             // Should not be called directly
         }
 
@@ -3565,9 +3633,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3586,7 +3656,7 @@ public class IOUSBDeviceStruct187 {
         return USBGetProductStringIndex$LAYOUT;
     }
 
-    private static final long USBGetProductStringIndex$OFFSET = 280;
+    private static final long USBGetProductStringIndex$OFFSET = $LAYOUT.byteOffset(groupElement("USBGetProductStringIndex"));
 
     /**
      * Offset for field:
@@ -3623,9 +3693,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBGetSerialNumberStringIndex)(void *, UInt8 *)
      * }
      */
-    public static class USBGetSerialNumberStringIndex {
+    public final static class USBGetSerialNumberStringIndex {
 
-        USBGetSerialNumberStringIndex() {
+        private USBGetSerialNumberStringIndex() {
             // Should not be called directly
         }
 
@@ -3664,9 +3734,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, MemorySegment _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, MemorySegment _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3685,7 +3757,7 @@ public class IOUSBDeviceStruct187 {
         return USBGetSerialNumberStringIndex$LAYOUT;
     }
 
-    private static final long USBGetSerialNumberStringIndex$OFFSET = 288;
+    private static final long USBGetSerialNumberStringIndex$OFFSET = $LAYOUT.byteOffset(groupElement("USBGetSerialNumberStringIndex"));
 
     /**
      * Offset for field:
@@ -3722,9 +3794,9 @@ public class IOUSBDeviceStruct187 {
      * IOReturn (*USBDeviceReEnumerate)(void *, UInt32)
      * }
      */
-    public static class USBDeviceReEnumerate {
+    public final static class USBDeviceReEnumerate {
 
-        USBDeviceReEnumerate() {
+        private USBDeviceReEnumerate() {
             // Should not be called directly
         }
 
@@ -3763,9 +3835,11 @@ public class IOUSBDeviceStruct187 {
         /**
          * Invoke the upcall stub {@code funcPtr}, with given parameters
          */
-        public static int invoke(MemorySegment funcPtr,MemorySegment _x0, int _x1) {
+        public static int invoke(MemorySegment funcPtr, MemorySegment _x0, int _x1) {
             try {
                 return (int) DOWN$MH.invokeExact(funcPtr, _x0, _x1);
+            } catch (Error | RuntimeException ex) {
+                throw ex;
             } catch (Throwable ex$) {
                 throw new AssertionError("should not reach here", ex$);
             }
@@ -3784,7 +3858,7 @@ public class IOUSBDeviceStruct187 {
         return USBDeviceReEnumerate$LAYOUT;
     }
 
-    private static final long USBDeviceReEnumerate$OFFSET = 296;
+    private static final long USBDeviceReEnumerate$OFFSET = $LAYOUT.byteOffset(groupElement("USBDeviceReEnumerate"));
 
     /**
      * Offset for field:
@@ -3845,7 +3919,7 @@ public class IOUSBDeviceStruct187 {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -3853,7 +3927,7 @@ public class IOUSBDeviceStruct187 {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

@@ -17,9 +17,9 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  * CFMessagePortCallBack callout
  * }
  */
-public class CFMessagePortCreateLocal$callout {
+public final class CFMessagePortCreateLocal$callout {
 
-    CFMessagePortCreateLocal$callout() {
+    private CFMessagePortCreateLocal$callout() {
         // Should not be called directly
     }
 
@@ -60,9 +60,11 @@ public class CFMessagePortCreateLocal$callout {
     /**
      * Invoke the upcall stub {@code funcPtr}, with given parameters
      */
-    public static MemorySegment invoke(MemorySegment funcPtr,MemorySegment _x0, int _x1, MemorySegment _x2, MemorySegment _x3) {
+    public static MemorySegment invoke(MemorySegment funcPtr, MemorySegment _x0, int _x1, MemorySegment _x2, MemorySegment _x3) {
         try {
             return (MemorySegment) DOWN$MH.invokeExact(funcPtr, _x0, _x1, _x2, _x3);
+        } catch (Error | RuntimeException ex) {
+            throw ex;
         } catch (Throwable ex$) {
             throw new AssertionError("should not reach here", ex$);
         }
