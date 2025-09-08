@@ -52,7 +52,7 @@ public class usbdevfs_ioctl {
         return ifno$LAYOUT;
     }
 
-    private static final long ifno$OFFSET = 0;
+    private static final long ifno$OFFSET = $LAYOUT.byteOffset(groupElement("ifno"));
 
     /**
      * Offset for field:
@@ -96,7 +96,7 @@ public class usbdevfs_ioctl {
         return ioctl_code$LAYOUT;
     }
 
-    private static final long ioctl_code$OFFSET = 4;
+    private static final long ioctl_code$OFFSET = $LAYOUT.byteOffset(groupElement("ioctl_code"));
 
     /**
      * Offset for field:
@@ -140,7 +140,7 @@ public class usbdevfs_ioctl {
         return data$LAYOUT;
     }
 
-    private static final long data$OFFSET = 8;
+    private static final long data$OFFSET = $LAYOUT.byteOffset(groupElement("data"));
 
     /**
      * Offset for field:
@@ -201,7 +201,7 @@ public class usbdevfs_ioctl {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -209,7 +209,7 @@ public class usbdevfs_ioctl {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

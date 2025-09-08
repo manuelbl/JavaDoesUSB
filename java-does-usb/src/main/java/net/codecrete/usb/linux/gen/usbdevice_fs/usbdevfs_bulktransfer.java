@@ -55,7 +55,7 @@ public class usbdevfs_bulktransfer {
         return ep$LAYOUT;
     }
 
-    private static final long ep$OFFSET = 0;
+    private static final long ep$OFFSET = $LAYOUT.byteOffset(groupElement("ep"));
 
     /**
      * Offset for field:
@@ -99,7 +99,7 @@ public class usbdevfs_bulktransfer {
         return len$LAYOUT;
     }
 
-    private static final long len$OFFSET = 4;
+    private static final long len$OFFSET = $LAYOUT.byteOffset(groupElement("len"));
 
     /**
      * Offset for field:
@@ -143,7 +143,7 @@ public class usbdevfs_bulktransfer {
         return timeout$LAYOUT;
     }
 
-    private static final long timeout$OFFSET = 8;
+    private static final long timeout$OFFSET = $LAYOUT.byteOffset(groupElement("timeout"));
 
     /**
      * Offset for field:
@@ -187,7 +187,7 @@ public class usbdevfs_bulktransfer {
         return data$LAYOUT;
     }
 
-    private static final long data$OFFSET = 16;
+    private static final long data$OFFSET = $LAYOUT.byteOffset(groupElement("data"));
 
     /**
      * Offset for field:
@@ -248,7 +248,7 @@ public class usbdevfs_bulktransfer {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -256,7 +256,7 @@ public class usbdevfs_bulktransfer {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

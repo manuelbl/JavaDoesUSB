@@ -12,71 +12,26 @@ import java.util.stream.*;
 import static java.lang.foreign.ValueLayout.*;
 import static java.lang.foreign.MemoryLayout.PathElement.*;
 
-public class udev {
+public class udev extends udev$shared {
 
     udev() {
         // Should not be called directly
     }
 
     static final Arena LIBRARY_ARENA = Arena.ofAuto();
-    static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
-
-    static void traceDowncall(String name, Object... args) {
-         String traceArgs = Arrays.stream(args)
-                       .map(Object::toString)
-                       .collect(Collectors.joining(", "));
-         System.out.printf("%s(%s)\n", name, traceArgs);
-    }
-
-    static MemorySegment findOrThrow(String symbol) {
-        return SYMBOL_LOOKUP.find(symbol)
-            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
-    }
-
-    static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
-        try {
-            return MethodHandles.lookup().findVirtual(fi, name, fdesc.toMethodType());
-        } catch (ReflectiveOperationException ex) {
-            throw new AssertionError(ex);
-        }
-    }
-
-    static MemoryLayout align(MemoryLayout layout, long align) {
-        return switch (layout) {
-            case PaddingLayout p -> p;
-            case ValueLayout v -> v.withByteAlignment(align);
-            case GroupLayout g -> {
-                MemoryLayout[] alignedMembers = g.memberLayouts().stream()
-                        .map(m -> align(m, align)).toArray(MemoryLayout[]::new);
-                yield g instanceof StructLayout ?
-                        MemoryLayout.structLayout(alignedMembers) : MemoryLayout.unionLayout(alignedMembers);
-            }
-            case SequenceLayout s -> MemoryLayout.sequenceLayout(s.elementCount(), align(s.elementLayout(), align));
-        };
-    }
 
     static final SymbolLookup SYMBOL_LOOKUP = SymbolLookup.libraryLookup("libudev.so.1", LIBRARY_ARENA)
             .or(SymbolLookup.loaderLookup())
             .or(Linker.nativeLinker().defaultLookup());
 
-    public static final ValueLayout.OfBoolean C_BOOL = ValueLayout.JAVA_BOOLEAN;
-    public static final ValueLayout.OfByte C_CHAR = ValueLayout.JAVA_BYTE;
-    public static final ValueLayout.OfShort C_SHORT = ValueLayout.JAVA_SHORT;
-    public static final ValueLayout.OfInt C_INT = ValueLayout.JAVA_INT;
-    public static final ValueLayout.OfLong C_LONG_LONG = ValueLayout.JAVA_LONG;
-    public static final ValueLayout.OfFloat C_FLOAT = ValueLayout.JAVA_FLOAT;
-    public static final ValueLayout.OfDouble C_DOUBLE = ValueLayout.JAVA_DOUBLE;
-    public static final AddressLayout C_POINTER = ValueLayout.ADDRESS
-            .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
-    public static final ValueLayout.OfLong C_LONG = ValueLayout.JAVA_LONG;
 
     private static class udev_new {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
             udev.C_POINTER    );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_new"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_new");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -98,6 +53,17 @@ public class udev {
     public static MethodHandle udev_new$handle() {
         return udev_new.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev *udev_new(void)
+     * }
+     */
+    public static MemorySegment udev_new$address() {
+        return udev_new.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev *udev_new(void)
@@ -110,6 +76,8 @@ public class udev {
                 traceDowncall("udev_new");
             }
             return (MemorySegment)mh$.invokeExact();
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -121,9 +89,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_list_entry_get_next"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_list_entry_get_next");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -145,6 +113,17 @@ public class udev {
     public static MethodHandle udev_list_entry_get_next$handle() {
         return udev_list_entry_get_next.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_list_entry *udev_list_entry_get_next(struct udev_list_entry *list_entry)
+     * }
+     */
+    public static MemorySegment udev_list_entry_get_next$address() {
+        return udev_list_entry_get_next.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_list_entry *udev_list_entry_get_next(struct udev_list_entry *list_entry)
@@ -157,6 +136,8 @@ public class udev {
                 traceDowncall("udev_list_entry_get_next", list_entry);
             }
             return (MemorySegment)mh$.invokeExact(list_entry);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -168,9 +149,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_list_entry_get_name"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_list_entry_get_name");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -192,6 +173,17 @@ public class udev {
     public static MethodHandle udev_list_entry_get_name$handle() {
         return udev_list_entry_get_name.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * const char *udev_list_entry_get_name(struct udev_list_entry *list_entry)
+     * }
+     */
+    public static MemorySegment udev_list_entry_get_name$address() {
+        return udev_list_entry_get_name.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * const char *udev_list_entry_get_name(struct udev_list_entry *list_entry)
@@ -204,6 +196,8 @@ public class udev {
                 traceDowncall("udev_list_entry_get_name", list_entry);
             }
             return (MemorySegment)mh$.invokeExact(list_entry);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -215,9 +209,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_unref"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_unref");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -239,6 +233,17 @@ public class udev {
     public static MethodHandle udev_device_unref$handle() {
         return udev_device_unref.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_device *udev_device_unref(struct udev_device *udev_device)
+     * }
+     */
+    public static MemorySegment udev_device_unref$address() {
+        return udev_device_unref.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_device *udev_device_unref(struct udev_device *udev_device)
@@ -251,6 +256,8 @@ public class udev {
                 traceDowncall("udev_device_unref", udev_device);
             }
             return (MemorySegment)mh$.invokeExact(udev_device);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -263,9 +270,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_new_from_syspath"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_new_from_syspath");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -287,6 +294,17 @@ public class udev {
     public static MethodHandle udev_device_new_from_syspath$handle() {
         return udev_device_new_from_syspath.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_device *udev_device_new_from_syspath(struct udev *udev, const char *syspath)
+     * }
+     */
+    public static MemorySegment udev_device_new_from_syspath$address() {
+        return udev_device_new_from_syspath.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_device *udev_device_new_from_syspath(struct udev *udev, const char *syspath)
@@ -299,6 +317,8 @@ public class udev {
                 traceDowncall("udev_device_new_from_syspath", udev, syspath);
             }
             return (MemorySegment)mh$.invokeExact(udev, syspath);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -310,9 +330,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_get_devtype"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_get_devtype");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -334,6 +354,17 @@ public class udev {
     public static MethodHandle udev_device_get_devtype$handle() {
         return udev_device_get_devtype.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * const char *udev_device_get_devtype(struct udev_device *udev_device)
+     * }
+     */
+    public static MemorySegment udev_device_get_devtype$address() {
+        return udev_device_get_devtype.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * const char *udev_device_get_devtype(struct udev_device *udev_device)
@@ -346,6 +377,8 @@ public class udev {
                 traceDowncall("udev_device_get_devtype", udev_device);
             }
             return (MemorySegment)mh$.invokeExact(udev_device);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -357,9 +390,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_get_devnode"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_get_devnode");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -381,6 +414,17 @@ public class udev {
     public static MethodHandle udev_device_get_devnode$handle() {
         return udev_device_get_devnode.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * const char *udev_device_get_devnode(struct udev_device *udev_device)
+     * }
+     */
+    public static MemorySegment udev_device_get_devnode$address() {
+        return udev_device_get_devnode.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * const char *udev_device_get_devnode(struct udev_device *udev_device)
@@ -393,6 +437,8 @@ public class udev {
                 traceDowncall("udev_device_get_devnode", udev_device);
             }
             return (MemorySegment)mh$.invokeExact(udev_device);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -404,9 +450,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_get_action"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_get_action");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -428,6 +474,17 @@ public class udev {
     public static MethodHandle udev_device_get_action$handle() {
         return udev_device_get_action.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * const char *udev_device_get_action(struct udev_device *udev_device)
+     * }
+     */
+    public static MemorySegment udev_device_get_action$address() {
+        return udev_device_get_action.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * const char *udev_device_get_action(struct udev_device *udev_device)
@@ -440,6 +497,8 @@ public class udev {
                 traceDowncall("udev_device_get_action", udev_device);
             }
             return (MemorySegment)mh$.invokeExact(udev_device);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -452,9 +511,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_device_get_sysattr_value"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_device_get_sysattr_value");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -476,6 +535,17 @@ public class udev {
     public static MethodHandle udev_device_get_sysattr_value$handle() {
         return udev_device_get_sysattr_value.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * const char *udev_device_get_sysattr_value(struct udev_device *udev_device, const char *sysattr)
+     * }
+     */
+    public static MemorySegment udev_device_get_sysattr_value$address() {
+        return udev_device_get_sysattr_value.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * const char *udev_device_get_sysattr_value(struct udev_device *udev_device, const char *sysattr)
@@ -488,6 +558,8 @@ public class udev {
                 traceDowncall("udev_device_get_sysattr_value", udev_device, sysattr);
             }
             return (MemorySegment)mh$.invokeExact(udev_device, sysattr);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -500,9 +572,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_monitor_new_from_netlink"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_monitor_new_from_netlink");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -524,6 +596,17 @@ public class udev {
     public static MethodHandle udev_monitor_new_from_netlink$handle() {
         return udev_monitor_new_from_netlink.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_monitor *udev_monitor_new_from_netlink(struct udev *udev, const char *name)
+     * }
+     */
+    public static MemorySegment udev_monitor_new_from_netlink$address() {
+        return udev_monitor_new_from_netlink.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_monitor *udev_monitor_new_from_netlink(struct udev *udev, const char *name)
@@ -536,6 +619,8 @@ public class udev {
                 traceDowncall("udev_monitor_new_from_netlink", udev, name);
             }
             return (MemorySegment)mh$.invokeExact(udev, name);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -547,9 +632,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_monitor_enable_receiving"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_monitor_enable_receiving");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -571,6 +656,17 @@ public class udev {
     public static MethodHandle udev_monitor_enable_receiving$handle() {
         return udev_monitor_enable_receiving.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * int udev_monitor_enable_receiving(struct udev_monitor *udev_monitor)
+     * }
+     */
+    public static MemorySegment udev_monitor_enable_receiving$address() {
+        return udev_monitor_enable_receiving.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * int udev_monitor_enable_receiving(struct udev_monitor *udev_monitor)
@@ -583,6 +679,8 @@ public class udev {
                 traceDowncall("udev_monitor_enable_receiving", udev_monitor);
             }
             return (int)mh$.invokeExact(udev_monitor);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -594,9 +692,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_monitor_get_fd"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_monitor_get_fd");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -618,6 +716,17 @@ public class udev {
     public static MethodHandle udev_monitor_get_fd$handle() {
         return udev_monitor_get_fd.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * int udev_monitor_get_fd(struct udev_monitor *udev_monitor)
+     * }
+     */
+    public static MemorySegment udev_monitor_get_fd$address() {
+        return udev_monitor_get_fd.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * int udev_monitor_get_fd(struct udev_monitor *udev_monitor)
@@ -630,6 +739,8 @@ public class udev {
                 traceDowncall("udev_monitor_get_fd", udev_monitor);
             }
             return (int)mh$.invokeExact(udev_monitor);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -641,9 +752,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_monitor_receive_device"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_monitor_receive_device");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -665,6 +776,17 @@ public class udev {
     public static MethodHandle udev_monitor_receive_device$handle() {
         return udev_monitor_receive_device.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_device *udev_monitor_receive_device(struct udev_monitor *udev_monitor)
+     * }
+     */
+    public static MemorySegment udev_monitor_receive_device$address() {
+        return udev_monitor_receive_device.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_device *udev_monitor_receive_device(struct udev_monitor *udev_monitor)
@@ -677,6 +799,8 @@ public class udev {
                 traceDowncall("udev_monitor_receive_device", udev_monitor);
             }
             return (MemorySegment)mh$.invokeExact(udev_monitor);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -690,9 +814,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_monitor_filter_add_match_subsystem_devtype"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_monitor_filter_add_match_subsystem_devtype");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -714,6 +838,17 @@ public class udev {
     public static MethodHandle udev_monitor_filter_add_match_subsystem_devtype$handle() {
         return udev_monitor_filter_add_match_subsystem_devtype.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * int udev_monitor_filter_add_match_subsystem_devtype(struct udev_monitor *udev_monitor, const char *subsystem, const char *devtype)
+     * }
+     */
+    public static MemorySegment udev_monitor_filter_add_match_subsystem_devtype$address() {
+        return udev_monitor_filter_add_match_subsystem_devtype.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * int udev_monitor_filter_add_match_subsystem_devtype(struct udev_monitor *udev_monitor, const char *subsystem, const char *devtype)
@@ -726,6 +861,8 @@ public class udev {
                 traceDowncall("udev_monitor_filter_add_match_subsystem_devtype", udev_monitor, subsystem, devtype);
             }
             return (int)mh$.invokeExact(udev_monitor, subsystem, devtype);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -737,9 +874,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_enumerate_unref"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_enumerate_unref");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -761,6 +898,17 @@ public class udev {
     public static MethodHandle udev_enumerate_unref$handle() {
         return udev_enumerate_unref.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_enumerate *udev_enumerate_unref(struct udev_enumerate *udev_enumerate)
+     * }
+     */
+    public static MemorySegment udev_enumerate_unref$address() {
+        return udev_enumerate_unref.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_enumerate *udev_enumerate_unref(struct udev_enumerate *udev_enumerate)
@@ -773,6 +921,8 @@ public class udev {
                 traceDowncall("udev_enumerate_unref", udev_enumerate);
             }
             return (MemorySegment)mh$.invokeExact(udev_enumerate);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -784,9 +934,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_enumerate_new"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_enumerate_new");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -808,6 +958,17 @@ public class udev {
     public static MethodHandle udev_enumerate_new$handle() {
         return udev_enumerate_new.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_enumerate *udev_enumerate_new(struct udev *udev)
+     * }
+     */
+    public static MemorySegment udev_enumerate_new$address() {
+        return udev_enumerate_new.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_enumerate *udev_enumerate_new(struct udev *udev)
@@ -820,6 +981,8 @@ public class udev {
                 traceDowncall("udev_enumerate_new", udev);
             }
             return (MemorySegment)mh$.invokeExact(udev);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -832,9 +995,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_enumerate_add_match_subsystem"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_enumerate_add_match_subsystem");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -856,6 +1019,17 @@ public class udev {
     public static MethodHandle udev_enumerate_add_match_subsystem$handle() {
         return udev_enumerate_add_match_subsystem.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * int udev_enumerate_add_match_subsystem(struct udev_enumerate *udev_enumerate, const char *subsystem)
+     * }
+     */
+    public static MemorySegment udev_enumerate_add_match_subsystem$address() {
+        return udev_enumerate_add_match_subsystem.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * int udev_enumerate_add_match_subsystem(struct udev_enumerate *udev_enumerate, const char *subsystem)
@@ -868,6 +1042,8 @@ public class udev {
                 traceDowncall("udev_enumerate_add_match_subsystem", udev_enumerate, subsystem);
             }
             return (int)mh$.invokeExact(udev_enumerate, subsystem);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -879,9 +1055,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_enumerate_scan_devices"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_enumerate_scan_devices");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -903,6 +1079,17 @@ public class udev {
     public static MethodHandle udev_enumerate_scan_devices$handle() {
         return udev_enumerate_scan_devices.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * int udev_enumerate_scan_devices(struct udev_enumerate *udev_enumerate)
+     * }
+     */
+    public static MemorySegment udev_enumerate_scan_devices$address() {
+        return udev_enumerate_scan_devices.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * int udev_enumerate_scan_devices(struct udev_enumerate *udev_enumerate)
@@ -915,6 +1102,8 @@ public class udev {
                 traceDowncall("udev_enumerate_scan_devices", udev_enumerate);
             }
             return (int)mh$.invokeExact(udev_enumerate);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }
@@ -926,9 +1115,9 @@ public class udev {
             udev.C_POINTER
         );
 
-        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    udev.findOrThrow("udev_enumerate_get_list_entry"),
-                    DESC);
+        public static final MemorySegment ADDR = SYMBOL_LOOKUP.findOrThrow("udev_enumerate_get_list_entry");
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(ADDR, DESC);
     }
 
     /**
@@ -950,6 +1139,17 @@ public class udev {
     public static MethodHandle udev_enumerate_get_list_entry$handle() {
         return udev_enumerate_get_list_entry.HANDLE;
     }
+
+    /**
+     * Address for:
+     * {@snippet lang=c :
+     * struct udev_list_entry *udev_enumerate_get_list_entry(struct udev_enumerate *udev_enumerate)
+     * }
+     */
+    public static MemorySegment udev_enumerate_get_list_entry$address() {
+        return udev_enumerate_get_list_entry.ADDR;
+    }
+
     /**
      * {@snippet lang=c :
      * struct udev_list_entry *udev_enumerate_get_list_entry(struct udev_enumerate *udev_enumerate)
@@ -962,6 +1162,8 @@ public class udev {
                 traceDowncall("udev_enumerate_get_list_entry", udev_enumerate);
             }
             return (MemorySegment)mh$.invokeExact(udev_enumerate);
+        } catch (Error | RuntimeException ex) {
+           throw ex;
         } catch (Throwable ex$) {
            throw new AssertionError("should not reach here", ex$);
         }

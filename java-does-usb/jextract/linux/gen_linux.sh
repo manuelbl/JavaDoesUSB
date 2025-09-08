@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JEXTRACT=../../../../jextract/build/jextract/bin/jextract
+JEXTRACT=../../../../jextract/bin/jextract
 
 rm -rf ../../src/main/java/net/codecrete/usb/linux/gen
 

@@ -77,7 +77,7 @@ public class usbdevfs_urb {
         return type$LAYOUT;
     }
 
-    private static final long type$OFFSET = 0;
+    private static final long type$OFFSET = $LAYOUT.byteOffset(groupElement("type"));
 
     /**
      * Offset for field:
@@ -121,7 +121,7 @@ public class usbdevfs_urb {
         return endpoint$LAYOUT;
     }
 
-    private static final long endpoint$OFFSET = 1;
+    private static final long endpoint$OFFSET = $LAYOUT.byteOffset(groupElement("endpoint"));
 
     /**
      * Offset for field:
@@ -165,7 +165,7 @@ public class usbdevfs_urb {
         return status$LAYOUT;
     }
 
-    private static final long status$OFFSET = 4;
+    private static final long status$OFFSET = $LAYOUT.byteOffset(groupElement("status"));
 
     /**
      * Offset for field:
@@ -209,7 +209,7 @@ public class usbdevfs_urb {
         return flags$LAYOUT;
     }
 
-    private static final long flags$OFFSET = 8;
+    private static final long flags$OFFSET = $LAYOUT.byteOffset(groupElement("flags"));
 
     /**
      * Offset for field:
@@ -253,7 +253,7 @@ public class usbdevfs_urb {
         return buffer$LAYOUT;
     }
 
-    private static final long buffer$OFFSET = 16;
+    private static final long buffer$OFFSET = $LAYOUT.byteOffset(groupElement("buffer"));
 
     /**
      * Offset for field:
@@ -297,7 +297,7 @@ public class usbdevfs_urb {
         return buffer_length$LAYOUT;
     }
 
-    private static final long buffer_length$OFFSET = 24;
+    private static final long buffer_length$OFFSET = $LAYOUT.byteOffset(groupElement("buffer_length"));
 
     /**
      * Offset for field:
@@ -341,7 +341,7 @@ public class usbdevfs_urb {
         return actual_length$LAYOUT;
     }
 
-    private static final long actual_length$OFFSET = 28;
+    private static final long actual_length$OFFSET = $LAYOUT.byteOffset(groupElement("actual_length"));
 
     /**
      * Offset for field:
@@ -385,7 +385,7 @@ public class usbdevfs_urb {
         return start_frame$LAYOUT;
     }
 
-    private static final long start_frame$OFFSET = 32;
+    private static final long start_frame$OFFSET = $LAYOUT.byteOffset(groupElement("start_frame"));
 
     /**
      * Offset for field:
@@ -429,7 +429,7 @@ public class usbdevfs_urb {
         return error_count$LAYOUT;
     }
 
-    private static final long error_count$OFFSET = 40;
+    private static final long error_count$OFFSET = $LAYOUT.byteOffset(groupElement("error_count"));
 
     /**
      * Offset for field:
@@ -473,7 +473,7 @@ public class usbdevfs_urb {
         return signr$LAYOUT;
     }
 
-    private static final long signr$OFFSET = 44;
+    private static final long signr$OFFSET = $LAYOUT.byteOffset(groupElement("signr"));
 
     /**
      * Offset for field:
@@ -517,7 +517,7 @@ public class usbdevfs_urb {
         return usercontext$LAYOUT;
     }
 
-    private static final long usercontext$OFFSET = 48;
+    private static final long usercontext$OFFSET = $LAYOUT.byteOffset(groupElement("usercontext"));
 
     /**
      * Offset for field:
@@ -561,7 +561,7 @@ public class usbdevfs_urb {
         return iso_frame_desc$LAYOUT;
     }
 
-    private static final long iso_frame_desc$OFFSET = 56;
+    private static final long iso_frame_desc$OFFSET = $LAYOUT.byteOffset(groupElement("iso_frame_desc"));
 
     /**
      * Offset for field:
@@ -622,7 +622,7 @@ public class usbdevfs_urb {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -630,7 +630,7 @@ public class usbdevfs_urb {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {

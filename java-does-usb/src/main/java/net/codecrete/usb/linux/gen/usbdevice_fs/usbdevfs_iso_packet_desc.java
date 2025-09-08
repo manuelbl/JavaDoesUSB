@@ -52,7 +52,7 @@ public class usbdevfs_iso_packet_desc {
         return length$LAYOUT;
     }
 
-    private static final long length$OFFSET = 0;
+    private static final long length$OFFSET = $LAYOUT.byteOffset(groupElement("length"));
 
     /**
      * Offset for field:
@@ -96,7 +96,7 @@ public class usbdevfs_iso_packet_desc {
         return actual_length$LAYOUT;
     }
 
-    private static final long actual_length$OFFSET = 4;
+    private static final long actual_length$OFFSET = $LAYOUT.byteOffset(groupElement("actual_length"));
 
     /**
      * Offset for field:
@@ -140,7 +140,7 @@ public class usbdevfs_iso_packet_desc {
         return status$LAYOUT;
     }
 
-    private static final long status$OFFSET = 8;
+    private static final long status$OFFSET = $LAYOUT.byteOffset(groupElement("status"));
 
     /**
      * Offset for field:
@@ -201,7 +201,7 @@ public class usbdevfs_iso_packet_desc {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, Arena arena, Consumer<MemorySegment> cleanup) {
@@ -209,7 +209,7 @@ public class usbdevfs_iso_packet_desc {
     }
 
     /**
-     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction) (if any).
+     * Reinterprets {@code addr} using target {@code arena} and {@code cleanupAction} (if any).
      * The returned segment has size {@code elementCount * layout().byteSize()}
      */
     public static MemorySegment reinterpret(MemorySegment addr, long elementCount, Arena arena, Consumer<MemorySegment> cleanup) {
