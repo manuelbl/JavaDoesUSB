@@ -64,7 +64,8 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected EndpointOutputStream(UsbDeviceImpl device, int endpointNumber, int bufferSize) {
         this.device = device;
         this.endpointNumber = endpointNumber;
-        arena = Arena.ofShared();
+        //arena = Arena.ofShared();  // not supported by GraalVM
+        arena = Arena.ofAuto();
 
         packetSize = device.getEndpoint(UsbDirection.OUT, endpointNumber).getPacketSize();
 
@@ -111,7 +112,7 @@ public abstract class EndpointOutputStream extends OutputStream {
         device = null;
         availableTransferQueue.clear();
         currentTransfer = null;
-        arena.close();
+        //arena.close();
     }
 
     @Override

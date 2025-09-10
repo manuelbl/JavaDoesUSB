@@ -109,11 +109,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -129,15 +125,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(QueryInterface.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(QueryInterface.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -211,11 +198,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -229,15 +212,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(AddRef.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(AddRef.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -311,11 +285,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -329,15 +299,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(Release.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(Release.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -499,11 +460,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, int _x2, MemorySegment _x3);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -520,15 +477,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(Probe.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(Probe.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -602,11 +550,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, int _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -622,15 +566,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(Start.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(Start.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -704,11 +639,7 @@ public class IOCFPlugInInterfaceStruct {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -722,15 +653,6 @@ public class IOCFPlugInInterfaceStruct {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(Stop.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(Stop.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 

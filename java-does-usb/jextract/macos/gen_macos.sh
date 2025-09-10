@@ -79,3 +79,7 @@ $JEXTRACT --output ../../src/main/java \
   --target-package net.codecrete.usb.macos.gen.mach \
   --include-function mach_error_string \
   $SDK_DIR/usr/include/mach/mach.h
+
+sed -i '' -E -f remove_fp_upcall.sed ../../src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBDeviceStruct187.java
+sed -i '' -E -f remove_fp_upcall.sed ../../src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBInterfaceStruct190.java
+sed -i '' -E -f remove_fp_upcall.sed ../../src/main/java/net/codecrete/usb/macos/gen/iokit/IOCFPlugInInterfaceStruct.java

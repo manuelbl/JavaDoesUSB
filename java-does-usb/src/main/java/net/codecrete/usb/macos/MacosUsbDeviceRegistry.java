@@ -12,21 +12,16 @@ import net.codecrete.usb.common.ScopeCleanup;
 import net.codecrete.usb.common.UsbDeviceRegistry;
 import net.codecrete.usb.macos.gen.corefoundation.CoreFoundation;
 import net.codecrete.usb.macos.gen.iokit.IOKit;
+import net.codecrete.usb.macos.gen.iokit.IOServiceAddMatchingNotification$callback;
 
 import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.macos.CoreFoundationHelper.createCFStringRef;
@@ -86,10 +81,8 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
                 CoreFoundation.CFRunLoopAddSource(runLoop, runLoopSource, IOKit.kCFRunLoopDefaultMode());
 
                 // setup notification for connected devices
-                var onDeviceConnectedMH = MethodHandles.lookup().findVirtual(MacosUsbDeviceRegistry.class,
-                        "onDevicesConnected", MethodType.methodType(void.class, MemorySegment.class, int.class));
                 var deviceConnectedIter = setupNotification(arena, notifyPort, IOKit.kIOFirstMatchNotification(),
-                        onDeviceConnectedMH);
+                        this::onDevicesConnected);
 
                 // iterate current devices in order to arm the notifications (and build initial device list)
                 var deviceList = new ArrayList<UsbDevice>();
@@ -97,10 +90,8 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
                 setInitialDeviceList(deviceList);
 
                 // setup notification for disconnected devices
-                var onDeviceDisconnectedMH = MethodHandles.lookup().findVirtual(MacosUsbDeviceRegistry.class,
-                        "onDevicesDisconnected", MethodType.methodType(void.class, MemorySegment.class, int.class));
                 var deviceDisconnectedIter = setupNotification(arena, notifyPort, IOKit.kIOTerminatedNotification(),
-                        onDeviceDisconnectedMH);
+                        this::onDevicesDisconnected);
 
                 // iterate current devices in order to arm the notifications
                 onDevicesDisconnected(NULL, deviceDisconnectedIter);
@@ -218,14 +209,13 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
     }
 
     private int setupNotification(Arena arena, MemorySegment notifyPort, MemorySegment notificationType,
-                                  MethodHandle callback) {
+                                  IOServiceAddMatchingNotification$callback.Function callback) {
 
         // new matching dictionary for (dis)connected device notifications (NOSONAR)
         var matchingDict = IOKit.IOServiceMatching(IOKit.kIOUSBDeviceClassName());
 
         // create callback stub
-        var onDeviceCallbackStub = Linker.nativeLinker().upcallStub(callback.bindTo(this),
-                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT), Arena.global());
+        var onDeviceCallbackStub = IOServiceAddMatchingNotification$callback.allocate(callback, Arena.global());
 
         // Set up a notification to be called when a device is first matched / terminated by I/O Kit.
         // This method consumes the matchingDict reference.

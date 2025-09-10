@@ -166,11 +166,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -186,15 +182,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(QueryInterface.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(QueryInterface.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -268,11 +255,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -286,15 +269,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(AddRef.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(AddRef.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -368,11 +342,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -386,15 +356,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(Release.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(Release.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -468,11 +429,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -487,15 +444,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(CreateDeviceAsyncEventSource.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(CreateDeviceAsyncEventSource.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -569,11 +517,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            MemorySegment apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_POINTER,
@@ -587,15 +531,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceAsyncEventSource.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceAsyncEventSource.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -669,11 +604,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -688,15 +619,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(CreateDeviceAsyncPort.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(CreateDeviceAsyncPort.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -770,11 +692,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -788,15 +706,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceAsyncPort.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceAsyncPort.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -870,11 +779,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -888,15 +793,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceOpen.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceOpen.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -970,11 +866,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -988,15 +880,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceClose.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceClose.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1070,11 +953,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1089,15 +968,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceClass.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceClass.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1171,11 +1041,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1190,15 +1056,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceSubClass.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceSubClass.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1272,11 +1129,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1291,15 +1144,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceProtocol.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceProtocol.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1373,11 +1217,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1392,15 +1232,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceVendor.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceVendor.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1474,11 +1305,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1493,15 +1320,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceProduct.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceProduct.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1575,11 +1393,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1594,15 +1408,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceReleaseNumber.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceReleaseNumber.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1676,11 +1481,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1695,15 +1496,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceAddress.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceAddress.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1777,11 +1569,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1796,15 +1584,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceBusPowerAvailable.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceBusPowerAvailable.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1878,11 +1657,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1897,15 +1672,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetDeviceSpeed.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetDeviceSpeed.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -1979,11 +1745,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -1998,15 +1760,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetNumberOfConfigurations.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetNumberOfConfigurations.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2080,11 +1833,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2099,15 +1848,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetLocationID.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetLocationID.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2181,11 +1921,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, byte _x1, MemorySegment _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2201,15 +1937,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetConfigurationDescriptorPtr.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetConfigurationDescriptorPtr.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2283,11 +2010,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2302,15 +2025,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetConfiguration.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetConfiguration.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2384,11 +2098,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, byte _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2403,15 +2113,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(SetConfiguration.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(SetConfiguration.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2485,11 +2186,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2505,15 +2202,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(GetBusFrameNumber.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(GetBusFrameNumber.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2587,11 +2275,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2605,15 +2289,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(ResetDevice.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(ResetDevice.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2687,11 +2362,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2706,15 +2377,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(DeviceRequest.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(DeviceRequest.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2788,11 +2450,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2809,15 +2467,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(DeviceRequestAsync.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(DeviceRequestAsync.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2891,11 +2540,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -2911,15 +2556,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(CreateInterfaceIterator.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(CreateInterfaceIterator.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -2993,11 +2629,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3011,15 +2643,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceOpenSeize.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceOpenSeize.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3093,11 +2716,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3112,15 +2731,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(DeviceRequestTO.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(DeviceRequestTO.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3194,11 +2804,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1, MemorySegment _x2, MemorySegment _x3);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3215,15 +2821,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(DeviceRequestAsyncTO.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(DeviceRequestAsyncTO.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3297,11 +2894,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, byte _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3316,15 +2909,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceSuspend.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceSuspend.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3398,11 +2982,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3416,15 +2996,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceAbortPipeZero.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceAbortPipeZero.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3498,11 +3069,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3517,15 +3084,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBGetManufacturerStringIndex.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBGetManufacturerStringIndex.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3599,11 +3157,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3618,15 +3172,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBGetProductStringIndex.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBGetProductStringIndex.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3700,11 +3245,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, MemorySegment _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3719,15 +3260,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBGetSerialNumberStringIndex.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBGetSerialNumberStringIndex.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
@@ -3801,11 +3333,7 @@ public class IOUSBDeviceStruct187 {
         }
 
         /**
-         * The function pointer signature, expressed as a functional interface
          */
-        public interface Function {
-            int apply(MemorySegment _x0, int _x1);
-        }
 
         private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
             IOKit.C_INT,
@@ -3820,15 +3348,6 @@ public class IOUSBDeviceStruct187 {
             return $DESC;
         }
 
-        private static final MethodHandle UP$MH = IOKit.upcallHandle(USBDeviceReEnumerate.Function.class, "apply", $DESC);
-
-        /**
-         * Allocates a new upcall stub, whose implementation is defined by {@code fi}.
-         * The lifetime of the returned segment is managed by {@code arena}
-         */
-        public static MemorySegment allocate(USBDeviceReEnumerate.Function fi, Arena arena) {
-            return Linker.nativeLinker().upcallStub(UP$MH.bindTo(fi), $DESC, arena);
-        }
 
         private static final MethodHandle DOWN$MH = Linker.nativeLinker().downcallHandle($DESC);
 
