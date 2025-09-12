@@ -47,7 +47,7 @@ Args = --enable-native-access=ALL-UNNAMED -H:ConfigurationFileDirectories=config
 ```
 
 Note the last word of the line. In this case, it is `macos`. Change this to
-`linux` or `windows` if needed. (Windows is yet to come.)
+`linux` or `windows` if needed.
 
 In your own Maven project, you might also need to move the file or rather rename
 directory. It must be named according to the pattern
