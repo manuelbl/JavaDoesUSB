@@ -1,6 +1,6 @@
 # Application for Testing the GraalVM Configuration
 
-## Collection Reachability Data
+## Collect Reachability Data
 
 Reachability data can be collected by running the unit test
 of the _java-does-usb_ project:
