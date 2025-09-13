@@ -149,7 +149,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <argLine>--enable-native-access=net.codecrete.usb</argLine>
+                    <argLine>--enable-native-access=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
             <plugin>
