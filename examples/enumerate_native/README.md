@@ -10,27 +10,6 @@ this _Java Does USB_ library.
 
 - [GraalVM](https://www.graalvm.org/) 25 or higher
 - [Maven](https://maven.apache.org/) 3.9 or higher
-- Latest snapshot of _Java Does USB_
-
-
-#### Java Does USB Snapshot
-
-Check out the latest version of _Java Does USB_ and build it:
-
-```shell
-git clone https://github.com/manuelbl/JavaDoesUSB.git
-cd JavaDoesUSB/java-does-usb
-mvn clean install -DskipTests
-```
-
-The installation requires a valid GPG key pair. If you don't have one,
-create it with and do not set a password:
-
-```shell
-gpg --gen-key
-```
-
-The full name and email address can be anyone's.
 
 
 ### Preparation
