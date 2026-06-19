@@ -36,7 +36,7 @@ directory. It must be named according to the pattern
 ### Building
 
 ```shell
-mvn -Dnative package
+mvn -Pnative package
 ```
 
 

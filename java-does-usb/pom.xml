@@ -206,7 +206,7 @@
                 <plugin>
                     <groupId>net.codecrete.windows-api</groupId>
                     <artifactId>windowsapi-maven-plugin</artifactId>
-                    <version>0.8.2</version>
+                    <version>0.8.5</version>
                 </plugin>
             </plugins>
         </pluginManagement>
