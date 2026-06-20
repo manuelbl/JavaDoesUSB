@@ -46,7 +46,7 @@ jobs:
         run: ./mvnw $MAVEN_ARGS clean compile
         working-directory: ./examples/enumerate
       - name: Example "enumerate" (Kotlin)
-        run: ./mvnw $MAVEN_ARGS clean package
+        run: ./gradlew clean build
         working-directory: ./examples/enumerate_kotlin
       - name: Example "monitor"
         run: ./mvnw $MAVEN_ARGS clean compile
