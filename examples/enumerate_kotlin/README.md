@@ -4,15 +4,15 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## Prerequisites
 
-- Java 22
-- Apache Maven
+- Java 25
+- Gradle
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 22 or higher
+### Install Java 25 or higher
 
-Check that Java 22 or higher is installed:
+Check that Java 25 or higher is installed:
 
 ```shell
 $ java -version
@@ -25,22 +25,16 @@ If not, download and install it, e.g. from [Azul](https://www.azul.com/downloads
 Check that *Maven* is installed:
 
 ```shell
-$ mvn -version
+$ gradle -version
 ```
 
 If it is not present, install it, typically using package manager like *Homebrew* on macOS, *Chocolately* on Windows and *apt* on Linux.
 
-### Build a self-contained jar file
+### Build and run the program
 
 ```shell
 $ cd JavaDoesUSB/examples/enumerate_kotlin
-$ mvn clean package
-```
-
-### Run the jar
-
-```shell
-$ java --enable-native-access=ALL-UNNAMED -jar target/enumerate-1.2.1-jar-with-dependencies.jar
+$ gradle run
 Device:
   VID: 0xcafe
   PID: 0xceaf
