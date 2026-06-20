@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: '23'
+          java-version: '25'
       - name: Configure unit test GPG key
         run: |
           echo -n "$UNIT_TEST_SIGNING_KEY" | base64 --decode | gpg --import

@@ -9,8 +9,8 @@
     <version>1.2.1</version>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonatype-central-publishing.version>0.8.0</sonatype-central-publishing.version>
     </properties>
@@ -131,9 +131,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.12.1</version>
                 <configuration>
-                    <release>23</release>
-                    <source>23</source>
-                    <target>23</target>
+                    <release>25</release>
+                    <source>25</source>
+                    <target>25</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -157,7 +157,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <release>23</release>
+                    <release>25</release>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <excludePackageNames>net.codecrete.usb.linux.gen.*:net.codecrete.usb.macos.gen.*:windows.*:system</excludePackageNames>
                 </configuration>

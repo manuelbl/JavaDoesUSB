@@ -117,7 +117,7 @@ USB devices can implement special control requests to instruct Windows to automa
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
-The implementation runs on both Windows for Intel/AMD and ARM processors. Few OpenJDK distributions support Windows on ARM, and they do not support all recent versions of Java. [Eclipse Temurin](https://adoptium.net/temurin/releases/?os=windows&arch=aarch64&version=23) has released a version for Java 23.
+The implementation runs on both Windows for Intel/AMD and ARM processors.
 
 
 
