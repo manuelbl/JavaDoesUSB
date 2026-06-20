@@ -11,7 +11,7 @@
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/monitor_kotlin</url>
 
   <properties>
-    <kotlin.version>1.9.22</kotlin.version>
+    <kotlin.version>2.3.21</kotlin.version>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <main.class>net.codecrete.usb.examples.MonitorKt</main.class>

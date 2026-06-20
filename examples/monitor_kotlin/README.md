@@ -4,15 +4,15 @@ This sample enumerates the connected USB devices and provides information about 
 
 ## Prerequisites
 
-- Java 22
+- Java 25
 - Apache Maven
 - 64-bit operating system (Windows, macOS, Linux)
 
 ## How to run
 
-### Install Java 22 or higher
+### Install Java 25 or higher
 
-Check that Java 22 or higher is installed:
+Check that Java 25 or higher is installed:
 
 ```shell
 $ java -version
