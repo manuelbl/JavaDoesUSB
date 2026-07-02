@@ -344,22 +344,31 @@ public abstract class EndpointOutputStream extends OutputStream {
      * @return transfer instance ready for use
      */
     private Transfer waitForAvailableTransfer() {
-        while (true) {
-            try {
-                var transfer = availableTransferQueue.take();
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // inside the loop (which would make the next take() throw immediately and
+        // busy-spin). Re-assert once a transfer has actually become available.
+        var wasInterrupted = false;
+        try {
+            while (true) {
+                try {
+                    var transfer = availableTransferQueue.take();
 
-                // check for error
-                var result = transfer.resultCode();
-                if (result != 0 && !hasError) {
-                    transfer.setResultCode(0);
-                    device.throwOSException(result, "error occurred while transmitting to endpoint %d", endpointNumber);
+                    // check for error
+                    var result = transfer.resultCode();
+                    if (result != 0 && !hasError) {
+                        transfer.setResultCode(0);
+                        device.throwOSException(result, "error occurred while transmitting to endpoint %d", endpointNumber);
+                    }
+
+                    return transfer;
+
+                } catch (InterruptedException _) {
+                    wasInterrupted = true;
                 }
-
-                return transfer;
-
-            } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
             }
+        } finally {
+            if (wasInterrupted)
+                Thread.currentThread().interrupt();
         }
     }
 

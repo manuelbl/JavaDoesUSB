@@ -140,22 +140,31 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         // the related information will be available with a delay. So for composite functions, several
         // retries might be needed until the device path is available.
         var numRetries = 30; // 30 x 100ms
-        while (true) {
-            if (claimInterfaceSynchronized(interfaceNumber))
-                return; // success
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // (which would make the remaining backoff sleeps throw immediately and defeat
+        // the retry delay). Re-assert when leaving the method.
+        var wasInterrupted = false;
+        try {
+            while (true) {
+                if (claimInterfaceSynchronized(interfaceNumber))
+                    return; // success
 
-            numRetries -= 1;
-            if (numRetries == 0)
-                throw new UsbException("claiming interface failed (function has no device path / interface GUID, might be missing WinUSB driver)");
+                numRetries -= 1;
+                if (numRetries == 0)
+                    throw new UsbException("claiming interface failed (function has no device path / interface GUID, might be missing WinUSB driver)");
 
-            // sleep and retry
-            try {
-                LOG.log(DEBUG, "Sleeping for 100ms...");
-                //noinspection BusyWait
-                Thread.sleep(100);
-            } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
+                // sleep and retry
+                try {
+                    LOG.log(DEBUG, "Sleeping for 100ms...");
+                    //noinspection BusyWait
+                    Thread.sleep(100);
+                } catch (InterruptedException _) {
+                    wasInterrupted = true;
+                }
             }
+        } finally {
+            if (wasInterrupted)
+                Thread.currentThread().interrupt();
         }
     }
 

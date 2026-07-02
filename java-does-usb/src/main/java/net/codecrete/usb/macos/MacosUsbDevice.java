@@ -98,7 +98,7 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         return claimedInterfaces != null;
     }
 
-    @SuppressWarnings("java:S2276")
+    @SuppressWarnings({"java:S2276", "java:S2142"})
     @Override
     public synchronized void open() {
         checkIsClosed("device is already open");
@@ -107,6 +107,10 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         var duration = System.currentTimeMillis() - discoveryTime;
         var numTries = duration < 1000 ? 4 : 1;
         var ret = 0;
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // (which would make the remaining backoff sleeps throw immediately and defeat
+        // the retry delay). Re-assert once the retries are done.
+        var wasInterrupted = false;
         while (numTries > 0) {
             numTries -= 1;
             ret = IoKitUsb.USBDeviceOpenSeize(device);
@@ -117,9 +121,11 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             try {
                 Thread.sleep(90);
             } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
+                wasInterrupted = true;
             }
         }
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
         if (ret != 0)
             throwException(ret, "opening USB device failed");
 

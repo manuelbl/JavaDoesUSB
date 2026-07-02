@@ -387,32 +387,45 @@ public abstract class UsbDeviceImpl implements UsbDevice {
         }
     }
 
-    @SuppressWarnings("java:S2273")
+    @SuppressWarnings({"java:S2273", "java:S2142"})
     private static void waitNoTimeout(Transfer transfer) {
-        // wait for transfer
+        // wait for transfer.
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // inside the loop (which would make the next wait() throw immediately and
+        // busy-spin). Re-assert once the transfer has actually completed.
+        var wasInterrupted = false;
         while (transfer.resultSize() == -1) {
             try {
                 transfer.wait();
             } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
+                wasInterrupted = true;
             }
         }
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
     }
 
-    @SuppressWarnings("java:S2273")
+    @SuppressWarnings({"java:S2273", "java:S2142"})
     private static boolean waitWithTimeout(Transfer transfer, int timeout) {
-        // wait for transfer to complete, or abort when timeout occurs
+        // wait for transfer to complete, or abort when timeout occurs.
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // inside the loop (which would make the next wait() throw immediately and
+        // busy-spin). The remaining timeout is recomputed on both the normal and the
+        // interrupted path, so the wait stays bounded by the original expiration.
         var expiration = System.currentTimeMillis() + timeout;
         long remainingTimeout = timeout;
+        var wasInterrupted = false;
         while (remainingTimeout > 0 && transfer.resultSize() == -1) {
             try {
                 transfer.wait(remainingTimeout);
-                remainingTimeout = expiration - System.currentTimeMillis();
-
             } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
+                wasInterrupted = true;
             }
+            remainingTimeout = expiration - System.currentTimeMillis();
         }
+
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
 
         return remainingTimeout <= 0;
     }

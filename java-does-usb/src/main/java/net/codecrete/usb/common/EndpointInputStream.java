@@ -201,14 +201,23 @@ public abstract class EndpointInputStream extends InputStream {
     }
 
     private Transfer waitForCompletedTransfer() {
-        while (true) {
-            try {
-                var transfer = completedTransferQueue.take();
-                numOutstandingTransfers -= 1;
-                return transfer;
-            } catch (InterruptedException _) {
-                Thread.currentThread().interrupt();
+        // Defer interruption: keep a local flag instead of re-asserting the interrupt
+        // inside the loop (which would make the next take() throw immediately and
+        // busy-spin). Re-assert once the completion has actually arrived.
+        var wasInterrupted = false;
+        try {
+            while (true) {
+                try {
+                    var transfer = completedTransferQueue.take();
+                    numOutstandingTransfers -= 1;
+                    return transfer;
+                } catch (InterruptedException _) {
+                    wasInterrupted = true;
+                }
             }
+        } finally {
+            if (wasInterrupted)
+                Thread.currentThread().interrupt();
         }
     }
 
