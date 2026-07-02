@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.lang.System.Logger.Level.ERROR;
+import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
@@ -53,6 +55,8 @@ class MacosAsyncTask {
      * Singleton instance of background task.
      */
     static final MacosAsyncTask INSTANCE = new MacosAsyncTask();
+
+    private static final System.Logger LOG = System.getLogger(MacosAsyncTask.class.getName());
 
     private final ReentrantLock asyncIoLock = new ReentrantLock();
     private final Condition asyncIoReady = asyncIoLock.newCondition();
@@ -193,14 +197,29 @@ class MacosAsyncTask {
     @SuppressWarnings("java:S1144")
     private void asyncIOCompleted(MemorySegment refcon, int result, MemorySegment arg0) {
 
-        MacosTransfer transfer;
-        synchronized (this) {
-            transfer = transfersById.remove(refcon.address());
-        }
+        try {
+            MacosTransfer transfer;
+            synchronized (this) {
+                transfer = transfersById.remove(refcon.address());
+            }
 
-        transfer.setResultCode(result);
-        transfer.setResultSize((int) arg0.address());
-        transfer.completion().completed(transfer);
+            if (transfer == null) {
+                // A completion for an unknown transfer ID (e.g. a duplicate or spurious
+                // callback). Ignore it rather than dereferencing null.
+                LOG.log(WARNING, "Ignoring async IO completion for unknown transfer ID {0}", refcon.address());
+                return;
+            }
+
+            transfer.setResultCode(result);
+            transfer.setResultSize((int) arg0.address());
+            transfer.completion().completed(transfer);
+
+        } catch (Exception e) {
+            // This method is a native upcall running on the process-wide async IO thread.
+            // Any exception escaping into CFRunLoopRun() would kill that thread and hang
+            // all async transfers for the entire library, so nothing must escape here.
+            LOG.log(ERROR, "Unexpected exception while handling async IO completion", e);
+        }
     }
 
     /**
