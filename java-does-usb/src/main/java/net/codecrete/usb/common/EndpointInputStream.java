@@ -16,7 +16,9 @@ import java.io.InputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 /**
@@ -35,6 +37,13 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * </p>
  */
 public abstract class EndpointInputStream extends InputStream {
+
+    private static final System.Logger LOG = System.getLogger(EndpointInputStream.class.getName());
+
+    // Maximum time (ms) to wait for outstanding transfers to complete during teardown.
+    // A completion that is never delivered (e.g. after an unplug) then degrades to a
+    // logged warning instead of a permanent hang.
+    private static final long TEARDOWN_TIMEOUT_MS = 1000;
 
     protected UsbDeviceImpl device;
     protected final int endpointNumber;
@@ -212,10 +221,36 @@ public abstract class EndpointInputStream extends InputStream {
         completedTransferQueue.add(transfer);
     }
 
+    @SuppressWarnings("java:S2142")
     private void collectOutstandingTransfers() {
-        // wait until completion handlers have been called
-        while (numOutstandingTransfers > 0)
-            waitForCompletedTransfer();
+        // Wait until the completion handlers have been called. This is a teardown path,
+        // so the wait is bounded: if a completion is never delivered (device unplugged,
+        // or the completion is lost in a source-removal race), abandon the transfer and
+        // log a warning instead of blocking the application thread forever.
+        var deadline = System.currentTimeMillis() + TEARDOWN_TIMEOUT_MS;
+        var wasInterrupted = false;
+
+        while (numOutstandingTransfers > 0) {
+            var remaining = deadline - System.currentTimeMillis();
+            if (remaining <= 0) {
+                LOG.log(WARNING,
+                        "abandoning {0} outstanding transfer(s) during input stream teardown - no completion within {1} ms",
+                        numOutstandingTransfers, TEARDOWN_TIMEOUT_MS);
+                break;
+            }
+
+            try {
+                if (completedTransferQueue.poll(remaining, TimeUnit.MILLISECONDS) != null)
+                    numOutstandingTransfers -= 1;
+            } catch (InterruptedException _) {
+                // defer the interrupt: keep polling the remaining time without re-setting
+                // the flag (avoids a busy-spin), then re-assert it once we are done
+                wasInterrupted = true;
+            }
+        }
+
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
 
         completedTransferQueue.clear();
         currentTransfer = null;

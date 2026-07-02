@@ -16,7 +16,9 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 /**
@@ -37,6 +39,13 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
  * </p>
  */
 public abstract class EndpointOutputStream extends OutputStream {
+
+    private static final System.Logger LOG = System.getLogger(EndpointOutputStream.class.getName());
+
+    // Maximum time (ms) to wait for outstanding transfers to complete during teardown.
+    // A completion that is never delivered (e.g. after an unplug) then degrades to a
+    // logged warning instead of a permanent hang.
+    private static final long TEARDOWN_TIMEOUT_MS = 1000;
 
     protected UsbDeviceImpl device;
     protected final int endpointNumber;
@@ -104,15 +113,128 @@ public abstract class EndpointOutputStream extends OutputStream {
         if (isClosed())
             return;
 
-        if (!hasError)
-            flush();
-        else
-            waitForOutstandingTransfers();
+        // Teardown path: every wait is bounded by a single deadline so a lost completion
+        // (device unplugged, or completion dropped in a source-removal race) degrades to a
+        // logged warning instead of hanging the application thread. Unlike the public
+        // flush(), this must not route through the unbounded waits.
+        var deadline = System.currentTimeMillis() + TEARDOWN_TIMEOUT_MS;
 
-        device = null;
-        availableTransferQueue.clear();
-        currentTransfer = null;
-        //arena.close();
+        try {
+            if (!hasError) {
+                // best-effort: transmit any remaining buffered data (and a ZLP if needed)
+                if (writeOffset > 0)
+                    submitForClose(writeOffset, deadline);
+                if (needsZlp && currentTransfer != null)
+                    submitForClose(0, deadline);
+            }
+
+            drainOutstandingTransfers(deadline);
+
+        } catch (Exception e) {
+            // teardown must not fail; data-path errors are already surfaced by write()/flush()
+            LOG.log(WARNING, "error while closing output stream - ignoring", e);
+
+        } finally {
+            device = null;
+            availableTransferQueue.clear();
+            currentTransfer = null;
+            //arena.close();
+        }
+    }
+
+    /**
+     * Submits the current transfer during teardown and acquires a replacement,
+     * both bounded by the given deadline.
+     * <p>
+     * Unlike {@link #submitTransfer(int)} this does not recurse into {@link #close()} on error,
+     * and it does not block indefinitely when acquiring the next transfer instance.
+     * </p>
+     *
+     * @param size     size of data to be transmitted
+     * @param deadline absolute deadline (ms since epoch) for acquiring the next transfer
+     */
+    private void submitForClose(int size, long deadline) {
+        currentTransfer.setDataSize(size);
+        submitTransferOut(currentTransfer);
+
+        synchronized (this) {
+            numOutstandingTransfers += 1;
+        }
+
+        needsZlp = size == packetSize;
+        writeOffset = 0;
+        // if no transfer becomes available within the deadline, currentTransfer stays null,
+        // the drain below still bounded-waits for the in-flight transfer to complete
+        currentTransfer = pollAvailableTransfer(deadline);
+    }
+
+    /**
+     * Waits for all outstanding transfers to complete, bounded by the given deadline.
+     * <p>
+     * If a completion is not delivered in time, the remaining transfers are abandoned and a
+     * warning is logged.
+     * </p>
+     *
+     * @param deadline absolute deadline (ms since epoch)
+     */
+    private void drainOutstandingTransfers(long deadline) {
+        int numTransfers;
+        synchronized (this) {
+            numTransfers = numOutstandingTransfers + availableTransferQueue.size();
+        }
+
+        for (var i = 0; i < numTransfers; i++) {
+            if (pollAvailableTransfer(deadline) == null) {
+                int abandoned;
+                synchronized (this) {
+                    abandoned = numOutstandingTransfers;
+                }
+                LOG.log(WARNING,
+                        "abandoning {0} outstanding transfer(s) during output stream teardown - no completion within {1} ms",
+                        abandoned, TEARDOWN_TIMEOUT_MS);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Waits until a transfer instance is available for use, bounded by the given deadline.
+     *
+     * @param deadline absolute deadline (ms since epoch)
+     * @return transfer instance ready for use, or {@code null} if the deadline expired
+     */
+    private Transfer pollAvailableTransfer(long deadline) {
+        var wasInterrupted = false;
+        try {
+            while (true) {
+                var remaining = deadline - System.currentTimeMillis();
+                if (remaining <= 0)
+                    return null;
+
+                try {
+                    var transfer = availableTransferQueue.poll(remaining, TimeUnit.MILLISECONDS);
+                    if (transfer == null)
+                        return null;
+
+                    // surface a transfer error unless we are already in the error path
+                    var result = transfer.resultCode();
+                    if (result != 0 && !hasError) {
+                        transfer.setResultCode(0);
+                        device.throwOSException(result, "error occurred while transmitting to endpoint %d", endpointNumber);
+                    }
+
+                    return transfer;
+
+                } catch (InterruptedException _) {
+                    // defer the interrupt: keep polling the remaining time without re-setting
+                    // the flag (avoids a busy-spin), then re-assert it once we are done
+                    wasInterrupted = true;
+                }
+            }
+        } finally {
+            if (wasInterrupted)
+                Thread.currentThread().interrupt();
+        }
     }
 
     @Override
