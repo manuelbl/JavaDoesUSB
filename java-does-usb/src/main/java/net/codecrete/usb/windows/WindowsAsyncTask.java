@@ -153,6 +153,23 @@ class WindowsAsyncTask {
     }
 
     /**
+     * Undoes the registration performed by {@link #prepareForSubmission(WindowsTransfer)}.
+     * <p>
+     * Must be called if the native submission of a prepared transfer fails synchronously.
+     * In that case, no completion packet will ever be posted for the transfer, so its map
+     * entry would leak and the OVERLAPPED struct would never return to the pool unless
+     * they are cleaned up here.
+     * </p>
+     *
+     * @param transfer transfer whose submission failed
+     */
+    synchronized void submissionFailed(WindowsTransfer transfer) {
+        requestsByOverlapped.remove(transfer.overlapped().address());
+        availableOverlappedStructs.add(transfer.overlapped());
+        transfer.setOverlapped(null);
+    }
+
+    /**
      * Completes the transfer by calling the completion handler.
      *
      * @param overlappedAddr address of OVERLAPPED struct

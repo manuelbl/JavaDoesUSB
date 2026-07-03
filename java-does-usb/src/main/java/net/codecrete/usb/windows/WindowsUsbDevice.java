@@ -404,8 +404,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             if (WinUsb_ControlTransfer(errorState, intfHandle.winusbHandle, setupPacket.segment(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != ERROR_IO_PENDING)
+                if (err != ERROR_IO_PENDING) {
+                    asyncTask.submissionFailed(transfer);
                     throwException(err, "submitting control transfer failed");
+                }
             }
         }
     }
@@ -422,8 +424,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             if (WinUsb_WritePipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != ERROR_IO_PENDING)
+                if (err != ERROR_IO_PENDING) {
+                    asyncTask.submissionFailed(transfer);
                     throwException(err, "submitting transfer OUT failed");
+                }
             }
         }
     }
@@ -440,8 +444,10 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
             if (WinUsb_ReadPipe(errorState, intfHandle.winusbHandle, endpoint.endpointAddress(), transfer.data(),
                     transfer.dataSize(), NULL, transfer.overlapped()) == 0) {
                 var err = Win.getLastError(errorState);
-                if (err != ERROR_IO_PENDING)
+                if (err != ERROR_IO_PENDING) {
+                    asyncTask.submissionFailed(transfer);
                     throwException(err, "submitting transfer IN failed");
+                }
             }
         }
     }
