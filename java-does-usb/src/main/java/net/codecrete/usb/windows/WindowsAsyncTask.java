@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.System.Logger.Level.ERROR;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
@@ -43,6 +44,8 @@ import static windows.win32.system.threading.Constants.INFINITE;
  */
 @SuppressWarnings("java:S6548")
 class WindowsAsyncTask {
+
+    private static final System.Logger LOG = System.getLogger(WindowsAsyncTask.class.getName());
 
     /**
      * Singleton instance of background task.
@@ -154,16 +157,32 @@ class WindowsAsyncTask {
      *
      * @param overlappedAddr address of OVERLAPPED struct
      */
-    private synchronized void completeTransfer(long overlappedAddr) {
-        var transfer = requestsByOverlapped.remove(overlappedAddr);
-        if (transfer == null)
-            return;
+    private void completeTransfer(long overlappedAddr) {
+        WindowsTransfer transfer;
+        synchronized (this) {
+            transfer = requestsByOverlapped.remove(overlappedAddr);
+            if (transfer == null)
+                return;
 
-        transfer.setResultCode((int) OVERLAPPED.Internal(transfer.overlapped()));
-        transfer.setResultSize((int) OVERLAPPED.InternalHigh(transfer.overlapped()));
+            // the results must be read from the OVERLAPPED struct before it is
+            // returned to the pool and possibly reused by another submission
+            transfer.setResultCode((int) OVERLAPPED.Internal(transfer.overlapped()));
+            transfer.setResultSize((int) OVERLAPPED.InternalHigh(transfer.overlapped()));
 
-        availableOverlappedStructs.add(transfer.overlapped());
-        transfer.setOverlapped(null);
-        transfer.completion().completed(transfer);
+            availableOverlappedStructs.add(transfer.overlapped());
+            transfer.setOverlapped(null);
+        }
+
+        // The completion handler must be called without holding the lock: handlers acquire
+        // other monitors (transfer, device), and threads submitting transfers acquire this
+        // task's lock while holding those monitors, so calling handlers under the lock can
+        // deadlock.
+        try {
+            transfer.completion().completed(transfer);
+        } catch (Exception e) {
+            // This method runs on the process-wide async IO thread. Any exception escaping
+            // would kill that thread and hang all async transfers for the entire library.
+            LOG.log(ERROR, "Unexpected exception while handling async IO completion", e);
+        }
     }
 }
