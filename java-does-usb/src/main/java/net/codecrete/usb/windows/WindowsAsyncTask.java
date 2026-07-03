@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.windows;
 
+import net.codecrete.usb.UsbException;
 import windows.win32.system.io.OVERLAPPED;
 
 import java.lang.foreign.Arena;
@@ -23,6 +24,7 @@ import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 import static net.codecrete.usb.windows.Win.allocateErrorState;
 import static net.codecrete.usb.windows.WindowsUsbException.throwLastError;
+import static windows.win32.foundation.WIN32_ERROR.ERROR_OPERATION_ABORTED;
 import static windows.win32.system.io.Apis.CreateIoCompletionPort;
 import static windows.win32.system.io.Apis.GetQueuedCompletionStatus;
 import static windows.win32.system.threading.Constants.INFINITE;
@@ -66,8 +68,14 @@ class WindowsAsyncTask {
     private MemorySegment asyncIoCompletionPort = NULL;
 
     /**
+     * Indicates that the background task has terminated due to an unrecoverable error.
+     */
+    private boolean taskTerminated;
+
+    /**
      * Background task for handling asynchronous IO completions.
      */
+    @SuppressWarnings("java:S2189")
     private void asyncCompletionTask() {
 
         try (var arena = Arena.ofConfined()) {
@@ -78,20 +86,61 @@ class WindowsAsyncTask {
             var errorState = allocateErrorState(arena);
 
             while (true) {
-                overlappedHolder.set(ADDRESS, 0, NULL);
-                completionKeyHolder.set(JAVA_LONG, 0, 0);
+                try {
+                    overlappedHolder.set(ADDRESS, 0, NULL);
+                    completionKeyHolder.set(JAVA_LONG, 0, 0);
 
-                var res = GetQueuedCompletionStatus(errorState, asyncIoCompletionPort, numBytesHolder,
-                        completionKeyHolder, overlappedHolder, INFINITE);
-                var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
+                    var res = GetQueuedCompletionStatus(errorState, asyncIoCompletionPort, numBytesHolder,
+                            completionKeyHolder, overlappedHolder, INFINITE);
+                    var overlappedAddr = overlappedHolder.get(JAVA_LONG, 0);
 
-                if (res == 0 && overlappedAddr == 0)
-                    throwLastError(errorState, "internal error (SetupDiGetDeviceInterfaceDetailW)");
+                    // A null OVERLAPPED means no completion packet was dequeued (nothing posts
+                    // packets without an OVERLAPPED): the completion port itself has failed,
+                    // and no further completions will ever be delivered.
+                    if (overlappedAddr == 0) {
+                        var success = res != 0;
+                        throwLastError(errorState, "internal error (GetQueuedCompletionStatus, success: %s)", success);
+                    }
 
-                if (overlappedAddr == 0)
-                    return; // registry closing?
+                    completeTransfer(overlappedAddr);
 
-                completeTransfer(overlappedAddr);
+                } catch (Exception e) {
+                    LOG.log(ERROR, "USB async IO thread failed and is terminating; "
+                            + "all outstanding transfers will fail, and no further transfers are possible", e);
+                    failAllPendingTransfers();
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Fails all outstanding transfers and marks this task as terminated.
+     * <p>
+     * Called when the background task can no longer dispatch completions. Waiters blocked
+     * on the failed transfers wake up with an error result instead of hanging forever,
+     * and future submissions are rejected.
+     * </p>
+     */
+    private void failAllPendingTransfers() {
+        List<WindowsTransfer> pendingTransfers;
+        synchronized (this) {
+            taskTerminated = true;
+            pendingTransfers = new ArrayList<>(requestsByOverlapped.values());
+            requestsByOverlapped.clear();
+            availableOverlappedStructs.clear();
+            for (var transfer : pendingTransfers) {
+                transfer.setResultCode(ERROR_OPERATION_ABORTED);
+                transfer.setResultSize(0);
+                transfer.setOverlapped(null);
+            }
+        }
+
+        for (var transfer : pendingTransfers) {
+            try {
+                transfer.completion().completed(transfer);
+            } catch (Exception e) {
+                LOG.log(ERROR, "Unexpected exception while handling async IO completion", e);
             }
         }
     }
@@ -139,6 +188,10 @@ class WindowsAsyncTask {
      * @param transfer transfer to prepare
      */
     synchronized void prepareForSubmission(WindowsTransfer transfer) {
+        if (taskTerminated)
+            throw new UsbException("USB async IO background thread has terminated due to an unrecoverable error; "
+                    + "USB transfers are no longer possible");
+
         MemorySegment overlapped;
         var size = availableOverlappedStructs.size();
         if (size == 0) {
