@@ -196,11 +196,29 @@ class LinuxAsyncTask {
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
             if (IO.ioctl(device.fileDescriptor(), SUBMITURB, urb, errorState) < 0) {
+                submissionFailed(transfer);
                 var action = endpointAddress >= 128 ? "reading from" : "writing to";
                 var endpoint = endpointAddress == 0 ? "control endpoint" : String.format("endpoint %d", endpointAddress);
                 throwLastError(errorState, "error occurred while %s %s", action, endpoint);
             }
         }
+    }
+
+    /**
+     * Undoes the registration performed by {@link #linkToUrb(LinuxTransfer)}.
+     * <p>
+     * Must be called if the {@code SUBMITURB} ioctl for a linked transfer fails. In that
+     * case, the kernel has not queued the URB and it will never be reaped, so its map
+     * entry would leak and the URB would never return to the pool unless they are
+     * cleaned up here.
+     * </p>
+     *
+     * @param transfer transfer whose submission failed
+     */
+    private void submissionFailed(LinuxTransfer transfer) {
+        transfersByURB.remove(transfer.urb);
+        availableURBs.add(transfer.urb);
+        transfer.urb = null;
     }
 
     private static int urbTransferType(UsbTransferType transferType) {
