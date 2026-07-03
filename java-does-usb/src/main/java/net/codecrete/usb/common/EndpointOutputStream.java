@@ -8,6 +8,7 @@
 package net.codecrete.usb.common;
 
 import net.codecrete.usb.UsbDirection;
+import net.codecrete.usb.UsbException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -15,8 +16,11 @@ import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static net.codecrete.usb.common.EndpointStreams.toIOException;
 
 import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -239,41 +243,57 @@ public abstract class EndpointOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        checkIsOpen();
+        ensureOpen();
 
-        currentTransfer.data().set(JAVA_BYTE, writeOffset, (byte) b);
-        writeOffset += 1;
-        if (writeOffset == transferSize)
-            submitTransfer(writeOffset);
+        try {
+            currentTransfer.data().set(JAVA_BYTE, writeOffset, (byte) b);
+            writeOffset += 1;
+            if (writeOffset == transferSize)
+                submitTransfer(writeOffset);
+
+        } catch (UsbException e) {
+            throw toIOException(e);
+        }
     }
 
     @Override
     public void write(byte @NotNull [] b, int off, int len) throws IOException {
-        checkIsOpen();
+        Objects.checkFromIndexSize(off, len, b.length);
+        ensureOpen();
 
-        while (len > 0) {
-            var chunkSize = Math.min(len, transferSize - writeOffset);
-            MemorySegment.copy(b, off, currentTransfer.data(), JAVA_BYTE, writeOffset, chunkSize);
-            writeOffset += chunkSize;
-            off += chunkSize;
-            len -= chunkSize;
+        try {
+            while (len > 0) {
+                var chunkSize = Math.min(len, transferSize - writeOffset);
+                MemorySegment.copy(b, off, currentTransfer.data(), JAVA_BYTE, writeOffset, chunkSize);
+                writeOffset += chunkSize;
+                off += chunkSize;
+                len -= chunkSize;
 
-            if (writeOffset == transferSize)
-                submitTransfer(writeOffset);
+                if (writeOffset == transferSize)
+                    submitTransfer(writeOffset);
+            }
+
+        } catch (UsbException e) {
+            throw toIOException(e);
         }
     }
 
     @Override
     public void flush() throws IOException {
-        checkIsOpen();
+        ensureOpen();
 
-        if (writeOffset > 0)
-            submitTransfer(writeOffset);
+        try {
+            if (writeOffset > 0)
+                submitTransfer(writeOffset);
 
-        if (needsZlp)
-            submitTransfer(0);
+            if (needsZlp)
+                submitTransfer(0);
 
-        waitForOutstandingTransfers();
+            waitForOutstandingTransfers();
+
+        } catch (UsbException e) {
+            throw toIOException(e);
+        }
     }
 
     /**
@@ -387,8 +407,8 @@ public abstract class EndpointOutputStream extends OutputStream {
     protected void configureEndpoint() {
     }
 
-    private void checkIsOpen() throws IOException {
+    private void ensureOpen() throws IOException {
         if (isClosed())
-            throw new IOException("endpoint output stream has been closed");
+            throw new IOException("output stream has been closed");
     }
 }

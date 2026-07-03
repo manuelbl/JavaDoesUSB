@@ -15,8 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static net.codecrete.usb.common.EndpointStreams.toIOException;
 
 import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -134,42 +137,64 @@ public abstract class EndpointInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        if (isClosed())
-            return -1;
+        ensureOpen();
 
-        if (available() == 0)
-            receiveMoreData();
+        try {
+            if (bufferedBytes() == 0)
+                receiveMoreData();
 
-        var b = currentTransfer.data().get(JAVA_BYTE, readOffset) & 0xff;
-        readOffset += 1;
-        return b;
+            var b = currentTransfer.data().get(JAVA_BYTE, readOffset) & 0xff;
+            readOffset += 1;
+            return b;
+
+        } catch (UsbException e) {
+            throw toIOException(e);
+        }
     }
 
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
-        if (isClosed())
-            return -1;
+        Objects.checkFromIndexSize(off, len, b.length);
+        ensureOpen();
+        if (len == 0)
+            return 0;
 
-        var numRead = 0;
-        do {
-            if (available() == 0)
-                receiveMoreData();
+        try {
+            var numRead = 0;
+            do {
+                if (bufferedBytes() == 0)
+                    receiveMoreData();
 
-            // copy data to receiving buffer
-            var n = Math.min(len - numRead, currentTransfer.resultSize() - readOffset);
-            MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), (long) off + numRead, n);
-            readOffset += n;
-            numRead += n;
+                // copy data to receiving buffer
+                var n = Math.min(len - numRead, currentTransfer.resultSize() - readOffset);
+                MemorySegment.copy(currentTransfer.data(), readOffset, MemorySegment.ofArray(b), (long) off + numRead, n);
+                readOffset += n;
+                numRead += n;
 
-        } while (numRead < len && hasMoreTransfers());
+            } while (numRead < len && hasMoreTransfers());
 
-        return numRead;
+            return numRead;
+
+        } catch (UsbException e) {
+            throw toIOException(e);
+        }
     }
 
-    @SuppressWarnings("RedundantThrows")
     @Override
     public int available() throws IOException {
+        ensureOpen();
+        return bufferedBytes();
+    }
+
+    // Bytes buffered in the current transfer, without a closed-stream check.
+    // Callers on the read path guard with ensureOpen() first.
+    private int bufferedBytes() {
         return currentTransfer.resultSize() - readOffset;
+    }
+
+    private void ensureOpen() throws IOException {
+        if (isClosed())
+            throw new IOException("input stream has been closed");
     }
 
     private boolean hasMoreTransfers() {

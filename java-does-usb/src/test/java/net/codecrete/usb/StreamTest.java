@@ -86,7 +86,7 @@ class StreamTest extends TestDeviceBase {
     void blockedWriter_canBeAborted() throws InterruptedException {
         // A writer that fills the pipe faster than it is drained eventually blocks in write().
         // Aborting the outstanding transfers from another thread must terminate it promptly and
-        // safely (with a USB exception) rather than leave it wedged forever.
+        // safely (with an IOException wrapping the USB error) rather than leave it wedged forever.
 
         final var data = generateRandomBytes(1_000_000, 0x5c7f10ebL);
 
@@ -152,7 +152,10 @@ class StreamTest extends TestDeviceBase {
             assertFalse(writer.isAlive(), "writer thread did not terminate within 1.5 s after abort");
 
             // It must have unwound because of the abort, not by finishing or dying some other way.
-            assertInstanceOf(UsbException.class, writerError.get());
+            // The stream surfaces the USB error as an IOException (with the UsbException as cause).
+            var err = writerError.get();
+            assertInstanceOf(IOException.class, err);
+            assertInstanceOf(UsbException.class, err.getCause());
 
         } finally {
             // Restore a clean device state so subsequent tests are not affected.
