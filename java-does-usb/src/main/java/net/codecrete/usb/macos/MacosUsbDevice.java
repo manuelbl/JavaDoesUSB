@@ -527,8 +527,10 @@ public class MacosUsbDevice extends UsbDeviceImpl {
                     transfer.dataSize(), timeout, timeout, asyncTask.nativeCompletionCallback(),
                     MemorySegment.ofAddress(transfer.id()));
 
-        if (ret != 0)
+        if (ret != 0) {
+            asyncTask.submissionFailed(transfer);
             throwException(ret, "error occurred while reading from endpoint %d", endpointNumber);
+        }
     }
 
     /**
@@ -557,8 +559,10 @@ public class MacosUsbDevice extends UsbDeviceImpl {
                     transfer.dataSize(), timeout, timeout, asyncTask.nativeCompletionCallback(),
                     MemorySegment.ofAddress(transfer.id()));
 
-        if (ret != 0)
+        if (ret != 0) {
+            asyncTask.submissionFailed(transfer);
             throwException(ret, "error occurred while transmitting to endpoint %d", endpointNumber);
+        }
     }
 
     /**
@@ -576,8 +580,10 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         var ret = IoKitUsb.DeviceRequestAsync(device, deviceRequest, asyncTask.nativeCompletionCallback(),
                 MemorySegment.ofAddress(transfer.id()));
 
-        if (ret != 0)
+        if (ret != 0) {
+            asyncTask.submissionFailed(transfer);
             throwException(ret, "control transfer failed");
+        }
     }
 
     @Override

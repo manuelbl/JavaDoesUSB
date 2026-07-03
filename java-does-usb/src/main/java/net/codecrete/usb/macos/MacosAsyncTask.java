@@ -188,6 +188,20 @@ class MacosAsyncTask {
     }
 
     /**
+     * Undoes the registration performed by {@link #prepareForSubmission(MacosTransfer)}.
+     * <p>
+     * Must be called if the native submission of a prepared transfer fails. In that case,
+     * no completion callback will ever fire for the transfer, so its map entry would leak
+     * unless it is removed here.
+     * </p>
+     *
+     * @param transfer transfer whose submission failed
+     */
+    synchronized void submissionFailed(MacosTransfer transfer) {
+        transfersById.remove(transfer.id());
+    }
+
+    /**
      * Callback function called when an asynchronous transfer has completed.
      *
      * @param refcon contains transfer ID
