@@ -169,6 +169,7 @@ class MacosAsyncTask {
 
         // loop forever
         CoreFoundation.CFRunLoopRun();
+        LOG.log(WARNING, "unexpected end of CFRunLoopRun");
     }
 
     /**

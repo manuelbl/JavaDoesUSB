@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import static java.lang.System.Logger.Level.INFO;
+import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.MemorySegment.NULL;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
@@ -103,6 +104,7 @@ public class MacosUsbDeviceRegistry extends UsbDeviceRegistry {
 
             // loop forever
             CoreFoundation.CFRunLoopRun();
+            LOG.log(WARNING, "unexpected end of CFRunLoopRun");
         }
     }
 
