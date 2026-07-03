@@ -129,8 +129,10 @@ public class EPoll {
             var ret = epoll_ctl(epfd, EPOLL_CTL_DEL(), fd, event, errorState);
             if (ret < 0) {
                 var err = Linux.getErrno(errorState);
-                // ignore ENOENT as this method might be called twice when cleaning up
-                if (err != errno.ENOENT())
+                // ignore ENOENT as this method might be called twice when cleaning up,
+                // and EBADF as the file descriptor might have been closed concurrently
+                // (closing deregisters it from epoll anyway)
+                if (err != errno.ENOENT() && err != errno.EBADF())
                     throwLastError(errorState, "internal error (epoll_ctl_del)");
             }
         }

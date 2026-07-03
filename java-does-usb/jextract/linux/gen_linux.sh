@@ -10,6 +10,8 @@ $JEXTRACT --output ../../src/main/java \
   --target-package net.codecrete.usb.linux.gen.errno \
   --include-constant EPIPE \
   --include-constant EAGAIN \
+  --include-constant EBADF \
+  --include-constant ECANCELED \
   --include-constant EINVAL \
   --include-constant ENODEV \
   --include-constant EINTR \

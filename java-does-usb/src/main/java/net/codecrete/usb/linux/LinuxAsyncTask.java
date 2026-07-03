@@ -7,6 +7,7 @@
 
 package net.codecrete.usb.linux;
 
+import net.codecrete.usb.UsbException;
 import net.codecrete.usb.UsbTransferType;
 import net.codecrete.usb.linux.gen.errno.errno;
 import net.codecrete.usb.linux.gen.usbdevice_fs.usbdevfs_urb;
@@ -73,6 +74,8 @@ class LinuxAsyncTask {
     private final Map<MemorySegment, LinuxTransfer> transfersByURB = new LinkedHashMap<>();
     /// file descriptor of epoll
     private int epollFd = -1;
+    /// indicates that the background task has terminated due to an unrecoverable error
+    private boolean taskTerminated;
 
     /**
      * Background task for handling asynchronous IO completions.
@@ -90,23 +93,54 @@ class LinuxAsyncTask {
             var events = arena.allocate(EPoll.EVENT$LAYOUT, NUM_EVENTS);
 
             while (true) {
+                try {
+                    // wait for file descriptor to be ready
+                    var res = epoll_wait(epollFd, events, NUM_EVENTS, -1, errorState);
+                    if (res < 0) {
+                        var err = Linux.getErrno(errorState);
+                        if (err == EINTR())
+                            continue; // continue on interrupt
+                        throwException(err, "internal error (epoll_wait)");
+                    }
 
-                // wait for file descriptor to be ready
-                var res = epoll_wait(epollFd, events, NUM_EVENTS, -1, errorState);
-                if (res < 0) {
-                    var err = Linux.getErrno(errorState);
-                    if (err == EINTR())
-                        continue; // continue on interrupt
-                    throwException(err, "internal error (epoll_wait)");
-                }
+                    // for all ready file descriptors, reap URBs
+                    for (int i = 0; i < res; i++) {
+                        var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, 0L, i);
+                        reapURBs(fd, urbPointerHolder, errorState);
+                    }
 
-                // for all ready file descriptors, reap URBs
-                for (int i = 0; i < res; i++) {
-                    var fd = (int) EPoll.EVENT_ARRAY_DATA_FD$VH.get(events, 0L, i);
-                    reapURBs(fd, urbPointerHolder, errorState);
+                } catch (Exception e) {
+                    LOG.log(ERROR, "USB async IO thread failed and is terminating; "
+                            + "all outstanding transfers will fail, and no further transfers are possible", e);
+                    failAllPendingTransfers();
+                    return;
                 }
             }
         }
+    }
+
+    /**
+     * Fails all outstanding transfers and marks this task as terminated.
+     * <p>
+     * Called when the background task can no longer dispatch completions. Waiters blocked
+     * on the failed transfers wake up with an error result instead of hanging forever,
+     * and future submissions are rejected.
+     * </p>
+     */
+    private void failAllPendingTransfers() {
+        var failedTransfers = new ArrayList<LinuxTransfer>();
+        synchronized (this) {
+            taskTerminated = true;
+            for (var transfer : transfersByURB.values()) {
+                transfer.urb = null;
+                transfer.setResultCode(errno.ECANCELED());
+                transfer.setResultSize(0);
+                failedTransfers.add(transfer);
+            }
+            transfersByURB.clear();
+            availableURBs.clear();
+        }
+        completeTransfers(failedTransfers);
     }
 
     /**
@@ -127,12 +161,21 @@ class LinuxAsyncTask {
                         var err = Linux.getErrno(errorState);
                         if (err == errno.EAGAIN())
                             return; // no more pending URBs
+                        if (err == errno.EBADF())
+                            return; // file descriptor was closed concurrently (deregisters it from epoll)
                         if (err == errno.ENODEV()) {
                             // device might have been unplugged
                             EPoll.removeFileDescriptor(epollFd, fd);
                             return;
                         }
-                        throwException(err, "internal error (reap URB)");
+                        // Unexpected error: stop handling this device's completions but keep
+                        // the task alive for all other devices. The file descriptor must be
+                        // deregistered, or epoll would report it ready again immediately,
+                        // resulting in a hot loop.
+                        LOG.log(ERROR, "reaping URBs for file descriptor {0} failed with errno {1}; "
+                                + "no further transfers will complete for this device", fd, err);
+                        EPoll.removeFileDescriptor(epollFd, fd);
+                        return;
                     }
 
                     var urb = dereference(urbPointerHolder);
@@ -222,6 +265,9 @@ class LinuxAsyncTask {
     }
 
     synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
+        if (taskTerminated)
+            throw new UsbException("USB async IO background thread has terminated due to an unrecoverable error; "
+                    + "USB transfers are no longer possible");
 
         linkToUrb(transfer);
         var urb = transfer.urb;

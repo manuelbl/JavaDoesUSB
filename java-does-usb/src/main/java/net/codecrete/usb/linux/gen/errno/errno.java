@@ -41,6 +41,15 @@ public class errno extends errno$shared {
     public static int EINTR() {
         return EINTR;
     }
+    private static final int EBADF = (int)9L;
+    /**
+     * {@snippet lang=c :
+     * #define EBADF 9
+     * }
+     */
+    public static int EBADF() {
+        return EBADF;
+    }
     private static final int EAGAIN = (int)11L;
     /**
      * {@snippet lang=c :
@@ -76,6 +85,15 @@ public class errno extends errno$shared {
      */
     public static int EPIPE() {
         return EPIPE;
+    }
+    private static final int ECANCELED = (int)125L;
+    /**
+     * {@snippet lang=c :
+     * #define ECANCELED 125
+     * }
+     */
+    public static int ECANCELED() {
+        return ECANCELED;
     }
 }
 
