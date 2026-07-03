@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.System.Logger.Level.ERROR;
 import static java.lang.foreign.ValueLayout.ADDRESS;
 import static net.codecrete.usb.common.ForeignMemory.dereference;
 import static net.codecrete.usb.linux.EPoll.epoll_create1;
@@ -55,6 +56,9 @@ import static net.codecrete.usb.linux.gen.usbdevice_fs.usbdevice_fs.USBDEVFS_URB
  */
 @SuppressWarnings("java:S6548")
 class LinuxAsyncTask {
+
+    private static final System.Logger LOG = System.getLogger(LinuxAsyncTask.class.getName());
+
     /**
      * Singleton instance of background task.
      */
@@ -112,26 +116,55 @@ class LinuxAsyncTask {
      * @param urbPointerHolder native memory to receive the URB pointer
      * @param errorState       native memory to receive the errno
      */
-    private synchronized void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
+    private void reapURBs(int fd, MemorySegment urbPointerHolder, MemorySegment errorState) {
 
-        while (true) {
-            var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errorState);
-            if (res < 0) {
-                var err = Linux.getErrno(errorState);
-                if (err == errno.EAGAIN())
-                    return; // no more pending URBs
-                if (err == errno.ENODEV()) {
-                    // device might have been unplugged
-                    EPoll.removeFileDescriptor(epollFd, fd);
-                    return;
+        var completedTransfers = new ArrayList<LinuxTransfer>();
+        try {
+            synchronized (this) {
+                while (true) {
+                    var res = IO.ioctl(fd, REAPURBNDELAY, urbPointerHolder, errorState);
+                    if (res < 0) {
+                        var err = Linux.getErrno(errorState);
+                        if (err == errno.EAGAIN())
+                            return; // no more pending URBs
+                        if (err == errno.ENODEV()) {
+                            // device might have been unplugged
+                            EPoll.removeFileDescriptor(epollFd, fd);
+                            return;
+                        }
+                        throwException(err, "internal error (reap URB)");
+                    }
+
+                    var urb = dereference(urbPointerHolder);
+                    completedTransfers.add(getTransferWithResult(urb));
                 }
-                throwException(err, "internal error (reap URB)");
             }
+        } finally {
+            // Even if reaping fails, the already reaped transfers must be completed.
+            completeTransfers(completedTransfers);
+        }
+    }
 
-            // call completion handler
-            var urb = dereference(urbPointerHolder);
-            var transfer = getTransferWithResult(urb);
-            transfer.completion().completed(transfer);
+    /**
+     * Calls the completion handlers of the specified transfers.
+     * <p>
+     * Must be called without holding the lock: handlers acquire other monitors
+     * (transfer, device), and threads submitting transfers acquire this task's lock
+     * while holding those monitors, so calling handlers under the lock can deadlock.
+     * </p>
+     *
+     * @param transfers completed transfers
+     */
+    private void completeTransfers(List<LinuxTransfer> transfers) {
+        for (var transfer : transfers) {
+            try {
+                transfer.completion().completed(transfer);
+            } catch (Exception e) {
+                // This method also runs on the process-wide async IO thread. Any exception
+                // escaping would kill that thread and hang all async transfers for the
+                // entire library.
+                LOG.log(ERROR, "Unexpected exception while handling async IO completion", e);
+            }
         }
     }
 
@@ -153,11 +186,13 @@ class LinuxAsyncTask {
      *
      * @param device USB device
      */
-    synchronized void removeFromAsyncIOCompletion(LinuxUsbDevice device) {
+    void removeFromAsyncIOCompletion(LinuxUsbDevice device) {
         int fd = device.fileDescriptor();
 
         // remove file descriptor from epoll
-        EPoll.removeFileDescriptor(epollFd, fd);
+        synchronized (this) {
+            EPoll.removeFileDescriptor(epollFd, fd);
+        }
 
         // reap outstanding URBs
         try (var arena = Arena.ofConfined()) {
@@ -167,19 +202,23 @@ class LinuxAsyncTask {
         }
 
         // reclaim stale URBs
-        transfersByURB.entrySet().removeIf(e -> {
-            var urb = e.getKey();
-            var isMatch = usbdevfs_urb.usercontext(urb).address() == fd;
-            if (isMatch) {
-                var transfer = e.getValue();
-                transfer.urb = null;
-                transfer.setResultCode(ENODEV());
-                transfer.setResultSize(0);
-                transfer.completion().completed(transfer);
-                availableURBs.add(urb);
-            }
-            return isMatch;
-        });
+        var staleTransfers = new ArrayList<LinuxTransfer>();
+        synchronized (this) {
+            transfersByURB.entrySet().removeIf(e -> {
+                var urb = e.getKey();
+                var isMatch = usbdevfs_urb.usercontext(urb).address() == fd;
+                if (isMatch) {
+                    var transfer = e.getValue();
+                    transfer.urb = null;
+                    transfer.setResultCode(ENODEV());
+                    transfer.setResultSize(0);
+                    availableURBs.add(urb);
+                    staleTransfers.add(transfer);
+                }
+                return isMatch;
+            });
+        }
+        completeTransfers(staleTransfers);
     }
 
     synchronized void submitTransfer(LinuxUsbDevice device, int endpointAddress, UsbTransferType transferType, LinuxTransfer transfer) {
