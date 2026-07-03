@@ -259,15 +259,16 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
 
     @Override
     public void transferOut(int endpointNumber, byte @NotNull [] data, int offset, int length, int timeout) {
-        try (var arena = Arena.ofConfined()) {
-            var buffer = arena.allocate(length);
-            buffer.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
-            var transfer = createSyncTransfer(buffer);
+        // Auto arena: a transfer that times out may be abandoned (see UsbDeviceImpl.waitForTransfer),
+        // so the buffer must outlive a possible late completion instead of being freed deterministically.
+        var arena = Arena.ofAuto();
+        var buffer = arena.allocate(length);
+        buffer.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
+        var transfer = createSyncTransfer(buffer);
 
-            synchronized (transfer) {
-                submitTransfer(UsbDirection.OUT, endpointNumber, transfer);
-                waitForTransfer(transfer, timeout, UsbDirection.OUT, endpointNumber);
-            }
+        synchronized (transfer) {
+            submitTransfer(UsbDirection.OUT, endpointNumber, transfer);
+            waitForTransfer(transfer, timeout, UsbDirection.OUT, endpointNumber);
         }
     }
 
@@ -275,17 +276,18 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
     public byte @NotNull [] transferIn(int endpointNumber, int timeout) {
         var endpoint = getEndpoint(UsbDirection.IN, endpointNumber, UsbTransferType.BULK, UsbTransferType.INTERRUPT);
 
-        try (var arena = Arena.ofConfined()) {
-            var buffer = arena.allocate(endpoint.packetSize());
-            var transfer = createSyncTransfer(buffer);
+        // Auto arena: a transfer that times out may be abandoned (see UsbDeviceImpl.waitForTransfer),
+        // so the buffer must outlive a possible late completion instead of being freed deterministically.
+        var arena = Arena.ofAuto();
+        var buffer = arena.allocate(endpoint.packetSize());
+        var transfer = createSyncTransfer(buffer);
 
-            synchronized (transfer) {
-                submitTransfer(UsbDirection.IN, endpointNumber, transfer);
-                waitForTransfer(transfer, timeout, UsbDirection.IN, endpointNumber);
-            }
-
-            return buffer.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
+        synchronized (transfer) {
+            submitTransfer(UsbDirection.IN, endpointNumber, transfer);
+            waitForTransfer(transfer, timeout, UsbDirection.IN, endpointNumber);
         }
+
+        return buffer.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
     }
 
     private LinuxTransfer createSyncTransfer(MemorySegment data) {

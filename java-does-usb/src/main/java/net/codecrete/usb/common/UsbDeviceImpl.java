@@ -24,10 +24,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.IntFunction;
 
+import static java.lang.System.Logger.Level.WARNING;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public abstract class UsbDeviceImpl implements UsbDevice {
+
+    private static final System.Logger LOG = System.getLogger(UsbDeviceImpl.class.getName());
+
+    // Maximum time (ms) to wait for the completion of a transfer that was aborted due to a
+    // timeout. If the abort's completion is never delivered (e.g. after an unplug), the wait
+    // degrades to a logged warning instead of a permanent hang. The transfer is then abandoned.
+    private static final long ABORT_COMPLETION_TIMEOUT_MS = 1000;
 
     /**
      * Operating system-specific device ID used for {@link #equals(Object)} and {@link #hashCode()}.
@@ -375,7 +383,16 @@ public abstract class UsbDeviceImpl implements UsbDevice {
             // test for timeout
             if (hasTimedOut && transfer.resultCode() == 0) {
                 abortTransfers(direction, endpointNumber);
-                waitNoTimeout(transfer);
+
+                // Wait for the abort's completion, but bounded: if it never arrives (device
+                // vanished such that neither the transfer nor the abort yields a callback),
+                // abandon the transfer instead of blocking forever. Abandoning is safe because
+                // buffers reaching this path come from an auto arena and survive a late completion.
+                var abortCompleted = !waitWithTimeout(transfer, (int) ABORT_COMPLETION_TIMEOUT_MS);
+                if (!abortCompleted)
+                    LOG.log(WARNING, "abort completion for {0} did not arrive within {1} ms - abandoning transfer",
+                            getOperationDescription(direction, endpointNumber), ABORT_COMPLETION_TIMEOUT_MS);
+
                 throw new UsbTimeoutException(getOperationDescription(direction, endpointNumber) + " aborted due to timeout");
             }
         }

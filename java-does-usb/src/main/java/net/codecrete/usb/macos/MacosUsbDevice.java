@@ -444,26 +444,27 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         var epInfo = getEndpointInfo(endpointNumber, UsbDirection.OUT, UsbTransferType.BULK,
                 UsbTransferType.INTERRUPT);
 
-        try (var arena = Arena.ofConfined()) {
-            var nativeData = arena.allocate(JAVA_BYTE, length);
-            nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
+        // Auto arena: a transfer that times out may be abandoned (see UsbDeviceImpl.waitForTransfer),
+        // so the buffer must outlive a possible late completion instead of being freed deterministically.
+        var arena = Arena.ofAuto();
+        var nativeData = arena.allocate(JAVA_BYTE, length);
+        nativeData.copyFrom(MemorySegment.ofArray(data).asSlice(offset, length));
 
-            var transfer = new MacosTransfer();
-            transfer.setData(nativeData);
-            transfer.setDataSize(length);
-            transfer.setCompletion(UsbDeviceImpl::onSyncTransferCompleted);
+        var transfer = new MacosTransfer();
+        transfer.setData(nativeData);
+        transfer.setDataSize(length);
+        transfer.setCompletion(UsbDeviceImpl::onSyncTransferCompleted);
 
-            synchronized (transfer) {
-                if (timeout <= 0 || epInfo.transferType() == UsbTransferType.BULK) {
-                    // no timeout or timeout handled by operating system
-                    submitTransferOut(endpointNumber, transfer, timeout);
-                    waitForTransfer(transfer, 0, UsbDirection.OUT, endpointNumber);
+        synchronized (transfer) {
+            if (timeout <= 0 || epInfo.transferType() == UsbTransferType.BULK) {
+                // no timeout or timeout handled by operating system
+                submitTransferOut(endpointNumber, transfer, timeout);
+                waitForTransfer(transfer, 0, UsbDirection.OUT, endpointNumber);
 
-                } else {
-                    // interrupt transfer with timeout
-                    submitTransferOut(endpointNumber, transfer, 0);
-                    waitForTransfer(transfer, timeout, UsbDirection.OUT, endpointNumber);
-                }
+            } else {
+                // interrupt transfer with timeout
+                submitTransferOut(endpointNumber, transfer, 0);
+                waitForTransfer(transfer, timeout, UsbDirection.OUT, endpointNumber);
             }
         }
     }
@@ -474,29 +475,30 @@ public class MacosUsbDevice extends UsbDeviceImpl {
         var epInfo = getEndpointInfo(endpointNumber, UsbDirection.IN, UsbTransferType.BULK,
                 UsbTransferType.INTERRUPT);
 
-        try (var arena = Arena.ofConfined()) {
-            var nativeData = arena.allocate(JAVA_BYTE, epInfo.packetSize());
+        // Auto arena: a transfer that times out may be abandoned (see UsbDeviceImpl.waitForTransfer),
+        // so the buffer must outlive a possible late completion instead of being freed deterministically.
+        var arena = Arena.ofAuto();
+        var nativeData = arena.allocate(JAVA_BYTE, epInfo.packetSize());
 
-            var transfer = new MacosTransfer();
-            transfer.setData(nativeData);
-            transfer.setDataSize(epInfo.packetSize());
-            transfer.setCompletion(UsbDeviceImpl::onSyncTransferCompleted);
+        var transfer = new MacosTransfer();
+        transfer.setData(nativeData);
+        transfer.setDataSize(epInfo.packetSize());
+        transfer.setCompletion(UsbDeviceImpl::onSyncTransferCompleted);
 
-            synchronized (transfer) {
-                if (timeout <= 0 || epInfo.transferType() == UsbTransferType.BULK) {
-                    // no timeout, or timeout handled by operating system
-                    submitTransferIn(endpointNumber, transfer, timeout);
-                    waitForTransfer(transfer, 0, UsbDirection.IN, endpointNumber);
+        synchronized (transfer) {
+            if (timeout <= 0 || epInfo.transferType() == UsbTransferType.BULK) {
+                // no timeout, or timeout handled by operating system
+                submitTransferIn(endpointNumber, transfer, timeout);
+                waitForTransfer(transfer, 0, UsbDirection.IN, endpointNumber);
 
-                } else {
-                    // interrupt transfer with timeout
-                    submitTransferIn(endpointNumber, transfer, 0);
-                    waitForTransfer(transfer, timeout, UsbDirection.IN, endpointNumber);
-                }
+            } else {
+                // interrupt transfer with timeout
+                submitTransferIn(endpointNumber, transfer, 0);
+                waitForTransfer(transfer, timeout, UsbDirection.IN, endpointNumber);
             }
-
-            return nativeData.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
         }
+
+        return nativeData.asSlice(0, transfer.resultSize()).toArray(JAVA_BYTE);
     }
 
     /**
