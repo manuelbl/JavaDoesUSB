@@ -28,7 +28,7 @@ import static java.time.Duration.ofSeconds;
 public class Unplug {
     private static final Map<UsbDevice, DeviceWorker> activeDevices = new HashMap<>();
 
-    public static void main(String[] args) throws IOException {
+    static void main() throws IOException {
         System.out.println("Plug and unplug test device multiple times.");
         System.out.println("Hit ENTER to exit.");
 
@@ -223,6 +223,8 @@ public class Unplug {
                     logWork(data.length);
                 }
             } catch (IOException e) {
+                if (e.getCause() instanceof UsbException usbException)
+                    throw usbException;
                 throw new RuntimeException(e);
             }
         }
@@ -241,6 +243,8 @@ public class Unplug {
                     logWork(n);
                 }
             } catch (IOException e) {
+                if (e.getCause() instanceof UsbException usbException)
+                    throw usbException;
                 throw new RuntimeException(e);
             }
         }
