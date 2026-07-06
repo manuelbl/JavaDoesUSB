@@ -336,11 +336,24 @@ the device left open but `deviceOpenCount == 0` and no interface claimed. Since 
 releases *claimed* interfaces, that device handle (still registered with the completion port) leaks
 until process exit.
 
----
+## 8. Visibility: shared flags are neither volatile nor consistently synchronized — **FIXED (all platforms)**
 
-## Open findings
+> **Status:** Fixed on 2026-07-06. All three listed items are now `volatile`:
+> `WindowsUsbDevice.showAsOpen`, `UsbDeviceImpl.connected`, and the two registry handler fields.
+> The same unlocked-`isOpened()` pattern exists on the other two platforms (the finding named
+> Windows only because that's where the review looked) and was fixed there too: `LinuxUsbDevice.fd`
+> and the `MacosUsbDevice.claimedInterfaces` reference are also `volatile` now (for the latter,
+> `isOpened()` only null-checks the reference; the list contents are only accessed while holding
+> the device monitor, so `volatile` on the reference suffices).
+>
+> In addition, `emitOnDeviceConnected` / `emitOnDeviceDisconnected` now read the handler field once
+> into a local before the null check. With `volatile` alone, a concurrent
+> `setOnDeviceConnected(null)` between the null check and the invocation would have thrown an NPE
+> that the catch block then mislabels as an exception *inside* the user's handler.
+>
+> Compile-verified; pure visibility changes of this kind are not exercisable by the test suite.
 
-## 8. Visibility: shared flags are neither volatile nor consistently synchronized
+The original description follows.
 
 - `showAsOpen`: written under the device monitor, but `isOpened()` (`WindowsUsbDevice.java:114`)
   reads it unlocked — `checkIsOpen`/`checkIsClosed` can act on stale state on a different thread.
@@ -352,6 +365,10 @@ until process exit.
 
 All are cheap to fix with `volatile`. Practical impact is low (stale reads, not corruption), but
 `isConnected()` returning `true` long after unplug is user-visible.
+
+---
+
+## Open findings
 
 ## 9. `messagePort` (remote) creation is unchecked (macOS)
 
@@ -447,9 +464,8 @@ timeout rather than an infinite block).
 
 ## Recommended priority
 
-Findings 1–7 are fixed (see above). Next up: the `volatile` flags of finding 8 and the
-macOS message-port null check of finding 9. Findings 10–12 are low-priority
-robustness notes.
+Findings 1–8 are fixed (see above). Next up: the macOS message-port null check of
+finding 9. Findings 10–12 are low-priority robustness notes.
 
 The Linux fixes for findings 1–3 still need a hardware test run on a Linux machine, and the
 finding 7 fix a hardware regression run on Windows.

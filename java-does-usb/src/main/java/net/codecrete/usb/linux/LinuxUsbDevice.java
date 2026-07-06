@@ -43,7 +43,8 @@ public class LinuxUsbDevice extends UsbDeviceImpl {
 
     private static final MemorySegment DRIVER_NAME_USBFS = Arena.global().allocateFrom("usbfs");
 
-    private int fd = -1;
+    // volatile: written under the device monitor, read unlocked via isOpened()
+    private volatile int fd = -1;
 
     private final LinuxAsyncTask asyncTask;
 

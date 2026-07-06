@@ -63,7 +63,9 @@ public abstract class UsbDeviceImpl implements UsbDevice {
     protected int deviceProtocol;
     protected Version versionUsb;
     protected Version versionDevice;
-    protected boolean connected;
+    // volatile: written by the device monitor thread in disconnect(), read unlocked
+    // via isConnected() and checkIsClosed()
+    protected volatile boolean connected;
 
     /**
      * Creates a new instance.

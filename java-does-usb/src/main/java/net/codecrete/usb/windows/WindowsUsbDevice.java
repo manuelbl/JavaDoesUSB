@@ -85,8 +85,9 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
     /**
      * Indicates if {@link #open()} has been called. Since separate interfaces can have separate underlying
      * Windows device, {@link #claimInterface(int)} instead of {@link #open()} will open the Windows device.
+     * (volatile: written under the device monitor, read unlocked via {@link #isOpened()})
      */
-    private boolean showAsOpen;
+    private volatile boolean showAsOpen;
 
     WindowsUsbDevice(String devicePath, int vendorId, int productId, MemorySegment configDesc, boolean isComposite) {
         super(devicePath, vendorId, productId);

@@ -32,14 +32,16 @@ import static java.lang.System.Logger.Level.WARNING;
  * and builds the initial device list.
  * </p>
  */
+@SuppressWarnings("java:S3077")
 public abstract class UsbDeviceRegistry {
 
     private static final System.Logger LOG = System.getLogger(UsbDeviceRegistry.class.getName());
 
     private List<UsbDevice> devices;
     private Throwable failureCause;
-    protected Consumer<UsbDevice> onDeviceConnectedHandler;
-    protected Consumer<UsbDevice> onDeviceDisconnectedHandler;
+    // volatile: set by the application thread, read by the device monitor thread
+    protected volatile Consumer<UsbDevice> onDeviceConnectedHandler;
+    protected volatile Consumer<UsbDevice> onDeviceDisconnectedHandler;
 
     private final Lock lock = new ReentrantLock();
     private final Condition enumerationComplete = lock.newCondition();
@@ -86,11 +88,13 @@ public abstract class UsbDeviceRegistry {
     }
 
     protected void emitOnDeviceConnected(UsbDevice device) {
-        if (onDeviceConnectedHandler == null)
+        // read once so a concurrent setOnDeviceConnected(null) cannot fail between check and call
+        var handler = onDeviceConnectedHandler;
+        if (handler == null)
             return;
 
         try {
-            onDeviceConnectedHandler.accept(device);
+            handler.accept(device);
 
         } catch (Exception e) {
             LOG.log(WARNING, "unhandled exception in 'onDeviceConnected' handler - ignoring", e);
@@ -98,11 +102,12 @@ public abstract class UsbDeviceRegistry {
     }
 
     protected void emitOnDeviceDisconnected(UsbDevice device) {
-        if (onDeviceDisconnectedHandler == null)
+        var handler = onDeviceDisconnectedHandler;
+        if (handler == null)
             return;
 
         try {
-            onDeviceDisconnectedHandler.accept(device);
+            handler.accept(device);
 
         } catch (Exception e) {
             LOG.log(WARNING, "unhandled exception in 'onDeviceDisconnected' handler - ignoring", e);

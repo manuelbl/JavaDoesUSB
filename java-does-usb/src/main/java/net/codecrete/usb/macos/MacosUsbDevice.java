@@ -51,7 +51,7 @@ import static net.codecrete.usb.macos.MacosUsbException.throwException;
  * asynchronous transfer and waiting for the completion.
  * </p>
  */
-@SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "java:S2160"})
+@SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "java:S2160", "java:S3077"})
 public class MacosUsbDevice extends UsbDeviceImpl {
 
     private final MacosAsyncTask asyncTask;
@@ -60,7 +60,9 @@ public class MacosUsbDevice extends UsbDeviceImpl {
     // Currently selected configuration
     private int configurationValue;
     // Details about interfaces that have been claimed
-    private List<InterfaceInfo> claimedInterfaces;
+    // (volatile: written under the device monitor, read unlocked via isOpened();
+    // the list contents are only accessed while holding the device monitor)
+    private volatile List<InterfaceInfo> claimedInterfaces;
     // Details about endpoints of current alternate settings (for claimed interfaces)
     private Map<Byte, EndpointInfo> endpoints;
 
