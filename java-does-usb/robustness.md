@@ -366,11 +366,26 @@ The original description follows.
 All are cheap to fix with `volatile`. Practical impact is low (stale reads, not corruption), but
 `isConnected()` returning `true` long after unplug is user-visible.
 
----
+## 9. `messagePort` (remote) creation is unchecked (macOS) — **FIXED**
 
-## Open findings
+> **Status:** Fixed on 2026-07-06. `startAsyncIOThread` now null-checks all *three* CF creations
+> that can return NULL — `CFMessagePortCreateLocal`, `CFMessagePortCreateRunLoopSource`, and
+> `CFMessagePortCreateRemote` (a NULL anywhere in the chain causes the same downstream damage,
+> e.g. when bootstrap-port registration fails in a sandboxed process) — and throws a `UsbException`
+> naming the failed call. The remote port is assigned to the `messagePort` field only after the
+> check, so `removeEventSource` can never send on a NULL port.
+>
+> The naive throw would have traded the leak for a hang: the singleton would be stuck in state
+> `STARTING` and every later `addEventSource` call would block forever in `waitForRunLoopReady`.
+> The catch block therefore releases the partially created ports (`CFRelease`; releasing the last
+> reference also invalidates the local port and deregisters its name, so a retry can recreate it)
+> and resets the state to `NOT_STARTED`, so a later `open()` retries cleanly. The exception
+> surfaces from `MacosUsbDevice.open()` before anything is registered with the run loop.
+>
+> Verified with the full hardware test suite on macOS (59 tests, all passing); the failure paths
+> themselves require injected CF failures and are verified by inspection.
 
-## 9. `messagePort` (remote) creation is unchecked (macOS)
+The original description follows.
 
 `MacosAsyncTask.java:135`: `CFMessagePortCreateRemote` can return NULL (e.g. a
 race where the local port's run-loop source isn't serviced yet).
@@ -378,12 +393,27 @@ race where the local port's run-loop source isn't serviced yet).
 never be removed — a slow leak of run-loop sources. Worth asserting non-null at
 creation.
 
-## 10. Magic-number reinterpret in `loadDescription` (macOS)
+## 10. Magic-number reinterpret in `loadDescription` (macOS) — **FIXED**
+
+> **Status:** Fixed on 2026-07-06. The pointer returned by `GetConfigurationDescriptorPtr` is now
+> first reinterpreted to exactly `ConfigurationDescriptor.LAYOUT.byteSize()` (9 bytes) — the
+> minimum needed to read the header — then, after a sanity check that `wTotalLength` is at least
+> the header size (throwing a `UsbException` naming the bogus value otherwise), reinterpreted to
+> exactly `totalLength`. No magic number remains, and the view never claims memory beyond the
+> kernel buffer, which IOKit itself sized from the same `wTotalLength` field when caching the
+> descriptor. Verified with the full hardware test suite on macOS (59 tests, all passing) —
+> `loadDescription` runs during enumeration of every connected device.
+
+The original description follows.
 
 `MacosUsbDevice.java:194`: `dereference(descPtrHolder).reinterpret(999999)`
 before re-slicing to `totalLength()`. It's bounded immediately afterward so it's
 safe in practice, but the arbitrary size is fragile if a malformed descriptor
 ever reports a `totalLength` beyond the real buffer.
+
+---
+
+## Open findings
 
 ## 11. `open()` holds the device monitor across up to 4×90 ms sleeps (macOS)
 
@@ -464,8 +494,7 @@ timeout rather than an infinite block).
 
 ## Recommended priority
 
-Findings 1–8 are fixed (see above). Next up: the macOS message-port null check of
-finding 9. Findings 10–12 are low-priority robustness notes.
+Findings 1–10 are fixed (see above). Findings 11–12 are low-priority robustness notes.
 
 The Linux fixes for findings 1–3 still need a hardware test run on a Linux machine, and the
 finding 7 fix a hardware regression run on Windows.

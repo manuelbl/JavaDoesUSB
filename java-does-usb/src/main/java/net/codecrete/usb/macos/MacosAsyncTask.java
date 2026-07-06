@@ -118,7 +118,8 @@ class MacosAsyncTask {
      */
     @SuppressWarnings("java:S125")
     private void startAsyncIOThread() {
-        MemorySegment messagePortSource;
+        MemorySegment messagePortSource = NULL;
+        MemorySegment localPort = NULL;
 
         try {
             state = TaskState.STARTING;
@@ -130,19 +131,37 @@ class MacosAsyncTask {
             var methodHandle = asyncIOCompletedMH.bindTo(this);
             completionUpcallStub = Linker.nativeLinker().upcallStub(methodHandle, completionHandlerFuncDesc, Arena.global());
 
-            // create local and remote message ports
+            // create local and remote message ports (all three CF creations can return NULL,
+            // e.g. if bootstrap port registration fails in a sandboxed process)
             var pid = ProcessHandle.current().pid();
             var portName = CoreFoundationHelper.createCFStringRef("net.codecrete.usb.macos.eventsource." + pid, Arena.global());
             var messagePortCallback = CFMessagePortCreateLocal$callout.allocate(this::messagePortCallback, Arena.global());
-            var localPort = CoreFoundation.CFMessagePortCreateLocal(NULL, portName, messagePortCallback, NULL, NULL);
+            localPort = CoreFoundation.CFMessagePortCreateLocal(NULL, portName, messagePortCallback, NULL, NULL);
+            if (localPort.address() == 0)
+                throw new UsbException("internal error (CFMessagePortCreateLocal failed)");
             messagePortSource = CoreFoundation.CFMessagePortCreateRunLoopSource(NULL, localPort, 0);
-            messagePort = CoreFoundation.CFMessagePortCreateRemote(NULL, portName);
+            if (messagePortSource.address() == 0)
+                throw new UsbException("internal error (CFMessagePortCreateRunLoopSource failed)");
+            var remotePort = CoreFoundation.CFMessagePortCreateRemote(NULL, portName);
+            if (remotePort.address() == 0)
+                throw new UsbException("internal error (CFMessagePortCreateRemote failed)");
+            messagePort = remotePort;
 
-        } catch (IllegalAccessException | NoSuchMethodException e) {
+        } catch (Exception e) {
+            // release partially created ports and reset the state; otherwise the task would be
+            // stuck in STARTING and all later addEventSource() calls would wait forever
+            if (messagePortSource.address() != 0)
+                CoreFoundation.CFRelease(messagePortSource);
+            if (localPort.address() != 0)
+                CoreFoundation.CFRelease(localPort);
+            state = TaskState.NOT_STARTED;
+            if (e instanceof RuntimeException runtimeException)
+                throw runtimeException;
             throw new UsbException("internal error (creating method handle)", e);
         }
 
-        var thread = new Thread(() -> asyncIOCompletionTask(messagePortSource), "USB async IO");
+        var source = messagePortSource;
+        var thread = new Thread(() -> asyncIOCompletionTask(source), "USB async IO");
         thread.setDaemon(true);
         thread.start();
     }

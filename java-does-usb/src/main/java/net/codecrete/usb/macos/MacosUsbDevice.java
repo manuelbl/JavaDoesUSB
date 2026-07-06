@@ -199,9 +199,14 @@ public class MacosUsbDevice extends UsbDeviceImpl {
             if (ret != 0)
                 throwException(ret, "querying first configuration failed");
 
-            var configDesc = dereference(descPtrHolder).reinterpret(999999);
-            var configDescHeader = new ConfigurationDescriptor(configDesc);
-            configDesc = configDesc.asSlice(0, configDescHeader.totalLength());
+            // read the descriptor header with a minimally sized view first, then resize to the
+            // total length the header reports (the kernel buffer was sized from the same field)
+            var headerSize = ConfigurationDescriptor.LAYOUT.byteSize();
+            var configDescHeader = new ConfigurationDescriptor(dereference(descPtrHolder).reinterpret(headerSize));
+            var totalLength = configDescHeader.totalLength();
+            if (totalLength < headerSize)
+                throwException("invalid configuration descriptor (wTotalLength: %d)", totalLength);
+            var configDesc = dereference(descPtrHolder).reinterpret(totalLength);
 
             var configuration = setConfigurationDescriptor(configDesc);
             configurationValue = 255 & configuration.configValue();
