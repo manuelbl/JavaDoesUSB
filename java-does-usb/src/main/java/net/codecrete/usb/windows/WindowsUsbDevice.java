@@ -179,6 +179,8 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
         if (intfHandle.firstInterfaceNumber != interfaceNumber)
             firstIntfHandle = getInterfaceHandle(intfHandle.firstInterfaceNumber);
 
+        var deviceOpenedHere = false;
+
         try (var arena = Arena.ofConfined()) {
             var errorState = allocateErrorState(arena);
 
@@ -199,6 +201,7 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                 if (Win.isInvalidHandle(deviceHandle))
                     throwLastError(errorState, "claiming interface failed (opening USB device %s failed)", devicePath);
 
+                MemorySegment interfaceHandle = null;
                 try {
                     // open first interface
                     var interfaceHandleHolder = arena.allocate(ADDRESS);
@@ -210,26 +213,44 @@ public class WindowsUsbDevice extends UsbDeviceImpl {
                             );
                         throwLastError(errorState, "claiming interface failed");
                     }
-                    var interfaceHandle = dereference(interfaceHandleHolder);
+                    interfaceHandle = dereference(interfaceHandleHolder);
 
-                    firstIntfHandle.deviceHandle = deviceHandle;
-                    firstIntfHandle.winusbHandle = interfaceHandle;
                     asyncTask.addDevice(deviceHandle);
 
+                    // Assign handles only after all fallible operations have succeeded.
+                    // Otherwise a later claim would see them and submit I/O on a closed handle.
+                    firstIntfHandle.deviceHandle = deviceHandle;
+                    firstIntfHandle.winusbHandle = interfaceHandle;
+                    deviceOpenedHere = true;
+
                 } catch (Exception e) {
+                    if (interfaceHandle != null)
+                        WinUsb_Free(interfaceHandle);
                     CloseHandle(deviceHandle);
                     throw e;
                 }
             }
 
             if (intfHandle != firstIntfHandle) {
-                // open associated interface
-                var interfaceHandleHolder = arena.allocate(ADDRESS);
-                if (WinUsb_GetAssociatedInterface(errorState, firstIntfHandle.winusbHandle,
-                        (byte) (intfHandle.interfaceNumber - firstIntfHandle.interfaceNumber - 1),
-                        interfaceHandleHolder) == 0)
-                    throwLastError(errorState, "claiming (associated) interface failed");
-                intfHandle.winusbHandle = dereference(interfaceHandleHolder);
+                try {
+                    // open associated interface
+                    var interfaceHandleHolder = arena.allocate(ADDRESS);
+                    if (WinUsb_GetAssociatedInterface(errorState, firstIntfHandle.winusbHandle,
+                            (byte) (intfHandle.interfaceNumber - firstIntfHandle.interfaceNumber - 1),
+                            interfaceHandleHolder) == 0)
+                        throwLastError(errorState, "claiming (associated) interface failed");
+                    intfHandle.winusbHandle = dereference(interfaceHandleHolder);
+
+                } catch (Exception e) {
+                    if (deviceOpenedHere) {
+                        // no interface has been claimed yet, so close() would never release the device
+                        WinUsb_Free(firstIntfHandle.winusbHandle);
+                        CloseHandle(firstIntfHandle.deviceHandle);
+                        firstIntfHandle.winusbHandle = null;
+                        firstIntfHandle.deviceHandle = null;
+                    }
+                    throw e;
+                }
             }
         }
 
