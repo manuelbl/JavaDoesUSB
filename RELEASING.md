@@ -60,10 +60,9 @@ version numbers flow through the repository afterwards.
    git tag v1.2.2
    git push origin main v1.2.2
    cd java-does-usb
-   ./mvnw clean deploy -Prelease   # or whatever profile/flags drive maven-gpg-plugin + central-publishing-maven-plugin
+   ./mvnw clean install # GPG passphrase from password store
+   ./mvnw clean deploy
    ```
-   (Adjust to however signing/publishing is actually invoked locally today — this step is manual
-   and not run by CI.)
 
 4. **Prepare `main` for the next development iteration.**
    ```bash
