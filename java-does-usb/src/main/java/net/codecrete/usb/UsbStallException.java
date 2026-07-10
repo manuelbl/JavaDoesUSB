@@ -10,13 +10,13 @@ package net.codecrete.usb;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Exception thrown if a communication on a USB endpoint failed.
+ * Exception thrown if communication on a USB endpoint fails.
  * <p>
  * If a USB endpoint stalls, it is halted and the halt condition must be cleared
  * using {@link UsbDevice#clearHalt(UsbDirection, int)} before communication can resume.
  * </p>
  * <p>
- * If the control endpoint 0 stalls, it throws this exception but is not halted.
+ * If the control endpoint 0 stalls, this exception is thrown but the endpoint is not halted.
  * </p>
  */
 public class UsbStallException extends UsbException {

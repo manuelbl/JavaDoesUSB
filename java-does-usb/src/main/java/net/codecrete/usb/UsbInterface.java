@@ -40,7 +40,7 @@ public interface UsbInterface {
     /**
      * Gets the currently selected alternate interface setting.
      * <p>
-     * Initially, the alternate settings with number 0 is selected.
+     * Initially, the alternate setting with number 0 is selected.
      * </p>
      *
      * @return the alternate interface setting.
@@ -48,7 +48,7 @@ public interface UsbInterface {
     @NotNull UsbAlternateInterface getCurrentAlternate();
 
     /**
-     * Gets the alternate interface settings with the specified number.
+     * Gets the alternate interface setting with the specified number.
      *
      * @param alternateNumber alternate setting number
      * @return alternate interface setting

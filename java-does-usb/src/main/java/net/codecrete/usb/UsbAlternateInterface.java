@@ -24,6 +24,7 @@ public interface UsbAlternateInterface {
      * Gets the alternate setting number.
      * <p>
      * It is equal to the {@code bAlternateSetting} field of the interface descriptor.
+     * </p>
      *
      * @return the alternate setting number
      */
@@ -60,7 +61,7 @@ public interface UsbAlternateInterface {
     int getProtocolCode();
 
     /**
-     * Gets the endpoints of this alternate interface settings.
+     * Gets the endpoints of this alternate interface setting.
      * <p>
      * The endpoint list does not include endpoint 0, which
      * is always available and reserved for control transfers.

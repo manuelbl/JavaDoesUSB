@@ -19,7 +19,7 @@ public final class Version {
      * <p>
      * {@code bcdVersion} contains the version: the high byte is the major
      * version. The low byte is split into two nibbles (4 bits), the high one
-     * is minor version, the low one is the subminor version. As an example,
+     * is the minor version, the low one is the subminor version. As an example,
      * 0x0321 represents the version 3.2.1.
      * </p>
      *

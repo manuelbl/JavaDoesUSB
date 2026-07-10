@@ -20,9 +20,9 @@ package net.codecrete.usb;
  *
  * @param requestType request type (bits 5 and 6 of {@code bmRequestType})
  * @param recipient   recipient (bits 0–4 of {@code bmRequestType})
- * @param request     request code (value between 0 and 255, called {@code bRequest} in USB specification)
- * @param value       value (value between 0 and 65535, called {@code wValue} in USB specification)
- * @param index       index (value between 0 and 65535, called {@code wIndex} in USB specification).
+ * @param request     request code (value between 0 and 255, called {@code bRequest} in the USB specification)
+ * @param value       value (value between 0 and 65535, called {@code wValue} in the USB specification)
+ * @param index       index (value between 0 and 65535, called {@code wIndex} in the USB specification)
  */
 public record UsbControlTransfer(
         UsbRequestType requestType,

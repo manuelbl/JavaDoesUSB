@@ -23,12 +23,12 @@ public interface UsbDevicePredicate {
      * Evaluates this predicate on the given USB device.
      *
      * @param device the USB device
-     * @return {@code true} of the devices matches the predicate, otherwise {@code false}
+     * @return {@code true} if the device matches the predicate, otherwise {@code false}
      */
     boolean matches(@NotNull UsbDevice device);
 
     /**
-     * Test if the USB devices matches any of the filter conditions.
+     * Tests whether the USB device matches any of the filter conditions.
      *
      * @param device  the USB device
      * @param predicates a list of filter predicates

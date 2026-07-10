@@ -18,7 +18,7 @@ import java.util.List;
  * USB device.
  * <p>
  * In order to make control requests and transfer data, the device must be
- * opened and an interface must be claimed. In the open state, this current
+ * opened and an interface must be claimed. In the open state, the current
  * process has exclusive access to the device.
  * </p>
  * <p>
@@ -50,14 +50,14 @@ public interface UsbDevice {
     String getProduct();
 
     /**
-     * Manufacturer name
+     * Manufacturer name.
      *
      * @return manufacturer name or {@code null} if not provided by the device
      */
     String getManufacturer();
 
     /**
-     * Serial number
+     * Serial number.
      * <p>
      * Even though this is supposed to be a human-readable string,
      * some devices are known to provide binary data.
@@ -144,7 +144,7 @@ public interface UsbDevice {
      * <p>
      * On Linux, this method changes the behavior of {@link #claimInterface(int)}. Standard drivers will no longer be
      * detached when the interface is claimed. Standard drivers are automatically reattached when the interfaces
-     * are released, at the lasted when the device is closed.
+     * are released, at the latest when the device is closed.
      * </p>
      * <p>
      * On Windows, this method does nothing.
