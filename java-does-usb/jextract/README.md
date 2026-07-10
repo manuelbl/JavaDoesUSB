@@ -66,15 +66,15 @@ variable size, GUID and device property key (`DEVPKEY`) constants etc.
 
 The worst example is [`IOUSBInterfaceStruct190`](https://github.com/manuelbl/JavaDoesUSB/blob/main/java-does-usb/src/main/java/net/codecrete/usb/macos/gen/iokit/IOUSBInterfaceStruct190.java) (macOS). This is a `struct` consisting of about 50 member functions. It's basically a vtable of a C++ class. For this single `struct`, *jextract* generates codes resulting in 100 class files with a total size of 213kByte.
 
-The table below shows class file size statistics for version 1.0.0 of the library:
+The table below shows class file size statistics for version 1.2.2 of the library:
 
 | Operating Systems | Manually Written |     % | Generated |     % |     Total |       % |
 |-------------------|-----------------:|------:|----------:|------:|----------:|--------:|
-| Linux             |           54,022 |  4.3% |   162,099 | 12.8% |   216,121 |   17.1% |
-| macOS             |           77,149 |  6.1% |   529,347 | 41.8% |   606,496 |   47.9% |
-| Windows           |          106,358 |  8.4% |   232,395 | 18.3% |   338,753 |   26.7% |
-| Common            |          105,423 |  8.3% |           |       |   105,423 |    8.3% |
-| Grand Total       |          342,952 | 27.1% |   923,841 | 72.9% | 1,266,793 |  100.0% |
+| Linux             |           58,393 |  4.5% |   154,398 | 11.8% |   212,791 |   16.3% |
+| macOS             |           81,441 |  6.2% |   427,258 | 32.8% |   508,699 |   39.0% |
+| Windows           |           84,099 |  6.5% |   384,452 | 29.5% |   468,551 |   35.9% |
+| Common            |          113,568 |  8.7% |           |       |   113,568 |    8.7% |
+| Grand Total       |          337,501 | 25.9% |   966,108 | 74.1% | 1,303,609 |  100.0% |
 
 
 *Class File Size (compiled), in bytes and percentage of total size*
