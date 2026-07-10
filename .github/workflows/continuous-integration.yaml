@@ -41,7 +41,7 @@ jobs:
         working-directory: ./java-does-usb
       - name: Determine java-does-usb version
         id: libver
-        run: echo "version=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout | tail -n 1)" >> "$GITHUB_OUTPUT"
         working-directory: ./java-does-usb
         shell: bash
       # Examples pin the latest released version so they double as user-facing documentation;
