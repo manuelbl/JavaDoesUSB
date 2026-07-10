@@ -2,7 +2,7 @@
 
 [![javadoc](https://javadoc.io/badge2/net.codecrete.usb/java-does-usb/javadoc.svg)](https://javadoc.io/doc/net.codecrete.usb/java-does-usb)
 
-*Java Does USB* is a Java library for working with USB devices. It allows to query the conntected USB devices and to communicate with them using custom / vendor specific protocols. It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.
+*Java Does USB* is a Java library for working with USB devices. It allows you to query the connected USB devices and to communicate with them using custom / vendor-specific protocols. It is not intended for communication with standard types of USB devices such as mass storage devices, keyboards etc.
 
 The library uses the [Foreign Function and Memory API](https://docs.oracle.com/en/java/javase/22/core/foreign-function-and-memory-api.html) to access native APIs of the underlying operating system. It is written entirely in Java and does not use JNI or any native third-party library. The *Foreign Function and Memory API* has been introduced with Java 22.
 
@@ -87,14 +87,14 @@ public class EnumerateDevices {
 
 ### macOS
 
-No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded if the application is run with *root* privileges. It runs both on Macs with Apple Silicon and Intel processors.
+No special considerations apply. Using this library, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operating system drivers can be unloaded if the application is run with *root* privileges. It runs both on Macs with Apple Silicon and Intel processors.
 
 
 ### Linux
 
 *libudev* is used to discover and monitor USB devices. It is closely tied to *systemd*. So the library runs on Linux distributions with *systemd* and the related libraries. The majority of Linux distributions suitable for desktop computing (as opposed to distributions optimized for containers) fulfill this requirement. It runs on both Intel/AMD and ARM processors.
 
-Similar to macOS, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operation system drivers can be unloaded (without the need for root privileges).
+Similar to macOS, a Java application can connect to any USB device and claim any interface that isn't claimed by an operating system driver or another application. Standard operating system drivers can be unloaded (without the need for root privileges).
 
 Most Linux distributions set up user accounts without permissions to access USB devices. The *udev* system daemon is responsible for assigning permissions to USB devices. It can be configured to assign specific permissions or ownership:
 
@@ -113,7 +113,7 @@ Without the *udev* rule, it is still possible to enumerate and query all USB dev
 
 The Windows driver model is rather rigid. It's not possible to open a USB device unless it uses the *WinUSB* driver. This even applies to devices with no installed driver. Enumerating and querying USB devices is possible independent of the driver.
 
-USB devices can implement special control requests to instruct Windows to automatically install the WinUSB driver (search for *WCID* or *Microsoft OS Compatibility Descriptors*). The WinUSB driver can also be manually installed or replaced using a software called [Zadig](https://zadig.akeo.ie/).
+USB devices can implement special control requests to instruct Windows to automatically install the WinUSB driver (search for *WCID* or *Microsoft OS Compatibility Descriptors*). The WinUSB driver can also be manually installed or replaced using a tool called [Zadig](https://zadig.akeo.ie/).
 
 The test devices implement the required control requests. So the driver is installed automatically.
 
@@ -141,7 +141,7 @@ In order to run the unit tests, a special test device must be connected to the c
 - [loopback-stm32](test-devices/loopback-stm32)
 - [composite-stm32](test-devices/composite-stm32)
 
-The test device with the *loopback-stm32* code supports all tests. If the test device with the *composite-stm32* code is connected, some tests are skipped. However, if it is used, the correct handling of composite devices is verified.
+The test device with the *loopback-stm32* code supports all tests. If the test device with the *composite-stm32* code is connected, some tests are skipped, but the correct handling of composite devices is verified instead.
 
 Tests can be run from the command line:
 
@@ -150,7 +150,7 @@ cd java-does-usb
 mvn clean test
 ```
 
-If they are run from an IDE (such as IntelliJ IDEA), you must likely configure VM options to allow native access:
+If they are run from an IDE (such as IntelliJ IDEA), you will likely need to configure VM options to allow native access:
 
 ```
 --enable-native-access=net.codecrete.usb
