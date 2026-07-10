@@ -4,7 +4,7 @@
 
   <groupId>net.codecrete.usb.examples</groupId>
   <artifactId>stm_dfu</artifactId>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
 
   <name>stm_dfu</name>
   <url>https://github.com/manuelbl/JavaDoesUSB/examples/stm_dfu</url>
@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>22</maven.compiler.source>
     <maven.compiler.target>22</maven.compiler.target>
-    <java-does-usb.version>1.2.1</java-does-usb.version>
+    <java-does-usb.version>1.3.0</java-does-usb.version>
   </properties>
 
   <dependencies>

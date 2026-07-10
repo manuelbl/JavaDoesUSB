@@ -23,7 +23,7 @@ version numbers flow through the repository afterwards.
    In `java-does-usb/pom.xml`, set `<version>` to the release version, e.g.:
    ```bash
    cd java-does-usb
-   ./mvnw versions:set -DnewVersion=1.2.2 -DgenerateBackupPoms=false
+   ./mvnw versions:set -DnewVersion=1.3.1 -DgenerateBackupPoms=false
    ```
 
 2. **Update the version everywhere it's pinned for users.** This means:
