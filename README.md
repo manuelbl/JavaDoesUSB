@@ -72,6 +72,7 @@ public class EnumerateDevices {
 - Monitor ([Java](examples/monitor/) / [Kotlin](examples/monitor_kotlin/)) lists the connected USB devices and then monitors for devices being connected and disconnected.
 - [Device Firmware Upload (DFU) for STM32](examples/stm_dfu) uploads firmware to STM32 microcontrollers supporting the built-in DFU mode.
 - [ePaper Display](examples/epaper_display) communicates with an IT8951 controller for e-Paper displays and shows an image on the display.
+- [Enumerate Native](examples/enumerate_native/) and [Monitor Native](examples/monitor_native/) demostrate how to build a native image with GraalVM.
 
 
 
