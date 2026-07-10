@@ -6,7 +6,7 @@
 
     <groupId>net.codecrete.usb</groupId>
     <artifactId>java-does-usb</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>25</maven.compiler.source>

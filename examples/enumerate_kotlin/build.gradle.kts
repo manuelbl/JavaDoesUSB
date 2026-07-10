@@ -6,7 +6,7 @@ plugins {
 group = "net.codecrete.usb.examples"
 version = "1.2.1"
 
-val javaDoesUsbVersion = "1.2.1"
+val javaDoesUsbVersion = (findProperty("javaDoesUsbVersion") as String?) ?: "1.2.1"
 val tinyLogVersion = "2.7.0"
 
 repositories {

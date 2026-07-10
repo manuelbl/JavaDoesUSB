@@ -39,24 +39,31 @@ jobs:
       - name: Build java-does-usb
         run: ./mvnw $MAVEN_ARGS -DskipTests clean install javadoc:javadoc
         working-directory: ./java-does-usb
+      - name: Determine java-does-usb version
+        id: libver
+        run: echo "version=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_OUTPUT"
+        working-directory: ./java-does-usb
+        shell: bash
+      # Examples pin the latest released version so they double as user-facing documentation;
+      # override that pin here to compile them against the HEAD version just installed above.
       - name: Example "bulk_transfer"
-        run: ./mvnw $MAVEN_ARGS clean compile
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean compile
         working-directory: ./examples/bulk_transfer
       - name: Example "enumerate"
-        run: ./mvnw $MAVEN_ARGS clean compile
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean compile
         working-directory: ./examples/enumerate
       - name: Example "enumerate" (Kotlin)
-        run: ./gradlew clean build
+        run: ./gradlew -PjavaDoesUsbVersion=${{ steps.libver.outputs.version }} clean build
         working-directory: ./examples/enumerate_kotlin
       - name: Example "monitor"
-        run: ./mvnw $MAVEN_ARGS clean compile
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean compile
         working-directory: ./examples/monitor
       - name: Example "monitor" (Kotlin)
-        run: ./mvnw $MAVEN_ARGS clean package
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean package
         working-directory: ./examples/monitor_kotlin
       - name: Example "stm_dfu"
-        run: ./mvnw $MAVEN_ARGS clean compile
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean compile
         working-directory: ./examples/stm_dfu
       - name: Example "epaper_display"
-        run: ./mvnw $MAVEN_ARGS clean compile
+        run: ./mvnw $MAVEN_ARGS -Djava-does-usb.version=${{ steps.libver.outputs.version }} clean compile
         working-directory: ./examples/epaper_display

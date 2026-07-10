@@ -15,6 +15,7 @@
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <main.class>net.codecrete.usb.examples.MonitorKt</main.class>
+    <java-does-usb.version>1.2.1</java-does-usb.version>
   </properties>
 
   <build>
@@ -64,7 +65,7 @@
     <dependency>
       <groupId>net.codecrete.usb</groupId>
       <artifactId>java-does-usb</artifactId>
-      <version>1.2.1</version>
+      <version>${java-does-usb.version}</version>
     </dependency>
     <dependency>
       <groupId>org.tinylog</groupId>
