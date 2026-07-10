@@ -77,8 +77,8 @@ public class EnumerateDevices {
 
 ## Prerequisite
 
-- Java 22 or higher, available at [jdk.java.net](https://jdk.java.net/), [Azul](https://www.azul.com/downloads/?package=jdk), [Adoptium](https://adoptium.net/temurin/releases/) or with your favorite package manager.
-- Windows (x86 64-bit, ARM 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit).
+- Java 25 or higher
+- Windows (x86 64-bit, ARM 64-bit), macOS (x86 64-bit, ARM 64-bit) or Linux 64 bit (x86 64-bit, ARM 64-bit)
 
 
 
@@ -118,30 +118,6 @@ USB devices can implement special control requests to instruct Windows to automa
 The test devices implement the required control requests. So the driver is installed automatically.
 
 The implementation runs on both Windows for Intel/AMD and ARM processors.
-
-
-
-## Troubleshooting
-
-### 32-bit versions
-
-The *Foreign Function And Memory API* has not been implemented for 32-bit operating systems / JDKs (and likely never will be).
-
-
-
-## Running on older JDK versions
-
-The *Foreign Function And Memory API* has been available as a preview feature in JDKs before 22. However, incompatible changes were made from preview to preview to release. Earlier versions can be used with specific versions of this library:
-
-| Version | Main New Features | Compatibility |
-| - | - | - |
-| 1.x.x | Release for final Java API | JDK 22 and higher |
-| 0.7.x | New setter/getter names for improved Kotlin support; Kotlin examples | JDK 21 |
-| 0.6.x | Support for JDK 21; better handling of composite devices on Windows | JDK 21 |
-| 0.5.x | Support for JDK 20; high-throuput I/O streams | JDK 20 |
-| 0.4.x | Early release | JDK 19 |
-
-When using an older JDK, preview features must be enabled using the `--enable-preview` VM option.
 
 
 
